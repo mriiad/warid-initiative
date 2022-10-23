@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.DonationType = exports.DonationTypeValues = exports.BloodGroupe = exports.BloodGroupeValues = exports.fromNameLabels = void 0;
+exports.DonationType = exports.DonationTypeValues = exports.BloodGroup = exports.BloodGroupValues = exports.fromNameLabels = void 0;
 function fromNameLabels(src) {
     return src.map(([name, label]) => ({ name, label }));
 }
@@ -11,7 +11,7 @@ function fromLabelledEnum(src) {
         return res;
     }, Object.create(null));
 }
-exports.BloodGroupeValues = fromNameLabels([
+exports.BloodGroupValues = fromNameLabels([
     ['Aplus', 'A+'],
     ['Aminus', 'A-'],
     ['Bplus', 'B+'],
@@ -21,7 +21,7 @@ exports.BloodGroupeValues = fromNameLabels([
     ['ABplus', 'AB+'],
     ['ABminus', 'AB-'],
 ]);
-exports.BloodGroupe = fromLabelledEnum(exports.BloodGroupeValues);
+exports.BloodGroup = fromLabelledEnum(exports.BloodGroupValues);
 exports.DonationTypeValues = fromNameLabels([
     ['blood', 'دم'],
     ['platelets', 'صفائح'],

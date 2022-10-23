@@ -1,3 +1,3 @@
-import { Person } from "../models/person";
+import { Donor } from "../models/Donor";
 
-const isDonor = (person: Person): boolean => person.disease != undefined;
+const isDonor = (donor: Donor): boolean => donor.disease != undefined;

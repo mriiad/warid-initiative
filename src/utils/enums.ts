@@ -14,7 +14,7 @@ function fromLabelledEnum<T extends string>(src: Array<LabelledEnum<T>>): { [K i
     }, Object.create(null))
 }
 
-export const BloodGroupeValues = fromNameLabels([
+export const BloodGroupValues = fromNameLabels([
     ['Aplus', 'A+'],
     ['Aminus', 'A-'],
     ['Bplus', 'B+'],
@@ -24,8 +24,8 @@ export const BloodGroupeValues = fromNameLabels([
     ['ABplus', 'AB+'],
     ['ABminus', 'AB-'],
 ])
-export const BloodGroupe = fromLabelledEnum(BloodGroupeValues)
-export type BloodGroupe = keyof typeof BloodGroupe
+export const BloodGroup = fromLabelledEnum(BloodGroupValues)
+export type BloodGroup = keyof typeof BloodGroup
 
 export const DonationTypeValues = fromNameLabels([
     ['blood', 'دم'],
