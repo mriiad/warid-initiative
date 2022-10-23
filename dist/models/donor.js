@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Donor = void 0;
 const enums_1 = require("../utils/enums");
 const mongoose_1 = require("mongoose");
 const DonorSchema = new mongoose_1.Schema({
@@ -42,4 +43,4 @@ const DonorSchema = new mongoose_1.Schema({
         required: false
     }
 });
-module.exports = (0, mongoose_1.model)('Donor', DonorSchema);
+exports.Donor = (0, mongoose_1.model)('Donor', DonorSchema);

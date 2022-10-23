@@ -5,7 +5,7 @@ import { model, Schema } from 'mongoose';
  * A person can be either a donor or a patient
  */
 
-export interface Donor {
+export interface IDonor {
     id: string;
     cin: string;
     firstName: string;
@@ -20,7 +20,7 @@ export interface Donor {
     disease?: string;
 }
 
-const DonorSchema = new Schema<Donor>({
+const DonorSchema = new Schema<IDonor>({
     cin: {
         type: String,
         required: true
@@ -61,4 +61,4 @@ const DonorSchema = new Schema<Donor>({
     }
 })
 
-module.exports = model('Donor', DonorSchema);
+export const Donor = model<IDonor>('Donor', DonorSchema);

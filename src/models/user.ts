@@ -3,7 +3,7 @@ import { model, Schema } from 'mongoose';
  * Represents information about warid's activities and news to be shared for the upcoming events
  */
 
-export interface User {
+export interface IUser {
     username: string;
     email: string;
     phoneNumber: Number;
@@ -11,7 +11,7 @@ export interface User {
     isActive: boolean;
 }
 
-const userSchema = new Schema<User>({
+const userSchema = new Schema<IUser>({
     username: {
         type: String,
         required: true
@@ -34,4 +34,4 @@ const userSchema = new Schema<User>({
     }
 })
 
-module.exports = model('User', userSchema);
+export const User = model<IUser>('User', userSchema);

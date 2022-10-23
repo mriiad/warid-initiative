@@ -1,7 +1,7 @@
 import bodyParser from 'body-parser';
 import express from 'express';
 
-import donorRouter from './routes/person';
+import donorRouter from './routes/donor';
 
 const app = express();
 
