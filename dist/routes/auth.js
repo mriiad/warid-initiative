@@ -35,6 +35,7 @@ router.put('/signup', [
     }),
 ], auth_1.signup
 // TODO: call controller to save other data in Donor's collection
+// hello
 );
 router.post('/login', auth_1.login);
 exports.default = router;
