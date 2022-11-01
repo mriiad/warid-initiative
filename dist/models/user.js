@@ -5,23 +5,23 @@ const mongoose_1 = require("mongoose");
 const userSchema = new mongoose_1.Schema({
     username: {
         type: String,
-        required: true
+        required: true,
     },
     email: {
         type: String,
-        required: true
+        required: true,
     },
     phoneNumber: {
         type: Number,
-        required: true
+        required: true,
     },
     isAdmin: {
         type: Boolean,
-        required: true
+        required: true,
     },
     isActive: {
         type: Boolean,
-        required: true
-    }
+        required: true,
+    },
 });
 exports.User = (0, mongoose_1.model)('User', userSchema);

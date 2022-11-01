@@ -8,8 +8,6 @@ const user_1 = require("../models/user");
  */
 const router = (0, express_1.Router)();
 const authController = require('../controllers/auth');
-router.get('/', (req, res, next) => {
-});
 router.put('/signup', [
     (0, express_validator_1.body)('email')
         .isEmail()
@@ -25,10 +23,15 @@ router.put('/signup', [
     (0, express_validator_1.body)('password')
         .trim()
         .isLength({ min: 5 }),
+    (0, express_validator_1.body)('phoneNumber')
+        .trim()
+        .isLength({ min: 10 }),
     (0, express_validator_1.body)('name')
         .trim()
         .not()
         .isEmpty()
-], authController.signup);
+], authController.signup
+// TODO: call controller to save other data in Donor's collection
+);
 router.post('/login', authController.login);
 exports.default = router;
