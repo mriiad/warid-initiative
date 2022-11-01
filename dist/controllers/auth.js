@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.signup = void 0;
+exports.login = exports.signup = void 0;
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const user_1 = require("../models/user");
 const { validationResult } = require('express-validator/check');
@@ -44,7 +44,7 @@ const signup = (req, res, next) => {
     });
 };
 exports.signup = signup;
-exports.login = (req, res, next) => {
+const login = (req, res, next) => {
     // const body = req.body as RequestParams;
     // const email = req.body.email;
     // const password = req.body.password;
@@ -87,3 +87,4 @@ exports.login = (req, res, next) => {
     // 		next(err);
     // 	});
 };
+exports.login = login;

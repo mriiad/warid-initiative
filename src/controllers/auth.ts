@@ -49,7 +49,7 @@ export const signup = (req: Request, res: Response, next: NextFunction) => {
 		});
 };
 
-exports.login = (req: Request, res: Response, next: NextFunction) => {
+export const login = (req: Request, res: Response, next: NextFunction) => {
 	// const body = req.body as RequestParams;
 	// const email = req.body.email;
 	// const password = req.body.password;
