@@ -2,8 +2,8 @@
 	"dbConfig": {
 		"host": "mongodb+srv",
 		"name": "warid",
-		"user": "username",
-		"password": "password"
+		"user": "username", // replace this with your own username
+		"password": "password" // replace this with your own password
 	  },
 	  "port": 3000
 }
