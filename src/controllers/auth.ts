@@ -3,10 +3,9 @@ import { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { IUser, User } from '../models/user';
 import { AuthParams, AuthPayload } from '../payloads/authPayload';
+import { BaseError } from '../utils/errors/baseError';
 import { STATUS_CODE } from '../utils/errors/httpStatusCodes';
 const { validationResult } = require('express-validator');
-
-const BaseError = require('../utils/errors/baseError');
 
 type RequestBody = AuthPayload;
 type RequestParams = AuthParams;

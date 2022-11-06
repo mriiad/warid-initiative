@@ -7,15 +7,15 @@ exports.login = exports.signup = void 0;
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const user_1 = require("../models/user");
+const baseError_1 = require("../utils/errors/baseError");
 const httpStatusCodes_1 = require("../utils/errors/httpStatusCodes");
 const { validationResult } = require('express-validator');
-const BaseError = require('../utils/errors/baseError');
 const signup = (req, res, next) => {
     const body = req.body;
     const { username, email, password, phoneNumber } = body;
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        const error = new BaseError(httpStatusCodes_1.STATUS_CODE.UNPROCESSABLE_ENTITY, 'Validation failed.');
+        const error = new baseError_1.BaseError(httpStatusCodes_1.STATUS_CODE.UNPROCESSABLE_ENTITY, 'Validation failed.');
         throw error;
     }
     bcrypt_1.default
@@ -53,7 +53,7 @@ const login = (req, res, next) => {
     user_1.User.findOne({ username: username })
         .then((user) => {
         if (!user) {
-            const error = new BaseError(httpStatusCodes_1.STATUS_CODE.UNAUTHORIZED, 'A user with this username could not be found.');
+            const error = new baseError_1.BaseError(httpStatusCodes_1.STATUS_CODE.UNAUTHORIZED, 'A user with this username could not be found.');
             throw error;
         }
         // user found
@@ -62,7 +62,7 @@ const login = (req, res, next) => {
     })
         .then((isEqual) => {
         if (!isEqual) {
-            const error = new BaseError(httpStatusCodes_1.STATUS_CODE.UNAUTHORIZED, 'Wrong password!');
+            const error = new baseError_1.BaseError(httpStatusCodes_1.STATUS_CODE.UNAUTHORIZED, 'Wrong password!');
             throw error;
         }
         const token = jsonwebtoken_1.default.sign({
