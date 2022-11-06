@@ -5,9 +5,9 @@ import { User } from '../models/user';
 /**
  * Could contain news & other data from different resources (Event)
  */
-const router = Router();
+const authRouter = Router();
 
-router.put(
+authRouter.put(
 	'/signup',
 	[
 		body('email')
@@ -37,9 +37,8 @@ router.put(
 	],
 	signup
 	// TODO: call controller to save other data in Donor's collection
-	// hello
 );
 
-router.post('/login', login);
+authRouter.post('/login', login);
 
-export default router;
+export default authRouter;

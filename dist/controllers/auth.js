@@ -6,15 +6,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.login = exports.signup = void 0;
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const user_1 = require("../models/user");
-const { validationResult } = require('express-validator/check');
-const jwt = require('jsonwebtoken');
+const httpStatusCodes_1 = require("../utils/errors/httpStatusCodes");
+const { validationResult } = require('express-validator');
 const BaseError = require('../utils/errors/baseError');
 const signup = (req, res, next) => {
     const body = req.body;
     const { username, email, password, phoneNumber } = body;
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        const error = new BaseError(STATUS_CODE.UNPROCESSABLE_ENTITY, 'Validation failed.');
+        const error = new BaseError(httpStatusCodes_1.STATUS_CODE.UNPROCESSABLE_ENTITY, 'Validation failed.');
         throw error;
     }
     bcrypt_1.default

@@ -7,8 +7,8 @@ const user_1 = require("../models/user");
 /**
  * Could contain news & other data from different resources (Event)
  */
-const router = (0, express_1.Router)();
-router.put('/signup', [
+const authRouter = (0, express_1.Router)();
+authRouter.put('/signup', [
     (0, express_validator_1.body)('email')
         .isEmail()
         .withMessage('Please enter a valid email.')
@@ -35,7 +35,6 @@ router.put('/signup', [
     }),
 ], auth_1.signup
 // TODO: call controller to save other data in Donor's collection
-// hello
 );
-router.post('/login', auth_1.login);
-exports.default = router;
+authRouter.post('/login', auth_1.login);
+exports.default = authRouter;

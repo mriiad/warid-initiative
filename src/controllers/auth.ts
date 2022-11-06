@@ -2,8 +2,8 @@ import bcrypt from 'bcrypt';
 import { NextFunction, Request, Response } from 'express';
 import { User } from '../models/user';
 import { AuthParams, AuthPayload } from '../payloads/authPayload';
-const { validationResult } = require('express-validator/check');
-const jwt = require('jsonwebtoken');
+import { STATUS_CODE } from '../utils/errors/httpStatusCodes';
+const { validationResult } = require('express-validator');
 
 const BaseError = require('../utils/errors/baseError');
 

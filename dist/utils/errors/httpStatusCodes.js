@@ -1,4 +1,6 @@
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.STATUS_CODE = void 0;
 var STATUS_CODE;
 (function (STATUS_CODE) {
     STATUS_CODE[STATUS_CODE["OK"] = 200] = "OK";
@@ -6,5 +8,4 @@ var STATUS_CODE;
     STATUS_CODE[STATUS_CODE["NOT_FOUND"] = 404] = "NOT_FOUND";
     STATUS_CODE[STATUS_CODE["UNPROCESSABLE_ENTITY"] = 422] = "UNPROCESSABLE_ENTITY";
     STATUS_CODE[STATUS_CODE["INTERNAL_SERVER"] = 500] = "INTERNAL_SERVER";
-})(STATUS_CODE || (STATUS_CODE = {}));
-module.exports = STATUS_CODE;
+})(STATUS_CODE = exports.STATUS_CODE || (exports.STATUS_CODE = {}));
