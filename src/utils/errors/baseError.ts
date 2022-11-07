@@ -1,4 +1,4 @@
-class BaseError extends Error {
+export class BaseError extends Error {
 	statusCode: Number;
 	constructor(statusCode: Number, message: string) {
 		super(message);
@@ -8,5 +8,3 @@ class BaseError extends Error {
 		Object.setPrototypeOf(this, new.target.prototype);
 	}
 }
-
-module.exports = BaseError;

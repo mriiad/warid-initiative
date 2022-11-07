@@ -7,6 +7,5 @@ export interface AuthPayload {
 
 export interface AuthParams {
 	username: string;
-	email: string;
-	phoneNumber: Number;
+	password: string;
 }

@@ -13,7 +13,7 @@ const app = (0, express_1.default)();
 app.use(body_parser_1.default.json());
 app.use(auth_1.default);
 mongoose_1.default
-    .connect(`${dbConfig.host}://${dbConfig.user}:${dbConfig.password}@${dbConfig.name}.b1dcpqn.mongodb.net/?retryWrites=true&w=majority`)
+    .connect(`${dbConfig.host}://${dbConfig.user}:${dbConfig.password}@${dbConfig.name}.b1dcpqn.mongodb.net/${dbConfig.name}?retryWrites=true&w=majority`)
     .then((result) => {
     console.log('Connected successfully to MongoDB server');
     app.listen(config.port);

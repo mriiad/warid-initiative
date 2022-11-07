@@ -5,16 +5,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.login = exports.signup = void 0;
 const bcrypt_1 = __importDefault(require("bcrypt"));
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const user_1 = require("../models/user");
+const baseError_1 = require("../utils/errors/baseError");
 const httpStatusCodes_1 = require("../utils/errors/httpStatusCodes");
 const { validationResult } = require('express-validator');
-const BaseError = require('../utils/errors/baseError');
 const signup = (req, res, next) => {
     const body = req.body;
     const { username, email, password, phoneNumber } = body;
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        const error = new BaseError(httpStatusCodes_1.STATUS_CODE.UNPROCESSABLE_ENTITY, 'Validation failed.');
+        const error = new baseError_1.BaseError(httpStatusCodes_1.STATUS_CODE.UNPROCESSABLE_ENTITY, 'Validation failed.');
         throw error;
     }
     bcrypt_1.default
@@ -45,46 +46,39 @@ const signup = (req, res, next) => {
 };
 exports.signup = signup;
 const login = (req, res, next) => {
-    // const body = req.body as RequestParams;
-    // const email = req.body.email;
-    // const password = req.body.password;
-    // let loadedUser;
-    // User.findOne({ email: email })
-    // 	.then((user) => {
-    // 		if (!user) {
-    // 			const error = new Error(
-    // 				'A user with this email could not be found.'
-    // 			);
-    // 			error.statusCode = 401;
-    // 			throw error;
-    // 		}
-    // 		loadedUser = user;
-    // 		return bcrypt.compare(password, user.password);
-    // 	})
-    // 	.then((isEqual) => {
-    // 		if (!isEqual) {
-    // 			const error = new Error('Wrong password!');
-    // 			error.statusCode = 401;
-    // 			throw error;
-    // 		}
-    // 		const token = jwt.sign(
-    // 			{
-    // 				email: loadedUser.email,
-    // 				userId: loadedUser._id.toString(),
-    // 			},
-    // 			'somesupersecretsecret',
-    // 			{ expiresIn: '1h' }
-    // 		);
-    // 		res.status(200).json({
-    // 			token: token,
-    // 			userId: loadedUser._id.toString(),
-    // 		});
-    // 	})
-    // 	.catch((err) => {
-    // 		if (!err.statusCode) {
-    // 			err.statusCode = 500;
-    // 		}
-    // 		next(err);
-    // 	});
+    const body = req.body;
+    const username = body.username;
+    const password = body.password;
+    let loadedUser;
+    user_1.User.findOne({ username: username })
+        .then((user) => {
+        if (!user) {
+            const error = new baseError_1.BaseError(httpStatusCodes_1.STATUS_CODE.UNAUTHORIZED, 'A user with this username could not be found.');
+            throw error;
+        }
+        // user found
+        loadedUser = user;
+        return bcrypt_1.default.compare(password, user.password);
+    })
+        .then((isEqual) => {
+        if (!isEqual) {
+            const error = new baseError_1.BaseError(httpStatusCodes_1.STATUS_CODE.UNAUTHORIZED, 'Wrong password!');
+            throw error;
+        }
+        const token = jsonwebtoken_1.default.sign({
+            email: loadedUser.email,
+            userId: loadedUser._id.toString(),
+        }, 'somesupersecretsecret', { expiresIn: '1h' });
+        res.status(200).json({
+            token: token,
+            userId: loadedUser._id.toString(),
+        });
+    })
+        .catch((err) => {
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        next(err);
+    });
 };
 exports.login = login;

@@ -15,7 +15,7 @@ app.use(authRouter);
 
 mongoose
 	.connect(
-		`${dbConfig.host}://${dbConfig.user}:${dbConfig.password}@${dbConfig.name}.b1dcpqn.mongodb.net/?retryWrites=true&w=majority`
+		`${dbConfig.host}://${dbConfig.user}:${dbConfig.password}@${dbConfig.name}.b1dcpqn.mongodb.net/${dbConfig.name}?retryWrites=true&w=majority`
 	)
 	.then((result) => {
 		console.log('Connected successfully to MongoDB server');
