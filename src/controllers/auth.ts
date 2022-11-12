@@ -1,11 +1,24 @@
 import bcrypt from 'bcrypt';
 import { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
+import nodemailer from 'nodemailer';
 import { IUser, User } from '../models/user';
 import { AuthParams, AuthPayload } from '../payloads/authPayload';
 import { BaseError } from '../utils/errors/baseError';
 import { STATUS_CODE } from '../utils/errors/httpStatusCodes';
 const { validationResult } = require('express-validator');
+const config = require('../../config.json');
+
+const sendgridTransport = require('nodemailer-sendgrid-transport');
+
+const transporter = nodemailer.createTransport(
+	sendgridTransport({
+		auth: {
+			api_key:
+				'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',
+		},
+	})
+);
 
 type RequestBody = AuthPayload;
 type RequestParams = AuthParams;
@@ -39,6 +52,13 @@ export const signup = (req: Request, res: Response, next: NextFunction) => {
 			res.status(201).json({
 				message: 'User created!',
 				userId: result._id,
+			});
+			return transporter.sendMail({
+				from: config.email,
+				to: email,
+				subject: 'Activation du compte',
+				text: "Bonjour, veuillez activez votre compte s'il vous plait. Merci",
+				html: '<h1>Compte créé avec succès!</h1>',
 			});
 		})
 		.catch((err) => {

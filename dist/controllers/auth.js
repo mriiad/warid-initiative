@@ -6,10 +6,18 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.login = exports.signup = void 0;
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const nodemailer_1 = __importDefault(require("nodemailer"));
 const user_1 = require("../models/user");
 const baseError_1 = require("../utils/errors/baseError");
 const httpStatusCodes_1 = require("../utils/errors/httpStatusCodes");
 const { validationResult } = require('express-validator');
+const config = require('../../config.json');
+const sendgridTransport = require('nodemailer-sendgrid-transport');
+const transporter = nodemailer_1.default.createTransport(sendgridTransport({
+    auth: {
+        api_key: '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',
+    },
+}));
 const signup = (req, res, next) => {
     const body = req.body;
     const { username, email, password, phoneNumber } = body;
@@ -35,6 +43,13 @@ const signup = (req, res, next) => {
         res.status(201).json({
             message: 'User created!',
             userId: result._id,
+        });
+        return transporter.sendMail({
+            from: config.email,
+            to: email,
+            subject: 'Activation du compte',
+            text: "Bonjour, veuillez activez votre compte s'il vous plait. Merci",
+            html: '<h1>Compte créé avec succès!</h1>',
         });
     })
         .catch((err) => {

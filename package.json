@@ -19,12 +19,15 @@
   "dependencies": {
     "@types/bcrypt": "^5.0.0",
     "@types/jsonwebtoken": "^8.5.9",
+    "@types/nodemailer": "^6.4.6",
     "bcrypt": "^5.1.0",
     "body-parser": "^1.20.0",
     "express": "^4.18.1",
     "express-validator": "^6.14.2",
     "jsonwebtoken": "^8.5.1",
-    "mongoose": "^6.6.7"
+    "mongoose": "^6.6.7",
+    "nodemailer": "^6.8.0",
+    "nodemailer-sendgrid-transport": "^0.2.0"
   },
   "devDependencies": {
     "@types/body-parser": "^1.19.2",
