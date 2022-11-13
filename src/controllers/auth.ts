@@ -106,10 +106,11 @@ export const login = (req: Request, res: Response, next: NextFunction) => {
 					email: loadedUser.email,
 					userId: loadedUser._id.toString(),
 				},
-				'somesupersecretsecret',
-				{ expiresIn: '1h' }
+				config.authConfig.SECRET_KEY,
+				{ expiresIn: config.authConfig.JWT_EXPIRE }
 			);
-			res.status(200).json({
+
+			return res.cookie('token', token).status(200).json({
 				token: token,
 				userId: loadedUser._id.toString(),
 			});
