@@ -3,7 +3,11 @@ import { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import nodemailer from 'nodemailer';
 import { IUser, User } from '../models/user';
-import { AuthParams, AuthPayload } from '../payloads/authPayload';
+import {
+	LoginPayload,
+	SignupPayload,
+	VerifyAccountParams,
+} from '../payloads/authPayload';
 import { BaseError } from '../utils/errors/baseError';
 import { STATUS_CODE } from '../utils/errors/httpStatusCodes';
 const { validationResult } = require('express-validator');
@@ -19,11 +23,8 @@ const transporter = nodemailer.createTransport(
 	})
 );
 
-type RequestBody = AuthPayload;
-type RequestParams = AuthParams;
-
 export const signup = (req: Request, res: Response, next: NextFunction) => {
-	const body = req.body as RequestBody;
+	const body = req.body as SignupPayload;
 	const { username, email, password, phoneNumber } = body;
 	const errors = validationResult(req);
 	if (!errors.isEmpty()) {
@@ -33,7 +34,8 @@ export const signup = (req: Request, res: Response, next: NextFunction) => {
 		);
 		throw error;
 	}
-
+	const token = jwt.sign({ email: req.body.email }, config.secret);
+	var activationLink = `http://localhost:${config.port}/api/auth/activation/${token}`;
 	bcrypt
 		.hash(password, 12)
 		.then((hashedPw) => {
@@ -44,6 +46,7 @@ export const signup = (req: Request, res: Response, next: NextFunction) => {
 				phoneNumber: phoneNumber,
 				isAdmin: false,
 				isActive: false,
+				confirmationCode: token,
 			});
 			return user.save();
 		})
@@ -56,8 +59,12 @@ export const signup = (req: Request, res: Response, next: NextFunction) => {
 				from: config.email,
 				to: email,
 				subject: 'Activation du compte',
-				text: "Bonjour, veuillez activez votre compte s'il vous plait. Merci",
-				html: '<h1>Compte créé avec succès!</h1>',
+				text: `Bonjour M. ${username}, veuillez activez votre compte s'il vous plait. Merci`,
+				html: `<h1>Email Confirmation</h1>
+				<h2>Hello ${username}</h2>
+				<p>Thank you for subscribing. Please confirm your email by clicking on the following link</p>
+				<a href=${activationLink}> Click here</a>
+				</div>`,
 			});
 		})
 		.catch((err) => {
@@ -69,7 +76,7 @@ export const signup = (req: Request, res: Response, next: NextFunction) => {
 };
 
 export const login = (req: Request, res: Response, next: NextFunction) => {
-	const body = req.body as RequestParams;
+	const body = req.body as LoginPayload;
 	const username = body.username;
 	const password = body.password;
 	let loadedUser: IUser;
@@ -111,6 +118,28 @@ export const login = (req: Request, res: Response, next: NextFunction) => {
 			if (!err.statusCode) {
 				err.statusCode = 500;
 			}
+			next(err);
+		});
+};
+
+export const verifyUser = (req: Request, res: Response, next: NextFunction) => {
+	const params = req.params as unknown as VerifyAccountParams;
+	User.findOne({
+		confirmationCode: params.confirmationCode,
+	})
+		.then((user) => {
+			if (!user) {
+				return res.status(404).send({ message: 'User Not found.' });
+			}
+			// activate the user account
+			user.isActive = true;
+			user.save();
+		})
+		.catch((err) => {
+			if (!err.statusCode) {
+				err.statusCode = 500;
+			}
+			console.log('error', err);
 			next(err);
 		});
 };

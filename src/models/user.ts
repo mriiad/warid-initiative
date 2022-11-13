@@ -11,16 +11,19 @@ export interface IUser {
 	phoneNumber: Number;
 	isAdmin: boolean;
 	isActive: boolean;
+	confirmationCode: string;
 }
 
 const userSchema = new Schema<IUser>({
 	username: {
 		type: String,
 		required: true,
+		unique: true,
 	},
 	email: {
 		type: String,
 		required: true,
+		unique: true,
 	},
 	password: {
 		type: String,
@@ -37,6 +40,10 @@ const userSchema = new Schema<IUser>({
 	isActive: {
 		type: Boolean,
 		required: true,
+	},
+	confirmationCode: {
+		type: String,
+		unique: true,
 	},
 });
 

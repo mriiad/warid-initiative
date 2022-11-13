@@ -6,10 +6,12 @@ const userSchema = new mongoose_1.Schema({
     username: {
         type: String,
         required: true,
+        unique: true,
     },
     email: {
         type: String,
         required: true,
+        unique: true,
     },
     password: {
         type: String,
@@ -26,6 +28,10 @@ const userSchema = new mongoose_1.Schema({
     isActive: {
         type: Boolean,
         required: true,
+    },
+    confirmationCode: {
+        type: String,
+        unique: true,
     },
 });
 exports.User = (0, mongoose_1.model)('User', userSchema);

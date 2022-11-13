@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { body } from 'express-validator';
-import { login, signup } from '../controllers/auth';
+import { login, signup, verifyUser } from '../controllers/auth';
 import { User } from '../models/user';
 /**
  * Could contain news & other data from different resources (Event)
@@ -8,7 +8,7 @@ import { User } from '../models/user';
 const authRouter = Router();
 
 authRouter.put(
-	'/signup',
+	'/api/auth/signup',
 	[
 		body('email')
 			.isEmail()
@@ -39,6 +39,8 @@ authRouter.put(
 	// TODO: call controller to save other data in Donor's collection
 );
 
-authRouter.post('/login', login);
+authRouter.post('/api/auth//login', login);
+
+authRouter.get('/api/auth/activation/:confirmationCode', verifyUser);
 
 export default authRouter;

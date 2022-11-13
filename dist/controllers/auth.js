@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.login = exports.signup = void 0;
+exports.verifyUser = exports.login = exports.signup = void 0;
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const nodemailer_1 = __importDefault(require("nodemailer"));
@@ -26,6 +26,8 @@ const signup = (req, res, next) => {
         const error = new baseError_1.BaseError(httpStatusCodes_1.STATUS_CODE.UNPROCESSABLE_ENTITY, 'Validation failed.');
         throw error;
     }
+    const token = jsonwebtoken_1.default.sign({ email: req.body.email }, config.secret);
+    var activationLink = `http://localhost:${config.port}/api/auth/activation/${token}`;
     bcrypt_1.default
         .hash(password, 12)
         .then((hashedPw) => {
@@ -36,6 +38,7 @@ const signup = (req, res, next) => {
             phoneNumber: phoneNumber,
             isAdmin: false,
             isActive: false,
+            confirmationCode: token,
         });
         return user.save();
     })
@@ -48,8 +51,12 @@ const signup = (req, res, next) => {
             from: config.email,
             to: email,
             subject: 'Activation du compte',
-            text: "Bonjour, veuillez activez votre compte s'il vous plait. Merci",
-            html: '<h1>Compte créé avec succès!</h1>',
+            text: `Bonjour M. ${username}, veuillez activez votre compte s'il vous plait. Merci`,
+            html: `<h1>Email Confirmation</h1>
+				<h2>Hello ${username}</h2>
+				<p>Thank you for subscribing. Please confirm your email by clicking on the following link</p>
+				<a href=${activationLink}> Click here</a>
+				</div>`,
         });
     })
         .catch((err) => {
@@ -97,3 +104,25 @@ const login = (req, res, next) => {
     });
 };
 exports.login = login;
+const verifyUser = (req, res, next) => {
+    const params = req.params;
+    user_1.User.findOne({
+        confirmationCode: params.confirmationCode,
+    })
+        .then((user) => {
+        if (!user) {
+            return res.status(404).send({ message: 'User Not found.' });
+        }
+        // activate the user account
+        user.isActive = true;
+        user.save();
+    })
+        .catch((err) => {
+        if (!err.statusCode) {
+            err.statusCode = 500;
+        }
+        console.log('error', err);
+        next(err);
+    });
+};
+exports.verifyUser = verifyUser;

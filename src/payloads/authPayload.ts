@@ -1,11 +1,15 @@
-export interface AuthPayload {
+export interface SignupPayload {
 	username: string; //cin
 	email: string;
 	password: string;
 	phoneNumber: Number;
 }
 
-export interface AuthParams {
+export interface LoginPayload {
 	username: string;
 	password: string;
+}
+
+export interface VerifyAccountParams {
+	confirmationCode: string;
 }
