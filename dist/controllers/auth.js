@@ -6,7 +6,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.verifyUser = exports.login = exports.signup = void 0;
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const mongoose_1 = __importDefault(require("mongoose"));
 const nodemailer_1 = __importDefault(require("nodemailer"));
+const donation_1 = require("../models/donation");
 const user_1 = require("../models/user");
 const baseError_1 = require("../utils/errors/baseError");
 const httpStatusCodes_1 = require("../utils/errors/httpStatusCodes");
@@ -20,7 +22,8 @@ const transporter = nodemailer_1.default.createTransport(sendgridTransport({
 }));
 const signup = (req, res, next) => {
     const body = req.body;
-    const { username, email, password, phoneNumber } = body;
+    const { username, firstName, lastName, birthDate, email, password, phoneNumber, } = body;
+    const { bloodGroup, lastDonationDate, donationType, disease } = body;
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         const error = new baseError_1.BaseError(httpStatusCodes_1.STATUS_CODE.UNPROCESSABLE_ENTITY, 'Validation failed.');
@@ -32,10 +35,13 @@ const signup = (req, res, next) => {
         .hash(password, 12)
         .then((hashedPw) => {
         const user = new user_1.User({
-            username: username,
-            email: email,
+            username,
+            firstName,
+            lastName,
+            birthDate,
+            email,
             password: hashedPw,
-            phoneNumber: phoneNumber,
+            phoneNumber,
             isAdmin: false,
             isActive: false,
             confirmationCode: token,
@@ -43,6 +49,14 @@ const signup = (req, res, next) => {
         return user.save();
     })
         .then((result) => {
+        const donation = new donation_1.Donation({
+            bloodGroup,
+            lastDonationDate,
+            donationType,
+            disease,
+            userId: new mongoose_1.default.Types.ObjectId(result._id),
+        });
+        donation.save();
         res.status(201).json({
             message: 'User created!',
             userId: result._id,
