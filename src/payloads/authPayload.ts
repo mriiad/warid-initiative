@@ -1,10 +1,11 @@
-import { BloodGroup, DonationType } from '../utils/enums';
+import { BloodGroup, DonationType, GenderType } from '../utils/enums';
 
 export interface SignupPayload {
 	username: string; //cin
 	firstName: string;
 	lastName: string;
 	birthDate: Date;
+	gender: GenderType;
 	email: string;
 	password: string;
 	phoneNumber: Number;

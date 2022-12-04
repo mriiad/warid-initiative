@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.User = void 0;
 const mongoose_1 = require("mongoose");
+const enums_1 = require("../utils/enums");
 const userSchema = new mongoose_1.Schema({
     username: {
         type: String,
@@ -18,6 +19,11 @@ const userSchema = new mongoose_1.Schema({
     },
     birthDate: {
         type: Date,
+        required: true,
+    },
+    gender: {
+        type: String,
+        enum: enums_1.GenderType,
         required: true,
     },
     email: {

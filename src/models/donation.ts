@@ -9,7 +9,6 @@ export interface IDonation {
 	bloodGroup: BloodGroup;
 	lastDonationDate?: Date;
 	donationType?: DonationType;
-	nextDonationDate?: Date;
 	disease?: string;
 	userId: Schema.Types.ObjectId;
 }
@@ -27,10 +26,6 @@ const DonationSchema = new Schema<IDonation>({
 	donationType: {
 		type: String,
 		enum: DonationType,
-		required: false,
-	},
-	nextDonationDate: {
-		type: Date,
 		required: false,
 	},
 	disease: {

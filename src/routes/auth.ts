@@ -36,7 +36,6 @@ authRouter.put(
 			}),
 	],
 	signup
-	// TODO: call controller to save other data in Donor's collection
 );
 
 authRouter.post('/api/auth/login', login);

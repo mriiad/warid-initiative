@@ -1,4 +1,5 @@
 import { model, Schema } from 'mongoose';
+import { GenderType } from '../utils/enums';
 /**
  * Represents information about warid's activities and news to be shared for the upcoming events
  */
@@ -8,6 +9,7 @@ export interface IUser {
 	firstName: string;
 	lastName: string;
 	birthDate: Date;
+	gender: GenderType;
 	email: string;
 	password: string;
 	phoneNumber: Number;
@@ -32,6 +34,11 @@ const userSchema = new Schema<IUser>({
 	},
 	birthDate: {
 		type: Date,
+		required: true,
+	},
+	gender: {
+		type: String,
+		enum: GenderType,
 		required: true,
 	},
 	email: {

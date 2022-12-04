@@ -18,10 +18,6 @@ const DonationSchema = new mongoose_1.Schema({
         enum: enums_1.DonationType,
         required: false,
     },
-    nextDonationDate: {
-        type: Date,
-        required: false,
-    },
     disease: {
         type: String,
         required: false,

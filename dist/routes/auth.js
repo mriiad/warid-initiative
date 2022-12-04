@@ -33,9 +33,7 @@ authRouter.put('/api/auth/signup', [
             }
         });
     }),
-], auth_1.signup
-// TODO: call controller to save other data in Donor's collection
-);
+], auth_1.signup);
 authRouter.post('/api/auth/login', auth_1.login);
 authRouter.get('/api/auth/activation/:confirmationCode', auth_1.verifyUser);
 exports.default = authRouter;
