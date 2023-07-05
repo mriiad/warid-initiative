@@ -22,7 +22,7 @@ const transporter = nodemailer_1.default.createTransport(sendgridTransport({
 }));
 const signup = (req, res, next) => {
     const body = req.body;
-    const { username, firstName, lastName, birthDate, email, password, phoneNumber, } = body;
+    const { username, firstName, lastName, birthDate, email, password, gender, phoneNumber, } = body;
     const { bloodGroup, lastDonationDate, donationType, disease } = body;
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -41,6 +41,7 @@ const signup = (req, res, next) => {
             birthDate,
             email,
             password: hashedPw,
+            gender,
             phoneNumber,
             isAdmin: false,
             isActive: false,

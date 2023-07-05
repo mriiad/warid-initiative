@@ -34,6 +34,7 @@ export const signup = (req: Request, res: Response, next: NextFunction) => {
 		birthDate,
 		email,
 		password,
+		gender,
 		phoneNumber,
 	} = body;
 	const { bloodGroup, lastDonationDate, donationType, disease } = body;
@@ -57,6 +58,7 @@ export const signup = (req: Request, res: Response, next: NextFunction) => {
 				birthDate,
 				email,
 				password: hashedPw,
+				gender,
 				phoneNumber,
 				isAdmin: false,
 				isActive: false,
