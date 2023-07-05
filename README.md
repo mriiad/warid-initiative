@@ -27,4 +27,31 @@ Follow these steps to run the project locally after pulling it:
 - Run `npm start`
 - If everything above was done as mentioned, you must see the following message in the logs: "Connected successfully to MongoDB server"
 
+## API Testing
+
+In order to the the routes you can already use POSTMAN to make API calls.
+API automated tests will be created later, but as of now, our API can be tests using a REST caller.
+
+Here are some functionalities to test (please replace the port by the one mentioned in the config.json, by default it's 3000):
+
+- Signup:
+  URL: http://localhost:<port>/api/auth/signup
+  PAYLOAD:
+
+```
+{
+    "username": "username",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "birthDate": "2002-12-09",
+    "email": "email@email.com",
+    "gender": "male",
+    "password": "password",
+    "phoneNumber": "0000000000",
+    "bloodGroup": "Aplus",
+    "lastDonationDate": "2022-01-01",
+    "donationType": "blood"
+}
+```
+
 Enjoy!
