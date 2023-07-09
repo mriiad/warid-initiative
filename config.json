@@ -2,6 +2,7 @@
 	"dbConfig": {
 		"host": "mongodb+srv",
 		"name": "warid",
+		"sample": "j7pzkfb",
 		"user": "username",
 		"password": "password"
 	  },
