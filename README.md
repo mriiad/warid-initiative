@@ -54,4 +54,15 @@ Here are some functionalities to test (please replace the port by the one mentio
 }
 ```
 
+## Contributing
+
+Some issues will be created soon in order to improve/fix some parts of the project, so stay tuned
+
+NB:
+The config.json must be ignored by running the following git command:
+`git update-index --assume-unchanged ./config.json`
+
+To be able to commit a change on it, make sure not to forget your mongodb access username and password and run the following command to make it tracked and committable:
+`git update-index --no-assume-unchanged ./config.json`
+
 Enjoy!
