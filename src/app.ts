@@ -2,6 +2,7 @@ import bodyParser from 'body-parser';
 import express from 'express';
 import mongoose from 'mongoose';
 import authRouter from './routes/auth';
+import donationRouter from './routes/donation';
 
 const config = require('../config.json');
 
@@ -12,6 +13,8 @@ const app = express();
 app.use(bodyParser.json());
 
 app.use(authRouter);
+
+app.use(donationRouter);
 
 mongoose
 	.connect(

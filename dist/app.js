@@ -7,11 +7,13 @@ const body_parser_1 = __importDefault(require("body-parser"));
 const express_1 = __importDefault(require("express"));
 const mongoose_1 = __importDefault(require("mongoose"));
 const auth_1 = __importDefault(require("./routes/auth"));
+const donation_1 = __importDefault(require("./routes/donation"));
 const config = require('../config.json');
 const dbConfig = config.dbConfig;
 const app = (0, express_1.default)();
 app.use(body_parser_1.default.json());
 app.use(auth_1.default);
+app.use(donation_1.default);
 mongoose_1.default
     .connect(`${dbConfig.host}://${dbConfig.user}:${dbConfig.password}@${dbConfig.name}.${dbConfig.sample}.mongodb.net/${dbConfig.name}?retryWrites=true&w=majority`)
     .then((result) => {
