@@ -1,7 +1,9 @@
 import bcrypt from 'bcrypt';
 import { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
+import mongoose from 'mongoose';
 import nodemailer from 'nodemailer';
+import { Donation } from '../models/donation';
 import { IUser, User } from '../models/user';
 import {
 	LoginPayload,
@@ -25,7 +27,17 @@ const transporter = nodemailer.createTransport(
 
 export const signup = (req: Request, res: Response, next: NextFunction) => {
 	const body = req.body as SignupPayload;
-	const { username, email, password, phoneNumber } = body;
+	const {
+		username,
+		firstName,
+		lastName,
+		birthDate,
+		email,
+		password,
+		gender,
+		phoneNumber,
+	} = body;
+	const { bloodGroup, lastDonationDate, donationType, disease } = body;
 	const errors = validationResult(req);
 	if (!errors.isEmpty()) {
 		const error = new BaseError(
@@ -40,10 +52,14 @@ export const signup = (req: Request, res: Response, next: NextFunction) => {
 		.hash(password, 12)
 		.then((hashedPw) => {
 			const user = new User({
-				username: username,
-				email: email,
+				username,
+				firstName,
+				lastName,
+				birthDate,
+				email,
 				password: hashedPw,
-				phoneNumber: phoneNumber,
+				gender,
+				phoneNumber,
 				isAdmin: false,
 				isActive: false,
 				confirmationCode: token,
@@ -51,6 +67,14 @@ export const signup = (req: Request, res: Response, next: NextFunction) => {
 			return user.save();
 		})
 		.then((result) => {
+			const donation = new Donation({
+				bloodGroup,
+				lastDonationDate,
+				donationType,
+				disease,
+				userId: new mongoose.Types.ObjectId(result._id),
+			});
+			donation.save();
 			res.status(201).json({
 				message: 'User created!',
 				userId: result._id,
