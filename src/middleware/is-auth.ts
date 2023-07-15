@@ -4,8 +4,12 @@ const config = require('../../config.json');
 
 const jwt = require('jsonwebtoken');
 
+export interface UserRequest extends Request {
+	userId: String;
+}
+
 export const isAuth = async (
-	req: Request,
+	req: UserRequest,
 	res: Response,
 	next: NextFunction
 ) => {
