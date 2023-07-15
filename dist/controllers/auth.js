@@ -105,8 +105,8 @@ const login = (req, res, next) => {
         const token = jsonwebtoken_1.default.sign({
             email: loadedUser.email,
             userId: loadedUser._id.toString(),
-        }, 'somesupersecretsecret', { expiresIn: '1h' });
-        res.status(200).json({
+        }, config.authConfig.SECRET_KEY, { expiresIn: config.authConfig.JWT_EXPIRE });
+        return res.cookie('token', token).status(200).json({
             token: token,
             userId: loadedUser._id.toString(),
         });
