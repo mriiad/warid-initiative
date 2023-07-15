@@ -6,14 +6,11 @@ import { DonationPayload } from '../payloads/donationPayload';
 export const donate = (req: Request, res: Response, next: NextFunction) => {
 	const body = req.body as DonationPayload;
 	const username = body.username;
-
-	console.log('HERE 10');
 	User.findOne({ username: username })
 		.then((user) => {
 			if (!user) {
 				return res.status(404).send({ message: 'User Not found.' });
 			}
-			console.log('HERE 15');
 			const userId = user._id;
 			Donation.findOne({ userId: userId })
 				.then((donation: any) => {
@@ -22,11 +19,9 @@ export const donate = (req: Request, res: Response, next: NextFunction) => {
 							.status(404)
 							.send({ message: 'No donation data saved for this user.' });
 					}
-					console.log('HERE 24');
 					const dt = todayDate();
 					console.log('date today: ', dt);
 					donation.lastDonationDate = dt;
-					console.log('HERE 26');
 					return donation.save();
 				})
 				.then((result) => {
