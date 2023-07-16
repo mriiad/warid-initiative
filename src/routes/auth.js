@@ -1,11 +1,12 @@
-import { Router } from 'express';
-import { body } from 'express-validator';
-import { login, signup, verifyUser } from '../controllers/auth';
-import { User } from '../models/user';
+const express = require('express');
+const { body } = require('express-validator');
+const { login, signup, verifyUser } = require('../controllers/auth');
+const User = require('../models/user');
+
 /**
  * Could contain news & other data from different resources (Event)
  */
-const authRouter = Router();
+const authRouter = express.Router();
 
 authRouter.put(
 	'/api/auth/signup',
@@ -42,4 +43,4 @@ authRouter.post('/api/auth/login', login);
 
 authRouter.get('/api/auth/activation/:confirmationCode', verifyUser);
 
-export default authRouter;
+module.exports = authRouter;

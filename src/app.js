@@ -1,8 +1,8 @@
-import bodyParser from 'body-parser';
-import express from 'express';
-import mongoose from 'mongoose';
-import authRouter from './routes/auth';
-import donationRouter from './routes/donation';
+const bodyParser = require('body-parser');
+const express = require('express');
+const mongoose = require('mongoose');
+const authRouter = require('./routes/auth');
+const donationRouter = require('./routes/donation');
 
 const config = require('../config.json');
 
