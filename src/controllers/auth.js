@@ -147,6 +147,7 @@ exports.verifyUser = (req, res, next) => {
 			}
 			user.isActive = true;
 			user.save();
+			return res.status(200).send({ message: 'Account activated.' });
 		})
 		.catch((err) => {
 			if (!err.statusCode) {
