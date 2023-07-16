@@ -1,18 +1,8 @@
-import { NextFunction } from 'express';
-import { BaseError } from '../utils/errors/baseError';
 const config = require('../../config.json');
 
 const jwt = require('jsonwebtoken');
 
-export interface UserRequest extends Request {
-	userId: String;
-}
-
-export const isAuth = async (
-	req: UserRequest,
-	res: Response,
-	next: NextFunction
-) => {
+export const isAuth = async (req, res, next) => {
 	const authHeader = req.headers.get('Authorization'); // `Bearer ${token}` sent by the client side
 	if (!authHeader) {
 		const error = new BaseError(401, 'Not authenticated.');
@@ -22,7 +12,7 @@ export const isAuth = async (
 	let decodedToken;
 	try {
 		decodedToken = jwt.verify(token, config.authConfig.SECRET_KEY);
-	} catch (err: any) {
+	} catch (err) {
 		err.statusCode = 500;
 		throw err;
 	}
