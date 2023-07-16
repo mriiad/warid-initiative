@@ -1,19 +1,12 @@
-import bcrypt from 'bcrypt';
-import { NextFunction, Request, Response } from 'express';
-import jwt from 'jsonwebtoken';
-import mongoose from 'mongoose';
-import nodemailer from 'nodemailer';
-import { Donation } from '../models/donation';
-import { IUser, User } from '../models/user';
-import {
-	LoginPayload,
-	SignupPayload,
-	VerifyAccountParams,
-} from '../payloads/authPayload';
-import { BaseError } from '../utils/errors/baseError';
-import { STATUS_CODE } from '../utils/errors/httpStatusCodes';
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose');
+const nodemailer = require('nodemailer');
+const Donation = require('../models/donation');
+const User = require('../models/user');
 const { validationResult } = require('express-validator');
 const config = require('../../config.json');
+const STATUS_CODE = require('../utils/errors/httpStatusCode');
 
 const sendgridTransport = require('nodemailer-sendgrid-transport');
 
@@ -25,8 +18,8 @@ const transporter = nodemailer.createTransport(
 	})
 );
 
-export const signup = (req: Request, res: Response, next: NextFunction) => {
-	const body = req.body as SignupPayload;
+exports.signup = (req, res, next) => {
+	const body = req.body;
 	const {
 		username,
 		firstName,
@@ -39,11 +32,10 @@ export const signup = (req: Request, res: Response, next: NextFunction) => {
 	} = body;
 	const { bloodGroup, lastDonationDate, donationType, disease } = body;
 	const errors = validationResult(req);
+	console.log('################### errors: ', errors);
 	if (!errors.isEmpty()) {
-		const error = new BaseError(
-			STATUS_CODE.UNPROCESSABLE_ENTITY,
-			'Validation failed.'
-		);
+		const error = new Error('Validation failed.');
+		error.statusCode = STATUS_CODE.UNPROCESSABLE_ENTITY;
 		throw error;
 	}
 	const token = jwt.sign({ email: req.body.email }, config.secret);
@@ -85,10 +77,10 @@ export const signup = (req: Request, res: Response, next: NextFunction) => {
 				subject: 'Activation du compte',
 				text: `Bonjour M. ${username}, veuillez activez votre compte s'il vous plait. Merci`,
 				html: `<h1>Email Confirmation</h1>
-				<h2>Hello ${username}</h2>
-				<p>Thank you for subscribing. Please confirm your email by clicking on the following link</p>
-				<a href=${activationLink}> Click here</a>
-				</div>`,
+        <h2>Hello ${username}</h2>
+        <p>Thank you for subscribing. Please confirm your email by clicking on the following link</p>
+        <a href=${activationLink}> Click here</a>
+        </div>`,
 			});
 		})
 		.catch((err) => {
@@ -99,11 +91,11 @@ export const signup = (req: Request, res: Response, next: NextFunction) => {
 		});
 };
 
-export const login = (req: Request, res: Response, next: NextFunction) => {
-	const body = req.body as LoginPayload;
+exports.login = (req, res, next) => {
+	const body = req.body;
 	const username = body.username;
 	const password = body.password;
-	let loadedUser: IUser;
+	let loadedUser;
 	User.findOne({ username: username })
 		.then((user) => {
 			if (!user) {
@@ -113,7 +105,6 @@ export const login = (req: Request, res: Response, next: NextFunction) => {
 				);
 				throw error;
 			}
-			// user found
 			loadedUser = user;
 			return bcrypt.compare(password, user.password);
 		})
@@ -147,8 +138,8 @@ export const login = (req: Request, res: Response, next: NextFunction) => {
 		});
 };
 
-export const verifyUser = (req: Request, res: Response, next: NextFunction) => {
-	const params = req.params as unknown as VerifyAccountParams;
+exports.verifyUser = (req, res, next) => {
+	const params = req.params;
 	User.findOne({
 		confirmationCode: params.confirmationCode,
 	})
@@ -156,7 +147,6 @@ export const verifyUser = (req: Request, res: Response, next: NextFunction) => {
 			if (!user) {
 				return res.status(404).send({ message: 'User Not found.' });
 			}
-			// activate the user account
 			user.isActive = true;
 			user.save();
 		})

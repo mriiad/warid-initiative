@@ -1,7 +1,7 @@
-import bodyParser from 'body-parser';
-import express from 'express';
-import mongoose from 'mongoose';
-import authRouter from './routes/auth';
+const bodyParser = require('body-parser');
+const express = require('express');
+const mongoose = require('mongoose');
+const authRouter = require('./routes/auth');
 
 const config = require('../config.json');
 
