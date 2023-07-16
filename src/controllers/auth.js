@@ -99,10 +99,10 @@ exports.login = (req, res, next) => {
 	User.findOne({ username: username })
 		.then((user) => {
 			if (!user) {
-				const error = new BaseError(
-					STATUS_CODE.UNAUTHORIZED,
+				const error = new Error(
 					'A user with this username could not be found.'
 				);
+				error.statusCode = STATUS_CODE.UNAUTHORIZED;
 				throw error;
 			}
 			loadedUser = user;
@@ -110,10 +110,8 @@ exports.login = (req, res, next) => {
 		})
 		.then((isEqual) => {
 			if (!isEqual) {
-				const error = new BaseError(
-					STATUS_CODE.UNAUTHORIZED,
-					'Wrong password!'
-				);
+				const error = new BaseError('Wrong password!');
+				error.statusCode = STATUS_CODE.UNAUTHORIZED;
 				throw error;
 			}
 			const token = jwt.sign(
