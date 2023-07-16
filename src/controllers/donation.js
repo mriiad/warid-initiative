@@ -1,10 +1,12 @@
-import { NextFunction, Request, Response } from 'express';
-import { Donation } from '../models/donation';
-import { User } from '../models/user';
-import { DonationPayload } from '../payloads/donationPayload';
+const Donation = require('../models/donation');
+const User = require('../models/user');
 
-export const donate = (req: Request, res: Response, next: NextFunction) => {
-	const body = req.body as DonationPayload;
+/**
+ *
+ * This method must be called by the admin to confirm the donation of a user
+ */
+exports.donate = (req, res, next) => {
+	const body = req.body;
 	const username = body.username;
 	User.findOne({ username: username })
 		.then((user) => {
@@ -13,7 +15,7 @@ export const donate = (req: Request, res: Response, next: NextFunction) => {
 			}
 			const userId = user._id;
 			Donation.findOne({ userId: userId })
-				.then((donation: any) => {
+				.then((donation) => {
 					if (!donation) {
 						return res
 							.status(404)
@@ -25,7 +27,6 @@ export const donate = (req: Request, res: Response, next: NextFunction) => {
 					return donation.save();
 				})
 				.then((result) => {
-					console.log('result: ', result);
 					res.status(201).json({
 						message: 'Donation saved!',
 						userId: result._id,
@@ -47,6 +48,7 @@ export const donate = (req: Request, res: Response, next: NextFunction) => {
 		});
 };
 
+// TODO: Fix the sysdate
 const todayDate = () => {
 	const date = new Date();
 	return new Date(`${date.getFullYear()}-${date.getMonth()}-${date.getDay()}`);

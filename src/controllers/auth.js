@@ -32,7 +32,6 @@ exports.signup = (req, res, next) => {
 	} = body;
 	const { bloodGroup, lastDonationDate, donationType, disease } = body;
 	const errors = validationResult(req);
-	console.log('################### errors: ', errors);
 	if (!errors.isEmpty()) {
 		const error = new Error('Validation failed.');
 		error.statusCode = STATUS_CODE.UNPROCESSABLE_ENTITY;

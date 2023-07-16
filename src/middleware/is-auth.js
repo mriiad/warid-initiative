@@ -2,8 +2,8 @@ const config = require('../../config.json');
 
 const jwt = require('jsonwebtoken');
 
-export const isAuth = async (req, res, next) => {
-	const authHeader = req.headers.get('Authorization'); // `Bearer ${token}` sent by the client side
+module.exports = (req, res, next) => {
+	const authHeader = req.headers['authorization']; // `Bearer ${token}` sent by the client side
 	if (!authHeader) {
 		const error = new BaseError(401, 'Not authenticated.');
 		throw error;
