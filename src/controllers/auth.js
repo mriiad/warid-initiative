@@ -125,6 +125,7 @@ exports.login = (req, res, next) => {
 			return res.cookie('token', token).status(200).json({
 				token: token,
 				userId: loadedUser._id.toString(),
+				isAdmin: loadedUser.isAdmin,
 			});
 		})
 		.catch((err) => {

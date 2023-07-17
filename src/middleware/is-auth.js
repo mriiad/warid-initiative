@@ -1,4 +1,5 @@
 const config = require('../../config.json');
+const { STATUS_CODE } = require('../utils/errors/httpStatusCode');
 
 const jwt = require('jsonwebtoken');
 
@@ -13,8 +14,11 @@ module.exports = (req, res, next) => {
 	try {
 		decodedToken = jwt.verify(token, config.authConfig.SECRET_KEY);
 	} catch (err) {
-		err.statusCode = 500;
-		throw err;
+		const error = new Error(
+			'Unauthorized user, please verify your credentials'
+		);
+		error.statusCode = STATUS_CODE.UNAUTHORIZED;
+		throw error;
 	}
 	if (!decodedToken) {
 		const error = new BaseError(401, 'Not authenticated.');
