@@ -43,7 +43,7 @@ exports.donate = (req, res, next) => {
 					return donation.save();
 				})
 				.then((result) => {
-					res.status(201).json({
+					res.status(STATUS_CODE.CREATED).json({
 						message: 'Donation saved!',
 						donationId: result._id,
 						userId: result.userId,
@@ -51,14 +51,14 @@ exports.donate = (req, res, next) => {
 				})
 				.catch((err) => {
 					if (!err.statusCode) {
-						err.statusCode = 500;
+						err.statusCode = STATUS_CODE.INTERNAL_SERVER;
 					}
 					next(err);
 				});
 		})
 		.catch((err) => {
 			if (!err.statusCode) {
-				err.statusCode = 500;
+				err.statusCode = STATUS_CODE.INTERNAL_SERVER;
 			}
 			console.log('error', err);
 			next(err);
