@@ -39,15 +39,14 @@ exports.donate = (req, res, next) => {
 							.status(STATUS_CODE.NOT_FOUND)
 							.send({ message: 'No donation data saved for this user.' });
 					}
-					const dt = todayDate();
-					console.log('date today: ', dt);
-					donation.lastDonationDate = dt;
+					donation.lastDonationDate = new Date();
 					return donation.save();
 				})
 				.then((result) => {
 					res.status(201).json({
 						message: 'Donation saved!',
-						userId: result._id,
+						donationId: result._id,
+						userId: result.userId,
 					});
 				})
 				.catch((err) => {
@@ -64,10 +63,4 @@ exports.donate = (req, res, next) => {
 			console.log('error', err);
 			next(err);
 		});
-};
-
-// TODO: Fix the sysdate
-const todayDate = () => {
-	const date = new Date();
-	return new Date(`${date.getFullYear()}-${date.getMonth()}-${date.getDay()}`);
 };
