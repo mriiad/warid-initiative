@@ -9,7 +9,6 @@ const { STATUS_CODE } = require('../utils/errors/httpStatusCode');
 exports.donate = (req, res, next) => {
 	// Check if the user isAdmin
 	User.findOne({ _id: req.userId }).then((user) => {
-		// This case shouldn't happen be we have to handle it
 		if (!user) {
 			return res
 				.status(STATUS_CODE.NOT_FOUND)
