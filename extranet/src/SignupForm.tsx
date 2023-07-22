@@ -1,9 +1,9 @@
-import { Button, Container, Grid, TextField } from '@mui/material';
+import { Button, Container, Grid, TextField, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import React from 'react';
 import { useForm } from 'react-hook-form';
+import React, { useState } from 'react';
 
-
+// TO-DO : react-query
 interface FormData {
   username: string;
   firstName: string;
@@ -26,7 +26,7 @@ const useStyles = makeStyles({
       height: '100vh',
     },
     imageContainer: {
-      flexBasis: '50%',
+      flexBasis: '100%',
     },
     image: {
       width: '100%',
@@ -35,6 +35,30 @@ const useStyles = makeStyles({
     formContainer: {
       flexBasis: '50%',
       padding: '20px',
+      border: '2px solid violet',
+      borderRadius: '10px', 
+      width: '50%', 
+      margin: '0 auto',
+    },
+    bar: {
+      height: '4px',
+      width: '55px',
+      display: 'block',
+      margin: '8px auto 0',
+      backgroundColor: '#ff3366',
+    },
+    button: {
+      background: 'linear-gradient(90deg, rgba(118,5,186,1) 29%, rgba(159,7,204,1) 61%)',
+      borderRadius: '10px',
+      padding: '10px 20px',
+      fontSize: '16px',
+      border: 'none',
+      boxShadow: '0px 2px 10px rgba(0, 0, 0, 0.2)',
+      transition: 'transform 0.3s ease',
+      cursor: 'pointer',
+      '&:hover': {
+        transform: 'scale(1.1)',
+      },
     },
   });
   
@@ -47,6 +71,17 @@ const SignupForm: React.FC = () => {
   } = useForm<FormData>();
 
   const classes = useStyles();
+
+  const [isFormSubmitted, setIsFormSubmitted] = useState<boolean>(false);
+
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const onChange = (e) => {
+    const re = /^[0-9\b]+$/;
+    if (e.target.value === '' || re.test(e.target.value)) {
+      setPhoneNumber(e.target.value);
+    }
+  };
+
   
   const onSubmit = async (data: FormData) => {
     try {
@@ -60,6 +95,7 @@ const SignupForm: React.FC = () => {
 
       if (response.ok) {
         // Handle successful form submission
+        setIsFormSubmitted(true);
         console.log('Form submitted successfully!');
       } else {
         // Handle error response
@@ -81,6 +117,10 @@ const SignupForm: React.FC = () => {
       />
     </div>
     <div className={classes.formContainer}>
+      <Typography variant="h2" align="center" gutterBottom>
+          Sign Up
+          <span className={classes.bar}></span>
+      </Typography>
       <form onSubmit={handleSubmit(onSubmit)}>
         <Grid container spacing={2}>
           <Grid item xs={12}>
@@ -161,8 +201,10 @@ const SignupForm: React.FC = () => {
               fullWidth
               label="Phone Number"
               {...register('phoneNumber', { required: true })}
+              value={phoneNumber}
+              onChange={onChange}
               error={Boolean(errors.phoneNumber)}
-              helperText={errors.phoneNumber ? 'Phone Number is required' : ''}
+              helperText={errors.phoneNumber ? 'Please enter a valid phone number' : ''}
             />
           </Grid>
           <Grid item xs={12}>
@@ -203,13 +245,13 @@ const SignupForm: React.FC = () => {
             />
           </Grid>
           <Grid item xs={12}>
-            <Button type="submit" variant="contained" color="primary">
+            <Button type="submit" color="primary" style={{ color: 'white' }} className={classes.button}>
               Submit
             </Button>
           </Grid>
         </Grid>
       </form>
-      </div>
+    </div>
     </Container>
   );
 };
