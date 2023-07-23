@@ -48,11 +48,13 @@ const userSchema = new Schema({
 		type: String,
 		unique: true,
 	},
-	eventId: {
-		type: Schema.Types.ObjectId,
-		ref: 'Event',
-		required: false,
-	},
+	users: [
+		{
+			type: Schema.Types.ObjectId,
+			ref: 'User',
+			required: false,
+		},
+	],
 });
 
 module.exports = mongoose.model('User', userSchema);
