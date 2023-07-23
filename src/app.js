@@ -3,6 +3,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const authRouter = require('./routes/auth');
 const donationRouter = require('./routes/donation');
+const eventRouter = require('./routes/event');
 
 const config = require('../config.json');
 
@@ -15,6 +16,8 @@ app.use(bodyParser.json());
 app.use(authRouter);
 
 app.use(donationRouter);
+
+app.use(eventRouter);
 
 mongoose
 	.connect(
