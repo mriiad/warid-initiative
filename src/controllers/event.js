@@ -1,7 +1,7 @@
 const Event = require('../models/event');
-const User = require('../models/user');
 const { STATUS_CODE } = require('../utils/errors/httpStatusCode');
 const { validationResult } = require('express-validator');
+const { checkIfAdmin } = require('../utils/checks');
 
 /**
  *
@@ -41,19 +41,7 @@ exports.createEvent = (req, res, next) => {
 		error.statusCode = STATUS_CODE.UNPROCESSABLE_ENTITY;
 		throw error;
 	}
-	// TODO: add a custom validator to check if the user isAdmin and call it in all the required requests
-	User.findOne({ _id: req.userId }).then((user) => {
-		if (!user) {
-			return res
-				.status(STATUS_CODE.NOT_FOUND)
-				.send({ message: 'User Not found.' });
-		}
-		if (!user.isAdmin) {
-			return res
-				.status(STATUS_CODE.FORBIDDEN)
-				.send({ message: 'User must be an Admin to call this API.' });
-		}
-	});
+	checkIfAdmin(req.userId, res);
 	const { title, subtitle, location, mapLink } = req.body;
 	const event = new Event({
 		title: title,
