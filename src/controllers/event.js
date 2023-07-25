@@ -41,7 +41,6 @@ exports.createEvent = (req, res, next) => {
 		error.statusCode = STATUS_CODE.UNPROCESSABLE_ENTITY;
 		throw error;
 	}
-	checkIfAdmin(req.userId, res);
 	const { title, subtitle, location, mapLink } = req.body;
 	const event = new Event({
 		title: title,
