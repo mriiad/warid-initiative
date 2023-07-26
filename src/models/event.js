@@ -5,6 +5,11 @@ const Schema = mongoose.Schema;
  */
 
 const EventSchema = new Schema({
+	reference: {
+		type: String,
+		required: true,
+		unique: true,
+	},
 	title: {
 		type: String,
 		required: true,
@@ -15,6 +20,10 @@ const EventSchema = new Schema({
 	},
 	location: {
 		type: String,
+		required: true,
+	},
+	date: {
+		type: Date,
 		required: true,
 	},
 	mapLink: {

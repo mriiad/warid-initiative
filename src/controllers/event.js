@@ -41,11 +41,21 @@ exports.createEvent = (req, res, next) => {
 		error.statusCode = STATUS_CODE.UNPROCESSABLE_ENTITY;
 		throw error;
 	}
-	const { title, subtitle, location, mapLink } = req.body;
+	const { title, subtitle, location, date, mapLink } = req.body;
+	const reference = `WEVENT${date.replaceAll('-', '')}`;
+	Event.findOne({ reference: reference }).then((event) => {
+		if (event) {
+			return res.status(STATUS_CODE.FORBIDDEN).send({
+				message: `An event with the same reference ${reference} is already created.`,
+			});
+		}
+	});
 	const event = new Event({
+		reference: reference,
 		title: title,
 		subtitle: subtitle,
 		location: location,
+		date: date,
 		mapLink: mapLink,
 	});
 	event
