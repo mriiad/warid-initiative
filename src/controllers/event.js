@@ -1,7 +1,10 @@
 const Event = require('../models/event');
+const User = require('../models/user');
 const { STATUS_CODE } = require('../utils/errors/httpStatusCode');
 const { validationResult } = require('express-validator');
 const { checkIfAdmin } = require('../utils/checks');
+const mongoose = require('mongoose');
+const { ObjectId } = mongoose.Types;
 
 /**
  *
@@ -70,6 +73,50 @@ exports.createEvent = (req, res, next) => {
 			if (!err.statusCode) {
 				err.statusCode = STATUS_CODE.INTERNAL_SERVER;
 			}
+			next(err);
+		});
+};
+
+exports.confirmPresence = (req, res, next) => {
+	const { eventReference } = req.body;
+	console.log('userId: ', req.userId);
+	User.findById(req.userId)
+		.then((user) => {
+			console.log('user: ', user);
+			Event.findOne({ reference: eventReference })
+				.then((event) => {
+					const eventExists = user.events.find(
+						(ev) => ev.toString() == event.id
+					);
+					if (!eventExists) {
+						user.events.push(event);
+					}
+					const userExists = event.attendees.find(
+						(us) => us.toString() == user.id
+					);
+					if (!userExists) event.attendees.push(user);
+
+					event.save();
+					return user.save();
+				})
+				.then((result) => {
+					console.log('result: ', result);
+					res.status(STATUS_CODE.OK).json({
+						message: 'Successfully added to attendees list!',
+					});
+				})
+				.catch((err) => {
+					if (!err.statusCode) {
+						err.statusCode = STATUS_CODE.INTERNAL_SERVER;
+					}
+					next(err);
+				});
+		})
+		.catch((err) => {
+			if (!err.statusCode) {
+				err.statusCode = STATUS_CODE.INTERNAL_SERVER;
+			}
+			console.log('error', err);
 			next(err);
 		});
 };

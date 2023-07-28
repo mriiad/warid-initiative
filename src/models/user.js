@@ -48,10 +48,10 @@ const userSchema = new Schema({
 		type: String,
 		unique: true,
 	},
-	users: [
+	events: [
 		{
 			type: Schema.Types.ObjectId,
-			ref: 'User',
+			ref: 'Event',
 			required: false,
 		},
 	],
