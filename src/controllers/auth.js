@@ -27,6 +27,7 @@ exports.signup = (req, res, next) => {
 		birthDate,
 		email,
 		password,
+		passwordConfirmation,
 		gender,
 		phoneNumber,
 	} = body;
@@ -43,6 +44,11 @@ exports.signup = (req, res, next) => {
 	bcrypt
 		.hash(password, 12)
 		.then((hashedPw) => {
+			if (password !== passwordConfirmation) {
+				const error = new Error('Password and Password Confirmation do not match.');
+				error.statusCode = STATUS_CODE.UNPROCESSABLE_ENTITY;
+				throw error;
+			  }
 			const user = new User({
 				username,
 				firstName,
