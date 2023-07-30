@@ -1,7 +1,9 @@
-import { Box, Button, Container, Grid, IconButton, InputAdornment, TextField, Typography } from '@mui/material';
+import { Box, Button, Container, Grid, TextField, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { useForm } from 'react-hook-form';
+import axios from 'axios';
 import React, { useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
+import { useMutation } from 'react-query';
 
 // TO-DO : react-query
 interface FormData {
@@ -68,16 +70,31 @@ const useStyles = makeStyles({
     },
   },
 });
-  
 
 const SignupForm: React.FC = () => {
   const { container, imageContainer, image, formContainer, bar, button, formWrapper } = useStyles();
   const {
-    register,
     handleSubmit,
     formState: { errors },
+    control,
     getValues,
   } = useForm<FormData>();
+
+  const signUpMutation = useMutation((data: FormData) => {
+    return axios.put('http://localhost:3000/api/auth/signup', data);
+  });
+
+  const onSubmit = (formData: FormData) => {
+    signUpMutation.mutate(formData, {
+      onSuccess: () => {
+        console.log('Form submitted successfully!');
+        setIsFormSubmitted(true);
+      },
+      onError: (error) => {
+        console.error('Error submitting form:', error);
+      },
+    });
+  };
 
   const [isFormSubmitted, setIsFormSubmitted] = useState<boolean>(false);
 
@@ -91,7 +108,7 @@ const SignupForm: React.FC = () => {
 
   const validateEmail = (value) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(value) || "Please enter a valid email address.";
+    return emailRegex.test(value) || 'Please enter a valid email address.';
   };
 
   const validatePasswordConfirmation = (value) => {
@@ -99,197 +116,255 @@ const SignupForm: React.FC = () => {
     return password === value || 'Passwords do not match'; // Compare with the confirmation password field
   };
 
-  const onSubmit = async (data: FormData) => {
-    try {
-      const response = await fetch('API_ENDPOINT_URL', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (response.ok) {
-        // Handle successful form submission
-        setIsFormSubmitted(true);
-        console.log('Form submitted successfully!');
-      } else {
-        // Handle error response
-        console.error('Failed to submit the form.');
-      }
-    } catch (error) {
-      // Handle network or other errors
-      console.error('An error occurred while submitting the form:', error);
-    }
-  };
-
   return (
     <Container maxWidth="md" className={container}>
-      <div className={imageContainer}>
-        <img
-          src="your_image_url.jpg"
-          alt="logo"
-          className={image}
-        />
-      </div>
-      <div className={formContainer}>
+    <div className={imageContainer}>
+      <img
+        src="your_image_url.jpg"
+        alt="logo"
+        className={image}
+      />
+    </div>
+    <div className={formContainer}>
       <Box className={formWrapper}>
         <Typography variant="h3" align="center" gutterBottom>
-            Sign Up
-            <span className={bar}></span>
+          Sign Up
+          <span className={bar}></span>
         </Typography>
         <form onSubmit={handleSubmit(onSubmit)}>
           <Grid container spacing={2}>
             <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Username"
-                {...register('username', { required: true })}
-                error={Boolean(errors.username)}
-                helperText={errors.username ? 'Username is required' : ''}
+              <Controller
+                name="username"
+                control={control}
+                defaultValue=""
+                render={({ field }) => (
+                  <TextField
+                    fullWidth
+                    label="Username"
+                    {...field}
+                    error={Boolean(errors.username)}
+                    helperText={errors.username ? 'Username is required' : ''}
+                  />
+                )}
               />
             </Grid>
             <Grid item xs={6}>
-              <TextField
-                fullWidth
-                label="First Name"
-                {...register('firstName', { required: true })}
-                error={Boolean(errors.firstName)}
-                helperText={errors.firstName ? 'First Name is required' : ''}
+              <Controller
+                name="firstName"
+                control={control}
+                defaultValue=""
+                render={({ field }) => (
+                  <TextField
+                    fullWidth
+                    label="First Name"
+                    {...field}
+                    error={Boolean(errors.firstName)}
+                    helperText={errors.firstName ? 'First Name is required' : ''}
+                  />
+                )}
               />
             </Grid>
             <Grid item xs={6}>
-              <TextField
-                fullWidth
-                label="Last Name"
-                {...register('lastName', { required: true })}
-                error={Boolean(errors.lastName)}
-                helperText={errors.lastName ? 'Last Name is required' : ''}
+              <Controller
+                name="lastName"
+                control={control}
+                defaultValue=""
+                render={({ field }) => (
+                  <TextField
+                    fullWidth
+                    label="Last Name"
+                    {...field}
+                    error={Boolean(errors.lastName)}
+                    helperText={errors.lastName ? 'Last Name is required' : ''}
+                  />
+                )}
               />
             </Grid>
             <Grid item xs={12}>
-              <TextField
-                fullWidth
-                type="date"
-                label="Birth Date"
-                {...register('birthDate', { required: true })}
-                error={Boolean(errors.birthDate)}
-                helperText={errors.birthDate ? 'Birth Date is required' : ''}
-                InputLabelProps={{
-                  shrink: true,
-                }}
+              <Controller
+                name="birthDate"
+                control={control}
+                defaultValue=""
+                render={({ field }) => (
+                  <TextField
+                    fullWidth
+                    type="date"
+                    label="Birth Date"
+                    {...field}
+                    error={Boolean(errors.birthDate)}
+                    helperText={errors.birthDate ? 'Birth Date is required' : ''}
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                  />
+                )}
               />
             </Grid>
             <Grid item xs={12}>
-              <TextField
-                fullWidth
-                select
-                label="Gender"
-                {...register('gender', { required: true })}
-                error={Boolean(errors.gender)}
-                helperText={errors.gender ? 'Gender is required' : ''}
-              >
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="other">Other</option>
-              </TextField>
+              <Controller
+                name="gender"
+                control={control}
+                defaultValue=""
+                render={({ field }) => (
+                  <TextField
+                    fullWidth
+                    select
+                    label="Gender"
+                    {...field}
+                    error={Boolean(errors.gender)}
+                    helperText={errors.gender ? 'Gender is required' : ''}
+                  >
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                  </TextField>
+                )}
+              />
             </Grid>
             <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Email"
-                {...register('email', {
+              <Controller
+                name="email"
+                control={control}
+                defaultValue=""
+                render={({ field }) => (
+                  <TextField
+                    fullWidth
+                    label="Email"
+                    {...field}
+                    error={Boolean(errors.email)}
+                    helperText={errors.email?.message || ''}
+                  />
+                )}
+                rules={{
                   required: 'Email is required',
-                  validate: validateEmail
-                })}
-                error={Boolean(errors.email)}
-                helperText={errors.email?.message || ''}
-              />
-            </Grid>
-            <Grid item xs={6}>
-              <TextField
-                fullWidth
-                type="password"
-                label="Password"
-                {...register('password', { required: true})}
-                error={Boolean(errors.password)}
-                helperText={errors.password ? 'Password is required' : ''}
-              />
-            </Grid>
-            <Grid item xs={6}>
-              <TextField
-                fullWidth
-                type="password"
-                label="Password Confirmation"
-                {...register('passwordConfirmation', { 
-                  required: true, 
-                  validate: validatePasswordConfirmation
-                })}
-                error={Boolean(errors.passwordConfirmation)}
-                helperText={errors.passwordConfirmation ? errors.passwordConfirmation.message : ''}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Phone Number"
-                {...register('phoneNumber', { required: true })}
-                value={phoneNumber}
-                onChange={onChange}
-                error={Boolean(errors.phoneNumber)}
-                helperText={errors.phoneNumber ? 'Please enter a valid phone number' : ''}
-              />
-            </Grid>
-            <Grid item xs={6}>
-              <TextField
-                fullWidth
-                select
-                label="Blood Group"
-                {...register('bloodGroup', { required: true })}
-                error={Boolean(errors.bloodGroup)}
-                helperText={errors.bloodGroup ? 'Blood Group is required' : ''}
-              >
-                <option value="A+">A+</option>
-                <option value="A-">A-</option>
-                <option value="B+">B+</option>
-                <option value="B-">B-</option>
-                <option value="AB+">AB+</option>
-                <option value="AB-">AB-</option>
-                <option value="O+">O+</option>
-                <option value="O-">O-</option>
-              </TextField>
-            </Grid>
-            <Grid item xs={6}>
-              <TextField
-                fullWidth
-                select
-                label="Donation Type"
-                {...register('donationType', { required: true })}
-                error={Boolean(errors.donationType)}
-                helperText={errors.donationType ? 'Donation Type is required' : ''}
-              >
-                <option value="">Select a donation type</option>
-                <option value="wholeBlood">Whole Blood Donation</option>
-                <option value="powerRed">Power Red Donation</option>
-                <option value="platelet">Platelet Donation</option>
-                <option value="plasma">Plasma Donation</option>
-              </TextField>
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                type="date"
-                label="Last Donation Date"
-                {...register('lastDonationDate', { required: true })}
-                error={Boolean(errors.lastDonationDate)}
-                helperText={
-                  errors.lastDonationDate
-                    ? 'Last Donation Date is required'
-                    : ''
-                }
-                InputLabelProps={{
-                  shrink: true,
+                  validate: validateEmail,
                 }}
+              />
+            </Grid>
+            <Grid item xs={6}>
+              <Controller
+                name="password"
+                control={control}
+                defaultValue=""
+                render={({ field }) => (
+                  <TextField
+                    fullWidth
+                    type="password"
+                    label="Password"
+                    {...field}
+                    error={Boolean(errors.password)}
+                    helperText={errors.password ? 'Password is required' : ''}
+                  />
+                )}
+              />
+            </Grid>
+            <Grid item xs={6}>
+              <Controller
+                name="passwordConfirmation"
+                control={control}
+                defaultValue=""
+                render={({ field }) => (
+                  <TextField
+                    fullWidth
+                    type="password"
+                    label="Password Confirmation"
+                    {...field}
+                    error={Boolean(errors.passwordConfirmation)}
+                    helperText={errors.passwordConfirmation ? errors.passwordConfirmation.message : ''}
+                  />
+                )}
+                rules={{
+                  required: 'Password Confirmation is required',
+                  validate: validatePasswordConfirmation,
+                }}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <Controller
+                name="phoneNumber"
+                control={control}
+                defaultValue=""
+                render={({ field }) => (
+                  <TextField
+                    fullWidth
+                    label="Phone Number"
+                    {...field}
+                    value={phoneNumber}
+                    onChange={onChange}
+                    error={Boolean(errors.phoneNumber)}
+                    helperText={errors.phoneNumber ? 'Please enter a valid phone number' : ''}
+                  />
+                )}
+              />
+            </Grid>
+            <Grid item xs={6}>
+              <Controller
+                name="bloodGroup"
+                control={control}
+                defaultValue=""
+                render={({ field }) => (
+                  <TextField
+                    fullWidth
+                    select
+                    label="Blood Group"
+                    {...field}
+                    error={Boolean(errors.bloodGroup)}
+                    helperText={errors.bloodGroup ? 'Blood Group is required' : ''}
+                  >
+                    <option value="A+">A+</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B-">B-</option>
+                    <option value="AB+">AB+</option>
+                    <option value="AB-">AB-</option>
+                    <option value="O+">O+</option>
+                    <option value="O-">O-</option>
+                  </TextField>
+                )}
+              />
+            </Grid>
+            <Grid item xs={6}>
+              <Controller
+                name="donationType"
+                control={control}
+                defaultValue=""
+                render={({ field }) => (
+                  <TextField
+                    fullWidth
+                    select
+                    label="Donation Type"
+                    {...field}
+                    error={Boolean(errors.donationType)}
+                    helperText={errors.donationType ? 'Donation Type is required' : ''}
+                  >
+                    <option value="">Select a donation type</option>
+                    <option value="wholeBlood">Whole Blood Donation</option>
+                    <option value="powerRed">Power Red Donation</option>
+                    <option value="platelet">Platelet Donation</option>
+                    <option value="plasma">Plasma Donation</option>
+                  </TextField>
+                )}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <Controller
+                name="lastDonationDate"
+                control={control}
+                defaultValue=""
+                render={({ field }) => (
+                  <TextField
+                    fullWidth
+                    type="date"
+                    label="Last Donation Date"
+                    {...field}
+                    error={Boolean(errors.lastDonationDate)}
+                    helperText={errors.lastDonationDate ? 'Last Donation Date is required' : ''}
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                  />
+                )}
               />
             </Grid>
             <Grid item xs={12}>
