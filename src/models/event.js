@@ -18,6 +18,9 @@ const EventSchema = new Schema({
 		type: String,
 		required: false,
 	},
+	image: {
+		type: Buffer,
+	},
 	location: {
 		type: String,
 		required: true,

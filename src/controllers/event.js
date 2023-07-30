@@ -2,9 +2,7 @@ const Event = require('../models/event');
 const User = require('../models/user');
 const { STATUS_CODE } = require('../utils/errors/httpStatusCode');
 const { validationResult } = require('express-validator');
-const { checkIfAdmin } = require('../utils/checks');
-const mongoose = require('mongoose');
-const { ObjectId } = mongoose.Types;
+const fs = require('fs');
 
 /**
  *
@@ -44,7 +42,9 @@ exports.createEvent = (req, res, next) => {
 		error.statusCode = STATUS_CODE.UNPROCESSABLE_ENTITY;
 		throw error;
 	}
-	const { title, subtitle, location, date, mapLink } = req.body;
+	const { title, subtitle, image, location, date, mapLink } = req.body;
+	const { path } = req.file;
+
 	const reference = `WEVENT${date.replaceAll('-', '')}`;
 	Event.findOne({ reference: reference }).then((event) => {
 		if (event) {
@@ -57,6 +57,7 @@ exports.createEvent = (req, res, next) => {
 		reference: reference,
 		title: title,
 		subtitle: subtitle,
+		image: fs.readFileSync(path),
 		location: location,
 		date: date,
 		mapLink: mapLink,
@@ -64,6 +65,10 @@ exports.createEvent = (req, res, next) => {
 	event
 		.save()
 		.then((result) => {
+			fs.unlink(path, function (err) {
+				if (err) return console.log(err);
+				console.log('file deleted successfully');
+			});
 			return res.status(STATUS_CODE.CREATED).json({
 				message: 'Event created successfully!',
 				post: event,
@@ -79,10 +84,8 @@ exports.createEvent = (req, res, next) => {
 
 exports.confirmPresence = (req, res, next) => {
 	const { eventReference } = req.body;
-	console.log('userId: ', req.userId);
 	User.findById(req.userId)
 		.then((user) => {
-			console.log('user: ', user);
 			Event.findOne({ reference: eventReference })
 				.then((event) => {
 					const eventExists = user.events.find(
@@ -100,7 +103,6 @@ exports.confirmPresence = (req, res, next) => {
 					return user.save();
 				})
 				.then((result) => {
-					console.log('result: ', result);
 					res.status(STATUS_CODE.OK).json({
 						message: 'Successfully added to attendees list!',
 					});
