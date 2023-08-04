@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const authRouter = require('./routes/auth');
+const donationRouter = require('./routes/donation');
 
 const config = require('../config.json');
 
