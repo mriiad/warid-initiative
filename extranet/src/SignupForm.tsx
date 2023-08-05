@@ -80,8 +80,7 @@ const SignupForm: React.FC = () => {
   const {
     handleSubmit,
     formState: { errors },
-    control,
-    getValues,
+    control
   } = useForm<FormData>();
 
   const signUpMutation = useMutation((data: FormData) => {
@@ -115,11 +114,20 @@ const SignupForm: React.FC = () => {
   };
 
   const [gender, setGender] = useState<string>('');
+  const [bloodGroup, setBloodGroup] = useState<string>('');
+  const [donationType, setdonationType] = useState<string>('');
 
-  const handleChange = (e) => {
+  const handleChangeGender = (e) => {
     setGender(e.target.value);
   }
   
+  const handleChangeBloodGroup = (e) => {
+    setBloodGroup(e.target.value);
+  }
+
+  const handleChangeDonationType = (e) => {
+    setdonationType(e.target.value);
+  }
   return (
     <Container maxWidth="md" className={container}>
     <div className={imageContainer}>
@@ -218,7 +226,7 @@ const SignupForm: React.FC = () => {
                   value={gender}
                   label="Gender"
                   required
-                  onChange={handleChange}
+                  onChange={handleChangeGender}
                   error={Boolean(errors.gender)}
                 >
                   <MenuItem value="male">Male</MenuItem>
@@ -290,9 +298,9 @@ const SignupForm: React.FC = () => {
                 <Select
                   labelId="demo-simple-select-label"
                   id="demo-simple-select"
-                  value={gender}
+                  value={bloodGroup}
                   label="Blood Group"
-                  onChange={handleChange}
+                  onChange={handleChangeBloodGroup}
                   error={Boolean(errors.bloodGroup)}
                 >
                   <MenuItem value="A+">A+</MenuItem>
@@ -312,9 +320,9 @@ const SignupForm: React.FC = () => {
                   <Select
                     labelId="demo-simple-select-label"
                     id="demo-simple-select"
-                    value={gender}
+                    value={donationType}
                     label="Donation Type"
-                    onChange={handleChange}
+                    onChange={handleChangeDonationType}
                     error={Boolean(errors.donationType)}
                   >
                     <MenuItem value="wholeBlood">Whole Blood Donation</MenuItem>
