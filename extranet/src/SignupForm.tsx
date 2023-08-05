@@ -23,7 +23,7 @@ interface FormData {
 
 const useStyles = makeStyles({
   formWrapper: {
-    background: '#EDE4FF', 
+    background: 'rgba(252, 252, 252, 0.25)', 
     borderRadius: '20px',
     padding: '20px',
     marginTop: '20px',
@@ -54,7 +54,7 @@ const useStyles = makeStyles({
     width: '55px',
     display: 'block',
     margin: '8px auto 0',
-    backgroundColor: '#6528F7',
+    backgroundColor: 'rgb(59, 42, 130)'
   },
   button: {
     background: 'linear-gradient(90deg, rgba(118,5,186,1) 29%, rgba(159,7,204,1) 61%)',
@@ -69,10 +69,13 @@ const useStyles = makeStyles({
       transform: 'scale(1.1)',
     },
   },
+  signUp: {
+    color: 'rgb(255, 48, 103)'
+  },
 });
 
 const SignupForm: React.FC = () => {
-  const { container, imageContainer, image, formContainer, bar, button, formWrapper } = useStyles();
+  const { container, imageContainer, image, formContainer, bar, button, formWrapper, signUp } = useStyles();
   const {
     handleSubmit,
     formState: { errors },
@@ -111,8 +114,8 @@ const SignupForm: React.FC = () => {
   };
 
   const validatePasswordConfirmation = (value) => {
-    const password = getValues('password'); // Get the value of the password field
-    return password === value || 'Passwords do not match'; // Compare with the confirmation password field
+    const password = getValues('password');
+    return password === value || 'Passwords do not match';
   };
 
   const [gender, setGender] = useState<string>('');
@@ -132,7 +135,7 @@ const SignupForm: React.FC = () => {
     </div>
     <div className={formContainer}>
       <Box className={formWrapper}>
-        <Typography variant="h3" align="center" gutterBottom>
+        <Typography variant="h3" align="center" gutterBottom className={signUp}>
           Sign Up
           <span className={bar}></span>
         </Typography>
