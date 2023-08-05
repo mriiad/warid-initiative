@@ -5,7 +5,6 @@ import React, { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useMutation } from 'react-query';
 
-
 interface FormData {
   username: string;
   firstName: string;
@@ -14,7 +13,6 @@ interface FormData {
   email: string;
   gender: string;
   password: string;
-  passwordConfirmation: string;
   phoneNumber: string;
   bloodGroup: string;
   lastDonationDate: string;
@@ -57,7 +55,7 @@ const useStyles = makeStyles({
     backgroundColor: 'rgb(59, 42, 130)'
   },
   button: {
-    background: 'linear-gradient(90deg, rgba(118,5,186,1) 29%, rgba(159,7,204,1) 61%)',
+    background: 'linear-gradient(90deg, rgb(193, 46, 111) 100%, rgba(159,7,204,1) 0%)',
     borderRadius: '10px',
     padding: '10px 20px',
     fontSize: '16px',
@@ -72,10 +70,13 @@ const useStyles = makeStyles({
   signUp: {
     color: 'rgb(255, 48, 103)'
   },
+  form: {
+    textAlign: 'center'
+  },
 });
 
 const SignupForm: React.FC = () => {
-  const { container, imageContainer, image, formContainer, bar, button, formWrapper, signUp } = useStyles();
+  const { container, imageContainer, image, formContainer, bar, button, formWrapper, signUp, form } = useStyles();
   const {
     handleSubmit,
     formState: { errors },
@@ -113,17 +114,12 @@ const SignupForm: React.FC = () => {
     return emailRegex.test(value) || 'Please enter a valid email address.';
   };
 
-  const validatePasswordConfirmation = (value) => {
-    const password = getValues('password');
-    return password === value || 'Passwords do not match';
-  };
-
   const [gender, setGender] = useState<string>('');
 
   const handleChange = (e) => {
     setGender(e.target.value);
   }
-
+  
   return (
     <Container maxWidth="md" className={container}>
     <div className={imageContainer}>
@@ -139,7 +135,7 @@ const SignupForm: React.FC = () => {
           Sign Up
           <span className={bar}></span>
         </Typography>
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={handleSubmit(onSubmit)} className={form}>
           <Grid container spacing={2}>
             <Grid item xs={12}>
               <Controller
