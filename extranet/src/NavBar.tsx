@@ -13,6 +13,8 @@ const useStyles = makeStyles({
     justifyContent: 'space-between',
     backgroundColor: 'green',
     padding: '10px',
+    zIndex: 100,
+    position: 'sticky',
   },
   logo: {
     marginRight: '10px',

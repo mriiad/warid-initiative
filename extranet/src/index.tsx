@@ -1,18 +1,20 @@
-// Import necessary packages
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { QueryClient, QueryClientProvider } from 'react-query';
-import App from './App'; // Your main component (SignUp component)
+import { ThemeProvider } from 'styled-components';
+import App from './App';
+import './index.css';
+import theme from './theme';
 
-// Create a new QueryClient instance
 const queryClient = new QueryClient();
 
-// Wrap your app with the QueryClientProvider
 ReactDOM.render(
-  <React.StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <App />
-    </QueryClientProvider>
-  </React.StrictMode>,
-  document.getElementById('root')
+	<React.StrictMode>
+		<QueryClientProvider client={queryClient}>
+			<ThemeProvider theme={theme}>
+				<App />
+			</ThemeProvider>
+		</QueryClientProvider>
+	</React.StrictMode>,
+	document.getElementById('root')
 );
