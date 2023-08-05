@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useMutation } from 'react-query';
 
-// TO-DO : react-query
+
 interface FormData {
   username: string;
   firstName: string;
@@ -147,6 +147,7 @@ const SignupForm: React.FC = () => {
                   <TextField
                     fullWidth
                     label="Username"
+                    required
                     {...field}
                     error={Boolean(errors.username)}
                     helperText={errors.username ? 'Username is required' : ''}
@@ -163,6 +164,7 @@ const SignupForm: React.FC = () => {
                   <TextField
                     fullWidth
                     label="First Name"
+                    required
                     {...field}
                     error={Boolean(errors.firstName)}
                     helperText={errors.firstName ? 'First Name is required' : ''}
@@ -179,6 +181,7 @@ const SignupForm: React.FC = () => {
                   <TextField
                     fullWidth
                     label="Last Name"
+                    required
                     {...field}
                     error={Boolean(errors.lastName)}
                     helperText={errors.lastName ? 'Last Name is required' : ''}
@@ -195,6 +198,7 @@ const SignupForm: React.FC = () => {
                   <TextField
                     fullWidth
                     type="date"
+                    required
                     label="Birth Date"
                     {...field}
                     error={Boolean(errors.birthDate)}
@@ -214,6 +218,7 @@ const SignupForm: React.FC = () => {
                   id="demo-simple-select"
                   value={gender}
                   label="Gender"
+                  required
                   onChange={handleChange}
                   error={Boolean(errors.gender)}
                 >
@@ -231,6 +236,7 @@ const SignupForm: React.FC = () => {
                   <TextField
                     fullWidth
                     label="Email"
+                    required
                     {...field}
                     error={Boolean(errors.email)}
                     helperText={errors.email?.message || ''}
@@ -251,6 +257,7 @@ const SignupForm: React.FC = () => {
                   <TextField
                     fullWidth
                     type="password"
+                    required
                     label="Password"
                     {...field}
                     error={Boolean(errors.password)}
@@ -268,6 +275,7 @@ const SignupForm: React.FC = () => {
                   <TextField
                     fullWidth
                     label="Phone Number"
+                    required
                     {...field}
                     value={phoneNumber}
                     onChange={onChange}
