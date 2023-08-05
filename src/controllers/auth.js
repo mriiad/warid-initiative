@@ -6,7 +6,7 @@ const Donation = require('../models/donation');
 const User = require('../models/user');
 const { validationResult } = require('express-validator');
 const config = require('../../config.json');
-const STATUS_CODE = require('../utils/errors/httpStatusCode');
+const { STATUS_CODE } = require('../utils/errors/httpStatusCode');
 
 const sendgridTransport = require('nodemailer-sendgrid-transport');
 
@@ -35,7 +35,7 @@ exports.signup = (req, res, next) => {
 	const errors = validationResult(req);
 	if (!errors.isEmpty()) {
 		const error = new Error('Validation failed.');
-		error.statusCode = STATUS_CODE.UNPROCESSABLE_ENTITY;
+		error.statusCode = STATUS_CODE.BAD_REQUEST;
 		throw error;
 	}
 	const token = jwt.sign({ email: req.body.email }, config.secret);

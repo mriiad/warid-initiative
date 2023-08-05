@@ -1,4 +1,4 @@
-import { Box, Button, Container, Grid, TextField, Typography } from '@mui/material';
+import { Box, Button, Container, FormControl, Grid, InputLabel, MenuItem, Select, TextField, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import axios from 'axios';
 import React, { useState } from 'react';
@@ -84,6 +84,7 @@ const SignupForm: React.FC = () => {
     return axios.put('http://localhost:3000/api/auth/signup', data);
   });
 
+  const [isFormSubmitted, setIsFormSubmitted] = useState<boolean>(false);
   const onSubmit = (formData: FormData) => {
     signUpMutation.mutate(formData, {
       onSuccess: () => {
@@ -95,9 +96,7 @@ const SignupForm: React.FC = () => {
       },
     });
   };
-
-  const [isFormSubmitted, setIsFormSubmitted] = useState<boolean>(false);
-
+  
   const [phoneNumber, setPhoneNumber] = useState('');
   const onChange = (e) => {
     const re = /^[0-9\b]+$/;
@@ -115,6 +114,12 @@ const SignupForm: React.FC = () => {
     const password = getValues('password'); // Get the value of the password field
     return password === value || 'Passwords do not match'; // Compare with the confirmation password field
   };
+
+  const [gender, setGender] = useState<string>('');
+
+  const handleChange = (e) => {
+    setGender(e.target.value);
+  }
 
   return (
     <Container maxWidth="md" className={container}>
@@ -202,25 +207,20 @@ const SignupForm: React.FC = () => {
               />
             </Grid>
             <Grid item xs={12}>
-              <Controller
-                name="gender"
-                control={control}
-                defaultValue=""
-                render={({ field }) => (
-                  <TextField
-                    fullWidth
-                    select
-                    label="Gender"
-                    {...field}
-                    error={Boolean(errors.gender)}
-                    helperText={errors.gender ? 'Gender is required' : ''}
-                  >
-                    <option value="male">Male</option>
-                    <option value="female">Female</option>
-                    <option value="other">Other</option>
-                  </TextField>
-                )}
-              />
+              <FormControl fullWidth>
+                <InputLabel id="demo-simple-select-label">Gender</InputLabel>
+                <Select
+                  labelId="demo-simple-select-label"
+                  id="demo-simple-select"
+                  value={gender}
+                  label="Gender"
+                  onChange={handleChange}
+                  error={Boolean(errors.gender)}
+                >
+                  <MenuItem value="male">Male</MenuItem>
+                  <MenuItem value="female">Female</MenuItem>
+                </Select>
+              </FormControl>
             </Grid>
             <Grid item xs={12}>
               <Controller
@@ -242,7 +242,7 @@ const SignupForm: React.FC = () => {
                 }}
               />
             </Grid>
-            <Grid item xs={6}>
+            <Grid item xs={12}>
               <Controller
                 name="password"
                 control={control}
@@ -257,27 +257,6 @@ const SignupForm: React.FC = () => {
                     helperText={errors.password ? 'Password is required' : ''}
                   />
                 )}
-              />
-            </Grid>
-            <Grid item xs={6}>
-              <Controller
-                name="passwordConfirmation"
-                control={control}
-                defaultValue=""
-                render={({ field }) => (
-                  <TextField
-                    fullWidth
-                    type="password"
-                    label="Password Confirmation"
-                    {...field}
-                    error={Boolean(errors.passwordConfirmation)}
-                    helperText={errors.passwordConfirmation ? errors.passwordConfirmation.message : ''}
-                  />
-                )}
-                rules={{
-                  required: 'Password Confirmation is required',
-                  validate: validatePasswordConfirmation,
-                }}
               />
             </Grid>
             <Grid item xs={12}>
@@ -299,53 +278,44 @@ const SignupForm: React.FC = () => {
               />
             </Grid>
             <Grid item xs={6}>
-              <Controller
-                name="bloodGroup"
-                control={control}
-                defaultValue=""
-                render={({ field }) => (
-                  <TextField
-                    fullWidth
-                    select
-                    label="Blood Group"
-                    {...field}
-                    error={Boolean(errors.bloodGroup)}
-                    helperText={errors.bloodGroup ? 'Blood Group is required' : ''}
-                  >
-                    <option value="A+">A+</option>
-                    <option value="A-">A-</option>
-                    <option value="B+">B+</option>
-                    <option value="B-">B-</option>
-                    <option value="AB+">AB+</option>
-                    <option value="AB-">AB-</option>
-                    <option value="O+">O+</option>
-                    <option value="O-">O-</option>
-                  </TextField>
-                )}
-              />
+              <FormControl fullWidth>
+                <InputLabel id="demo-simple-select-label">Blood Group</InputLabel>
+                <Select
+                  labelId="demo-simple-select-label"
+                  id="demo-simple-select"
+                  value={gender}
+                  label="Blood Group"
+                  onChange={handleChange}
+                  error={Boolean(errors.bloodGroup)}
+                >
+                  <MenuItem value="A+">A+</MenuItem>
+                  <MenuItem value="A-">A-</MenuItem>
+                  <MenuItem value="B+">B+</MenuItem>
+                  <MenuItem value="B-">B-</MenuItem>
+                  <MenuItem value="AB+">AB+</MenuItem>
+                  <MenuItem value="AB-">AB-</MenuItem>
+                  <MenuItem value="O+">O+</MenuItem>
+                  <MenuItem value="O-">O-</MenuItem>
+                </Select>
+              </FormControl>
             </Grid>
             <Grid item xs={6}>
-              <Controller
-                name="donationType"
-                control={control}
-                defaultValue=""
-                render={({ field }) => (
-                  <TextField
-                    fullWidth
-                    select
+              <FormControl fullWidth>
+                  <InputLabel id="demo-simple-select-label">Donation Type</InputLabel>
+                  <Select
+                    labelId="demo-simple-select-label"
+                    id="demo-simple-select"
+                    value={gender}
                     label="Donation Type"
-                    {...field}
+                    onChange={handleChange}
                     error={Boolean(errors.donationType)}
-                    helperText={errors.donationType ? 'Donation Type is required' : ''}
                   >
-                    <option value="">Select a donation type</option>
-                    <option value="wholeBlood">Whole Blood Donation</option>
-                    <option value="powerRed">Power Red Donation</option>
-                    <option value="platelet">Platelet Donation</option>
-                    <option value="plasma">Plasma Donation</option>
-                  </TextField>
-                )}
-              />
+                    <MenuItem value="wholeBlood">Whole Blood Donation</MenuItem>
+                    <MenuItem value="powerRed">Power Red Donation</MenuItem>
+                    <MenuItem value="platelet">Platelet Donation</MenuItem>
+                    <MenuItem value="plasma">Plasma Donation</MenuItem>
+                  </Select>
+                </FormControl>
             </Grid>
             <Grid item xs={12}>
               <Controller
