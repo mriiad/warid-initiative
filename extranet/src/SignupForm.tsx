@@ -24,10 +24,18 @@ interface FormData {
 
 const FormContainer = styled.form`
 	background: #ede4ff;
-	border-radius: 20px;
-	padding: 20px;
+	padding: 40px;
 	margin-top: 20px;
-	width: 50%;
+	width: 600px;
+	border-radius: 30px;
+	border: 1px solid #fff;
+	box-shadow: 0px 20px 80px rgba(57, 41, 127, 0.06);
+	background-color: rgba(252, 252, 252, 0.25);
+	background-image: radial-gradient(
+		circle at 50% 0,
+		rgba(255, 255, 255, 0.8),
+		rgba(255, 255, 255, 0.2) 20%
+	);
 `;
 
 const useStyles = makeStyles((theme) => ({
@@ -75,15 +83,8 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const SignupForm: React.FC = () => {
-	const {
-		container,
-		imageContainer,
-		image,
-		formContainer,
-		bar,
-		button,
-		formWrapper,
-	} = useStyles();
+	const { container, imageContainer, image, formContainer, bar, button } =
+		useStyles();
 	const {
 		handleSubmit,
 		formState: { errors },
@@ -133,7 +134,7 @@ const SignupForm: React.FC = () => {
 				<img src='your_image_url.jpg' alt='logo' className={image} />
 			</div>
 			<div className={formContainer}>
-				<Box className={formWrapper}>
+				<Box>
 					<Typography variant='h3' align='center' gutterBottom>
 						Sign Up
 						<span className={bar}></span>
