@@ -6,15 +6,22 @@ const { validationResult } = require('express-validator');
 const config = require('../../config.json');
 const { STATUS_CODE } = require('../utils/errors/httpStatusCode');
 
-const sendgridTransport = require('nodemailer-sendgrid-transport');
+const { email, password, host, secureConnection, port, ciphers, requireTLS } =
+	config.mailerConfig;
 
-const transporter = nodemailer.createTransport(
-	sendgridTransport({
-		auth: {
-			api_key: config.senderKey,
-		},
-	})
-);
+const transporter = nodemailer.createTransport({
+	host: host,
+	secureConnection: secureConnection,
+	port: port,
+	tls: {
+		ciphers: ciphers,
+	},
+	requireTLS: requireTLS,
+	auth: {
+		user: email,
+		pass: password,
+	},
+});
 
 exports.signup = (req, res, next) => {
 	const body = req.body;
@@ -47,7 +54,7 @@ exports.signup = (req, res, next) => {
 				userId: result._id,
 			});
 			return transporter.sendMail({
-				from: config.email,
+				from: 'do-not-reply@warid.ma',
 				to: email,
 				subject: 'Activation du compte',
 				text: `Bonjour M. ${username}, veuillez activez votre compte s'il vous plait. Merci`,
