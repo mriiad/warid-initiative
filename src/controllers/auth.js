@@ -1,8 +1,6 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const mongoose = require('mongoose');
 const nodemailer = require('nodemailer');
-const Donation = require('../models/donation');
 const User = require('../models/user');
 const { validationResult } = require('express-validator');
 const config = require('../../config.json');
@@ -20,18 +18,7 @@ const transporter = nodemailer.createTransport(
 
 exports.signup = (req, res, next) => {
 	const body = req.body;
-	const {
-		username,
-		firstName,
-		lastName,
-		birthDate,
-		email,
-		password,
-		passwordConfirmation,
-		gender,
-		phoneNumber,
-	} = body;
-	const { bloodGroup, lastDonationDate, donationType, disease } = body;
+	const { username, email, password, phoneNumber } = body;
 	const errors = validationResult(req);
 	if (!errors.isEmpty()) {
 		const error = new Error('Validation failed.');
@@ -43,19 +30,10 @@ exports.signup = (req, res, next) => {
 	bcrypt
 		.hash(password, 12)
 		.then((hashedPw) => {
-			if (password !== passwordConfirmation) {
-				const error = new Error('Password and Password Confirmation do not match.');
-				error.statusCode = STATUS_CODE.UNPROCESSABLE_ENTITY;
-				throw error;
-			  }
 			const user = new User({
 				username,
-				firstName,
-				lastName,
-				birthDate,
 				email,
 				password: hashedPw,
-				gender,
 				phoneNumber,
 				isAdmin: false,
 				isActive: false,
@@ -64,14 +42,6 @@ exports.signup = (req, res, next) => {
 			return user.save();
 		})
 		.then((result) => {
-			const donation = new Donation({
-				bloodGroup,
-				lastDonationDate,
-				donationType,
-				disease,
-				userId: new mongoose.Types.ObjectId(result._id),
-			});
-			donation.save();
 			res.status(201).json({
 				message: 'User created!',
 				userId: result._id,
@@ -82,15 +52,15 @@ exports.signup = (req, res, next) => {
 				subject: 'Activation du compte',
 				text: `Bonjour M. ${username}, veuillez activez votre compte s'il vous plait. Merci`,
 				html: `<h1>Email Confirmation</h1>
-        <h2>Hello ${username}</h2>
-        <p>Thank you for subscribing. Please confirm your email by clicking on the following link</p>
-        <a href=${activationLink}> Click here</a>
-        </div>`,
+					<h2>Hello ${username}</h2>
+					<p>Thank you for subscribing. Please confirm your email by clicking on the following link</p>
+					<a href=${activationLink}> Click here</a>
+					</div>`,
 			});
 		})
 		.catch((err) => {
 			if (!err.statusCode) {
-				err.statusCode = 500;
+				err.statusCode = STATUS_CODE.INTERNAL_SERVER;
 			}
 			next(err);
 		});
@@ -115,7 +85,7 @@ exports.login = (req, res, next) => {
 		})
 		.then((isEqual) => {
 			if (!isEqual) {
-				const error = new BaseError('Wrong password!');
+				const error = new Error('Wrong password.');
 				error.statusCode = STATUS_CODE.UNAUTHORIZED;
 				throw error;
 			}

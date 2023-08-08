@@ -8,6 +8,7 @@ const AppContainer = styled.div`
 	font-family: Arial, sans-serif;
 	margin: 0;
 	padding: 0;
+	min-height: 100vh;
 `;
 
 const ContentContainer = styled.div`
