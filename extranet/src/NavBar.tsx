@@ -2,7 +2,6 @@ import { makeStyles } from '@mui/styles';
 import React from 'react';
 import { Link, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 
-
 const Home = () => <div>Home Page</div>;
 const About = () => <div>About Page</div>;
 const Contact = () => <div>Contact Page</div>;
@@ -14,6 +13,8 @@ const useStyles = makeStyles({
     justifyContent: 'space-between',
     backgroundColor: 'green',
     padding: '10px',
+    zIndex: 100,
+    position: 'sticky',
   },
   logo: {
     marginRight: '10px',

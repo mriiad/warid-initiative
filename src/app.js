@@ -13,7 +13,7 @@ const app = express();
 
 app.use(bodyParser.json());
 
-const allowedOrigins = ['http://localhost:3001'];
+const allowedOrigins = ['http://localhost:3001', 'http://localhost:3000'];
 
 app.use(
 	cors({

@@ -1,217 +1,231 @@
-import { Button, Container, Grid, TextField } from '@mui/material';
+import {
+	Box,
+	Button,
+	Container,
+	Grid,
+	TextField,
+	Typography,
+} from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import React from 'react';
-import { useForm } from 'react-hook-form';
-
+import axios from 'axios';
+import React, { useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
+import 'react-phone-number-input/style.css';
+import { useMutation } from 'react-query';
 
 interface FormData {
-  username: string;
-  firstName: string;
-  lastName: string;
-  birthDate: string;
-  email: string;
-  gender: string;
-  password: string;
-  phoneNumber: string;
-  bloodGroup: string;
-  lastDonationDate: string;
-  donationType: string;
+	username: string;
+	firstName: string;
+	lastName: string;
+	birthDate: string;
+	email: string;
+	gender: string;
+	password: string;
+	phoneNumber: string;
+	bloodGroup: string;
+	lastDonationDate: string;
+	donationType: string;
 }
 
 const useStyles = makeStyles({
-    container: {
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      height: '100vh',
-    },
-    imageContainer: {
-      flexBasis: '50%',
-    },
-    image: {
-      width: '100%',
-      height: 'auto',
-    },
-    formContainer: {
-      flexBasis: '50%',
-      padding: '20px',
-    },
-  });
-  
+	formWrapper: {
+		background: 'rgba(252, 252, 252, 0.25)',
+		borderRadius: '20px',
+		padding: '20px',
+		marginTop: '20px',
+		width: '70%',
+	},
+	container: {
+		display: 'flex',
+		justifyContent: 'center',
+		alignItems: 'center',
+	},
+	imageContainer: {
+		flexBasis: '100%',
+	},
+	image: {
+		width: '100%',
+		height: 'auto',
+	},
+	formContainer: {
+		display: 'flex',
+		flexDirection: 'column',
+		justifyContent: 'center',
+		alignItems: 'center',
+	},
+	bar: {
+		height: '4px',
+		width: '55px',
+		display: 'block',
+		margin: '8px auto 0',
+		backgroundColor: 'rgb(59, 42, 130)',
+	},
+	button: {
+		background:
+			'linear-gradient(90deg, rgb(193, 46, 111) 100%, rgba(159,7,204,1) 0%)',
+		borderRadius: '10px',
+		padding: '10px 20px',
+		fontSize: '16px',
+		border: 'none',
+		boxShadow: '0px 2px 10px rgba(0, 0, 0, 0.2)',
+		transition: 'transform 0.3s ease',
+		cursor: 'pointer',
+		'&:hover': {
+			transform: 'scale(1.1)',
+		},
+	},
+	signUp: {
+		color: 'rgb(255, 48, 103)',
+	},
+	form: {
+		textAlign: 'center',
+	},
+});
 
 const SignupForm: React.FC = () => {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<FormData>();
+	const { container, formContainer, bar, button, formWrapper, signUp, form } =
+		useStyles();
+	const {
+		handleSubmit,
+		formState: { errors },
+		control,
+	} = useForm<FormData>();
 
-  const classes = useStyles();
-  
-  const onSubmit = async (data: FormData) => {
-    try {
-      const response = await fetch('API_ENDPOINT_URL', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
+	const signUpMutation = useMutation((data: FormData) => {
+		return axios.put('http://localhost:3000/api/auth/signup', data);
+	});
 
-      if (response.ok) {
-        // Handle successful form submission
-        console.log('Form submitted successfully!');
-      } else {
-        // Handle error response
-        console.error('Failed to submit the form.');
-      }
-    } catch (error) {
-      // Handle network or other errors
-      console.error('An error occurred while submitting the form:', error);
-    }
-  };
+	const [isFormSubmitted, setIsFormSubmitted] = useState<boolean>(false);
+	const onSubmit = (formData: FormData) => {
+		signUpMutation.mutate(formData, {
+			onSuccess: () => {
+				console.log('Form submitted successfully!');
+				setIsFormSubmitted(true);
+			},
+			onError: (error) => {
+				console.error('Error submitting form:', error);
+			},
+		});
+	};
 
-  return (
-    <Container maxWidth="md" className={classes.container}>
-    <div className={classes.imageContainer}>
-      <img
-        src="your_image_url.jpg"
-        alt="logo"
-        className={classes.image}
-      />
-    </div>
-    <div className={classes.formContainer}>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <Grid container spacing={2}>
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="Username"
-              {...register('username', { required: true })}
-              error={Boolean(errors.username)}
-              helperText={errors.username ? 'Username is required' : ''}
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="First Name"
-              {...register('firstName', { required: true })}
-              error={Boolean(errors.firstName)}
-              helperText={errors.firstName ? 'First Name is required' : ''}
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="Last Name"
-              {...register('lastName', { required: true })}
-              error={Boolean(errors.lastName)}
-              helperText={errors.lastName ? 'Last Name is required' : ''}
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              type="date"
-              label="Birth Date"
-              {...register('birthDate', { required: true })}
-              error={Boolean(errors.birthDate)}
-              helperText={errors.birthDate ? 'Birth Date is required' : ''}
-              InputLabelProps={{
-                shrink: true,
-              }}
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="Email"
-              {...register('email', { required: true })}
-              error={Boolean(errors.email)}
-              helperText={errors.email ? 'Email is required' : ''}
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              select
-              label="Gender"
-              {...register('gender', { required: true })}
-              error={Boolean(errors.gender)}
-              helperText={errors.gender ? 'Gender is required' : ''}
-            >
-              <option value="male">Male</option>
-              <option value="female">Female</option>
-              <option value="other">Other</option>
-            </TextField>
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              type="password"
-              label="Password"
-              {...register('password', { required: true })}
-              error={Boolean(errors.password)}
-              helperText={errors.password ? 'Password is required' : ''}
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="Phone Number"
-              {...register('phoneNumber', { required: true })}
-              error={Boolean(errors.phoneNumber)}
-              helperText={errors.phoneNumber ? 'Phone Number is required' : ''}
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="Blood Group"
-              {...register('bloodGroup', { required: true })}
-              error={Boolean(errors.bloodGroup)}
-              helperText={errors.bloodGroup ? 'Blood Group is required' : ''}
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              type="date"
-              label="Last Donation Date"
-              {...register('lastDonationDate', { required: true })}
-              error={Boolean(errors.lastDonationDate)}
-              helperText={
-                errors.lastDonationDate
-                  ? 'Last Donation Date is required'
-                  : ''
-              }
-              InputLabelProps={{
-                shrink: true,
-              }}
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="Donation Type"
-              {...register('donationType', { required: true })}
-              error={Boolean(errors.donationType)}
-              helperText={
-                errors.donationType ? 'Donation Type is required' : ''
-              }
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <Button type="submit" variant="contained" color="primary">
-              Submit
-            </Button>
-          </Grid>
-        </Grid>
-      </form>
-      </div>
-    </Container>
-  );
+	const [phoneNumber, setPhoneNumber] = useState('');
+	const onChange = (e) => {
+		const re = /^[0-9\b]+$/;
+		if (e.target.value === '' || re.test(e.target.value)) {
+			setPhoneNumber(e.target.value);
+		}
+	};
+
+	const validateEmail = (value) => {
+		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+		return emailRegex.test(value) || 'Please enter a valid email address.';
+	};
+
+	return (
+		<Container maxWidth='md' className={container}>
+			<div className={formContainer}>
+				<Box className={formWrapper}>
+					<Typography
+						variant='h3'
+						align='center'
+						gutterBottom
+						className={signUp}
+					>
+						Sign Up
+						<span className={bar}></span>
+					</Typography>
+					<form onSubmit={handleSubmit(onSubmit)} className={form}>
+						<Grid container spacing={2}>
+							<Grid item xs={12}>
+								<Controller
+									name='username'
+									control={control}
+									defaultValue=''
+									render={({ field }) => (
+										<TextField
+											fullWidth
+											label='Username'
+											required
+											{...field}
+											error={Boolean(errors.username)}
+											helperText={errors.username ? 'Username is required' : ''}
+										/>
+									)}
+								/>
+							</Grid>
+							<Grid item xs={12}>
+								<Controller
+									name='email'
+									control={control}
+									defaultValue=''
+									render={({ field }) => (
+										<TextField
+											fullWidth
+											label='Email'
+											required
+											{...field}
+											error={Boolean(errors.email)}
+											helperText={errors.email?.message || ''}
+										/>
+									)}
+									rules={{
+										required: 'Email is required',
+										validate: validateEmail,
+									}}
+								/>
+							</Grid>
+							<Grid item xs={12}>
+								<Controller
+									name='password'
+									control={control}
+									defaultValue=''
+									render={({ field }) => (
+										<TextField
+											fullWidth
+											type='password'
+											required
+											label='Password'
+											{...field}
+											error={Boolean(errors.password)}
+											helperText={errors.password ? 'Password is required' : ''}
+										/>
+									)}
+								/>
+							</Grid>
+							<Grid item xs={12}>
+								<Controller
+									name='phoneNumber'
+									control={control}
+									defaultValue=''
+									render={({ field }) => (
+										<TextField
+											fullWidth
+											label='Phone number'
+											type='tel'
+											required
+											{...field}
+											error={Boolean(errors.username)}
+											helperText={errors.username ? 'Username is required' : ''}
+										/>
+									)}
+								/>
+							</Grid>
+							<Grid item xs={12}>
+								<Button
+									type='submit'
+									color='primary'
+									style={{ color: 'white' }}
+									className={button}
+								>
+									Submit
+								</Button>
+							</Grid>
+						</Grid>
+					</form>
+				</Box>
+			</div>
+		</Container>
+	);
 };
 
 export default SignupForm;
