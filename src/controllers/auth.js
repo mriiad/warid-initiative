@@ -1,40 +1,35 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const mongoose = require('mongoose');
 const nodemailer = require('nodemailer');
-const Donation = require('../models/donation');
 const User = require('../models/user');
 const { validationResult } = require('express-validator');
 const config = require('../../config.json');
-const STATUS_CODE = require('../utils/errors/httpStatusCode');
+const { STATUS_CODE } = require('../utils/errors/httpStatusCode');
 
-const sendgridTransport = require('nodemailer-sendgrid-transport');
+const { email, password, host, secureConnection, port, ciphers, requireTLS } =
+	config.mailerConfig;
 
-const transporter = nodemailer.createTransport(
-	sendgridTransport({
-		auth: {
-			api_key: config.senderKey,
-		},
-	})
-);
+const transporter = nodemailer.createTransport({
+	host: host,
+	secureConnection: secureConnection,
+	port: port,
+	tls: {
+		ciphers: ciphers,
+	},
+	requireTLS: requireTLS,
+	auth: {
+		user: email,
+		pass: password,
+	},
+});
 
 exports.signup = (req, res, next) => {
 	const body = req.body;
-	const {
-		username,
-		firstName,
-		lastName,
-		birthDate,
-		email,
-		password,
-		gender,
-		phoneNumber,
-	} = body;
-	const { bloodGroup, lastDonationDate, donationType, disease } = body;
+	const { username, email, password, phoneNumber } = body;
 	const errors = validationResult(req);
 	if (!errors.isEmpty()) {
 		const error = new Error('Validation failed.');
-		error.statusCode = STATUS_CODE.UNPROCESSABLE_ENTITY;
+		error.statusCode = STATUS_CODE.BAD_REQUEST;
 		throw error;
 	}
 	const token = jwt.sign({ email: req.body.email }, config.secret);
@@ -44,12 +39,8 @@ exports.signup = (req, res, next) => {
 		.then((hashedPw) => {
 			const user = new User({
 				username,
-				firstName,
-				lastName,
-				birthDate,
 				email,
 				password: hashedPw,
-				gender,
 				phoneNumber,
 				isAdmin: false,
 				isActive: false,
@@ -58,33 +49,25 @@ exports.signup = (req, res, next) => {
 			return user.save();
 		})
 		.then((result) => {
-			const donation = new Donation({
-				bloodGroup,
-				lastDonationDate,
-				donationType,
-				disease,
-				userId: new mongoose.Types.ObjectId(result._id),
-			});
-			donation.save();
 			res.status(201).json({
 				message: 'User created!',
 				userId: result._id,
 			});
 			return transporter.sendMail({
-				from: config.email,
+				from: 'do-not-reply@warid.ma',
 				to: email,
 				subject: 'Activation du compte',
 				text: `Bonjour M. ${username}, veuillez activez votre compte s'il vous plait. Merci`,
 				html: `<h1>Email Confirmation</h1>
-        <h2>Hello ${username}</h2>
-        <p>Thank you for subscribing. Please confirm your email by clicking on the following link</p>
-        <a href=${activationLink}> Click here</a>
-        </div>`,
+					<h2>Hello ${username}</h2>
+					<p>Thank you for subscribing. Please confirm your email by clicking on the following link</p>
+					<a href=${activationLink}> Click here</a>
+					</div>`,
 			});
 		})
 		.catch((err) => {
 			if (!err.statusCode) {
-				err.statusCode = 500;
+				err.statusCode = STATUS_CODE.INTERNAL_SERVER;
 			}
 			next(err);
 		});
@@ -109,7 +92,7 @@ exports.login = (req, res, next) => {
 		})
 		.then((isEqual) => {
 			if (!isEqual) {
-				const error = new BaseError('Wrong password!');
+				const error = new Error('Wrong password.');
 				error.statusCode = STATUS_CODE.UNAUTHORIZED;
 				throw error;
 			}
