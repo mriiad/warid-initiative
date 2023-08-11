@@ -20,6 +20,7 @@ const EventSchema = new Schema({
 	},
 	image: {
 		type: Buffer,
+		required: false,
 	},
 	location: {
 		type: String,

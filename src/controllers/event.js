@@ -46,7 +46,9 @@ exports.createEvent = (req, res, next) => {
 		throw error;
 	}
 	const { title, subtitle, image, location, date, mapLink } = req.body;
-	const { path } = req.file;
+	const { path } = req.file || '';
+	let eventImage;
+	if (path !== undefined) eventImage = fs.readFileSync(path);
 
 	const reference = `WEVENT${date.replaceAll('-', '')}`;
 	Event.findOne({ reference: reference }).then((event) => {
@@ -60,7 +62,7 @@ exports.createEvent = (req, res, next) => {
 		reference: reference,
 		title: title,
 		subtitle: subtitle,
-		image: fs.readFileSync(path),
+		image: eventImage,
 		location: location,
 		date: date,
 		mapLink: mapLink,
@@ -68,10 +70,11 @@ exports.createEvent = (req, res, next) => {
 	event
 		.save()
 		.then((result) => {
-			fs.unlink(path, function (err) {
-				if (err) return console.log(err);
-				console.log('file deleted successfully');
-			});
+			if (path !== undefined)
+				fs.unlink(path, function (err) {
+					if (err) return console.log(err);
+					console.log('file deleted successfully');
+				});
 			return res.status(STATUS_CODE.CREATED).json({
 				message: 'Event created successfully!',
 				post: event,
@@ -96,17 +99,28 @@ exports.deleteEvent = (req, res, next) => {
 				});
 			}
 
-			deletedEvent.attendees.map((userId) =>
+			// Collect all the promises in an array
+			const updatePromises = deletedEvent.attendees.map((userId) =>
 				User.updateOne(
 					{ _id: mongoose.Types.ObjectId(userId) },
 					{ $pull: { events: deletedEvent._id } }
 				)
 			);
 
-			return res.status(STATUS_CODE.OK).json({
-				message: 'Event deleted successfully!',
-				deletedEvent: deletedEvent,
-			});
+			// Promise.all to wait for all updates to complete
+			Promise.all(updatePromises)
+				.then(() => {
+					return res.status(STATUS_CODE.OK).json({
+						message: 'Event deleted successfully!',
+						deletedEvent: deletedEvent,
+					});
+				})
+				.catch((err) => {
+					if (!err.statusCode) {
+						err.statusCode = STATUS_CODE.INTERNAL_SERVER;
+					}
+					next(err);
+				});
 		})
 		.catch((err) => {
 			if (!err.statusCode) {
@@ -118,7 +132,6 @@ exports.deleteEvent = (req, res, next) => {
 
 exports.confirmPresence = (req, res, next) => {
 	const { reference } = req.body;
-	console.log('reference', reference);
 	User.findById(req.userId)
 		.then((user) => {
 			Event.findOne({ reference: reference })
