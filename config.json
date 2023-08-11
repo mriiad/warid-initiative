@@ -6,9 +6,16 @@
 		"user": "username",
 		"password": "password"
 	  },
+	  "mailerConfig":{
+		"email": "email",
+		"password": "password",
+		"host": "smtp.gmail.com",
+		"secureConnection": false,
+		"port": 465,
+		"ciphers": "SSLv3",
+		"requireTLS": true
+	  },
 	  "port": 3000,
-	  "email": "contact@warid.ma",
-	  "senderKey": "sender-key-from-SendGrid",
 	  "secret": "random-secret-key",
 	"authConfig": {
 	  "SECRET_KEY" : "RANDOMSECRETKEY",

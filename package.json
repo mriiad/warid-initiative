@@ -17,15 +17,15 @@
   "author": "mriiad",
   "license": "ISC",
   "dependencies": {
+    "axios": "^1.4.0",
     "bcrypt": "^5.1.0",
     "body-parser": "^1.20.0",
+    "cors": "^2.8.5",
     "express": "^4.18.1",
     "express-validator": "^6.14.2",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^6.6.7",
-    "multer": "^1.4.5-lts.1",
-    "nodemailer": "^6.8.0",
-    "nodemailer-sendgrid-transport": "^0.2.0"
+    "nodemailer": "^6.8.0"
   },
   "devDependencies": {
     "nodemon": "^1.19.4"
