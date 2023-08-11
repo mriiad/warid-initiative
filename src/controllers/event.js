@@ -97,7 +97,10 @@ exports.deleteEvent = (req, res, next) => {
 			}
 
 			deletedEvent.attendees.map((userId) =>
-				User.findByIdAndUpdate(userId, { $pull: { events: deletedEvent._id } })
+				User.updateOne(
+					{ _id: mongoose.Types.ObjectId(userId) },
+					{ $pull: { events: deletedEvent._id } }
+				)
 			);
 
 			return res.status(STATUS_CODE.OK).json({
@@ -125,8 +128,6 @@ exports.confirmPresence = (req, res, next) => {
 							message: `Event with reference ${reference} not found.`,
 						});
 					}
-					console.log('event', event);
-					console.log('user', user);
 
 					const eventExists = user.events.find(
 						(ev) => ev.toString() == event.id
