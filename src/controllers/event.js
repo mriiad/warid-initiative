@@ -1,8 +1,11 @@
+const event = require('../models/event');
 const Event = require('../models/event');
 const User = require('../models/user');
 const { STATUS_CODE } = require('../utils/errors/httpStatusCode');
 const { validationResult } = require('express-validator');
+const mongoose = require('mongoose');
 const fs = require('fs');
+const user = require('../models/user');
 
 /**
  *
@@ -82,12 +85,49 @@ exports.createEvent = (req, res, next) => {
 		});
 };
 
+exports.deleteEvent = (req, res, next) => {
+	const { reference } = req.body;
+
+	Event.findOneAndDelete({ reference: reference })
+		.then((deletedEvent) => {
+			if (!deletedEvent) {
+				return res.status(STATUS_CODE.NOT_FOUND).json({
+					message: `Event with reference ${reference} not found.`,
+				});
+			}
+
+			deletedEvent.attendees.map((userId) =>
+				User.findByIdAndUpdate(userId, { $pull: { events: deletedEvent._id } })
+			);
+
+			return res.status(STATUS_CODE.OK).json({
+				message: 'Event deleted successfully!',
+				deletedEvent: deletedEvent,
+			});
+		})
+		.catch((err) => {
+			if (!err.statusCode) {
+				err.statusCode = STATUS_CODE.INTERNAL_SERVER;
+			}
+			next(err);
+		});
+};
+
 exports.confirmPresence = (req, res, next) => {
-	const { eventReference } = req.body;
+	const { reference } = req.body;
+	console.log('reference', reference);
 	User.findById(req.userId)
 		.then((user) => {
-			Event.findOne({ reference: eventReference })
+			Event.findOne({ reference: reference })
 				.then((event) => {
+					if (!event) {
+						return res.status(STATUS_CODE.NOT_FOUND).json({
+							message: `Event with reference ${reference} not found.`,
+						});
+					}
+					console.log('event', event);
+					console.log('user', user);
+
 					const eventExists = user.events.find(
 						(ev) => ev.toString() == event.id
 					);

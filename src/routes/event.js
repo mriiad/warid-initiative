@@ -3,6 +3,7 @@ const {
 	getEvents,
 	createEvent,
 	confirmPresence,
+	deleteEvent,
 } = require('../controllers/event');
 
 const multer = require('multer');
@@ -45,6 +46,8 @@ eventRouter.post(
 	upload.single('image'),
 	createEvent
 );
+
+eventRouter.delete('/api/event', isAuth, checkIfAdmin, deleteEvent);
 
 eventRouter.put('/api/event/confirmPresence', isAuth, confirmPresence);
 
