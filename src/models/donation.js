@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 /**
- * A person can be either a donor or a patient
+ * Donation collection to collect donors' data
  */
 
 const DonationSchema = new Schema({

@@ -3,9 +3,10 @@ const { donate } = require('../controllers/donation');
 
 const donationRouter = express.Router();
 const isAuth = require('../middleware/is-auth');
+const checkIfAdmin = require('../utils/checks');
 
 donationRouter.get('/', (req, res, next) => {});
 
-donationRouter.put('/api/donate', isAuth, donate);
+donationRouter.put('/api/donate', isAuth, checkIfAdmin, donate);
 
 module.exports = donationRouter;
