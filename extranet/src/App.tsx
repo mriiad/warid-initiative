@@ -2,7 +2,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import NavBar from './NavBar';
-import SignupForm from './SignupForm';
+import SignupForm from './components/SignupForm';
 
 const AppContainer = styled.div`
 	font-family: Arial, sans-serif;

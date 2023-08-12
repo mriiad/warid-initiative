@@ -12,6 +12,7 @@ import React, { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import 'react-phone-number-input/style.css';
 import { useMutation } from 'react-query';
+import colors from '../styles/colors';
 
 interface FormData {
 	username: string;
@@ -58,7 +59,7 @@ const useStyles = makeStyles({
 		width: '55px',
 		display: 'block',
 		margin: '8px auto 0',
-		backgroundColor: 'rgb(59, 42, 130)',
+		backgroundColor: colors.purple,
 	},
 	button: {
 		background:
@@ -76,6 +77,10 @@ const useStyles = makeStyles({
 	},
 	signUp: {
 		color: 'rgb(255, 48, 103)',
+		'&.MuiTypography-root': {
+			fontWeight: '500',
+			fontSize: '3rem',
+		},
 	},
 	form: {
 		textAlign: 'center',
@@ -95,7 +100,7 @@ const SignupForm: React.FC = () => {
 		return axios.put('http://localhost:3000/api/auth/signup', data);
 	});
 
-	const [isFormSubmitted, setIsFormSubmitted] = useState<boolean>(false);
+	const [, setIsFormSubmitted] = useState<boolean>(false);
 	const onSubmit = (formData: FormData) => {
 		signUpMutation.mutate(formData, {
 			onSuccess: () => {
@@ -108,7 +113,7 @@ const SignupForm: React.FC = () => {
 		});
 	};
 
-	const [phoneNumber, setPhoneNumber] = useState('');
+	const [, setPhoneNumber] = useState('');
 	const onChange = (e) => {
 		const re = /^[0-9\b]+$/;
 		if (e.target.value === '' || re.test(e.target.value)) {
@@ -126,13 +131,16 @@ const SignupForm: React.FC = () => {
 			<div className={formContainer}>
 				<Box className={formWrapper}>
 					<Typography
-						variant='h3'
+						variant='h2'
 						align='center'
 						gutterBottom
 						className={signUp}
 					>
 						Sign Up
 						<span className={bar}></span>
+					</Typography>
+					<Typography variant='h6' align='center' gutterBottom>
+						Do you have an account? <span></span>Login
 					</Typography>
 					<form onSubmit={handleSubmit(onSubmit)} className={form}>
 						<Grid container spacing={2}>
