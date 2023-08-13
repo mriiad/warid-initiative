@@ -13,6 +13,7 @@ import { Controller, useForm } from 'react-hook-form';
 import 'react-phone-number-input/style.css';
 import { useMutation } from 'react-query';
 import colors from '../styles/colors';
+import { mainStyles } from '../styles/mainStyles';
 
 interface FormData {
 	username: string;
@@ -31,10 +32,19 @@ interface FormData {
 const useStyles = makeStyles({
 	formWrapper: {
 		background: 'rgba(252, 252, 252, 0.25)',
-		borderRadius: '20px',
-		padding: '20px',
+		borderRadius: '30px',
+		border: '1px solid white',
+		padding: '30px',
 		marginTop: '20px',
-		width: '70%',
+		width: '540px',
+		'& .MuiOutlinedInput-notchedOutline': {
+			border: 'none',
+			backgroundColor: 'white',
+			borderRadius: '20px',
+		},
+		'& .MuiInputBase-input': {
+			height: '2em',
+		},
 	},
 	container: {
 		display: 'flex',
@@ -76,7 +86,7 @@ const useStyles = makeStyles({
 		},
 	},
 	signUp: {
-		color: 'rgb(255, 48, 103)',
+		color: colors.rose,
 		'&.MuiTypography-root': {
 			fontWeight: '500',
 			fontSize: '3rem',
@@ -90,6 +100,7 @@ const useStyles = makeStyles({
 const SignupForm: React.FC = () => {
 	const { container, formContainer, bar, button, formWrapper, signUp, form } =
 		useStyles();
+	const { textButton } = mainStyles();
 	const {
 		handleSubmit,
 		formState: { errors },
@@ -140,7 +151,7 @@ const SignupForm: React.FC = () => {
 						<span className={bar}></span>
 					</Typography>
 					<Typography variant='h6' align='center' gutterBottom>
-						Do you have an account? <span></span>Login
+						Do you have an account? <span className={textButton}>Login</span>
 					</Typography>
 					<form onSubmit={handleSubmit(onSubmit)} className={form}>
 						<Grid container spacing={2}>
