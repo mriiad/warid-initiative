@@ -12,6 +12,7 @@ import React, { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import 'react-phone-number-input/style.css';
 import { useMutation } from 'react-query';
+import { useNavigate } from 'react-router-dom';
 import colors from '../styles/colors';
 import { mainStyles } from '../styles/mainStyles';
 
@@ -107,6 +108,8 @@ const SignupForm: React.FC = () => {
 		control,
 	} = useForm<FormData>();
 
+	const navigate = useNavigate();
+
 	const signUpMutation = useMutation((data: FormData) => {
 		return axios.put('http://localhost:3000/api/auth/signup', data);
 	});
@@ -150,7 +153,12 @@ const SignupForm: React.FC = () => {
 						Sign Up
 						<span className={bar}></span>
 					</Typography>
-					<Typography variant='h6' align='center' gutterBottom>
+					<Typography
+						variant='h6'
+						align='center'
+						onClick={() => navigate('/login')}
+						gutterBottom
+					>
 						Do you have an account? <span className={textButton}>Login</span>
 					</Typography>
 					<form onSubmit={handleSubmit(onSubmit)} className={form}>
