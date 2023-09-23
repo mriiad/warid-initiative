@@ -6,107 +6,25 @@ import {
 	TextField,
 	Typography,
 } from '@mui/material';
-import { makeStyles } from '@mui/styles';
 import axios from 'axios';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import 'react-phone-number-input/style.css';
 import { useMutation } from 'react-query';
 import { useNavigate } from 'react-router-dom';
-import colors from '../styles/colors';
-import { mainStyles } from '../styles/mainStyles';
+import { SignupFormData } from '../data/authData';
+import { authStyles, mainStyles } from '../styles/mainStyles';
 
-interface FormData {
-	username: string;
-	firstName: string;
-	lastName: string;
-	birthDate: string;
-	email: string;
-	gender: string;
-	password: string;
-	phoneNumber: string;
-	bloodGroup: string;
-	lastDonationDate: string;
-	donationType: string;
-}
-
-const useStyles = makeStyles({
-	formWrapper: {
-		background: 'rgba(252, 252, 252, 0.25)',
-		borderRadius: '30px',
-		border: '1px solid white',
-		padding: '30px',
-		marginTop: '20px',
-		width: '540px',
-		'& .MuiOutlinedInput-notchedOutline': {
-			border: 'none',
-			backgroundColor: 'white',
-			borderRadius: '20px',
-		},
-		'& .MuiInputBase-input': {
-			height: '2em',
-		},
-	},
-	container: {
-		display: 'flex',
-		justifyContent: 'center',
-		alignItems: 'center',
-	},
-	imageContainer: {
-		flexBasis: '100%',
-	},
-	image: {
-		width: '100%',
-		height: 'auto',
-	},
-	formContainer: {
-		display: 'flex',
-		flexDirection: 'column',
-		justifyContent: 'center',
-		alignItems: 'center',
-	},
-	bar: {
-		height: '4px',
-		width: '55px',
-		display: 'block',
-		margin: '8px auto 0',
-		backgroundColor: colors.purple,
-	},
-	button: {
-		background:
-			'linear-gradient(90deg, rgb(193, 46, 111) 100%, rgba(159,7,204,1) 0%)',
-		borderRadius: '10px',
-		padding: '10px 20px',
-		fontSize: '16px',
-		border: 'none',
-		boxShadow: '0px 2px 10px rgba(0, 0, 0, 0.2)',
-		transition: 'transform 0.3s ease',
-		cursor: 'pointer',
-		'&:hover': {
-			transform: 'scale(1.1)',
-		},
-	},
-	signUp: {
-		color: colors.rose,
-		'&.MuiTypography-root': {
-			fontWeight: '500',
-			fontSize: '3rem',
-		},
-	},
-	form: {
-		textAlign: 'center',
-	},
-});
-
-const SignupForm: React.FC = () => {
+const SignupForm = () => {
 	const { container, formContainer, bar, button, formWrapper, signUp, form } =
-		useStyles();
+		authStyles();
+	const { subTitle } = mainStyles();
 	const { textButton } = mainStyles();
 	const {
 		handleSubmit,
 		formState: { errors },
 		control,
-	} = useForm<FormData>();
+	} = useForm<SignupFormData>();
 
 	const navigate = useNavigate();
 
@@ -153,13 +71,11 @@ const SignupForm: React.FC = () => {
 						Sign Up
 						<span className={bar}></span>
 					</Typography>
-					<Typography
-						variant='h6'
-						align='center'
-						onClick={() => navigate('/login')}
-						gutterBottom
-					>
-						Do you have an account? <span className={textButton}>Login</span>
+					<Typography variant='h6' align='center' gutterBottom>
+						<span className={subTitle}>Do you have an account?</span>{' '}
+						<span className={textButton} onClick={() => navigate('/login')}>
+							Login
+						</span>
 					</Typography>
 					<form onSubmit={handleSubmit(onSubmit)} className={form}>
 						<Grid container spacing={2}>
