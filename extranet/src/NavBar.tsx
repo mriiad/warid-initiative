@@ -1,5 +1,4 @@
 import { makeStyles } from '@mui/styles';
-import React from 'react';
 import { Link } from 'react-router-dom';
 
 const Home = () => <div>Home Page</div>;
@@ -9,12 +8,23 @@ const Contact = () => <div>Contact Page</div>;
 const useStyles = makeStyles({
 	navbar: {
 		display: 'flex',
-		alignItems: 'center',
 		justifyContent: 'space-between',
-		backgroundColor: 'green',
-		padding: '10px',
-		zIndex: 100,
-		position: 'sticky',
+		height: '6.25em',
+		'-webkit-backdrop-filter': 'blur(50px)',
+		backdropFilter: 'blur(50px)',
+		backgroundColor: 'rgba(255, 255, 255, .6)',
+		border: '0.8px solid #fff',
+		flexDirection: 'row',
+		alignItems: 'stretch',
+		transition: 'transform .3s',
+		position: 'fixed',
+		top: '0',
+		bottom: 'auto',
+		left: '0',
+		right: '0',
+		transform: 'none',
+		boxShadow: '14px 14px 60px rgba(80, 20, 173, .06)',
+		zIndex: '100',
 	},
 	logo: {
 		marginRight: '10px',
@@ -28,17 +38,19 @@ const useStyles = makeStyles({
 		listStyleType: 'none',
 		margin: 0,
 		padding: 0,
+		display: 'flex',
+		gap: '10px',
 	},
 	routesListItem: {
 		marginRight: '10px',
 	},
 	routesLink: {
-		color: 'white',
+		color: '#3B2A82',
 		textDecoration: 'none',
 	},
 });
 
-const Navbar: React.FC = () => {
+const Navbar = () => {
 	const classes = useStyles();
 
 	return (

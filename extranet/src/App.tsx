@@ -17,7 +17,7 @@ const ContentContainer = styled.div`
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	padding-top: 4rem;
+	padding-top: 10rem;
 
 	@media (max-width: ${(props) => props.theme.breakpoints.values.sm}px) {
 		padding-top: 2rem;
