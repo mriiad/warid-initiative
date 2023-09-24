@@ -6,96 +6,32 @@ import {
 	TextField,
 	Typography,
 } from '@mui/material';
-import { makeStyles } from '@mui/styles';
 import axios from 'axios';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import 'react-phone-number-input/style.css';
 import { useMutation } from 'react-query';
+import { useNavigate } from 'react-router-dom';
+import { SignupFormData } from '../data/authData';
+import { authStyles, mainStyles } from '../styles/mainStyles';
 
-interface FormData {
-	username: string;
-	firstName: string;
-	lastName: string;
-	birthDate: string;
-	email: string;
-	gender: string;
-	password: string;
-	phoneNumber: string;
-	bloodGroup: string;
-	lastDonationDate: string;
-	donationType: string;
-}
-
-const useStyles = makeStyles({
-	formWrapper: {
-		background: 'rgba(252, 252, 252, 0.25)',
-		borderRadius: '20px',
-		padding: '20px',
-		marginTop: '20px',
-		width: '70%',
-	},
-	container: {
-		display: 'flex',
-		justifyContent: 'center',
-		alignItems: 'center',
-	},
-	imageContainer: {
-		flexBasis: '100%',
-	},
-	image: {
-		width: '100%',
-		height: 'auto',
-	},
-	formContainer: {
-		display: 'flex',
-		flexDirection: 'column',
-		justifyContent: 'center',
-		alignItems: 'center',
-	},
-	bar: {
-		height: '4px',
-		width: '55px',
-		display: 'block',
-		margin: '8px auto 0',
-		backgroundColor: 'rgb(59, 42, 130)',
-	},
-	button: {
-		background:
-			'linear-gradient(90deg, rgb(193, 46, 111) 100%, rgba(159,7,204,1) 0%)',
-		borderRadius: '10px',
-		padding: '10px 20px',
-		fontSize: '16px',
-		border: 'none',
-		boxShadow: '0px 2px 10px rgba(0, 0, 0, 0.2)',
-		transition: 'transform 0.3s ease',
-		cursor: 'pointer',
-		'&:hover': {
-			transform: 'scale(1.1)',
-		},
-	},
-	signUp: {
-		color: 'rgb(255, 48, 103)',
-	},
-	form: {
-		textAlign: 'center',
-	},
-});
-
-const SignupForm: React.FC = () => {
+const SignupForm = () => {
 	const { container, formContainer, bar, button, formWrapper, signUp, form } =
-		useStyles();
+		authStyles();
+	const { subTitle, textButton } = mainStyles();
 	const {
 		handleSubmit,
 		formState: { errors },
 		control,
-	} = useForm<FormData>();
+	} = useForm<SignupFormData>();
+
+	const navigate = useNavigate();
 
 	const signUpMutation = useMutation((data: FormData) => {
 		return axios.put('http://localhost:3000/api/auth/signup', data);
 	});
 
-	const [isFormSubmitted, setIsFormSubmitted] = useState<boolean>(false);
+	const [, setIsFormSubmitted] = useState<boolean>(false);
 	const onSubmit = (formData: FormData) => {
 		signUpMutation.mutate(formData, {
 			onSuccess: () => {
@@ -108,7 +44,7 @@ const SignupForm: React.FC = () => {
 		});
 	};
 
-	const [phoneNumber, setPhoneNumber] = useState('');
+	const [, setPhoneNumber] = useState('');
 	const onChange = (e) => {
 		const re = /^[0-9\b]+$/;
 		if (e.target.value === '' || re.test(e.target.value)) {
@@ -126,13 +62,19 @@ const SignupForm: React.FC = () => {
 			<div className={formContainer}>
 				<Box className={formWrapper}>
 					<Typography
-						variant='h3'
+						variant='h2'
 						align='center'
 						gutterBottom
 						className={signUp}
 					>
 						Sign Up
 						<span className={bar}></span>
+					</Typography>
+					<Typography variant='h6' align='center' gutterBottom>
+						<span className={subTitle}>Do you have an account?</span>{' '}
+						<span className={textButton} onClick={() => navigate('/login')}>
+							Login
+						</span>
 					</Typography>
 					<form onSubmit={handleSubmit(onSubmit)} className={form}>
 						<Grid container spacing={2}>
