@@ -21,3 +21,7 @@ code {
 .MuiTypography-root {
   font-family: "Gilroy-Bold", -apple-system, system-ui, sans-serif !important;
 }
+
+.MuiOutlinedInput-input {
+  z-index: 2;
+}

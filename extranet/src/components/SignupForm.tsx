@@ -18,8 +18,7 @@ import { authStyles, mainStyles } from '../styles/mainStyles';
 const SignupForm = () => {
 	const { container, formContainer, bar, button, formWrapper, signUp, form } =
 		authStyles();
-	const { subTitle } = mainStyles();
-	const { textButton } = mainStyles();
+	const { subTitle, textButton } = mainStyles();
 	const {
 		handleSubmit,
 		formState: { errors },

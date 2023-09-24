@@ -30,6 +30,11 @@ export const authStyles = makeStyles({
 		'& .MuiInputBase-input': {
 			height: '2em',
 		},
+		'& .MuiOutlinedInput-input': {
+			color: '#3B2A82',
+			fontWeight: 500,
+			fontSize: 'clamp(14px, 1.3vw, 18px)',
+		},
 	},
 	container: {
 		display: 'flex',
