@@ -5,6 +5,7 @@ const colors = {
 	},
 	purple: '#3B2A82',
 	rose: '#ff3067',
+	formWhite: '#fcfcfc40',
 };
 
 export default colors;

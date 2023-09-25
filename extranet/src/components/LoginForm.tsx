@@ -17,7 +17,7 @@ import { authStyles, mainStyles } from '../styles/mainStyles';
 const LoginForm = () => {
 	const { container, formContainer, bar, button, formWrapper, signUp, form } =
 		authStyles();
-	const { textButton } = mainStyles();
+	const { textButton, subTitle } = mainStyles();
 	const {
 		handleSubmit,
 		formState: { errors },
@@ -57,6 +57,12 @@ const LoginForm = () => {
 					>
 						Log In
 						<span className={bar}></span>
+					</Typography>
+					<Typography variant='h6' align='center' gutterBottom>
+						<span className={subTitle}>Don't have an account? </span>
+						<span className={textButton} onClick={() => navigate('/signup')}>
+							Signup
+						</span>
 					</Typography>
 					<form onSubmit={handleSubmit(onSubmit)} className={form}>
 						<Grid container spacing={2}>

@@ -71,7 +71,7 @@ const SignupForm = () => {
 						<span className={bar}></span>
 					</Typography>
 					<Typography variant='h6' align='center' gutterBottom>
-						<span className={subTitle}>Do you have an account?</span>{' '}
+						<span className={subTitle}>Do you have an account? </span>
 						<span className={textButton} onClick={() => navigate('/login')}>
 							Login
 						</span>
@@ -153,12 +153,7 @@ const SignupForm = () => {
 								/>
 							</Grid>
 							<Grid item xs={12}>
-								<Button
-									type='submit'
-									color='primary'
-									style={{ color: 'white' }}
-									className={button}
-								>
+								<Button type='submit' className={button}>
 									Submit
 								</Button>
 							</Grid>
