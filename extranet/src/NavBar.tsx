@@ -17,7 +17,7 @@ const useStyles = makeStyles({
 		height: '6.25em',
 		'-webkit-backdrop-filter': 'blur(50px)',
 		backdropFilter: 'blur(50px)',
-		backgroundColor: 'rgba(255, 255, 255, .8)',
+		backgroundColor: 'rgba(255, 255, 255, .3)',
 		border: '0.8px solid #fff',
 		flexDirection: 'row',
 		transition: 'transform .3s',
@@ -25,11 +25,15 @@ const useStyles = makeStyles({
 		bottom: 'auto',
 		left: '0',
 		right: '0',
-		boxShadow: '14px 14px 60px rgba(80, 20, 173, .06)',
+		boxShadow: '14px 14px 60px rgba(255, 48, 103, 0.08)',
 		zIndex: '100',
 	},
 	logo: {
-		marginRight: '10px',
+		cursor: 'pointer',
+		'& > img': {
+			height: '64px',
+			width: '56px',
+		},
 	},
 	routes: {
 		display: 'flex',
@@ -96,8 +100,8 @@ const Navbar = () => {
 
 	return (
 		<div className={navbar}>
-			<div className={logo}>
-				<img src='logo.png' alt='Logo' />
+			<div className={logo} onClick={() => navigate('/signup')}>
+				<img src='warid-logo.png' alt='Logo' />
 			</div>
 			<div className={routes}>
 				<nav>

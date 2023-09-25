@@ -16,7 +16,7 @@ export const mainStyles = makeStyles({
 
 export const authStyles = makeStyles({
 	formWrapper: {
-		background: 'rgba(252, 252, 252, 0.25)',
+		background: colors.formWhite,
 		borderRadius: '30px',
 		border: '1px solid white',
 		padding: '30px',
@@ -31,7 +31,7 @@ export const authStyles = makeStyles({
 			height: '2em',
 		},
 		'& .MuiOutlinedInput-input': {
-			color: '#3B2A82',
+			color: colors.purple,
 			fontWeight: 500,
 			fontSize: 'clamp(14px, 1.3vw, 18px)',
 		},
@@ -55,17 +55,19 @@ export const authStyles = makeStyles({
 		backgroundColor: colors.purple,
 	},
 	button: {
-		background:
-			'linear-gradient(90deg, rgb(193, 46, 111) 100%, rgba(159,7,204,1) 0%)',
-		borderRadius: '10px',
-		padding: '10px 20px',
-		fontSize: '16px',
-		border: 'none',
-		boxShadow: '0px 2px 10px rgba(0, 0, 0, 0.2)',
-		transition: 'transform 0.3s ease',
-		cursor: 'pointer',
-		'&:hover': {
-			transform: 'scale(1.1)',
+		'&.MuiButton-root': {
+			backgroundColor: colors.rose,
+			color: 'white',
+			borderRadius: '10px',
+			padding: '10px 20px',
+			fontSize: '16px',
+			border: 'none',
+			boxShadow: '0px 2px 10px rgba(0, 0, 0, 0.2)',
+			transition: 'transform 0.3s ease',
+			cursor: 'pointer',
+			'&:hover': {
+				backgroundColor: colors.purple,
+			},
 		},
 	},
 	signUp: {

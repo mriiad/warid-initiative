@@ -153,12 +153,7 @@ const SignupForm = () => {
 								/>
 							</Grid>
 							<Grid item xs={12}>
-								<Button
-									type='submit'
-									color='primary'
-									style={{ color: 'white' }}
-									className={button}
-								>
+								<Button type='submit' className={button}>
 									Submit
 								</Button>
 							</Grid>

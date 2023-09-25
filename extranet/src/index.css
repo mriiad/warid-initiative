@@ -3,7 +3,7 @@ body {
   padding: 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: linear-gradient(to left, #e0d1f5, #f6ecf3 48%, #e0d1f5);
+  background: linear-gradient(to left, #ff306702, #f6ecf3 48%, #ff306702);
 	background-repeat: no-repeat;
 	background-position: center;
 	background-size: cover;
