@@ -148,13 +148,13 @@ const Navbar = () => {
 						</li>
 						<li className={routesListItem}>
 							<Link
-								to='/contact'
+								to='/events'
 								className={`${routesLink} ${
-									selectedRoute === '/contact' ? activeLink : ''
+									selectedRoute === '/events' ? activeLink : ''
 								}`}
-								onClick={() => handleRouteChange('/contact')}
+								onClick={() => handleRouteChange('/events')}
 							>
-								Contact
+								Events
 							</Link>
 						</li>
 					</ul>

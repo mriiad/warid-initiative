@@ -3,6 +3,7 @@ import React from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import styled from 'styled-components';
 import NavBar from './NavBar';
+import EventsComponent from './components/EventsComponent';
 import LoginForm from './components/LoginForm';
 import SignupForm from './components/SignupForm';
 
@@ -36,6 +37,7 @@ const App = () => (
 						<Route path='comments' element={<Comments />} />
 					</Route>*/}
 					<Route path='/login' element={<LoginForm />} />
+					<Route path='/events' element={<EventsComponent />} />
 					<Route path='*' element={<SignupForm />} />
 				</Routes>
 			</ContentContainer>
