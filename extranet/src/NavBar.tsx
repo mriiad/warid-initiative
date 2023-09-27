@@ -1,3 +1,4 @@
+import ArrowCircleLeftIcon from '@mui/icons-material/ArrowCircleLeft';
 import ArrowCircleRightIcon from '@mui/icons-material/ArrowCircleRight';
 import Button from '@mui/material/Button';
 import { makeStyles } from '@mui/styles';
@@ -169,7 +170,7 @@ const Navbar = () => {
 								className={`${routesLink} ${
 									selectedRoute === '/events' ? activeLink : ''
 								}`}
-								onClick={() => handleRouteChange('/events')}
+								onClick={() => handleRouteChange('/events?page=1')}
 							>
 								Events
 							</Link>
@@ -181,7 +182,7 @@ const Navbar = () => {
 				{token ? (
 					<Button
 						variant='contained'
-						startIcon={<ArrowCircleRightIcon className={loginIcon} />}
+						startIcon={<ArrowCircleLeftIcon className={loginIcon} />}
 						onClick={() => handleLogout()}
 					>
 						Logout
