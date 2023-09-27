@@ -61,13 +61,17 @@ const EventsComponent = () => {
 		fetchEvents();
 	}, [page, token]); // Re-fetch when page number changes.
 
+	console.log('events', events);
+
 	return (
 		<div>
 			{events.map((event) => (
 				<Card
 					key={event._id}
 					className={classes.eventCard}
-					style={{ backgroundImage: event.image }}
+					style={{
+						backgroundImage: `url(data:image/jpeg;base64,${event.image})`,
+					}}
 				>
 					<CardContent>
 						<Typography variant='h5' className={classes.title}>

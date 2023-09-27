@@ -20,7 +20,14 @@ exports.getEvents = async (req, res, next) => {
 
 		const events = await Event.find()
 			.skip((currentPage - 1) * perPage)
-			.limit(perPage);
+			.limit(perPage)
+			.lean(); // Use .lean() to convert mongoose document to plain JS object.
+
+		events.forEach((event) => {
+			if (event.image) {
+				event.image = event.image.toString('base64'); // Ensure conversion to Base64.
+			}
+		});
 
 		res.status(STATUS_CODE.OK).json({
 			message: 'Fetched posts successfully.',
