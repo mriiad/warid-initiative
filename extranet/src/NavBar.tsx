@@ -175,6 +175,19 @@ const Navbar = () => {
 								Events
 							</Link>
 						</li>
+						{isAdmin && (
+							<li className={routesListItem}>
+								<Link
+									to='/admin'
+									className={`${routesLink} ${
+										selectedRoute === '/admin' ? activeLink : ''
+									}`}
+									onClick={() => handleRouteChange('/admin')}
+								>
+									Admin
+								</Link>
+							</li>
+						)}
 					</ul>
 				</nav>
 			</div>
