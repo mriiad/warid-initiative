@@ -1,8 +1,10 @@
 import ArrowCircleRightIcon from '@mui/icons-material/ArrowCircleRight';
 import Button from '@mui/material/Button';
 import { makeStyles } from '@mui/styles';
+import axios from 'axios';
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from './auth/AuthContext';
 import colors from './styles/colors';
 
 const Home = () => <div>Home Page</div>;
@@ -96,6 +98,8 @@ const useStyles = makeStyles({
 });
 
 const Navbar = () => {
+	const { token, setToken } = useAuth();
+
 	const {
 		navbar,
 		routes,
@@ -111,6 +115,19 @@ const Navbar = () => {
 	const navigate = useNavigate();
 	const location = useLocation();
 	const [selectedRoute, setSelectedRoute] = useState(location.pathname);
+
+	const handleLogout = () => {
+		axios
+			.post('http://localhost:3000/api/auth/logout')
+			.then((response) => {
+				localStorage.removeItem('token'); // Remove token from localStorage
+				setToken(null); // Set token in context to null
+				navigate('/login'); // Navigate to login page
+			})
+			.catch((error) => {
+				console.error('Logout error', error);
+			});
+	};
 
 	const handleRouteChange = (route) => {
 		setSelectedRoute(route);
@@ -161,13 +178,23 @@ const Navbar = () => {
 				</nav>
 			</div>
 			<div className={loginButton}>
-				<Button
-					variant='contained'
-					startIcon={<ArrowCircleRightIcon className={loginIcon} />}
-					onClick={() => navigate('/login')}
-				>
-					Login
-				</Button>
+				{token ? (
+					<Button
+						variant='contained'
+						startIcon={<ArrowCircleRightIcon className={loginIcon} />}
+						onClick={() => handleLogout()}
+					>
+						Logout
+					</Button>
+				) : (
+					<Button
+						variant='contained'
+						startIcon={<ArrowCircleRightIcon className={loginIcon} />}
+						onClick={() => navigate('/login')}
+					>
+						Login
+					</Button>
+				)}
 			</div>
 		</div>
 	);

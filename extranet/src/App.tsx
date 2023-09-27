@@ -31,7 +31,7 @@ const App = () => (
 			<NavBar />
 			<ContentContainer>
 				<Routes>
-					<Route path='/' element={<Navigate replace to='/sinup' />} />
+					<Route path='/' element={<Navigate replace to='/signup' />} />
 					<Route path='/signup' element={<SignupForm />} />
 					{/*<Route path='/quotes/:quoteId' element={<QuoteDetail />}>
 						<Route path='comments' element={<Comments />} />

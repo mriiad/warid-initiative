@@ -1,4 +1,4 @@
-import { Card, CardContent, Typography } from '@mui/material';
+import { Button, Card, CardContent, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
@@ -39,21 +39,27 @@ const EventsComponent = () => {
 	const classes = useStyles();
 	const [events, setEvents] = useState([]);
 
+	const [page, setPage] = useState(1);
+	const [totalPages, setTotalPages] = useState(0);
+
 	useEffect(() => {
 		const fetchEvents = async () => {
 			try {
-				const response = await axios.get('http://localhost:3000/api/events', {
-					headers: { Authorization: 'Bearer ' + token },
-				});
-
+				const response = await axios.get(
+					`http://localhost:3000/api/events?page=${page}`,
+					{
+						headers: { Authorization: 'Bearer ' + token },
+					}
+				);
 				setEvents(response.data.events);
+				setTotalPages(Math.ceil(response.data.totalItems / 5)); // Assuming 5 is the number of events per page.
 			} catch (error) {
 				console.error('Error fetching events', error);
 			}
 		};
 
 		fetchEvents();
-	}, []);
+	}, [page, token]); // Re-fetch when page number changes.
 
 	return (
 		<div>
@@ -91,6 +97,14 @@ const EventsComponent = () => {
 					</CardContent>
 				</Card>
 			))}
+			<div>
+				<Button disabled={page === 1} onClick={() => setPage(page - 1)}>
+					Previous
+				</Button>
+				<Button disabled={page >= totalPages} onClick={() => setPage(page + 1)}>
+					Next
+				</Button>
+			</div>
 		</div>
 	);
 };

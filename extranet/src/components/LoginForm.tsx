@@ -43,7 +43,7 @@ const LoginForm = () => {
 				localStorage.setItem('token', data.data.token);
 				setIsFormSubmitted(true);
 				// Redirect to a different route upon successful login
-				navigate('/signup'); // Adjust the route as needed
+				navigate('/events?page=1'); // Adjust the route as needed
 			},
 			onError: (error) => {
 				console.error('Error logging in:', error);

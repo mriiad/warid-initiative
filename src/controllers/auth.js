@@ -140,3 +140,15 @@ exports.verifyUser = (req, res, next) => {
 			next(err);
 		});
 };
+
+exports.logout = (req, res, next) => {
+	try {
+		res.clearCookie('token');
+		res.status(200).json({ message: 'Logged out successfully' });
+	} catch (error) {
+		if (!error.statusCode) {
+			error.statusCode = STATUS_CODE.INTERNAL_SERVER;
+		}
+		next(error);
+	}
+};
