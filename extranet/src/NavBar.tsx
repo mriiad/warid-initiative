@@ -8,10 +8,6 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from './auth/AuthContext';
 import colors from './styles/colors';
 
-const Home = () => <div>Home Page</div>;
-const About = () => <div>About Page</div>;
-const Contact = () => <div>Contact Page</div>;
-
 const useStyles = makeStyles({
 	navbar: {
 		padding: '0 170px',
@@ -99,7 +95,7 @@ const useStyles = makeStyles({
 });
 
 const Navbar = () => {
-	const { token, setToken } = useAuth();
+	const { token, setToken, isAdmin, setIsAdmin, setUserId } = useAuth();
 
 	const {
 		navbar,
@@ -121,9 +117,13 @@ const Navbar = () => {
 		axios
 			.post('http://localhost:3000/api/auth/logout')
 			.then((response) => {
-				localStorage.removeItem('token'); // Remove token from localStorage
-				setToken(null); // Set token in context to null
-				navigate('/login'); // Navigate to login page
+				localStorage.removeItem('token');
+				setToken(null);
+				localStorage.removeItem('userId');
+				setUserId(null);
+				localStorage.removeItem('isAdmin');
+				setIsAdmin(null);
+				navigate('/login');
 			})
 			.catch((error) => {
 				console.error('Logout error', error);
