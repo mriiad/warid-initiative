@@ -166,7 +166,7 @@ const Navbar = () => {
 						</li>
 						<li className={routesListItem}>
 							<Link
-								to='/events'
+								to='/events?page=1'
 								className={`${routesLink} ${
 									selectedRoute === '/events' ? activeLink : ''
 								}`}
