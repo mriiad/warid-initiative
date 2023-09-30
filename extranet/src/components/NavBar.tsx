@@ -1,13 +1,13 @@
 import ArrowCircleLeftIcon from '@mui/icons-material/ArrowCircleLeft';
 import ArrowCircleRightIcon from '@mui/icons-material/ArrowCircleRight';
-import Button from '@mui/material/Button';
 import { makeStyles } from '@mui/styles';
 import axios from 'axios';
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from './auth/AuthContext';
-import colors from './styles/colors';
-import { mainStyles } from './styles/mainStyles';
+import { useAuth } from '../auth/AuthContext';
+import colors from '../styles/colors';
+import { mainStyles } from '../styles/mainStyles';
+import ActionButton from './shared/ActionButton';
 
 const useStyles = makeStyles({
 	navbar: {
@@ -167,21 +167,17 @@ const Navbar = () => {
 			</div>
 			<div className={mainButton}>
 				{token ? (
-					<Button
-						variant='contained'
-						startIcon={<ArrowCircleLeftIcon className={loginIcon} />}
+					<ActionButton
+						title='Logout'
+						icon={<ArrowCircleLeftIcon className={loginIcon} />}
 						onClick={() => handleLogout()}
-					>
-						Logout
-					</Button>
+					/>
 				) : (
-					<Button
-						variant='contained'
-						startIcon={<ArrowCircleRightIcon className={loginIcon} />}
+					<ActionButton
+						title='Login'
+						icon={<ArrowCircleRightIcon className={loginIcon} />}
 						onClick={() => navigate('/login')}
-					>
-						Login
-					</Button>
+					/>
 				)}
 			</div>
 		</div>

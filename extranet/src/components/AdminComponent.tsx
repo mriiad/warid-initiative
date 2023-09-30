@@ -1,11 +1,5 @@
-import { Button } from '@mui/material';
-import { mainStyles } from '../styles/mainStyles';
+import ActionButton from './shared/ActionButton';
 
 export default function AdminComponent() {
-	const { mainButton } = mainStyles();
-	return (
-		<div className={mainButton}>
-			<Button variant='contained'>Add Event</Button>
-		</div>
-	);
+	return <ActionButton title='Add Event' onClick={null} />;
 }

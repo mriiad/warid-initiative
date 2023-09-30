@@ -2,10 +2,10 @@
 import React from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import styled from 'styled-components';
-import NavBar from './NavBar';
 import AdminComponent from './components/AdminComponent';
 import EventsComponent from './components/EventsComponent';
 import LoginForm from './components/LoginForm';
+import NavBar from './components/NavBar';
 import SignupForm from './components/SignupForm';
 
 const AppContainer = styled.div`
