@@ -163,7 +163,7 @@ const Navbar = () => {
 								Events
 							</Link>
 						</li>
-						{isAdmin && (
+						{token && isAdmin && (
 							<li className={routesListItem}>
 								<Link
 									to='/admin'
