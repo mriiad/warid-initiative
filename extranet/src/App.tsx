@@ -1,7 +1,8 @@
 // App.js
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import styled from 'styled-components';
+import { useAuth } from './auth/AuthContext';
 import AdminComponent from './components/AdminComponent';
 import EventsComponent from './components/EventsComponent';
 import LoginForm from './components/LoginForm';
@@ -26,15 +27,22 @@ const ContentContainer = styled.div`
 	}
 `;
 
-const App = () => (
-	<BrowserRouter>
-		<AppContainer>
-			<NavBar />
-			<ContentContainer>
-				<Routes>
-					<Route path='/' element={<Navigate replace to='/signup' />} />
-					<Route path='/signup' element={<SignupForm />} />
-					{/*<Route path='/quotes/:quoteId' element={<QuoteDetail />}>
+const App = () => {
+	const { token } = useAuth();
+
+	useEffect(() => {
+		if (token === null) localStorage.removeItem('token'); // Remove token from localStorage
+	});
+
+	return (
+		<BrowserRouter>
+			<AppContainer>
+				<NavBar />
+				<ContentContainer>
+					<Routes>
+						<Route path='/' element={<Navigate replace to='/signup' />} />
+						<Route path='/signup' element={<SignupForm />} />
+						{/*<Route path='/quotes/:quoteId' element={<QuoteDetail />}>
 						<Route path='comments' element={<Comments />} />
 					</Route>*/}
 					<Route path='/login' element={<LoginForm />} />
