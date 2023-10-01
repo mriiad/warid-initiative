@@ -45,14 +45,15 @@ const App = () => {
 						{/*<Route path='/quotes/:quoteId' element={<QuoteDetail />}>
 						<Route path='comments' element={<Comments />} />
 					</Route>*/}
-					<Route path='/login' element={<LoginForm />} />
-					<Route path='/events' element={<EventsComponent />} />
-					<Route path='/admin' element={<AdminComponent />} />
-					<Route path='*' element={<SignupForm />} />
-				</Routes>
-			</ContentContainer>
-		</AppContainer>
-	</BrowserRouter>
-);
+						<Route path='/login' element={<LoginForm />} />
+						<Route path='/events' element={<EventsComponent />} />
+						<Route path='/admin' element={<AdminComponent />} />
+						<Route path='*' element={<SignupForm />} />
+					</Routes>
+				</ContentContainer>
+			</AppContainer>
+		</BrowserRouter>
+	);
+};
 
 export default App;
