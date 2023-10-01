@@ -1,6 +1,6 @@
 const express = require('express');
 const { body } = require('express-validator');
-const { login, signup, verifyUser } = require('../controllers/auth');
+const { login, logout, signup, verifyUser } = require('../controllers/auth');
 const User = require('../models/user');
 
 /**
@@ -40,6 +40,8 @@ authRouter.put(
 );
 
 authRouter.post('/api/auth/login', login);
+
+authRouter.post('/api/auth/logout', logout);
 
 authRouter.get('/api/auth/activation/:confirmationCode', verifyUser);
 

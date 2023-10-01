@@ -9,7 +9,6 @@ import {
 import axios from 'axios';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import 'react-phone-number-input/style.css';
 import { useMutation } from 'react-query';
 import { useNavigate } from 'react-router-dom';
 import { SignupFormData } from '../data/authData';

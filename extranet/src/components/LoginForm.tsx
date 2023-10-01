@@ -11,10 +11,13 @@ import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useMutation } from 'react-query';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../auth/AuthContext';
 import { LoginFormData } from '../data/authData';
 import { authStyles, mainStyles } from '../styles/mainStyles';
 
 const LoginForm = () => {
+	const { setToken } = useAuth();
+
 	const { container, formContainer, bar, button, formWrapper, signUp, form } =
 		authStyles();
 	const { textButton, subTitle } = mainStyles();
@@ -33,11 +36,14 @@ const LoginForm = () => {
 	const [, setIsFormSubmitted] = useState<boolean>(false);
 	const onSubmit = (formData: FormData) => {
 		loginMutation.mutate(formData, {
-			onSuccess: () => {
+			onSuccess: (data) => {
 				console.log('Login successful!');
+				console.log('data: ', data);
+				setToken(data.data.token);
+				localStorage.setItem('token', data.data.token);
 				setIsFormSubmitted(true);
 				// Redirect to a different route upon successful login
-				navigate('/signup'); // Adjust the route as needed
+				navigate('/events?page=1'); // Adjust the route as needed
 			},
 			onError: (error) => {
 				console.error('Error logging in:', error);

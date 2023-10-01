@@ -11,31 +11,35 @@ const user = require('../models/user');
  *
  * This is a method to retrieve all events
  */
-exports.getEvents = (req, res, next) => {
-	const currentPage = req.query.page || 1;
-	const perPage = 5;
-	let totalItems;
-	Event.find()
-		.countDocuments()
-		.then((count) => {
-			totalItems = count;
-			return Event.find()
-				.skip((currentPage - 1) * perPage)
-				.limit(perPage);
-		})
-		.then((events) => {
-			res.status(STATUS_CODE.OK).json({
-				message: 'Fetched posts successfully.',
-				events: events,
-				totalItems: totalItems,
-			});
-		})
-		.catch((err) => {
-			if (!err.statusCode) {
-				err.statusCode = STATUS_CODE.INTERNAL_SERVER;
+exports.getEvents = async (req, res, next) => {
+	try {
+		const currentPage = Number(req.query.page) || 1;
+		const perPage = 5;
+
+		const totalItems = await Event.countDocuments();
+
+		const events = await Event.find()
+			.skip((currentPage - 1) * perPage)
+			.limit(perPage)
+			.lean(); // Use .lean() to convert mongoose document to plain JS object.
+
+		events.forEach((event) => {
+			if (event.image) {
+				event.image = event.image.toString('base64'); // Ensure conversion to Base64.
 			}
-			next(err);
 		});
+
+		res.status(STATUS_CODE.OK).json({
+			message: 'Fetched posts successfully.',
+			events: events,
+			totalItems: totalItems,
+		});
+	} catch (err) {
+		if (!err.statusCode) {
+			err.statusCode = STATUS_CODE.INTERNAL_SERVER;
+		}
+		next(err);
+	}
 };
 
 exports.createEvent = (req, res, next) => {

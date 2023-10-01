@@ -1,8 +1,11 @@
+import ArrowCircleLeftIcon from '@mui/icons-material/ArrowCircleLeft';
 import ArrowCircleRightIcon from '@mui/icons-material/ArrowCircleRight';
 import Button from '@mui/material/Button';
 import { makeStyles } from '@mui/styles';
+import axios from 'axios';
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from './auth/AuthContext';
 import colors from './styles/colors';
 
 const Home = () => <div>Home Page</div>;
@@ -31,10 +34,22 @@ const useStyles = makeStyles({
 		'-webkit-backdrop-filter': 'blur(50px)',
 	},
 	logo: {
+		backgroundColor: '#f9f1f6',
+		padding: '4px',
+		borderWidth: '0.8px',
+		overflow: 'visible',
+		border: '1px solid rgb(255 255 255 / 25%)',
+		borderRadius: '0.5625em',
+		boxShadow: '0px 4px 20px 0px rgba(255,48,103,.3)',
 		cursor: 'pointer',
-		'& > img': {
-			height: '64px',
-			width: '56px',
+		'& > div': {
+			border: '1px solid rgb(255 255 255 / 25%)',
+			borderRadius: '0.5625em',
+			padding: '4px',
+			'& > img': {
+				height: '40px',
+				width: '36px',
+			},
 		},
 	},
 	routes: {
@@ -96,6 +111,8 @@ const useStyles = makeStyles({
 });
 
 const Navbar = () => {
+	const { token, setToken } = useAuth();
+
 	const {
 		navbar,
 		routes,
@@ -112,6 +129,19 @@ const Navbar = () => {
 	const location = useLocation();
 	const [selectedRoute, setSelectedRoute] = useState(location.pathname);
 
+	const handleLogout = () => {
+		axios
+			.post('http://localhost:3000/api/auth/logout')
+			.then((response) => {
+				localStorage.removeItem('token'); // Remove token from localStorage
+				setToken(null); // Set token in context to null
+				navigate('/login'); // Navigate to login page
+			})
+			.catch((error) => {
+				console.error('Logout error', error);
+			});
+	};
+
 	const handleRouteChange = (route) => {
 		setSelectedRoute(route);
 	};
@@ -119,7 +149,9 @@ const Navbar = () => {
 	return (
 		<div className={navbar}>
 			<div className={logo} onClick={() => navigate('/signup')}>
-				<img src='warid-logo.png' alt='Logo' />
+				<div>
+					<img src='warid-logo.png' alt='Logo' />
+				</div>
 			</div>
 			<div className={routes}>
 				<nav>
@@ -148,26 +180,36 @@ const Navbar = () => {
 						</li>
 						<li className={routesListItem}>
 							<Link
-								to='/contact'
+								to='/events'
 								className={`${routesLink} ${
-									selectedRoute === '/contact' ? activeLink : ''
+									selectedRoute === '/events' ? activeLink : ''
 								}`}
-								onClick={() => handleRouteChange('/contact')}
+								onClick={() => handleRouteChange('/events?page=1')}
 							>
-								Contact
+								Events
 							</Link>
 						</li>
 					</ul>
 				</nav>
 			</div>
 			<div className={loginButton}>
-				<Button
-					variant='contained'
-					startIcon={<ArrowCircleRightIcon className={loginIcon} />}
-					onClick={() => navigate('/login')}
-				>
-					Login
-				</Button>
+				{token ? (
+					<Button
+						variant='contained'
+						startIcon={<ArrowCircleLeftIcon className={loginIcon} />}
+						onClick={() => handleLogout()}
+					>
+						Logout
+					</Button>
+				) : (
+					<Button
+						variant='contained'
+						startIcon={<ArrowCircleRightIcon className={loginIcon} />}
+						onClick={() => navigate('/login')}
+					>
+						Login
+					</Button>
+				)}
 			</div>
 		</div>
 	);
