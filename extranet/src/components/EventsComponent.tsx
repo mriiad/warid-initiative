@@ -1,13 +1,8 @@
-import {
-	Button,
-	Card,
-	CardContent,
-	CircularProgress,
-	Typography,
-} from '@mui/material';
+import { Button, CircularProgress } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
+import EventCard from './EventCard';
 
 const useStyles = makeStyles({
 	eventsContainer: {
@@ -16,42 +11,6 @@ const useStyles = makeStyles({
 		flexWrap: 'wrap',
 		gap: '20px',
 		justifyContent: 'center',
-	},
-	eventCard: {
-		backgroundSize: 'cover',
-		borderRadius: '20px',
-		color: '#fff',
-		position: 'relative',
-		overflow: 'hidden',
-		marginBottom: '20px',
-		transform: 'translateX(100%)',
-		opacity: 0,
-		animation: '$slideIn 0.5s forwards ease-out',
-	},
-	'@keyframes slideIn': {
-		'0%': {
-			transform: 'translateX(100%)',
-			opacity: 0,
-		},
-		'100%': {
-			transform: 'translateX(0)',
-			opacity: 1,
-		},
-	},
-	title: {
-		fontWeight: '500',
-		fontSize: 'clamp(14px, 1.3vw, 18px)',
-		backgroundColor: 'rgba(0,0,0,0.7)',
-		padding: '10px',
-		textAlign: 'center',
-	},
-	content: {
-		backgroundColor: 'rgba(0,0,0,0.7)',
-		padding: '10px',
-	},
-	subTitle: {
-		fontSize: 'clamp(12px, 1.2vw, 16px)',
-		fontWeight: 'bold',
 	},
 	fallBack: {
 		display: 'flex',
@@ -62,8 +21,7 @@ const useStyles = makeStyles({
 });
 
 const EventsComponent = () => {
-	const { eventsContainer, title, subTitle, eventCard, content, fallBack } =
-		useStyles();
+	const { eventsContainer, fallBack } = useStyles();
 	const [events, setEvents] = useState([]);
 
 	const [page, setPage] = useState(1);
@@ -101,41 +59,11 @@ const EventsComponent = () => {
 			) : (
 				<div className={eventsContainer}>
 					{events.map((event, index) => (
-						<Card
+						<EventCard
 							key={event._id}
-							className={eventCard}
-							style={{
-								backgroundImage: `url(data:image/jpeg;base64,${event.image})`,
-								animationDelay: `${index * 0.2}s`,
-							}}
-						>
-							<CardContent>
-								<Typography variant='h5' className={title}>
-									{event.title}
-								</Typography>
-								<div className={content}>
-									<Typography variant='body2' className={subTitle}>
-										{event.subtitle}
-									</Typography>
-									<Typography variant='body2'>
-										Location: {event.location}
-									</Typography>
-									<Typography variant='body2'>
-										Date: {new Date(event.date).toLocaleDateString()}
-									</Typography>
-									<Typography variant='body2'>
-										Map:{' '}
-										<a
-											href={event.mapLink}
-											target='_blank'
-											rel='noopener noreferrer'
-										>
-											Link
-										</a>
-									</Typography>
-								</div>
-							</CardContent>
-						</Card>
+							event={event}
+							animationDelay={`${index * 0.2}s`}
+						/>
 					))}
 				</div>
 			)}
