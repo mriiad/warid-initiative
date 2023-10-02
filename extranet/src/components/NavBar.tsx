@@ -1,12 +1,13 @@
 import ArrowCircleLeftIcon from '@mui/icons-material/ArrowCircleLeft';
 import ArrowCircleRightIcon from '@mui/icons-material/ArrowCircleRight';
-import Button from '@mui/material/Button';
 import { makeStyles } from '@mui/styles';
 import axios from 'axios';
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from './auth/AuthContext';
-import colors from './styles/colors';
+import { useAuth } from '../auth/AuthContext';
+import colors from '../styles/colors';
+import { mainStyles } from '../styles/mainStyles';
+import ActionButton from './shared/ActionButton';
 
 const useStyles = makeStyles({
 	navbar: {
@@ -72,34 +73,6 @@ const useStyles = makeStyles({
 	activeLink: {
 		color: colors.rose,
 	},
-	loginButton: {
-		backgroundColor: 'rgba(255,255,255,.3)',
-		padding: '8px',
-		borderWidth: '0.8px',
-		overflow: 'visible',
-		border: '1px solid #fff',
-		borderRadius: '1.5625em',
-		'& > button': {
-			justifyContent: 'space-between',
-			paddingLeft: '1.1em',
-			paddingRight: '1.1em',
-			color: 'white',
-			display: 'flex',
-			alignItems: 'center',
-			width: 'auto',
-			height: '3.5em',
-			minHeight: '3.5em',
-			minWidth: '3.5em',
-			boxShadow: '0 15px 30px rgba(255,48,103,.3)',
-			'&.MuiButtonBase-root': {
-				backgroundColor: '#ff3067',
-				borderRadius: '16px',
-				'&:hover': {
-					backgroundColor: colors.purple,
-				},
-			},
-		},
-	},
 	loginIcon: {
 		fontSize: '1.2rem',
 		marginLeft: '8px',
@@ -117,9 +90,10 @@ const Navbar = () => {
 		routesLink,
 		activeLink,
 		logo,
-		loginButton,
 		loginIcon,
 	} = useStyles();
+
+	const { mainButton } = mainStyles();
 
 	const navigate = useNavigate();
 	const location = useLocation();
@@ -180,7 +154,7 @@ const Navbar = () => {
 						</li>
 						<li className={routesListItem}>
 							<Link
-								to='/events'
+								to='/events?page=1'
 								className={`${routesLink} ${
 									selectedRoute === '/events' ? activeLink : ''
 								}`}
@@ -189,26 +163,35 @@ const Navbar = () => {
 								Events
 							</Link>
 						</li>
+						{token && isAdmin && (
+							<li className={routesListItem}>
+								<Link
+									to='/admin'
+									className={`${routesLink} ${
+										selectedRoute === '/admin' ? activeLink : ''
+									}`}
+									onClick={() => handleRouteChange('/admin')}
+								>
+									Admin
+								</Link>
+							</li>
+						)}
 					</ul>
 				</nav>
 			</div>
-			<div className={loginButton}>
+			<div className={mainButton}>
 				{token ? (
-					<Button
-						variant='contained'
-						startIcon={<ArrowCircleLeftIcon className={loginIcon} />}
+					<ActionButton
+						title='Logout'
+						icon={<ArrowCircleLeftIcon className={loginIcon} />}
 						onClick={() => handleLogout()}
-					>
-						Logout
-					</Button>
+					/>
 				) : (
-					<Button
-						variant='contained'
-						startIcon={<ArrowCircleRightIcon className={loginIcon} />}
+					<ActionButton
+						title='Login'
+						icon={<ArrowCircleRightIcon className={loginIcon} />}
 						onClick={() => navigate('/login')}
-					>
-						Login
-					</Button>
+					/>
 				)}
 			</div>
 		</div>

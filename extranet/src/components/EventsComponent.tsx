@@ -8,7 +8,6 @@ import {
 import { makeStyles } from '@mui/styles';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
-import { useAuth } from '../auth/AuthContext';
 
 const useStyles = makeStyles({
 	eventsContainer: {
@@ -63,8 +62,6 @@ const useStyles = makeStyles({
 });
 
 const EventsComponent = () => {
-	const { token } = useAuth();
-
 	const { eventsContainer, title, subTitle, eventCard, content, fallBack } =
 		useStyles();
 	const [events, setEvents] = useState([]);
@@ -79,10 +76,7 @@ const EventsComponent = () => {
 			try {
 				setIsLoading(true); // Set loading to true when starting to fetch
 				const response = await axios.get(
-					`http://localhost:3000/api/events?page=${page}`,
-					{
-						headers: { Authorization: 'Bearer ' + token },
-					}
+					`http://localhost:3000/api/events?page=${page}`
 				);
 				setEvents(response.data.events);
 				setTotalPages(Math.ceil(response.data.totalItems / 5));
@@ -94,7 +88,7 @@ const EventsComponent = () => {
 		};
 
 		fetchEvents();
-	}, [page, token]);
+	}, [page]);
 
 	console.log('events', events);
 

@@ -12,6 +12,34 @@ export const mainStyles = makeStyles({
 		cursor: 'pointer',
 		color: colors.rose,
 	},
+	mainButton: {
+		backgroundColor: 'rgba(255,255,255,.3)',
+		padding: '8px',
+		borderWidth: '0.8px',
+		overflow: 'visible',
+		border: '1px solid #fff',
+		borderRadius: '1.5625em',
+		'& > button': {
+			justifyContent: 'space-between',
+			paddingLeft: '1.1em',
+			paddingRight: '1.1em',
+			color: 'white',
+			display: 'flex',
+			alignItems: 'center',
+			width: 'auto',
+			height: '3.5em',
+			minHeight: '3.5em',
+			minWidth: '3.5em',
+			boxShadow: '0 15px 30px rgba(255,48,103,.3)',
+			'&.MuiButtonBase-root': {
+				backgroundColor: '#ff3067',
+				borderRadius: '16px',
+				'&:hover': {
+					backgroundColor: colors.purple,
+				},
+			},
+		},
+	},
 });
 
 export const authStyles = makeStyles({

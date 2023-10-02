@@ -2,10 +2,11 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import styled from 'styled-components';
-import NavBar from './NavBar';
 import { useAuth } from './auth/AuthContext';
+import AdminComponent from './components/AdminComponent';
 import EventsComponent from './components/EventsComponent';
 import LoginForm from './components/LoginForm';
+import NavBar from './components/NavBar';
 import SignupForm from './components/SignupForm';
 
 const AppContainer = styled.div`
@@ -46,6 +47,7 @@ const App = () => {
 					</Route>*/}
 						<Route path='/login' element={<LoginForm />} />
 						<Route path='/events' element={<EventsComponent />} />
+						<Route path='/admin' element={<AdminComponent />} />
 						<Route path='*' element={<SignupForm />} />
 					</Routes>
 				</ContentContainer>
