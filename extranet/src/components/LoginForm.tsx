@@ -16,7 +16,7 @@ import { LoginFormData } from '../data/authData';
 import { authStyles, mainStyles } from '../styles/mainStyles';
 
 const LoginForm = () => {
-	const { setToken } = useAuth();
+	const { setToken, setUserId, setIsAdmin } = useAuth();
 
 	const { container, formContainer, bar, button, formWrapper, signUp, form } =
 		authStyles();
@@ -40,10 +40,13 @@ const LoginForm = () => {
 				console.log('Login successful!');
 				console.log('data: ', data);
 				setToken(data.data.token);
+				setUserId(data.data.userId);
+				setIsAdmin(data.data.isAdmin);
 				localStorage.setItem('token', data.data.token);
+				localStorage.setItem('userId', data.data.userId); // store userId in local storage
+				localStorage.setItem('isAdmin', String(data.data.isAdmin)); // store isAdmin in local storage as string
 				setIsFormSubmitted(true);
-				// Redirect to a different route upon successful login
-				navigate('/events?page=1'); // Adjust the route as needed
+				navigate('/events?page=1');
 			},
 			onError: (error) => {
 				console.error('Error logging in:', error);
