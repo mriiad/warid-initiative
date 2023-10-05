@@ -171,7 +171,6 @@ exports.refreshToken = (req, res, next) => {
 		error.statusCode = STATUS_CODE.BAD_REQUEST;
 		return next(error);
 	}
-	console.log('refreshToken: ', refreshToken);
 
 	// Validate refresh token
 	jwt.verify(
@@ -179,8 +178,6 @@ exports.refreshToken = (req, res, next) => {
 		config.authConfig.REFRESH_SECRET_KEY,
 		(err, decodedData) => {
 			if (err) {
-				console.log('ERROR1: ', err);
-				console.log('decodedData: ', decodedData);
 				const error = new Error('Invalid refresh token.');
 				error.statusCode = STATUS_CODE.UNAUTHORIZED;
 				return next(error);
@@ -196,9 +193,6 @@ exports.refreshToken = (req, res, next) => {
 						return next(error);
 					}
 
-					console.log('user: ', user);
-					console.log('user.refreshToken: ', user.refreshToken);
-					console.log('refreshToken: ', refreshToken);
 					// Check if the refresh token exists for the user and is valid
 					if (user.refreshToken !== refreshToken) {
 						const error = new Error('Refresh token is not valid.');
