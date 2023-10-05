@@ -30,7 +30,7 @@ const LoginForm = () => {
 	const navigate = useNavigate();
 
 	const loginMutation = useMutation((data: FormData) => {
-		return axios.post('http://localhost:3000/api/auth/login', data); // Adjust the URL as needed for your API endpoint
+		return axios.post('http://localhost:3000/api/auth/login', data);
 	});
 
 	const [, setIsFormSubmitted] = useState<boolean>(false);
@@ -45,6 +45,7 @@ const LoginForm = () => {
 				localStorage.setItem('token', data.data.token);
 				localStorage.setItem('userId', data.data.userId); // store userId in local storage
 				localStorage.setItem('isAdmin', String(data.data.isAdmin)); // store isAdmin in local storage as string
+				localStorage.setItem('refreshToken', data.data.refreshToken);
 				setIsFormSubmitted(true);
 				navigate('/events?page=1');
 			},

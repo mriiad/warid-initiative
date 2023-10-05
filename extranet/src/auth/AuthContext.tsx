@@ -1,4 +1,12 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import axios from 'axios';
+import React, {
+	createContext,
+	useCallback,
+	useContext,
+	useEffect,
+	useState,
+} from 'react';
+import { useAxiosInterceptor } from './useAxiosInterceptor';
 
 interface AuthContextProps {
 	token: string | null;
@@ -7,6 +15,7 @@ interface AuthContextProps {
 	setToken: React.Dispatch<React.SetStateAction<string | null>>;
 	setUserId: React.Dispatch<React.SetStateAction<string | null>>;
 	setIsAdmin: React.Dispatch<React.SetStateAction<boolean>>;
+	refreshToken: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
@@ -28,9 +37,42 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 		setIsAdmin(storedIsAdmin);
 	}, []);
 
+	const refreshToken = useCallback(async () => {
+		try {
+			const response = await axios.post(
+				'http://localhost:3000/api/auth/refresh-token',
+				{
+					refreshToken: localStorage.getItem('refreshToken'),
+				}
+			);
+
+			const newToken = response.data.accessToken;
+			const newRefreshToken = response.data.refreshToken;
+
+			// Update local storage and state
+			setToken(newToken);
+			localStorage.setItem('token', newToken);
+			localStorage.setItem('refreshToken', newRefreshToken);
+
+			axios.defaults.headers['Authorization'] = `Bearer ${newToken}`;
+		} catch (error) {
+			console.error('Failed to refresh token:', error);
+		}
+	}, []);
+
+	useAxiosInterceptor(refreshToken);
+
 	return (
 		<AuthContext.Provider
-			value={{ token, setToken, userId, setUserId, isAdmin, setIsAdmin }}
+			value={{
+				token,
+				setToken,
+				userId,
+				setUserId,
+				isAdmin,
+				setIsAdmin,
+				refreshToken,
+			}}
 		>
 			{children}
 		</AuthContext.Provider>
