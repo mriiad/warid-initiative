@@ -20,6 +20,13 @@ const userSchema = new Schema({
 		type: Number,
 		required: true,
 	},
+	refreshToken: {
+		type: String,
+		required: false,
+		unique: true,
+		select: false,
+		default: null,
+	},
 	isAdmin: {
 		type: Boolean,
 		required: true,

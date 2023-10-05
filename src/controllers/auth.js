@@ -104,11 +104,21 @@ exports.login = (req, res, next) => {
 				config.authConfig.SECRET_KEY,
 				{ expiresIn: config.authConfig.JWT_EXPIRE }
 			);
+			const refreshToken = jwt.sign(
+				{ userId: loadedUser._id.toString() },
+				config.authConfig.REFRESH_SECRET_KEY,
+				{ expiresIn: config.authConfig.REFRESH_TOKEN_EXPIRE }
+			);
 
-			return res.cookie('token', token).status(200).json({
-				token: token,
-				userId: loadedUser._id.toString(),
-				isAdmin: loadedUser.isAdmin,
+			// Store refresh token in the database
+			loadedUser.refreshToken = refreshToken;
+			return loadedUser.save().then(() => {
+				return res.cookie('token', token).status(200).json({
+					token: token,
+					refreshToken: refreshToken,
+					userId: loadedUser._id.toString(),
+					isAdmin: loadedUser.isAdmin,
+				});
 			});
 		})
 		.catch((err) => {
@@ -151,4 +161,84 @@ exports.logout = (req, res, next) => {
 		}
 		next(error);
 	}
+};
+
+exports.refreshToken = (req, res, next) => {
+	const refreshToken = req.body.refreshToken;
+
+	if (!refreshToken) {
+		const error = new Error('Refresh token is required.');
+		error.statusCode = STATUS_CODE.BAD_REQUEST;
+		return next(error);
+	}
+	console.log('refreshToken: ', refreshToken);
+
+	// Validate refresh token
+	jwt.verify(
+		refreshToken,
+		config.authConfig.REFRESH_SECRET_KEY,
+		(err, decodedData) => {
+			if (err) {
+				console.log('ERROR1: ', err);
+				console.log('decodedData: ', decodedData);
+				const error = new Error('Invalid refresh token.');
+				error.statusCode = STATUS_CODE.UNAUTHORIZED;
+				return next(error);
+			}
+
+			// Find user with decoded userId
+			User.findOne({ _id: decodedData.userId })
+				.select('+refreshToken')
+				.then((user) => {
+					if (!user) {
+						const error = new Error('User not found.');
+						error.statusCode = STATUS_CODE.NOT_FOUND;
+						return next(error);
+					}
+
+					console.log('user: ', user);
+					console.log('user.refreshToken: ', user.refreshToken);
+					console.log('refreshToken: ', refreshToken);
+					// Check if the refresh token exists for the user and is valid
+					if (user.refreshToken !== refreshToken) {
+						const error = new Error('Refresh token is not valid.');
+						error.statusCode = STATUS_CODE.UNAUTHORIZED;
+						return next(error);
+					}
+
+					// Generate a new access token
+					const newAccessToken = jwt.sign(
+						{
+							email: user.email,
+							userId: user._id.toString(),
+						},
+						config.authConfig.SECRET_KEY,
+						{ expiresIn: config.authConfig.JWT_EXPIRE }
+					);
+
+					// Generate a new refresh token
+					const newRefreshToken = jwt.sign(
+						{ userId: user._id.toString() },
+						config.authConfig.REFRESH_SECRET_KEY,
+						{ expiresIn: config.authConfig.REFRESH_TOKEN_EXPIRE }
+					);
+
+					// Update refresh token in the database
+					user.refreshToken = newRefreshToken;
+					return user.save().then(() => {
+						// Send the new access and refresh tokens to the client
+						res.status(200).json({
+							accessToken: newAccessToken,
+							refreshToken: newRefreshToken,
+						});
+					});
+				})
+				.catch((err) => {
+					if (!err.statusCode) {
+						err.statusCode = STATUS_CODE.INTERNAL_SERVER;
+					}
+					next(err);
+				});
+		}
+	);
 };

@@ -1,8 +1,7 @@
 // App.js
-import React, { useEffect } from 'react';
+import React from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import styled from 'styled-components';
-import { useAuth } from './auth/AuthContext';
 import AdminComponent from './components/AdminComponent';
 import EventsComponent from './components/EventsComponent';
 import LoginForm from './components/LoginForm';
@@ -28,12 +27,6 @@ const ContentContainer = styled.div`
 `;
 
 const App = () => {
-	const { token } = useAuth();
-
-	useEffect(() => {
-		if (token === null) localStorage.removeItem('token'); // Remove token from localStorage
-	});
-
 	return (
 		<BrowserRouter>
 			<AppContainer>

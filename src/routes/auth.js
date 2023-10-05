@@ -1,6 +1,12 @@
 const express = require('express');
 const { body } = require('express-validator');
-const { login, logout, signup, verifyUser } = require('../controllers/auth');
+const {
+	login,
+	logout,
+	signup,
+	verifyUser,
+	refreshToken,
+} = require('../controllers/auth');
 const User = require('../models/user');
 
 /**
@@ -44,5 +50,7 @@ authRouter.post('/api/auth/login', login);
 authRouter.post('/api/auth/logout', logout);
 
 authRouter.get('/api/auth/activation/:confirmationCode', verifyUser);
+
+authRouter.post('/api/auth/refresh-token', refreshToken);
 
 module.exports = authRouter;
