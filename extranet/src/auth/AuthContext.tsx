@@ -47,12 +47,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 			);
 
 			const newToken = response.data.accessToken;
-			const newRefreshToken = response.data.refreshToken; // get the new refresh token from response
+			const newRefreshToken = response.data.refreshToken;
 
 			// Update local storage and state
 			setToken(newToken);
 			localStorage.setItem('token', newToken);
-			localStorage.setItem('refreshToken', newRefreshToken); // update the refresh token in local storage
+			localStorage.setItem('refreshToken', newRefreshToken);
 
 			axios.defaults.headers['Authorization'] = `Bearer ${newToken}`;
 		} catch (error) {
