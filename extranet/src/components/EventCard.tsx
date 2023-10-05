@@ -22,14 +22,19 @@ const useStyles = makeStyles({
 	cardContainer: {
 		backgroundColor: 'rgba(0,0,0,0.7)',
 		color: 'white',
-		width: '300px',
-		height: '400px',
+		width: '370px',
+		height: '550px',
 		overflow: 'hidden',
 		transform: 'translateX(100%)',
 		opacity: 0,
 		animation: '$slideIn 0.5s forwards ease-out',
+		marginBottom: '20px',
 		'&.MuiCard-root': {
 			borderRadius: '32px',
+		},
+		'@media (max-width:600px)': {
+			width: '280px',
+			height: '450px',
 		},
 	},
 	'@keyframes slideIn': {
@@ -44,12 +49,16 @@ const useStyles = makeStyles({
 	},
 	titleContainer: {
 		padding: '10px',
-		backgroundColor: colors.rose,
+		backgroundColor: '#ff306714',
+		borderBottom: `4px solid ${colors.rose}`,
 		textAlign: 'center',
-		color: 'white',
+		color: colors.darkPurple,
 		fontSize: '1rem',
 		'& > p': {
 			fontWeight: 500,
+		},
+		'@media (max-width:600px)': {
+			fontSize: '0.9rem',
 		},
 	},
 	imageContainer: {
@@ -57,19 +66,46 @@ const useStyles = makeStyles({
 		backgroundColor: colors.darkPurple,
 	},
 	image: {
-		border: '5px solid white',
+		border: `3px solid ${colors.darkPurple}`,
 		width: '100%',
-		height: '200px',
+		height: '300px',
 		objectFit: 'cover',
 		position: 'relative',
 		top: '24px',
+		zIndex: 99,
+		'@media (max-width:600px)': {
+			height: '220px',
+		},
 	},
 	contentContainer: {
 		padding: '10px',
-		backgroundColor: colors.rose,
-		height: '-webkit-fill-available',
+		backgroundColor: '#ff306714',
+		height: '210px',
+		position: 'relative',
 		'&.MuiCardContent-root': {
 			padding: '32px 16px 16px',
+		},
+		'&::before, &::after': {
+			content: '""',
+			position: 'absolute',
+			left: 0,
+			bottom: '64px',
+			height: '90px',
+			width: '10px',
+			backgroundColor: colors.darkPurple,
+		},
+		'&::before': {
+			borderRightWidth: '0',
+		},
+		'&::after': {
+			right: 0,
+			left: 'auto',
+			borderLeftWidth: '0',
+		},
+		'@media (max-width:600px)': {
+			'&.MuiCardContent-root': {
+				padding: '24px 12px 12px',
+			},
 		},
 	},
 	link: {
@@ -88,7 +124,7 @@ const EventCard: React.FC<EventCardProps> = ({ event, animationDelay }) => {
 	} = useStyles();
 
 	return (
-		<Card className={cardContainer} style={{ animationDelay }}>
+		<Card className={cardContainer} style={{ animationDelay: animationDelay }}>
 			<div className={titleContainer}>
 				<Typography>{event.title}</Typography>
 			</div>
