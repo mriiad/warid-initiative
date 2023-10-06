@@ -1,3 +1,6 @@
+import ApartmentIcon from '@mui/icons-material/Apartment';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+import MapIcon from '@mui/icons-material/Map';
 import { Card, CardContent, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import React from 'react';
@@ -29,8 +32,10 @@ const useStyles = makeStyles({
 		opacity: 0,
 		animation: '$slideIn 0.5s forwards ease-out',
 		marginBottom: '20px',
+		cursor: 'pointer',
 		'&.MuiCard-root': {
 			borderRadius: '32px',
+			boxShadow: '1px 1px 20px -2px rgb(135 108 108 / 24%)',
 		},
 		'@media (max-width:600px)': {
 			width: '280px',
@@ -78,6 +83,9 @@ const useStyles = makeStyles({
 		},
 	},
 	contentContainer: {
+		display: 'flex',
+		justifyContent: 'center',
+		alignItems: 'center',
 		padding: '10px',
 		backgroundColor: '#ff306714',
 		height: '210px',
@@ -89,7 +97,7 @@ const useStyles = makeStyles({
 			content: '""',
 			position: 'absolute',
 			left: 0,
-			bottom: '64px',
+			bottom: '56px',
 			height: '90px',
 			width: '10px',
 			backgroundColor: colors.darkPurple,
@@ -106,10 +114,46 @@ const useStyles = makeStyles({
 			'&.MuiCardContent-root': {
 				padding: '24px 12px 12px',
 			},
+			'&::before, &::after': {
+				bottom: '46px',
+			},
+			height: '180px',
 		},
 	},
 	link: {
 		color: 'white',
+	},
+	contentData: {
+		height: '134px',
+		width: '300px',
+		display: 'flex',
+		flexDirection: 'column',
+		alignItems: 'center',
+		backgroundColor: colors.darkPurple,
+		padding: '16px',
+		color: 'white',
+		'& > p:first-child': {
+			fontSize: '1rem',
+			fontWeight: 600,
+			marginBottom: '10px',
+		},
+		'& > div': {
+			display: 'flex',
+			justifyContent: 'center',
+			alignItems: 'center',
+			'& > svg': {
+				marginRight: '8px',
+			},
+		},
+		'@media (max-width:600px)': {
+			height: '105px',
+			width: '230px',
+			padding: '6px',
+			'& > p:first-child': {
+				fontSize: '0.8rem',
+				marginBottom: '4px',
+			},
+		},
 	},
 });
 
@@ -121,6 +165,7 @@ const EventCard: React.FC<EventCardProps> = ({ event, animationDelay }) => {
 		image,
 		contentContainer,
 		link,
+		contentData,
 	} = useStyles();
 
 	return (
@@ -140,22 +185,32 @@ const EventCard: React.FC<EventCardProps> = ({ event, animationDelay }) => {
 				/>
 			</div>
 			<CardContent className={contentContainer}>
-				<Typography variant='body2'>{event.subtitle}</Typography>
-				<Typography variant='body2'>Location: {event.location}</Typography>
-				<Typography variant='body2'>
-					Date: {new Date(event.date).toLocaleDateString()}
-				</Typography>
-				<Typography variant='body2'>
-					Map:{' '}
-					<a
-						href={event.mapLink}
-						target='_blank'
-						rel='noopener noreferrer'
-						className={link}
-					>
-						Link
-					</a>
-				</Typography>
+				<div className={contentData}>
+					<Typography variant='body2'>{event.subtitle}</Typography>
+					<div>
+						<CalendarMonthIcon />
+						<Typography variant='body2'>
+							{new Date(event.date).toLocaleDateString()}
+						</Typography>
+					</div>
+					<div>
+						<ApartmentIcon />
+						<Typography variant='body2'>{event.location}</Typography>
+					</div>
+					<div>
+						<MapIcon />
+						<Typography variant='body2'>
+							<a
+								href={event.mapLink}
+								target='_blank'
+								rel='noopener noreferrer'
+								className={link}
+							>
+								itinerary
+							</a>
+						</Typography>
+					</div>
+				</div>
 			</CardContent>
 		</Card>
 	);
