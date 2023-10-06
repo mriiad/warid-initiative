@@ -19,6 +19,8 @@
 	  "secret": "random-secret-key",
 	"authConfig": {
 	  "SECRET_KEY" : "RANDOMSECRETKEY",
-	  "JWT_EXPIRE" : "2d"
-	}  
+	  "REFRESH_SECRET_KEY": "REFRESHSECRETKEY",
+	  "JWT_EXPIRE" : "1h",
+	  "REFRESH_TOKEN_EXPIRE": "7d"
+	}
 }

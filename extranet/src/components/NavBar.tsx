@@ -103,12 +103,17 @@ const Navbar = () => {
 		axios
 			.post('http://localhost:3000/api/auth/logout')
 			.then((response) => {
+				// Removing user data from local storage
 				localStorage.removeItem('token');
-				setToken(null);
+				localStorage.removeItem('refreshToken');
 				localStorage.removeItem('userId');
-				setUserId(null);
 				localStorage.removeItem('isAdmin');
+
+				// Resetting user state
+				setToken(null);
+				setUserId(null);
 				setIsAdmin(null);
+
 				navigate('/login');
 			})
 			.catch((error) => {
