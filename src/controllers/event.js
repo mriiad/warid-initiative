@@ -21,11 +21,11 @@ exports.getEvents = async (req, res, next) => {
 		const events = await Event.find()
 			.skip((currentPage - 1) * perPage)
 			.limit(perPage)
-			.lean(); // Use .lean() to convert mongoose document to plain JS object.
+			.lean();
 
 		events.forEach((event) => {
 			if (event.image) {
-				event.image = event.image.toString('base64'); // Ensure conversion to Base64.
+				event.image = event.image.toString('base64');
 			}
 		});
 
@@ -33,6 +33,34 @@ exports.getEvents = async (req, res, next) => {
 			message: 'Fetched posts successfully.',
 			events: events,
 			totalItems: totalItems,
+		});
+	} catch (err) {
+		if (!err.statusCode) {
+			err.statusCode = STATUS_CODE.INTERNAL_SERVER;
+		}
+		next(err);
+	}
+};
+
+exports.getEvent = async (req, res, next) => {
+	const eventReference = req.params.reference;
+
+	try {
+		const event = await Event.findOne({ reference: eventReference }).lean();
+
+		if (!event) {
+			const error = new Error('Event not found.');
+			error.statusCode = STATUS_CODE.NOT_FOUND;
+			throw error;
+		}
+
+		if (event.image) {
+			event.image = event.image.toString('base64');
+		}
+
+		res.status(STATUS_CODE.OK).json({
+			message: 'Event fetched successfully.',
+			event: event,
 		});
 	} catch (err) {
 		if (!err.statusCode) {
