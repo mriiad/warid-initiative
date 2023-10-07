@@ -4,17 +4,9 @@ import MapIcon from '@mui/icons-material/Map';
 import { Card, CardContent, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Event } from '../data/Event';
 import colors from '../styles/colors';
-
-interface Event {
-	_id: string;
-	title: string;
-	image: string;
-	subtitle: string;
-	location: string;
-	date: string;
-	mapLink: string;
-}
 
 interface EventCardProps {
 	event: Event;
@@ -168,8 +160,18 @@ const EventCard: React.FC<EventCardProps> = ({ event, animationDelay }) => {
 		contentData,
 	} = useStyles();
 
+	const navigate = useNavigate();
+
+	const handleClick = () => {
+		navigate(`/events/${event.reference}`);
+	};
+
 	return (
-		<Card className={cardContainer} style={{ animationDelay: animationDelay }}>
+		<Card
+			className={cardContainer}
+			style={{ animationDelay: animationDelay }}
+			onClick={handleClick}
+		>
 			<div className={titleContainer}>
 				<Typography>{event.title}</Typography>
 			</div>
