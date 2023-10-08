@@ -1,8 +1,8 @@
 import {
 	Button,
-	Card,
-	CardContent,
 	CircularProgress,
+	Divider,
+	Link,
 	Typography,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
@@ -11,16 +11,11 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { Event } from '../data/Event';
+import FormContainer from './shared/FormContainer';
 
 const useStyles = makeStyles({
 	detailContainer: {
-		display: 'flex',
-		flexDirection: 'column',
-		alignItems: 'center',
-		padding: '20px',
-		color: 'white',
-		minHeight: '100vh',
-		backgroundColor: 'rgba(0,0,0,0.7)',
+		width: '900px',
 	},
 	fallback: {
 		display: 'flex',
@@ -29,10 +24,8 @@ const useStyles = makeStyles({
 		minHeight: '100vh',
 	},
 	image: {
-		maxWidth: '500px',
 		width: '100%',
-		marginTop: '20px',
-		border: '3px solid white',
+		border: '12px solid white',
 	},
 	content: {
 		backgroundColor: 'rgba(255, 48, 103, 0.1)',
@@ -41,6 +34,17 @@ const useStyles = makeStyles({
 		width: '80%',
 		marginTop: '20px',
 	},
+	divider: {
+		width: '900px',
+		'&.MuiDivider-root': {
+			borderBottom: '1px solid white',
+			margin: '20px -31px 20px',
+		},
+	},
+	eventData: {
+		marginTop: '20px',
+		textAlign: 'center',
+	},
 });
 
 const EventDetail: React.FC = () => {
@@ -48,7 +52,8 @@ const EventDetail: React.FC = () => {
 	const { token, isAdmin } = useAuth();
 	const [event, setEvent] = useState<Event | null>();
 	const [isLoading, setIsLoading] = useState(false);
-	const { detailContainer, fallback, image, content } = useStyles();
+	const { detailContainer, eventData, divider, fallback, image, content } =
+		useStyles();
 
 	useEffect(() => {
 		const fetchEvent = async () => {
@@ -75,44 +80,51 @@ const EventDetail: React.FC = () => {
 					<CircularProgress />
 				</div>
 			) : (
-				<div className={detailContainer}>
+				<FormContainer className={detailContainer}>
+					<Typography variant='h3'>{event?.title}</Typography>
+					<Divider className={divider} />
+
 					<img
 						src={
 							event?.image
 								? `data:image/jpeg;base64,${event.image}`
-								: 'C:/Users/MCMXLIX/Projects/warid-initiative/extranet/public/event-default.png'
+								: 'event-default.png'
 						}
 						alt={event?.title}
 						className={image}
 					/>
 
-					<Card className={content}>
-						<CardContent>
-							<Typography variant='h3'>{event?.title}</Typography>
-							<Typography variant='h5'>{event?.subtitle}</Typography>
+					<Divider className={divider} />
 
-							{token && (
-								<Button
-									variant='contained'
-									color='primary'
-									style={{ marginTop: '20px' }}
-								>
-									Participate
-								</Button>
-							)}
+					<div className={eventData}>
+						<Typography variant='h6'>{event?.date}</Typography>
+						<Typography variant='h6'>
+							<Link href={event?.mapLink} target='_blank' rel='noopener'>
+								View Map
+							</Link>
+						</Typography>
+						<Typography variant='h6'>{event?.location}</Typography>
+						{token && (
+							<Button
+								variant='contained'
+								color='primary'
+								style={{ marginTop: '20px' }}
+							>
+								Participate
+							</Button>
+						)}
 
-							{token && isAdmin && (
-								<Button
-									variant='contained'
-									color='secondary'
-									style={{ marginTop: '10px' }}
-								>
-									Create Event
-								</Button>
-							)}
-						</CardContent>
-					</Card>
-				</div>
+						{token && isAdmin && (
+							<Button
+								variant='contained'
+								color='secondary'
+								style={{ marginTop: '10px' }}
+							>
+								Create Event
+							</Button>
+						)}
+					</div>
+				</FormContainer>
 			)}
 		</>
 	);
