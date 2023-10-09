@@ -20,7 +20,16 @@ const useStyles = makeStyles({
 	actionsContainer: {
 		'& > div': {
 			'& > div': {
-				width: '300px',
+				width: '322px',
+			},
+		},
+	},
+	calendar: {
+		marginBottom: '22px',
+		'& > div': {
+			'& > div': {
+				width: 'fit-content',
+				padding: 0,
 			},
 		},
 	},
@@ -31,6 +40,11 @@ const useStyles = makeStyles({
 				width: '900px',
 			},
 		},
+	},
+	rightSideContainer: {
+		display: 'flex',
+		flexDirection: 'column',
+		alignItems: 'flex-start',
 	},
 	fallback: {
 		display: 'flex',
@@ -60,9 +74,11 @@ const EventDetail: React.FC = () => {
 		eventContainer,
 		detailContainer,
 		actionsContainer,
+		rightSideContainer,
 		divider,
 		fallback,
 		image,
+		calendar,
 	} = useStyles();
 
 	useEffect(() => {
@@ -105,16 +121,18 @@ const EventDetail: React.FC = () => {
 							className={image}
 						/>
 					</FormContainer>
-					<div>
+					<div className={rightSideContainer}>
 						{token && (
 							<FormContainer className={actionsContainer}>
 								<Typography>10 people are attending this event</Typography>
 								<Button>Join them</Button>
 							</FormContainer>
 						)}
-						<LocalizationProvider dateAdapter={AdapterDayjs}>
-							<DateCalendar value={dayjs(event?.date)} disabled />
-						</LocalizationProvider>
+						<FormContainer className={calendar}>
+							<LocalizationProvider dateAdapter={AdapterDayjs}>
+								<DateCalendar value={dayjs(event?.date)} disabled />
+							</LocalizationProvider>
+						</FormContainer>
 						<Map event={event} />
 					</div>
 				</div>

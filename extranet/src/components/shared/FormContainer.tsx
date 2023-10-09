@@ -1,4 +1,4 @@
-import { Box, Container } from '@mui/material';
+import { Box } from '@mui/material';
 import clsx from 'clsx';
 import React, { ReactNode } from 'react';
 import { authStyles } from '../../styles/mainStyles';
@@ -15,11 +15,11 @@ const FormContainer: React.FC<FormContainerProps> = ({
 	const { container, formContainer, formWrapper } = authStyles();
 
 	return (
-		<Container maxWidth='md' className={clsx(container, className)}>
+		<div className={clsx(container, className)}>
 			<div className={formContainer}>
 				<Box className={formWrapper}>{children}</Box>
 			</div>
-		</Container>
+		</div>
 	);
 };
 
