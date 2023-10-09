@@ -15,9 +15,9 @@ const FormContainer: React.FC<FormContainerProps> = ({
 	const { container, formContainer, formWrapper } = authStyles();
 
 	return (
-		<Container maxWidth='md' className={container}>
+		<Container maxWidth='md' className={clsx(container, className)}>
 			<div className={formContainer}>
-				<Box className={clsx(formWrapper, className)}>{children}</Box>
+				<Box className={formWrapper}>{children}</Box>
 			</div>
 		</Container>
 	);

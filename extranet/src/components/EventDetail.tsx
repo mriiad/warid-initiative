@@ -1,21 +1,36 @@
-import {
-	Button,
-	CircularProgress,
-	Divider,
-	Link,
-	Typography,
-} from '@mui/material';
+import { Button, CircularProgress, Divider, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { DateCalendar } from '@mui/x-date-pickers/DateCalendar';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import axios from 'axios';
+import dayjs from 'dayjs';
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { Event } from '../data/Event';
 import FormContainer from './shared/FormContainer';
+import Map from './shared/Map';
 
 const useStyles = makeStyles({
+	eventContainer: {
+		display: 'flex',
+		gap: '16px',
+	},
+	actionsContainer: {
+		'& > div': {
+			'& > div': {
+				width: '300px',
+			},
+		},
+	},
 	detailContainer: {
-		width: '900px',
+		'& > div': {
+			display: 'block',
+			'& > div': {
+				width: '900px',
+			},
+		},
 	},
 	fallback: {
 		display: 'flex',
@@ -27,23 +42,12 @@ const useStyles = makeStyles({
 		width: '100%',
 		border: '12px solid white',
 	},
-	content: {
-		backgroundColor: 'rgba(255, 48, 103, 0.1)',
-		padding: '20px',
-		textAlign: 'center',
-		width: '80%',
-		marginTop: '20px',
-	},
 	divider: {
 		width: '900px',
 		'&.MuiDivider-root': {
 			borderBottom: '1px solid white',
 			margin: '20px -31px 20px',
 		},
-	},
-	eventData: {
-		marginTop: '20px',
-		textAlign: 'center',
 	},
 });
 
@@ -52,8 +56,14 @@ const EventDetail: React.FC = () => {
 	const { token, isAdmin } = useAuth();
 	const [event, setEvent] = useState<Event | null>();
 	const [isLoading, setIsLoading] = useState(false);
-	const { detailContainer, eventData, divider, fallback, image, content } =
-		useStyles();
+	const {
+		eventContainer,
+		detailContainer,
+		actionsContainer,
+		divider,
+		fallback,
+		image,
+	} = useStyles();
 
 	useEffect(() => {
 		const fetchEvent = async () => {
@@ -80,51 +90,34 @@ const EventDetail: React.FC = () => {
 					<CircularProgress />
 				</div>
 			) : (
-				<FormContainer className={detailContainer}>
-					<Typography variant='h3'>{event?.title}</Typography>
-					<Divider className={divider} />
+				<div className={eventContainer}>
+					<FormContainer className={detailContainer}>
+						<Typography variant='h3'>{event?.title}</Typography>
+						<Divider className={divider} />
 
-					<img
-						src={
-							event?.image
-								? `data:image/jpeg;base64,${event.image}`
-								: 'event-default.png'
-						}
-						alt={event?.title}
-						className={image}
-					/>
-
-					<Divider className={divider} />
-
-					<div className={eventData}>
-						<Typography variant='h6'>{event?.date}</Typography>
-						<Typography variant='h6'>
-							<Link href={event?.mapLink} target='_blank' rel='noopener'>
-								View Map
-							</Link>
-						</Typography>
-						<Typography variant='h6'>{event?.location}</Typography>
+						<img
+							src={
+								event?.image
+									? `data:image/jpeg;base64,${event.image}`
+									: 'event-default.png'
+							}
+							alt={event?.title}
+							className={image}
+						/>
+					</FormContainer>
+					<div>
 						{token && (
-							<Button
-								variant='contained'
-								color='primary'
-								style={{ marginTop: '20px' }}
-							>
-								Participate
-							</Button>
+							<FormContainer className={actionsContainer}>
+								<Typography>10 people are attending this event</Typography>
+								<Button>Join them</Button>
+							</FormContainer>
 						)}
-
-						{token && isAdmin && (
-							<Button
-								variant='contained'
-								color='secondary'
-								style={{ marginTop: '10px' }}
-							>
-								Create Event
-							</Button>
-						)}
+						<LocalizationProvider dateAdapter={AdapterDayjs}>
+							<DateCalendar value={dayjs(event?.date)} disabled />
+						</LocalizationProvider>
+						<Map event={event} />
 					</div>
-				</FormContainer>
+				</div>
 			)}
 		</>
 	);
