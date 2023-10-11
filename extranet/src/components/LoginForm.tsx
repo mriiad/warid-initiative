@@ -107,6 +107,17 @@ const LoginForm = () => {
 							Log In
 						</Button>
 					</Grid>
+					<Grid item xs={12}>
+						<Typography
+							variant='body2'
+							align='center'
+							gutterBottom
+							className={textButton}
+							onClick={() => navigate('/reset-password')}
+						>
+							Forgot Password?
+						</Typography>
+					</Grid>
 				</Grid>
 			</form>
 		</FormContainer>
