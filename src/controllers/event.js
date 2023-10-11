@@ -21,11 +21,11 @@ exports.getEvents = async (req, res, next) => {
 		const events = await Event.find()
 			.skip((currentPage - 1) * perPage)
 			.limit(perPage)
-			.lean(); // Use .lean() to convert mongoose document to plain JS object.
+			.lean();
 
 		events.forEach((event) => {
 			if (event.image) {
-				event.image = event.image.toString('base64'); // Ensure conversion to Base64.
+				event.image = event.image.toString('base64');
 			}
 		});
 
@@ -42,6 +42,34 @@ exports.getEvents = async (req, res, next) => {
 	}
 };
 
+exports.getEvent = async (req, res, next) => {
+	const eventReference = req.params.reference;
+
+	try {
+		const event = await Event.findOne({ reference: eventReference }).lean();
+
+		if (!event) {
+			const error = new Error('Event not found.');
+			error.statusCode = STATUS_CODE.NOT_FOUND;
+			throw error;
+		}
+
+		if (event.image) {
+			event.image = event.image.toString('base64');
+		}
+
+		res.status(STATUS_CODE.OK).json({
+			message: 'Event fetched successfully.',
+			event: event,
+		});
+	} catch (err) {
+		if (!err.statusCode) {
+			err.statusCode = STATUS_CODE.INTERNAL_SERVER;
+		}
+		next(err);
+	}
+};
+
 exports.createEvent = (req, res, next) => {
 	const errors = validationResult(req);
 	if (!errors.isEmpty()) {
@@ -49,7 +77,8 @@ exports.createEvent = (req, res, next) => {
 		error.statusCode = STATUS_CODE.UNPROCESSABLE_ENTITY;
 		throw error;
 	}
-	const { title, subtitle, image, location, date, mapLink } = req.body;
+	const { title, subtitle, image, location, date, mapLink, description } =
+		req.body;
 	const { path } = req.file || '';
 	let eventImage;
 	if (path !== undefined) eventImage = fs.readFileSync(path);
@@ -70,6 +99,7 @@ exports.createEvent = (req, res, next) => {
 		location: location,
 		date: date,
 		mapLink: mapLink,
+		description: description,
 	});
 	event
 		.save()

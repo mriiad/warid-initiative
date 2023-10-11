@@ -1,6 +1,7 @@
 const express = require('express');
 const {
 	getEvents,
+	getEvent,
 	createEvent,
 	confirmPresence,
 	deleteEvent,
@@ -37,7 +38,9 @@ const eventRouter = express.Router();
 const { isAuth } = require('../middleware/token-check');
 const checkIfAdmin = require('../utils/checks');
 
-eventRouter.get('/api/events', isAuth, getEvents);
+eventRouter.get('/api/events', getEvents);
+
+eventRouter.get('/api/events/:reference', getEvent);
 
 eventRouter.post(
 	'/api/event',

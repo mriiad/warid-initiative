@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import styled from 'styled-components';
 import AdminComponent from './components/AdminComponent';
+import EventDetail from './components/EventDetail';
 import EventsComponent from './components/EventsComponent';
 import LoginForm from './components/LoginForm';
 import NavBar from './components/NavBar';
@@ -34,11 +35,9 @@ const App = () => {
 					<Routes>
 						<Route path='/' element={<Navigate replace to='/signup' />} />
 						<Route path='/signup' element={<SignupForm />} />
-						{/*<Route path='/quotes/:quoteId' element={<QuoteDetail />}>
-						<Route path='comments' element={<Comments />} />
-					</Route>*/}
 						<Route path='/login' element={<LoginForm />} />
 						<Route path='/events' element={<EventsComponent />} />
+						<Route path='/events/:reference' element={<EventDetail />} />
 						<Route path='/admin' element={<AdminComponent />} />
 						<Route path='*' element={<SignupForm />} />
 					</Routes>

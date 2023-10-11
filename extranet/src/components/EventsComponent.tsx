@@ -2,6 +2,7 @@ import { Button, CircularProgress } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
+import { Event } from '../data/Event';
 import EventCard from './EventCard';
 
 const useStyles = makeStyles({
@@ -22,7 +23,7 @@ const useStyles = makeStyles({
 
 const EventsComponent = () => {
 	const { eventsContainer, fallBack } = useStyles();
-	const [events, setEvents] = useState([]);
+	const [events, setEvents] = useState<Event[] | null>([]);
 
 	const [page, setPage] = useState(1);
 	const [totalPages, setTotalPages] = useState(0);
@@ -32,7 +33,7 @@ const EventsComponent = () => {
 	useEffect(() => {
 		const fetchEvents = async () => {
 			try {
-				setIsLoading(true); // Set loading to true when starting to fetch
+				setIsLoading(true);
 				const response = await axios.get(
 					`http://localhost:3000/api/events?page=${page}`
 				);
@@ -41,14 +42,12 @@ const EventsComponent = () => {
 			} catch (error) {
 				console.error('Error fetching events', error);
 			} finally {
-				setIsLoading(false); // Reset loading to false after fetching is done
+				setIsLoading(false);
 			}
 		};
 
 		fetchEvents();
 	}, [page]);
-
-	console.log('events', events);
 
 	return (
 		<div>
@@ -67,7 +66,6 @@ const EventsComponent = () => {
 					))}
 				</div>
 			)}
-			{/* TODO: work on list display (horizontal cards maybe) & pagination (on scroll or with btns) */}
 			<div>
 				<Button disabled={page === 1} onClick={() => setPage(page - 1)}>
 					Previous

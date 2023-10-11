@@ -1,11 +1,4 @@
-import {
-	Box,
-	Button,
-	Container,
-	Grid,
-	TextField,
-	Typography,
-} from '@mui/material';
+import { Button, Grid, TextField, Typography } from '@mui/material';
 import axios from 'axios';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
@@ -13,10 +6,10 @@ import { useMutation } from 'react-query';
 import { useNavigate } from 'react-router-dom';
 import { SignupFormData } from '../data/authData';
 import { authStyles, mainStyles } from '../styles/mainStyles';
+import FormContainer from './shared/FormContainer';
 
 const SignupForm = () => {
-	const { container, formContainer, bar, button, formWrapper, signUp, form } =
-		authStyles();
+	const { bar, button, signUp, form } = authStyles();
 	const { subTitle, textButton } = mainStyles();
 	const {
 		handleSubmit,
@@ -57,110 +50,101 @@ const SignupForm = () => {
 	};
 
 	return (
-		<Container maxWidth='md' className={container}>
-			<div className={formContainer}>
-				<Box className={formWrapper}>
-					<Typography
-						variant='h2'
-						align='center'
-						gutterBottom
-						className={signUp}
-					>
-						Sign Up
-						<span className={bar}></span>
-					</Typography>
-					<Typography variant='h6' align='center' gutterBottom>
-						<span className={subTitle}>Do you have an account? </span>
-						<span className={textButton} onClick={() => navigate('/login')}>
-							Login
-						</span>
-					</Typography>
-					<form onSubmit={handleSubmit(onSubmit)} className={form}>
-						<Grid container spacing={2}>
-							<Grid item xs={12}>
-								<Controller
-									name='username'
-									control={control}
-									defaultValue=''
-									render={({ field }) => (
-										<TextField
-											fullWidth
-											label='Username'
-											required
-											{...field}
-											error={Boolean(errors.username)}
-											helperText={errors.username ? 'Username is required' : ''}
-										/>
-									)}
+		<FormContainer>
+			<Typography variant='h2' align='center' gutterBottom className={signUp}>
+				Sign Up
+				<span className={bar}></span>
+			</Typography>
+			<Typography variant='h6' align='center' gutterBottom>
+				<span className={subTitle}>Do you have an account? </span>
+				<span className={textButton} onClick={() => navigate('/login')}>
+					Login
+				</span>
+			</Typography>
+			<form onSubmit={handleSubmit(onSubmit)} className={form}>
+				<Grid container spacing={2}>
+					<Grid item xs={12}>
+						<Controller
+							name='username'
+							control={control}
+							defaultValue=''
+							render={({ field }) => (
+								<TextField
+									fullWidth
+									label='Username'
+									required
+									{...field}
+									error={Boolean(errors.username)}
+									helperText={errors.username ? 'Username is required' : ''}
 								/>
-							</Grid>
-							<Grid item xs={12}>
-								<Controller
-									name='email'
-									control={control}
-									defaultValue=''
-									render={({ field }) => (
-										<TextField
-											fullWidth
-											label='Email'
-											required
-											{...field}
-											error={Boolean(errors.email)}
-											helperText={errors.email?.message || ''}
-										/>
-									)}
-									rules={{
-										required: 'Email is required',
-										validate: validateEmail,
-									}}
+							)}
+						/>
+					</Grid>
+					<Grid item xs={12}>
+						<Controller
+							name='email'
+							control={control}
+							defaultValue=''
+							render={({ field }) => (
+								<TextField
+									fullWidth
+									label='Email'
+									required
+									{...field}
+									error={Boolean(errors.email)}
+									helperText={errors.email?.message || ''}
 								/>
-							</Grid>
-							<Grid item xs={12}>
-								<Controller
-									name='password'
-									control={control}
-									defaultValue=''
-									render={({ field }) => (
-										<TextField
-											fullWidth
-											type='password'
-											required
-											label='Password'
-											{...field}
-											error={Boolean(errors.password)}
-											helperText={errors.password ? 'Password is required' : ''}
-										/>
-									)}
+							)}
+							rules={{
+								required: 'Email is required',
+								validate: validateEmail,
+							}}
+						/>
+					</Grid>
+					<Grid item xs={12}>
+						<Controller
+							name='password'
+							control={control}
+							defaultValue=''
+							render={({ field }) => (
+								<TextField
+									fullWidth
+									type='password'
+									required
+									label='Password'
+									{...field}
+									error={Boolean(errors.password)}
+									helperText={errors.password ? 'Password is required' : ''}
 								/>
-							</Grid>
-							<Grid item xs={12}>
-								<Controller
-									name='phoneNumber'
-									control={control}
-									defaultValue=''
-									render={({ field }) => (
-										<TextField
-											fullWidth
-											label='Phone number'
-											type='tel'
-											required
-											{...field}
-											error={Boolean(errors.username)}
-											helperText={errors.username ? 'Username is required' : ''}
-										/>
-									)}
+							)}
+						/>
+					</Grid>
+					<Grid item xs={12}>
+						<Controller
+							name='phoneNumber'
+							control={control}
+							defaultValue=''
+							render={({ field }) => (
+								<TextField
+									fullWidth
+									label='Phone number'
+									type='tel'
+									required
+									{...field}
+									error={Boolean(errors.username)}
+									helperText={errors.username ? 'Username is required' : ''}
 								/>
-							</Grid>
-							<Grid item xs={12}>
-								<Button type='submit' className={button}>
-									Submit
-								</Button>
-							</Grid>
-						</Grid>
-					</form>
-				</Box>
-			</div>
-		</Container>
+							)}
+						/>
+					</Grid>
+					<Grid item xs={12}>
+						<Button type='submit' className={button}>
+							Submit
+						</Button>
+					</Grid>
+				</Grid>
+			</form>
+		</FormContainer>
 	);
 };
 

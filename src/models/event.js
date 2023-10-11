@@ -34,6 +34,10 @@ const EventSchema = new Schema({
 		type: String,
 		required: false,
 	},
+	description: {
+		type: String,
+		required: true,
+	},
 	attendees: [
 		{
 			type: Schema.Types.ObjectId,

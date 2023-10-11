@@ -1,11 +1,4 @@
-import {
-	Box,
-	Button,
-	Container,
-	Grid,
-	TextField,
-	Typography,
-} from '@mui/material';
+import { Button, Grid, TextField, Typography } from '@mui/material';
 import axios from 'axios';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
@@ -14,12 +7,12 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { LoginFormData } from '../data/authData';
 import { authStyles, mainStyles } from '../styles/mainStyles';
+import FormContainer from './shared/FormContainer';
 
 const LoginForm = () => {
 	const { setToken, setUserId, setIsAdmin } = useAuth();
 
-	const { container, formContainer, bar, button, formWrapper, signUp, form } =
-		authStyles();
+	const { bar, button, signUp, form } = authStyles();
 	const { textButton, subTitle } = mainStyles();
 	const {
 		handleSubmit,
@@ -56,76 +49,67 @@ const LoginForm = () => {
 	};
 
 	return (
-		<Container maxWidth='md' className={container}>
-			<div className={formContainer}>
-				<Box className={formWrapper}>
-					<Typography
-						variant='h2'
-						align='center'
-						gutterBottom
-						className={signUp}
-					>
-						Log In
-						<span className={bar}></span>
-					</Typography>
-					<Typography variant='h6' align='center' gutterBottom>
-						<span className={subTitle}>Don't have an account? </span>
-						<span className={textButton} onClick={() => navigate('/signup')}>
-							Signup
-						</span>
-					</Typography>
-					<form onSubmit={handleSubmit(onSubmit)} className={form}>
-						<Grid container spacing={2}>
-							<Grid item xs={12}>
-								<Controller
-									name='username'
-									control={control}
-									defaultValue=''
-									render={({ field }) => (
-										<TextField
-											fullWidth
-											label='Username'
-											required
-											{...field}
-											error={Boolean(errors.username)}
-											helperText={errors.username ? 'Username is required' : ''}
-										/>
-									)}
+		<FormContainer>
+			<Typography variant='h2' align='center' gutterBottom className={signUp}>
+				Log In
+				<span className={bar}></span>
+			</Typography>
+			<Typography variant='h6' align='center' gutterBottom>
+				<span className={subTitle}>Don't have an account? </span>
+				<span className={textButton} onClick={() => navigate('/signup')}>
+					Signup
+				</span>
+			</Typography>
+			<form onSubmit={handleSubmit(onSubmit)} className={form}>
+				<Grid container spacing={2}>
+					<Grid item xs={12}>
+						<Controller
+							name='username'
+							control={control}
+							defaultValue=''
+							render={({ field }) => (
+								<TextField
+									fullWidth
+									label='Username'
+									required
+									{...field}
+									error={Boolean(errors.username)}
+									helperText={errors.username ? 'Username is required' : ''}
 								/>
-							</Grid>
-							<Grid item xs={12}>
-								<Controller
-									name='password'
-									control={control}
-									defaultValue=''
-									render={({ field }) => (
-										<TextField
-											fullWidth
-											type='password'
-											label='Password'
-											required
-											{...field}
-											error={Boolean(errors.password)}
-											helperText={errors.password ? 'Password is required' : ''}
-										/>
-									)}
+							)}
+						/>
+					</Grid>
+					<Grid item xs={12}>
+						<Controller
+							name='password'
+							control={control}
+							defaultValue=''
+							render={({ field }) => (
+								<TextField
+									fullWidth
+									type='password'
+									label='Password'
+									required
+									{...field}
+									error={Boolean(errors.password)}
+									helperText={errors.password ? 'Password is required' : ''}
 								/>
-							</Grid>
-							<Grid item xs={12}>
-								<Button
-									type='submit'
-									color='primary'
-									style={{ color: 'white' }}
-									className={button}
-								>
-									Log In
-								</Button>
-							</Grid>
-						</Grid>
-					</form>
-				</Box>
-			</div>
-		</Container>
+							)}
+						/>
+					</Grid>
+					<Grid item xs={12}>
+						<Button
+							type='submit'
+							color='primary'
+							style={{ color: 'white' }}
+							className={button}
+						>
+							Log In
+						</Button>
+					</Grid>
+				</Grid>
+			</form>
+		</FormContainer>
 	);
 };
 
