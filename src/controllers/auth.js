@@ -5,6 +5,8 @@ const User = require('../models/user');
 const { validationResult } = require('express-validator');
 const config = require('../../config.json');
 const { STATUS_CODE } = require('../utils/errors/httpStatusCode');
+const crypto = require('crypto');
+const moment = require('moment-timezone');
 
 const { email, password, host, secureConnection, port, ciphers, requireTLS } =
 	config.mailerConfig;
@@ -235,4 +237,89 @@ exports.refreshToken = (req, res, next) => {
 				});
 		}
 	);
+};
+
+exports.requestPasswordReset = (req, res, next) => {
+	const email = req.body.email;
+	User.findOne({ email: email })
+		.then((user) => {
+			if (!user) {
+				const error = new Error('No user found with that email address.');
+				error.statusCode = STATUS_CODE.NOT_FOUND;
+				throw error;
+			}
+
+			// Generate a reset token and set its expiration
+			const resetToken = crypto.randomBytes(32).toString('hex');
+			user.passwordResetToken = resetToken;
+			// in order to avoid timezone's problems
+			const expiryDate = moment
+				.utc()
+				.add(10, 'minutes')
+				.add(2, 'hours')
+				.valueOf();
+			user.passwordResetExpires = expiryDate;
+			return user.save();
+		})
+		.then((user) => {
+			// Send reset email
+			const resetURL = `http://localhost:${config.port}/api/auth/reset-password/${user.passwordResetToken}`;
+			const message = `Forgot your password? Click the link below to reset it: ${resetURL}`;
+
+			return transporter.sendMail({
+				from: 'do-not-reply@warid.ma',
+				to: email,
+				subject: 'Password Reset Request',
+				text: message,
+				html: `<p>${message}</p>`,
+			});
+		})
+		.then(() => {
+			res.status(200).json({
+				message: 'Password reset link sent to email!',
+			});
+		})
+		.catch((err) => {
+			if (!err.statusCode) {
+				err.statusCode = STATUS_CODE.INTERNAL_SERVER;
+			}
+			next(err);
+		});
+};
+
+exports.resetPassword = (req, res, next) => {
+	const resetToken = req.params.token;
+	const newPassword = req.body.password;
+	let user;
+
+	User.findOne({
+		passwordResetToken: resetToken,
+		passwordResetExpires: { $gt: moment().utc().add(2, 'hours').toDate() }, // Adjust for UTC+2 using moment
+	})
+		.then((foundUser) => {
+			if (!foundUser) {
+				const error = new Error('Token is invalid or has expired.');
+				error.statusCode = STATUS_CODE.BAD_REQUEST;
+				throw error;
+			}
+			user = foundUser;
+			return bcrypt.hash(newPassword, 12);
+		})
+		.then((hashedPw) => {
+			user.password = hashedPw;
+			user.passwordResetToken = undefined;
+			user.passwordResetExpires = undefined;
+			return user.save();
+		})
+		.then(() => {
+			res.status(200).json({
+				message: 'Password reset successful!',
+			});
+		})
+		.catch((err) => {
+			if (!err.statusCode) {
+				err.statusCode = STATUS_CODE.INTERNAL_SERVER;
+			}
+			next(err);
+		});
 };
