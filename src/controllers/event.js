@@ -77,7 +77,8 @@ exports.createEvent = (req, res, next) => {
 		error.statusCode = STATUS_CODE.UNPROCESSABLE_ENTITY;
 		throw error;
 	}
-	const { title, subtitle, image, location, date, mapLink } = req.body;
+	const { title, subtitle, image, location, date, mapLink, description } =
+		req.body;
 	const { path } = req.file || '';
 	let eventImage;
 	if (path !== undefined) eventImage = fs.readFileSync(path);
@@ -98,6 +99,7 @@ exports.createEvent = (req, res, next) => {
 		location: location,
 		date: date,
 		mapLink: mapLink,
+		description: description,
 	});
 	event
 		.save()

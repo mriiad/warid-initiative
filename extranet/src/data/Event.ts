@@ -7,4 +7,5 @@ export interface Event {
 	location: string;
 	date: string;
 	mapLink: string;
+	description: string;
 }

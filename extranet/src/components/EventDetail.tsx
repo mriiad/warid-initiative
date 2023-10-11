@@ -97,7 +97,7 @@ const EventDetail: React.FC = () => {
 		};
 
 		fetchEvent();
-	}, []);
+	}, [reference]);
 
 	return (
 		<>
@@ -110,7 +110,6 @@ const EventDetail: React.FC = () => {
 					<FormContainer className={detailContainer}>
 						<Typography variant='h3'>{event?.title}</Typography>
 						<Divider className={divider} />
-
 						<img
 							src={
 								event?.image
@@ -120,6 +119,7 @@ const EventDetail: React.FC = () => {
 							alt={event?.title}
 							className={image}
 						/>
+						<Typography>{event?.description}</Typography>
 					</FormContainer>
 					<div className={rightSideContainer}>
 						{token && (
