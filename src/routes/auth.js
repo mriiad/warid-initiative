@@ -6,6 +6,8 @@ const {
 	signup,
 	verifyUser,
 	refreshToken,
+	requestPasswordReset,
+	resetPassword,
 } = require('../controllers/auth');
 const User = require('../models/user');
 
@@ -52,5 +54,9 @@ authRouter.post('/api/auth/logout', logout);
 authRouter.get('/api/auth/activation/:confirmationCode', verifyUser);
 
 authRouter.post('/api/auth/refresh-token', refreshToken);
+
+authRouter.post('/api/auth/request-reset', requestPasswordReset);
+
+authRouter.post('/api/auth/reset-password/:token', resetPassword);
 
 module.exports = authRouter;
