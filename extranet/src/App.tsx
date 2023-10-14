@@ -17,17 +17,13 @@ const AppContainer = styled.div`
 	margin: 0;
 	padding: 0;
 	min-height: 100vh;
+	padding-top: 200px;
 `;
 
 const ContentContainer = styled.div`
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	padding-top: 10rem;
-
-	@media (max-width: ${(props) => props.theme.breakpoints.values.sm}px) {
-		padding-top: 2rem;
-	}
 `;
 
 const MobileNavContainer = styled.div`

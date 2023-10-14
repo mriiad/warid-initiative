@@ -12,7 +12,6 @@ const HeaderContainer = styled.div`
 	justify-content: space-between;
 	align-items: center;
 	padding: 10px;
-	background-color: rgba(255, 255, 255, 0.3);
 	position: fixed;
 	top: 0;
 	left: 0;
@@ -61,7 +60,7 @@ const MobileHeader = () => {
 	return (
 		<HeaderContainer>
 			<LogoContainer onClick={() => navigate('/signup')}>
-				<img src='warid-logo.png' alt='Logo' className={logoImage} />
+				<img src='/warid-logo.png' alt='Logo' className={logoImage} />
 			</LogoContainer>
 			{token ? (
 				<ActionButton
