@@ -13,6 +13,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { Event } from '../data/Event';
+import colors from '../styles/colors';
 import CardComponent from './shared/CardComponent';
 
 const useStyles = makeStyles({
@@ -41,8 +42,10 @@ const useStyles = makeStyles({
 		padding: '10px 20px',
 		background: '#333',
 		color: 'white',
-		'&:hover': {
-			background: '#555',
+		'&.MuiButtonBase-root': {
+			marginTop: '10px',
+			color: 'white',
+			backgroundColor: colors.purple,
 		},
 	},
 	fallback: {
@@ -211,22 +214,29 @@ const EventDetail: React.FC = () => {
 								<Typography>Verify the possibility of donating</Typography>
 							</div>
 						) : canDonate ? (
-							<CardComponent>
-								<Typography className={date}>
-									{dayjs(event?.date).format('DD-MM-YYYY')}
-								</Typography>
-								<Typography className={date}>{event?.location}</Typography>
-								<Typography className={date}>
-									Last donation date:{' '}
-									{dayjs(lastDonationDate).format('DD-MM-YYYY')}
-								</Typography>
-								<Typography>
-									Based on your last donation date, you are allowed to donate.
-								</Typography>
-							</CardComponent>
+							<>
+								<CardComponent>
+									<Typography className={date}>
+										{dayjs(event?.date).format('DD-MM-YYYY')}
+									</Typography>
+									<Typography className={date}>{event?.location}</Typography>
+									<Typography className={date}>
+										Last donation date:{' '}
+										{dayjs(lastDonationDate).format('DD-MM-YYYY')}
+									</Typography>
+									<Typography color='black'>
+										Based on your last donation date, you are allowed to donate.
+									</Typography>
+								</CardComponent>
+								<Button className={joinButton} onClick={handleParticipateClick}>
+									Confirm
+								</Button>
+							</>
 						) : (
 							<CardComponent>
-								<Typography>Sorry, you are not allowed to donate.</Typography>
+								<Typography color='black'>
+									Sorry, you are not allowed to donate.
+								</Typography>
 							</CardComponent>
 						)}
 					</div>
