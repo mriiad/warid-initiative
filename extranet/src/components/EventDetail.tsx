@@ -1,5 +1,5 @@
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {
 	Button,
 	CircularProgress,
@@ -8,10 +8,12 @@ import {
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import axios from 'axios';
+import dayjs from 'dayjs';
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { Event } from '../data/Event';
+import CardComponent from './shared/CardComponent';
 
 const useStyles = makeStyles({
 	eventContainer: {
@@ -31,20 +33,9 @@ const useStyles = makeStyles({
 		padding: 20,
 		textAlign: 'center',
 	},
-	card: {
-		backgroundColor: 'rgba(255, 255, 255, 0.8)',
-		backdropFilter: 'blur(10px)',
-		margin: '20px 0',
-		padding: 20,
-		borderRadius: 10,
-		boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-		maxWidth: 500,
-		width: '100%',
-		maxHeight: '350px',
-		overflowY: 'auto',
-	},
 	date: {
 		marginBottom: 10,
+		color: 'black',
 	},
 	joinButton: {
 		padding: '10px 20px',
@@ -60,6 +51,12 @@ const useStyles = makeStyles({
 		alignItems: 'center',
 		minHeight: '100vh',
 	},
+	title: {
+		'& > p:first-child': {
+			fontSize: '1.5rem',
+			fontWeight: 500,
+		},
+	},
 	description: {
 		color: 'black',
 	},
@@ -74,6 +71,9 @@ const useStyles = makeStyles({
 		display: 'flex',
 		flexDirection: 'column',
 		alignItems: 'center',
+		'& > button': {
+			color: 'white',
+		},
 	},
 });
 
@@ -82,6 +82,7 @@ const EventDetail: React.FC = () => {
 	const { token, isAdmin } = useAuth();
 	const [event, setEvent] = useState<Event | null>();
 	const [isLoading, setIsLoading] = useState(false);
+	const navigate = useNavigate();
 
 	useEffect(() => {
 		const fetchEvent = async () => {
@@ -105,15 +106,23 @@ const EventDetail: React.FC = () => {
 	const {
 		eventContainer,
 		overlay,
-		card,
 		date,
 		joinButton,
 		fallback,
+		title,
 		description,
 		foldableContent,
 		arrowIcon,
 		foldableWrapper,
 	} = useStyles();
+
+	const handleParticipateClick = () => {
+		navigate(
+			token
+				? '?participate'
+				: `/login?redirect=/events/${reference}?participate`
+		);
+	};
 
 	return (
 		<>
@@ -131,14 +140,16 @@ const EventDetail: React.FC = () => {
 					}}
 				>
 					<div className={overlay}>
-						<Typography>{event?.title}</Typography>
-						<Typography>{event?.subtitle}</Typography>
+						<div className={title}>
+							<Typography>{event?.title}</Typography>
+							<Typography>{event?.subtitle}</Typography>
+						</div>
 						<div className={foldableWrapper}>
 							<IconButton
 								onClick={() => setIsFolded(!isFolded)}
 								className={arrowIcon}
 							>
-								{isFolded ? <ArrowDropDownIcon /> : <ArrowDropUpIcon />}
+								{isFolded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
 							</IconButton>
 							<div
 								className={foldableContent}
@@ -146,19 +157,24 @@ const EventDetail: React.FC = () => {
 									maxHeight: isFolded ? '0' : '500px',
 								}}
 							>
-								<div className={card}>
+								<CardComponent>
 									<Typography className={date}>
-										{event?.date.split('T')[0]}
+										{dayjs(event?.date).format('DD-MM-YYYY')}
 									</Typography>
-									<Button className={joinButton}>
-										Join the 10 other people
+									<Typography className={date}>{event?.location}</Typography>
+									<Button
+										className={joinButton}
+										onClick={handleParticipateClick}
+									>
+										Participate
 									</Button>
-								</div>
-								<div className={card}>
+								</CardComponent>
+
+								<CardComponent>
 									<Typography className={description}>
 										{event?.description}
 									</Typography>
-								</div>
+								</CardComponent>
 							</div>
 						</div>
 					</div>
