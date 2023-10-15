@@ -10,7 +10,7 @@ import { makeStyles } from '@mui/styles';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { Event } from '../data/Event';
 import colors from '../styles/colors';
@@ -78,13 +78,6 @@ const useStyles = makeStyles({
 			color: 'white',
 		},
 	},
-	verificationContainer: {
-		marginTop: '30px',
-		display: 'flex',
-		flexDirection: 'column',
-		alignItems: 'center',
-		zIndex: 1000,
-	},
 });
 
 const EventDetail: React.FC = () => {
@@ -93,10 +86,10 @@ const EventDetail: React.FC = () => {
 	const [event, setEvent] = useState<Event | null>();
 	const [isLoading, setIsLoading] = useState(false);
 	const navigate = useNavigate();
-
-	const [canDonate, setCanDonate] = useState<boolean | null>(null);
-	const [lastDonationDate, setLastDonationDate] = useState<string | null>(null);
-	const [showVerificationCircle, setShowVerificationCircle] = useState(false);
+	const location = useLocation();
+	const initialRoute: boolean = location.pathname === `/events/${reference}`;
+	const canDonateRoute: boolean =
+		location.pathname === `/events/${reference}/can-donate`;
 
 	useEffect(() => {
 		const fetchEvent = async () => {
@@ -128,30 +121,14 @@ const EventDetail: React.FC = () => {
 		foldableContent,
 		arrowIcon,
 		foldableWrapper,
-		verificationContainer,
 	} = useStyles();
 
 	const handleParticipateClick = async () => {
 		if (token) {
-			setShowVerificationCircle(true);
-
-			try {
-				const response = await axios.get(
-					'http://localhost:3000/api/donation/canDonate',
-					{
-						headers: { Authorization: `Bearer ${token}` },
-					}
-				);
-				setCanDonate(response.data.canDonate);
-				setLastDonationDate(response.data.lastDonationDate);
-			} catch (error) {
-				console.error('Error checking donation eligibility', error);
-			} finally {
-				setTimeout(() => {
-					setShowVerificationCircle(false);
-				}, 3000);
-			}
-		} else navigate(`/login?redirect=/events/${reference}?participate`);
+			navigate(`/events/${reference}/can-donate`);
+		} else {
+			navigate(`/login?redirect=/events/${reference}?participate`);
+		}
 	};
 
 	return (
@@ -175,7 +152,7 @@ const EventDetail: React.FC = () => {
 							<Typography>{event?.subtitle}</Typography>
 						</div>
 
-						{canDonate === null ? (
+						{initialRoute && (
 							<div className={foldableWrapper}>
 								<IconButton
 									onClick={() => setIsFolded(!isFolded)}
@@ -208,37 +185,9 @@ const EventDetail: React.FC = () => {
 									</CardComponent>
 								</div>
 							</div>
-						) : showVerificationCircle ? (
-							<div className={verificationContainer}>
-								<CircularProgress />
-								<Typography>Verify the possibility of donating</Typography>
-							</div>
-						) : canDonate ? (
-							<>
-								<CardComponent>
-									<Typography className={date}>
-										{dayjs(event?.date).format('DD-MM-YYYY')}
-									</Typography>
-									<Typography className={date}>{event?.location}</Typography>
-									<Typography className={date}>
-										Last donation date:{' '}
-										{dayjs(lastDonationDate).format('DD-MM-YYYY')}
-									</Typography>
-									<Typography color='black'>
-										Based on your last donation date, you are allowed to donate.
-									</Typography>
-								</CardComponent>
-								<Button className={joinButton} onClick={handleParticipateClick}>
-									Confirm
-								</Button>
-							</>
-						) : (
-							<CardComponent>
-								<Typography color='black'>
-									Sorry, you are not allowed to donate.
-								</Typography>
-							</CardComponent>
 						)}
+
+						{canDonateRoute && <Outlet />}
 					</div>
 				</div>
 			)}

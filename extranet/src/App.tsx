@@ -3,6 +3,7 @@ import React from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import styled from 'styled-components';
 import AdminComponent from './components/AdminComponent';
+import CanDonate from './components/CanDonate';
 import EventDetail from './components/EventDetail';
 import EventsComponent from './components/EventsComponent';
 import LoginForm from './components/LoginForm';
@@ -55,7 +56,9 @@ const App = () => {
 						<Route path='/signup' element={<SignupForm />} />
 						<Route path='/login' element={<LoginForm />} />
 						<Route path='/events' element={<EventsComponent />} />
-						<Route path='/events/:reference' element={<EventDetail />} />
+						<Route path='/events/:reference' element={<EventDetail />}>
+							<Route path='can-donate' element={<CanDonate />} />
+						</Route>
 						<Route path='/admin' element={<AdminComponent />} />
 						<Route path='/reset-password' element={<PasswordResetForm />} />
 						<Route path='*' element={<SignupForm />} />
