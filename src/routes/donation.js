@@ -1,5 +1,5 @@
 const express = require('express');
-const { donate } = require('../controllers/donation');
+const { donate, canDonate } = require('../controllers/donation');
 
 const donationRouter = express.Router();
 
@@ -8,6 +8,8 @@ const checkIfAdmin = require('../utils/checks');
 
 donationRouter.get('/', (req, res, next) => {});
 
-donationRouter.put('/api/donate', isAuth, checkIfAdmin, donate);
+donationRouter.put('/api/donation', isAuth, checkIfAdmin, donate);
+
+donationRouter.get('/api/donation/canDonate', isAuth, canDonate);
 
 module.exports = donationRouter;

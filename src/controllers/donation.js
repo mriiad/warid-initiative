@@ -50,3 +50,52 @@ exports.donate = (req, res, next) => {
 			next(err);
 		});
 };
+
+exports.canDonate = (req, res, next) => {
+	const userId = req.userId;
+	let user;
+
+	User.findById(userId)
+		.then((foundUser) => {
+			if (!foundUser) {
+				const error = new Error('User not found.');
+				error.statusCode = 404;
+				throw error;
+			}
+			user = foundUser;
+			return Donation.findOne({ userId: userId });
+		})
+		.then((donation) => {
+			const currentDate = new Date();
+			let donationAvailability = false;
+
+			// If no donation record is found for the user
+			if (!donation) {
+				return res
+					.status(200)
+					.json({ canDonate: true, lastDonationDate: null });
+			}
+
+			const timeDifference = currentDate - new Date(donation.lastDonationDate);
+			const daysDifference = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+
+			if (user.gender === 'male' && daysDifference >= 60) {
+				donationAvailability = true;
+			}
+
+			if (user.gender === 'female' && daysDifference >= 90) {
+				donationAvailability = true;
+			}
+
+			res.status(200).json({
+				canDonate: donationAvailability,
+				lastDonationDate: donation.lastDonationDate,
+			});
+		})
+		.catch((err) => {
+			if (!err.statusCode) {
+				err.statusCode = 500;
+			}
+			next(err);
+		});
+};
