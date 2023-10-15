@@ -75,6 +75,13 @@ const useStyles = makeStyles({
 			color: 'white',
 		},
 	},
+	verificationContainer: {
+		marginTop: '30px',
+		display: 'flex',
+		flexDirection: 'column',
+		alignItems: 'center',
+		zIndex: 1000,
+	},
 });
 
 const EventDetail: React.FC = () => {
@@ -83,6 +90,10 @@ const EventDetail: React.FC = () => {
 	const [event, setEvent] = useState<Event | null>();
 	const [isLoading, setIsLoading] = useState(false);
 	const navigate = useNavigate();
+
+	const [canDonate, setCanDonate] = useState<boolean | null>(null);
+	const [lastDonationDate, setLastDonationDate] = useState<string | null>(null);
+	const [showVerificationCircle, setShowVerificationCircle] = useState(false);
 
 	useEffect(() => {
 		const fetchEvent = async () => {
@@ -114,14 +125,30 @@ const EventDetail: React.FC = () => {
 		foldableContent,
 		arrowIcon,
 		foldableWrapper,
+		verificationContainer,
 	} = useStyles();
 
-	const handleParticipateClick = () => {
-		navigate(
-			token
-				? '?participate'
-				: `/login?redirect=/events/${reference}?participate`
-		);
+	const handleParticipateClick = async () => {
+		if (token) {
+			setShowVerificationCircle(true);
+
+			try {
+				const response = await axios.get(
+					'http://localhost:3000/api/donation/canDonate',
+					{
+						headers: { Authorization: `Bearer ${token}` },
+					}
+				);
+				setCanDonate(response.data.canDonate);
+				setLastDonationDate(response.data.lastDonationDate);
+			} catch (error) {
+				console.error('Error checking donation eligibility', error);
+			} finally {
+				setTimeout(() => {
+					setShowVerificationCircle(false);
+				}, 3000);
+			}
+		} else navigate(`/login?redirect=/events/${reference}?participate`);
 	};
 
 	return (
@@ -144,39 +171,64 @@ const EventDetail: React.FC = () => {
 							<Typography>{event?.title}</Typography>
 							<Typography>{event?.subtitle}</Typography>
 						</div>
-						<div className={foldableWrapper}>
-							<IconButton
-								onClick={() => setIsFolded(!isFolded)}
-								className={arrowIcon}
-							>
-								{isFolded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-							</IconButton>
-							<div
-								className={foldableContent}
-								style={{
-									maxHeight: isFolded ? '0' : '500px',
-								}}
-							>
-								<CardComponent>
-									<Typography className={date}>
-										{dayjs(event?.date).format('DD-MM-YYYY')}
-									</Typography>
-									<Typography className={date}>{event?.location}</Typography>
-									<Button
-										className={joinButton}
-										onClick={handleParticipateClick}
-									>
-										Participate
-									</Button>
-								</CardComponent>
 
-								<CardComponent>
-									<Typography className={description}>
-										{event?.description}
-									</Typography>
-								</CardComponent>
+						{canDonate === null ? (
+							<div className={foldableWrapper}>
+								<IconButton
+									onClick={() => setIsFolded(!isFolded)}
+									className={arrowIcon}
+								>
+									{isFolded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+								</IconButton>
+								<div
+									className={foldableContent}
+									style={{
+										maxHeight: isFolded ? '0' : '500px',
+									}}
+								>
+									<CardComponent>
+										<Typography className={date}>
+											{dayjs(event?.date).format('DD-MM-YYYY')}
+										</Typography>
+										<Typography className={date}>{event?.location}</Typography>
+										<Button
+											className={joinButton}
+											onClick={handleParticipateClick}
+										>
+											Participate
+										</Button>
+									</CardComponent>
+									<CardComponent>
+										<Typography className={description}>
+											{event?.description}
+										</Typography>
+									</CardComponent>
+								</div>
 							</div>
-						</div>
+						) : showVerificationCircle ? (
+							<div className={verificationContainer}>
+								<CircularProgress />
+								<Typography>Verify the possibility of donating</Typography>
+							</div>
+						) : canDonate ? (
+							<CardComponent>
+								<Typography className={date}>
+									{dayjs(event?.date).format('DD-MM-YYYY')}
+								</Typography>
+								<Typography className={date}>{event?.location}</Typography>
+								<Typography className={date}>
+									Last donation date:{' '}
+									{dayjs(lastDonationDate).format('DD-MM-YYYY')}
+								</Typography>
+								<Typography>
+									Based on your last donation date, you are allowed to donate.
+								</Typography>
+							</CardComponent>
+						) : (
+							<CardComponent>
+								<Typography>Sorry, you are not allowed to donate.</Typography>
+							</CardComponent>
+						)}
 					</div>
 				</div>
 			)}
