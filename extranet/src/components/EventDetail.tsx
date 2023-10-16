@@ -7,9 +7,9 @@ import {
 	Typography,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import axios from 'axios';
 import dayjs from 'dayjs';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
+import { useQuery } from 'react-query';
 import {
 	Route,
 	Routes,
@@ -18,8 +18,8 @@ import {
 	useParams,
 } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
-import { Event } from '../data/Event';
 import colors from '../styles/colors';
+import { fetchEventByReference } from '../utils/queries';
 import CanDonate from './CanDonate';
 import EventConfirmation from './EventConfirmation';
 import CardComponent from './shared/CardComponent';
@@ -91,31 +91,16 @@ const useStyles = makeStyles({
 const EventDetail: React.FC = () => {
 	const { reference } = useParams<{ reference: string }>();
 	const { token, isAdmin } = useAuth();
-	const [event, setEvent] = useState<Event | null>();
-	const [isLoading, setIsLoading] = useState(false);
 	const navigate = useNavigate();
 	const location = useLocation();
 	const initialRoute: boolean = location.pathname === `/events/${reference}`;
-	const canDonateRoute: boolean =
-		location.pathname === `/events/${reference}/can-donate`;
 
-	useEffect(() => {
-		const fetchEvent = async () => {
-			try {
-				setIsLoading(true);
-				const response = await axios.get(
-					`http://localhost:3000/api/events/${reference}`
-				);
-				setEvent(response.data.event);
-			} catch (error) {
-				console.error('Error fetching events', error);
-			} finally {
-				setIsLoading(false);
-			}
-		};
+	const {
+		data: event,
+		isLoading,
+		isError,
+	} = useQuery(['event', reference], () => fetchEventByReference(reference));
 
-		fetchEvent();
-	}, [reference]);
 	const [isFolded, setIsFolded] = useState(false);
 
 	const {
