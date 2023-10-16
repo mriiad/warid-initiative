@@ -10,10 +10,18 @@ import { makeStyles } from '@mui/styles';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import React, { useEffect, useState } from 'react';
-import { Outlet, useLocation, useNavigate, useParams } from 'react-router-dom';
+import {
+	Route,
+	Routes,
+	useLocation,
+	useNavigate,
+	useParams,
+} from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { Event } from '../data/Event';
 import colors from '../styles/colors';
+import CanDonate from './CanDonate';
+import EventConfirmation from './EventConfirmation';
 import CardComponent from './shared/CardComponent';
 
 const useStyles = makeStyles({
@@ -187,7 +195,13 @@ const EventDetail: React.FC = () => {
 							</div>
 						)}
 
-						{canDonateRoute && <Outlet />}
+						<Routes>
+							<Route path='can-donate' element={<CanDonate />} />
+							<Route
+								path='confirmation'
+								element={event ? <EventConfirmation {...event} /> : null}
+							/>
+						</Routes>
 					</div>
 				</div>
 			)}

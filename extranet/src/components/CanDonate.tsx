@@ -1,32 +1,35 @@
-import { CircularProgress, Typography } from '@mui/material';
+import { Button, CircularProgress, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import colors from '../styles/colors';
+import CardComponent from './shared/CardComponent';
 
 const useStyles = makeStyles({
-	fallback: {
-		display: 'flex',
-		justifyContent: 'center',
-		alignItems: 'center',
-		minHeight: '100vh',
-	},
-	verificationContainer: {
-		marginTop: '30px',
-		display: 'flex',
-		flexDirection: 'column',
-		alignItems: 'center',
-		zIndex: 1000,
-	},
 	resultMessage: {
 		marginTop: '20px',
+		color: 'black',
+	},
+	confirmButton: {
+		padding: '10px 20px',
+		background: '#333',
+		color: 'white',
+		'&.MuiButtonBase-root': {
+			marginTop: '10px',
+			color: 'white',
+			backgroundColor: colors.purple,
+		},
 	},
 });
 
 const CanDonate: React.FC = () => {
 	const [canDonate, setCanDonate] = useState<boolean | null>(null);
 	const [isLoading, setIsLoading] = useState(false);
+	const navigate = useNavigate();
+	const { reference } = useParams<{ reference: string }>();
 
-	const { fallback, verificationContainer, resultMessage } = useStyles();
+	const { resultMessage, confirmButton } = useStyles();
 
 	useEffect(() => {
 		const checkCanDonate = async () => {
@@ -48,24 +51,33 @@ const CanDonate: React.FC = () => {
 		checkCanDonate();
 	}, []);
 
+	const handleConfirmClick = () => {
+		navigate(`/events/${reference}/confirmation`);
+	};
+
 	return (
-		<div className={verificationContainer}>
-			{isLoading ? (
-				<CircularProgress />
-			) : canDonate === null ? (
-				<Typography className={resultMessage}>
-					Unable to determine eligibility.
-				</Typography>
-			) : canDonate ? (
-				<Typography className={resultMessage}>
-					Based on your last donation date, you are allowed to donate.
-				</Typography>
-			) : (
-				<Typography className={resultMessage}>
-					Sorry, you are not allowed to donate.
-				</Typography>
-			)}
-		</div>
+		<>
+			<CardComponent>
+				{isLoading ? (
+					<CircularProgress />
+				) : canDonate === null ? (
+					<Typography className={resultMessage}>
+						Unable to determine eligibility.
+					</Typography>
+				) : canDonate ? (
+					<Typography className={resultMessage}>
+						Based on your last donation date, you are allowed to donate.
+					</Typography>
+				) : (
+					<Typography className={resultMessage}>
+						Sorry, you are not allowed to donate.
+					</Typography>
+				)}
+			</CardComponent>
+			<Button className={confirmButton} onClick={handleConfirmClick}>
+				Confirm
+			</Button>
+		</>
 	);
 };
 
