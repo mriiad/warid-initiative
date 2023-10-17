@@ -1,9 +1,7 @@
-import { Event } from '../data/Event';
-
-const EventConfirmation: React.FC<Event> = (event: Event) => {
+const EventConfirmation: React.FC = () => {
 	return (
 		<div>
-			<h1>Event Confirmation for {event.title}</h1>
+			<h1>Event Confirmation for</h1>
 		</div>
 	);
 };

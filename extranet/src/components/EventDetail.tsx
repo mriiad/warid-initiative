@@ -96,8 +96,6 @@ const EventDetail: React.FC = () => {
 	const navigate = useNavigate();
 	const location = useLocation();
 	const initialRoute: boolean = location.pathname === `/events/${reference}`;
-	const canDonateRoute: boolean =
-		location.pathname === `/events/${reference}/can-donate`;
 
 	useEffect(() => {
 		const fetchEvent = async () => {
@@ -197,10 +195,7 @@ const EventDetail: React.FC = () => {
 
 						<Routes>
 							<Route path='can-donate' element={<CanDonate />} />
-							<Route
-								path='confirmation'
-								element={event ? <EventConfirmation {...event} /> : null}
-							/>
+							<Route path='confirmation' element={<EventConfirmation />} />
 						</Routes>
 					</div>
 				</div>
