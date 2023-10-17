@@ -11,7 +11,7 @@ const useStyles = makeStyles({
 		boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
 		maxWidth: 500,
 		width: '100%',
-		maxHeight: '300px',
+		maxHeight: '216px',
 		overflowY: 'auto',
 	},
 });

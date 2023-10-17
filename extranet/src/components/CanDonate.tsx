@@ -1,17 +1,11 @@
-import EventIcon from '@mui/icons-material/Event'; // For the date
-import LocationOnIcon from '@mui/icons-material/LocationOn'; // For the location
-import MapIcon from '@mui/icons-material/Map'; // For the mapLink
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { Button, CircularProgress, Typography } from '@mui/material';
-import Box from '@mui/material/Box';
-import Divider from '@mui/material/Divider';
 import { makeStyles } from '@mui/styles';
-import axios from 'axios';
-import dayjs from 'dayjs';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
+import { useQuery } from 'react-query';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Event } from '../data/Event';
 import colors from '../styles/colors';
+import { useEventStyles } from '../styles/eventStyle';
+import { fetchCanDonate, fetchEventByReference } from '../utils/queries';
 import CardComponent from './shared/CardComponent';
 
 const useStyles = makeStyles({
@@ -29,79 +23,26 @@ const useStyles = makeStyles({
 			backgroundColor: colors.purple,
 		},
 	},
-	infoCard: {
-		borderRadius: '10px',
-		display: 'flex',
-		alignItems: 'center',
-		color: '#000',
-	},
-	iconBox: {
-		flex: '1',
-		display: 'flex',
-		alignItems: 'center',
-		justifyContent: 'center',
-		padding: '10px',
-	},
-	dataBox: {
-		flex: '6',
-		padding: '10px',
-	},
-	verticalDivider: {
-		height: '80%',
-		backgroundColor: '#cfbbbb36',
-	},
 });
 
 const CanDonate: React.FC = () => {
-	const [canDonate, setCanDonate] = useState<boolean | null>(null);
-	const [isLoading, setIsLoading] = useState(false);
-	const [event, setEvent] = useState<Event | null>();
 	const navigate = useNavigate();
 	const { reference } = useParams<{ reference: string }>();
 
+	const { resultMessage, confirmButton } = useStyles();
+	const { infoCard, iconBox, dataBox, verticalDivider } = useEventStyles();
+
 	const {
-		resultMessage,
-		confirmButton,
-		infoCard,
-		iconBox,
-		dataBox,
-		verticalDivider,
-	} = useStyles();
+		data: canDonate,
+		isLoading: isLoadingCanDonate,
+		isError: hasDonationCheckError,
+	} = useQuery('canDonate', fetchCanDonate);
 
-	useEffect(() => {
-		const checkCanDonate = async () => {
-			setIsLoading(true);
-			try {
-				const response = await axios.get(
-					'http://localhost:3000/api/donation/canDonate'
-				);
-				setCanDonate(response.data.canDonate);
-			} catch (error) {
-				console.error('Error checking donation eligibility', error);
-			} finally {
-				setTimeout(() => {
-					setIsLoading(false);
-				}, 3000);
-			}
-		};
-
-		checkCanDonate();
-		const fetchEvent = async () => {
-			try {
-				setIsLoading(true);
-				const response = await axios.get(
-					`http://localhost:3000/api/events/${reference}`
-				);
-				setEvent(response.data.event);
-			} catch (error) {
-				console.error('Error fetching events', error);
-			} finally {
-				setIsLoading(false);
-			}
-		};
-
-		fetchEvent();
-	}, [reference]);
+	const {
+		data: event,
+		isLoading: isLoadingEvent,
+		isError,
+	} = useQuery(['event', reference], () => fetchEventByReference(reference));
 
 	const handleConfirmClick = () => {
 		navigate(`/events/${reference}/confirmation`);
@@ -110,7 +51,7 @@ const CanDonate: React.FC = () => {
 	return (
 		<>
 			<CardComponent>
-				{isLoading ? (
+				{isLoadingCanDonate ? (
 					<CircularProgress />
 				) : canDonate === null ? (
 					<Typography className={resultMessage}>
@@ -125,56 +66,6 @@ const CanDonate: React.FC = () => {
 						Sorry, you are not allowed to donate.
 					</Typography>
 				)}
-			</CardComponent>
-
-			<CardComponent>
-				<Box className={infoCard}>
-					{/* Icon for Date */}
-					<Box className={iconBox}>
-						<EventIcon />
-					</Box>
-					<Divider
-						orientation='vertical'
-						flexItem
-						className={verticalDivider}
-					/>
-					{/* Event Date */}
-					<Box className={dataBox}>
-						<Typography> {dayjs(event?.date).format('DD-MM-YYYY')}</Typography>
-					</Box>
-				</Box>
-				<Box className={infoCard}>
-					{/* Icon for Location */}
-					<Box className={iconBox}>
-						<LocationOnIcon />
-					</Box>
-					<Divider
-						orientation='vertical'
-						flexItem
-						className={verticalDivider}
-					/>
-					{/* Event Location */}
-					<Box className={dataBox}>
-						<Typography>{event?.location}</Typography>
-					</Box>
-				</Box>
-				<Box className={infoCard}>
-					{/* Icon for MapLink */}
-					<Box className={iconBox}>
-						<MapIcon />
-					</Box>
-					<Divider
-						orientation='vertical'
-						flexItem
-						className={verticalDivider}
-					/>
-					<Box className={dataBox}>
-						<a href={event?.mapLink} target='_blank' rel='noopener noreferrer'>
-							Open Map
-							<OpenInNewIcon />
-						</a>
-					</Box>
-				</Box>
 			</CardComponent>
 
 			<Button className={confirmButton} onClick={handleConfirmClick}>

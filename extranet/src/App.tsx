@@ -1,5 +1,6 @@
 import useMediaQuery from '@mui/material/useMediaQuery';
 import React from 'react';
+import { QueryClient, QueryClientProvider } from 'react-query';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import styled from 'styled-components';
 import AdminComponent from './components/AdminComponent';
@@ -35,39 +36,43 @@ const MobileNavContainer = styled.div`
 	z-index: 101;
 `;
 
+const queryClient = new QueryClient();
+
 const App = () => {
 	const isMobile = useMediaQuery('(max-width:600px)');
 
 	return (
-		<BrowserRouter>
-			<AppContainer>
-				{isMobile ? (
-					<>
-						<MobileHeader />
-						<MobileNavContainer>
-							<MobileNavbar />
-						</MobileNavContainer>
-					</>
-				) : (
-					<NavBar />
-				)}
-				<ContentContainer>
-					<Routes>
-						<Route path='/' element={<Navigate replace to='/signup' />} />
-						<Route path='/signup' element={<SignupForm />} />
-						<Route path='/login' element={<LoginForm />} />
-						<Route path='/events' element={<EventsComponent />} />
-						<Route path='/events/:reference' element={<EventDetail />}>
-							<Route path='can-donate' element={<CanDonate />} />
-							<Route path='confirmation' element={<EventConfirmation />} />
-						</Route>
-						<Route path='/admin' element={<AdminComponent />} />
-						<Route path='/reset-password' element={<PasswordResetForm />} />
-						<Route path='*' element={<SignupForm />} />
-					</Routes>
-				</ContentContainer>
-			</AppContainer>
-		</BrowserRouter>
+		<QueryClientProvider client={queryClient}>
+			<BrowserRouter>
+				<AppContainer>
+					{isMobile ? (
+						<>
+							<MobileHeader />
+							<MobileNavContainer>
+								<MobileNavbar />
+							</MobileNavContainer>
+						</>
+					) : (
+						<NavBar />
+					)}
+					<ContentContainer>
+						<Routes>
+							<Route path='/' element={<Navigate replace to='/signup' />} />
+							<Route path='/signup' element={<SignupForm />} />
+							<Route path='/login' element={<LoginForm />} />
+							<Route path='/events' element={<EventsComponent />} />
+							<Route path='/events/:reference/*' element={<EventDetail />}>
+								<Route path='can-donate' element={<CanDonate />} />
+								<Route path='confirmation' element={<EventConfirmation />} />
+							</Route>
+							<Route path='/admin' element={<AdminComponent />} />
+							<Route path='/reset-password' element={<PasswordResetForm />} />
+							<Route path='*' element={<SignupForm />} />
+						</Routes>
+					</ContentContainer>
+				</AppContainer>
+			</BrowserRouter>
+		</QueryClientProvider>
 	);
 };
 
