@@ -1,26 +1,45 @@
-import { useQuery } from 'react-query';
-import { useParams } from 'react-router-dom';
-import { fetchEventByReference } from '../utils/queries';
+import { useEffect, useState } from 'react';
+import { useMutation } from 'react-query';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useAuth } from '../auth/AuthContext';
+import { confirmEventPresence } from '../utils/queries';
+
+interface MutationResponse {
+	message: string;
+}
 
 const EventConfirmation: React.FC = () => {
 	const { reference } = useParams<{ reference: string }>();
+	const { token } = useAuth();
+	const [isConfirmed, setIsConfirmed] = useState(false);
+	const navigate = useNavigate();
 
-	const {
-		data: event,
-		isLoading,
-		isError,
-	} = useQuery(['event', reference], () => fetchEventByReference(reference));
+	const mutation = useMutation<MutationResponse>(
+		() => confirmEventPresence(reference, token),
+		{
+			onSuccess: () => {
+				setIsConfirmed(true);
+				setTimeout(() => {
+					navigate('/events');
+				}, 3000);
+			},
+		}
+	);
 
-	if (isLoading) return <div>Loading...</div>;
-	if (isError || !event) return <div>Error loading event</div>;
+	useEffect(() => {
+		mutation.mutate();
+	}, [mutation]);
 
-	{
-		/* TODO: call the '/api/event/confirmPresence' route in order to confirm presence */
-	}
 	return (
-		<div>
-			<h1>Event Confirmation for</h1>
-		</div>
+		<>
+			{mutation.isLoading ? (
+				<div>Confirming your presence...</div>
+			) : isConfirmed ? (
+				<div>Successfully confirmed!</div>
+			) : mutation.isError ? (
+				<div>An error occurred, please try again later.</div>
+			) : null}
+		</>
 	);
 };
 
