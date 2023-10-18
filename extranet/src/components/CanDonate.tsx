@@ -4,7 +4,6 @@ import React from 'react';
 import { useQuery } from 'react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import colors from '../styles/colors';
-import { useEventStyles } from '../styles/eventStyle';
 import { fetchCanDonate, fetchEventByReference } from '../utils/queries';
 import CardComponent from './shared/CardComponent';
 
@@ -30,7 +29,6 @@ const CanDonate: React.FC = () => {
 	const { reference } = useParams<{ reference: string }>();
 
 	const { resultMessage, confirmButton } = useStyles();
-	const { infoCard, iconBox, dataBox, verticalDivider } = useEventStyles();
 
 	const {
 		data: canDonate,

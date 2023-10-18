@@ -23,6 +23,7 @@ const EventConfirmation: React.FC = () => {
 					navigate('/events');
 				}, 3000);
 			},
+			retry: false,
 		}
 	);
 
