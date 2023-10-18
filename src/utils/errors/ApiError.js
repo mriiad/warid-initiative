@@ -9,8 +9,8 @@ class ApiError extends Error {
 
 	getErrorResponse() {
 		return {
-			error: this.message,
-			detail: this.details || null,
+			errorMessage: this.message,
+			details: this.details || null,
 			errorKeys: this.errorKeys || [],
 		};
 	}
