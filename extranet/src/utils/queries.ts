@@ -1,4 +1,4 @@
-import axios, { AxiosError } from 'axios';
+import axios from 'axios';
 
 export const fetchEventByReference = async (reference: string) => {
 	try {
@@ -25,7 +25,9 @@ export const fetchCanDonate = async () => {
 export const confirmEventPresence = async (
 	reference: string,
 	token: string
-) => {
+): Promise<{
+	message: string;
+}> => {
 	try {
 		const response = await axios.put(
 			'http://localhost:3000/api/event/confirmPresence',
@@ -38,6 +40,6 @@ export const confirmEventPresence = async (
 		);
 		return response.data;
 	} catch (error) {
-		throw new Error((error as AxiosError).message);
+		throw error.response;
 	}
 };
