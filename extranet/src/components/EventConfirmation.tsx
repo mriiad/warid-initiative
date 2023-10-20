@@ -29,7 +29,7 @@ const EventConfirmation: React.FC = () => {
 
 	useEffect(() => {
 		mutation.mutate();
-	}, [mutation]);
+	}, []);
 
 	return (
 		<>
