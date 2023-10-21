@@ -2,9 +2,12 @@ import { Button, Grid, TextField, Typography } from '@mui/material';
 import axios from 'axios';
 import { Controller, useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
+import { authStyles } from '../styles/mainStyles'; // Import styles
 import FormContainer from './shared/FormContainer';
 
 const PasswordResetForm = () => {
+	const { bar, button, signUp, form } = authStyles();
+
 	const {
 		handleSubmit,
 		formState: { errors },
@@ -31,10 +34,11 @@ const PasswordResetForm = () => {
 
 	return (
 		<FormContainer>
-			<Typography variant='h2' align='center' gutterBottom>
+			<Typography variant='h2' align='center' gutterBottom className={signUp}>
 				Reset Password
+				<span className={bar}></span>
 			</Typography>
-			<form onSubmit={handleSubmit(onSubmit)}>
+			<form onSubmit={handleSubmit(onSubmit)} className={form}>
 				<Grid container spacing={2}>
 					<Grid item xs={12}>
 						<Controller
@@ -54,7 +58,12 @@ const PasswordResetForm = () => {
 						/>
 					</Grid>
 					<Grid item xs={12}>
-						<Button type='submit' color='primary' fullWidth>
+						<Button
+							type='submit'
+							color='primary'
+							className={button}
+							style={{ color: 'white' }} // You might need to adjust this based on your actual styles
+						>
 							Send Reset Link
 						</Button>
 					</Grid>
