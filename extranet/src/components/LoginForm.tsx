@@ -113,7 +113,7 @@ const LoginForm = () => {
 							align='center'
 							gutterBottom
 							className={textButton}
-							onClick={() => navigate('/reset-password')}
+							onClick={() => navigate('/request-reset-password')}
 						>
 							Forgot Password?
 						</Typography>

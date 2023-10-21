@@ -2,7 +2,7 @@ import { Button, Grid, TextField, Typography } from '@mui/material';
 import axios from 'axios';
 import { Controller, useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
-import { authStyles } from '../styles/mainStyles'; // Import styles
+import { authStyles } from '../styles/mainStyles';
 import FormContainer from './shared/FormContainer';
 
 const PasswordResetForm = () => {
@@ -62,7 +62,7 @@ const PasswordResetForm = () => {
 							type='submit'
 							color='primary'
 							className={button}
-							style={{ color: 'white' }} // You might need to adjust this based on your actual styles
+							style={{ color: 'white' }}
 						>
 							Send Reset Link
 						</Button>
