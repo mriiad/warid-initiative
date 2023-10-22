@@ -7,6 +7,7 @@ import EventsComponent from './components/EventsComponent';
 import LoginForm from './components/LoginForm';
 import NavBar from './components/NavBar';
 import PasswordResetForm from './components/PasswordResetForm';
+import ResetPasswordForm from './components/ResetPasswordForm';
 import SignupForm from './components/SignupForm';
 
 const AppContainer = styled.div`
@@ -46,7 +47,7 @@ const App = () => {
 						/>
 						<Route
 							path='/reset-password/:resetToken'
-							element={<PasswordResetForm />}
+							element={<ResetPasswordForm />}
 						/>
 						<Route path='*' element={<SignupForm />} />
 					</Routes>
