@@ -263,7 +263,7 @@ exports.requestPasswordReset = (req, res, next) => {
 		})
 		.then((user) => {
 			// Send reset email
-			const resetURL = `http://localhost:${config.port}/api/auth/reset-password/${user.passwordResetToken}`;
+			const resetURL = `http://localhost:${config.port}/reset-password/${user.passwordResetToken}`;
 			const message = `Forgot your password? Click the link below to reset it: ${resetURL}`;
 
 			return transporter.sendMail({
@@ -315,6 +315,31 @@ exports.resetPassword = (req, res, next) => {
 			res.status(200).json({
 				message: 'Password reset successful!',
 			});
+		})
+		.catch((err) => {
+			if (!err.statusCode) {
+				err.statusCode = STATUS_CODE.INTERNAL_SERVER;
+			}
+			next(err);
+		});
+};
+
+exports.checkResetTokenValidity = (req, res, next) => {
+	const resetToken = req.params.token;
+
+	console.log('resetToken', resetToken);
+
+	User.findOne({
+		passwordResetToken: resetToken,
+		passwordResetExpires: { $gt: moment().utc().toDate() },
+	})
+		.then((user) => {
+			if (!user) {
+				const error = new Error('Token is invalid or has expired.');
+				error.statusCode = STATUS_CODE.BAD_REQUEST;
+				throw error;
+			}
+			res.status(200).json({ message: 'Token is valid.' });
 		})
 		.catch((err) => {
 			if (!err.statusCode) {
