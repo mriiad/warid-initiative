@@ -65,12 +65,7 @@ const ResetPasswordForm = () => {
 					password: formData.password,
 				}
 			);
-			navigate('/login', {
-				state: {
-					message:
-						'Password reset successful! Please login with your new password.',
-				},
-			});
+			navigate('/login', { state: { passwordReset: true } });
 		} catch (error) {
 			console.error('Error resetting password:', error);
 		}
