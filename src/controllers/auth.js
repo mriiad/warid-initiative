@@ -312,6 +312,9 @@ exports.resetPassword = (req, res, next) => {
 			return user.save();
 		})
 		.then(() => {
+			// Send the success email to the user
+			sendPasswordResetSuccessEmail(user.email);
+
 			res.status(200).json({
 				message: 'Password reset successful!',
 			});
@@ -323,6 +326,27 @@ exports.resetPassword = (req, res, next) => {
 			next(err);
 		});
 };
+
+function sendPasswordResetSuccessEmail(email) {
+	const mailOptions = {
+		from: 'do-not-reply@warid.ma',
+		to: email,
+		subject: 'Password Reset Successful',
+		text: 'Your password has been reset successfully. You can now log in with your new password.',
+		html: `
+            <p>Your password has been reset successfully.</p>
+            <p>You can now <a href="http://localhost:3001/login">log in</a> with your new password.</p>
+        `,
+	};
+
+	transporter.sendMail(mailOptions, (error, info) => {
+		if (error) {
+			console.error('Error sending email:', error);
+		} else {
+			console.log('Password reset success email sent: ' + info.response);
+		}
+	});
+}
 
 exports.checkResetTokenValidity = (req, res, next) => {
 	const resetToken = req.params.token;
