@@ -13,6 +13,7 @@ import { useMutation } from 'react-query';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { LoginFormData } from '../data/authData';
+import colors from '../styles/colors';
 import { authStyles, mainStyles } from '../styles/mainStyles';
 import FormContainer from './shared/FormContainer';
 
@@ -65,14 +66,14 @@ const LoginForm = () => {
 	return (
 		<FormContainer>
 			<Snackbar
+				anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
 				open={openSnackbar}
 				autoHideDuration={6000}
 				onClose={handleCloseSnackbar}
 			>
 				<Alert
 					onClose={handleCloseSnackbar}
-					severity='success'
-					sx={{ width: '100%' }}
+					style={{ backgroundColor: colors.green, color: 'white' }}
 				>
 					Your password has been reset successfully!
 				</Alert>
