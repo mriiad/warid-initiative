@@ -16,10 +16,13 @@ const AppContainer = styled.div`
 	font-family: Arial, sans-serif;
 	margin: 0;
 	padding: 0;
-	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
+	height: 100vh;
 `;
 
 const ContentContainer = styled.div`
+	flex-grow: 1;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -32,7 +35,7 @@ const ContentContainer = styled.div`
 
 const MobileNavContainer = styled.div`
 	position: fixed;
-	bottom: 0;
+	bottom: env(safe-area-inset-bottom);
 	width: 100%;
 	z-index: 101;
 `;
