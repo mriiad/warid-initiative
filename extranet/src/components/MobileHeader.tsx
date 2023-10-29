@@ -2,21 +2,26 @@ import ArrowCircleLeftIcon from '@mui/icons-material/ArrowCircleLeft';
 import ArrowCircleRightIcon from '@mui/icons-material/ArrowCircleRight';
 import { makeStyles } from '@mui/styles';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { useAuth } from '../auth/AuthContext';
 import ActionButton from './shared/ActionButton';
 
-const HeaderContainer = styled.div`
+interface HeaderContainerProps {
+	isEventPage: boolean;
+}
+
+const HeaderContainer = styled.div<HeaderContainerProps>`
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	padding: 10px;
-	position: fixed;
+	padding: 18px 12px 10px 21px;
+	background-color: transparent;
 	top: 0;
 	left: 0;
 	right: 0;
 	z-index: 102;
+	position: ${(props) => (props.isEventPage ? 'absolute' : 'static')};
 `;
 
 const LogoContainer = styled.div`
@@ -35,6 +40,8 @@ const useStyles = makeStyles({
 const MobileHeader = () => {
 	const { logoImage } = useStyles();
 	const { token, setToken, setIsAdmin, setUserId } = useAuth();
+	const location = useLocation();
+	const isEventPage = location.pathname.includes('events/WEVENT');
 	const navigate = useNavigate();
 
 	const handleLogout = () => {
@@ -58,7 +65,7 @@ const MobileHeader = () => {
 	};
 
 	return (
-		<HeaderContainer>
+		<HeaderContainer isEventPage={isEventPage}>
 			<LogoContainer onClick={() => navigate('/signup')}>
 				<img src='/warid-logo.png' alt='Logo' className={logoImage} />
 			</LogoContainer>

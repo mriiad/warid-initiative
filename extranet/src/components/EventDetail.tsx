@@ -220,11 +220,13 @@ const EventDetail: React.FC = () => {
 								</CardComponent>
 								{initialRoute && (
 									<>
-										<CardComponent>
-											<Typography className={description}>
-												{event?.description}
-											</Typography>
-										</CardComponent>
+										{event?.description && (
+											<CardComponent>
+												<Typography className={description}>
+													{event.description}
+												</Typography>
+											</CardComponent>
+										)}
 										<Button
 											className={joinButton}
 											onClick={handleParticipateClick}
