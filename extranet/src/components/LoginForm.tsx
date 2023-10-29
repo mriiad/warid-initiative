@@ -1,11 +1,19 @@
-import { Button, Grid, TextField, Typography } from '@mui/material';
+import {
+	Alert,
+	Button,
+	Grid,
+	Snackbar,
+	TextField,
+	Typography,
+} from '@mui/material';
 import axios from 'axios';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useMutation } from 'react-query';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { LoginFormData } from '../data/authData';
+import colors from '../styles/colors';
 import { authStyles, mainStyles } from '../styles/mainStyles';
 import FormContainer from './shared/FormContainer';
 
@@ -21,6 +29,13 @@ const LoginForm = () => {
 	} = useForm<LoginFormData>();
 
 	const navigate = useNavigate();
+	const location = useLocation();
+	const passwordReset = location.state?.passwordReset;
+	const [openSnackbar, setOpenSnackbar] = useState(passwordReset);
+
+	const handleCloseSnackbar = () => {
+		setOpenSnackbar(false);
+	};
 
 	const loginMutation = useMutation((data: FormData) => {
 		return axios.post('http://localhost:3000/api/auth/login', data);
@@ -36,8 +51,8 @@ const LoginForm = () => {
 				setUserId(data.data.userId);
 				setIsAdmin(data.data.isAdmin);
 				localStorage.setItem('token', data.data.token);
-				localStorage.setItem('userId', data.data.userId); // store userId in local storage
-				localStorage.setItem('isAdmin', String(data.data.isAdmin)); // store isAdmin in local storage as string
+				localStorage.setItem('userId', data.data.userId);
+				localStorage.setItem('isAdmin', String(data.data.isAdmin));
 				localStorage.setItem('refreshToken', data.data.refreshToken);
 				setIsFormSubmitted(true);
 				navigate('/events?page=1');
@@ -50,6 +65,19 @@ const LoginForm = () => {
 
 	return (
 		<FormContainer>
+			<Snackbar
+				anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+				open={openSnackbar}
+				autoHideDuration={6000}
+				onClose={handleCloseSnackbar}
+			>
+				<Alert
+					onClose={handleCloseSnackbar}
+					style={{ backgroundColor: colors.green, color: 'white' }}
+				>
+					Your password has been reset successfully!
+				</Alert>
+			</Snackbar>
 			<Typography variant='h2' align='center' gutterBottom className={signUp}>
 				Log In
 				<span className={bar}></span>
@@ -113,7 +141,7 @@ const LoginForm = () => {
 							align='center'
 							gutterBottom
 							className={textButton}
-							onClick={() => navigate('/reset-password')}
+							onClick={() => navigate('/request-reset-password')}
 						>
 							Forgot Password?
 						</Typography>

@@ -10,6 +10,7 @@ import MobileHeader from './components/MobileHeader';
 import MobileNavbar from './components/MobileNavbar';
 import NavBar from './components/NavBar';
 import PasswordResetForm from './components/PasswordResetForm';
+import ResetPasswordForm from './components/ResetPasswordForm';
 import SignupForm from './components/SignupForm';
 
 const AppContainer = styled.div`
@@ -64,7 +65,14 @@ const App = () => {
 						<Route path='/events' element={<EventsComponent />} />
 						<Route path='/events/:reference' element={<EventDetail />} />
 						<Route path='/admin' element={<AdminComponent />} />
-						<Route path='/reset-password' element={<PasswordResetForm />} />
+						<Route
+							path='/request-reset-password'
+							element={<PasswordResetForm />}
+						/>
+						<Route
+							path='/reset-password/:resetToken'
+							element={<ResetPasswordForm />}
+						/>
 						<Route path='*' element={<SignupForm />} />
 					</Routes>
 				</ContentContainer>

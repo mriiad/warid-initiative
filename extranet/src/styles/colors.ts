@@ -8,6 +8,7 @@ const colors = {
 	rose: '#ff3067',
 	softRose: '##FE2F67',
 	formWhite: '#fcfcfc40',
+	green: '#2E7D32',
 };
 
 export default colors;

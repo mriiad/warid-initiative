@@ -8,6 +8,7 @@ const {
 	refreshToken,
 	requestPasswordReset,
 	resetPassword,
+	checkResetTokenValidity,
 } = require('../controllers/auth');
 const User = require('../models/user');
 
@@ -58,5 +59,7 @@ authRouter.post('/api/auth/refresh-token', refreshToken);
 authRouter.post('/api/auth/request-reset', requestPasswordReset);
 
 authRouter.post('/api/auth/reset-password/:token', resetPassword);
+
+authRouter.get('/api/auth/check-reset-token/:token', checkResetTokenValidity);
 
 module.exports = authRouter;
