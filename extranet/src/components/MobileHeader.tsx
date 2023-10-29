@@ -60,7 +60,7 @@ const MobileHeader = () => {
 	return (
 		<HeaderContainer>
 			<LogoContainer onClick={() => navigate('/signup')}>
-				<img src='warid-logo.png' alt='Logo' className={logoImage} />
+				<img src='/warid-logo.png' alt='Logo' className={logoImage} />
 			</LogoContainer>
 			{token ? (
 				<ActionButton

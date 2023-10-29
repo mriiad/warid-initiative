@@ -45,8 +45,6 @@ const LoginForm = () => {
 	const onSubmit = (formData: FormData) => {
 		loginMutation.mutate(formData, {
 			onSuccess: (data) => {
-				console.log('Login successful!');
-				console.log('data: ', data);
 				setToken(data.data.token);
 				setUserId(data.data.userId);
 				setIsAdmin(data.data.isAdmin);
@@ -55,7 +53,14 @@ const LoginForm = () => {
 				localStorage.setItem('isAdmin', String(data.data.isAdmin));
 				localStorage.setItem('refreshToken', data.data.refreshToken);
 				setIsFormSubmitted(true);
-				navigate('/events?page=1');
+				const params = new URLSearchParams(window.location.search);
+				const redirectURL = params.get('redirect');
+
+				if (redirectURL) {
+					navigate(redirectURL);
+				} else {
+					navigate('/');
+				}
 			},
 			onError: (error) => {
 				console.error('Error logging in:', error);

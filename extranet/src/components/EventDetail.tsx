@@ -1,50 +1,49 @@
-import { Button, CircularProgress, Divider, Typography } from '@mui/material';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import {
+	Button,
+	CircularProgress,
+	IconButton,
+	Typography,
+} from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { DateCalendar } from '@mui/x-date-pickers/DateCalendar';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import axios from 'axios';
 import dayjs from 'dayjs';
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { Event } from '../data/Event';
-import FormContainer from './shared/FormContainer';
-import Map from './shared/Map';
+import CardComponent from './shared/CardComponent';
 
 const useStyles = makeStyles({
 	eventContainer: {
-		display: 'flex',
-		gap: '16px',
-	},
-	actionsContainer: {
-		'& > div': {
-			'& > div': {
-				width: '322px',
-			},
-		},
-	},
-	calendar: {
-		marginBottom: '22px',
-		'& > div': {
-			'& > div': {
-				width: 'fit-content',
-				padding: 0,
-			},
-		},
-	},
-	detailContainer: {
-		'& > div': {
-			display: 'block',
-			'& > div': {
-				width: '900px',
-			},
-		},
-	},
-	rightSideContainer: {
+		position: 'relative',
+		height: '100vh',
+		width: '-webkit-fill-available',
+		backgroundSize: 'cover',
+		backgroundPosition: 'center',
 		display: 'flex',
 		flexDirection: 'column',
-		alignItems: 'flex-start',
+		justifyContent: 'center',
+		alignItems: 'center',
+	},
+	overlay: {
+		position: 'relative',
+		color: 'white',
+		padding: 20,
+		textAlign: 'center',
+	},
+	date: {
+		marginBottom: 10,
+		color: 'black',
+	},
+	joinButton: {
+		padding: '10px 20px',
+		background: '#333',
+		color: 'white',
+		'&:hover': {
+			background: '#555',
+		},
 	},
 	fallback: {
 		display: 'flex',
@@ -52,15 +51,28 @@ const useStyles = makeStyles({
 		alignItems: 'center',
 		minHeight: '100vh',
 	},
-	image: {
-		width: '100%',
-		border: '12px solid white',
+	title: {
+		'& > p:first-child': {
+			fontSize: '1.5rem',
+			fontWeight: 500,
+		},
 	},
-	divider: {
-		width: '900px',
-		'&.MuiDivider-root': {
-			borderBottom: '1px solid white',
-			margin: '20px -31px 20px',
+	description: {
+		color: 'black',
+	},
+	foldableContent: {
+		overflow: 'hidden',
+		transition: 'max-height 0.3s ease',
+	},
+	arrowIcon: {
+		cursor: 'pointer',
+	},
+	foldableWrapper: {
+		display: 'flex',
+		flexDirection: 'column',
+		alignItems: 'center',
+		'& > button': {
+			color: 'white',
 		},
 	},
 });
@@ -70,16 +82,7 @@ const EventDetail: React.FC = () => {
 	const { token, isAdmin } = useAuth();
 	const [event, setEvent] = useState<Event | null>();
 	const [isLoading, setIsLoading] = useState(false);
-	const {
-		eventContainer,
-		detailContainer,
-		actionsContainer,
-		rightSideContainer,
-		divider,
-		fallback,
-		image,
-		calendar,
-	} = useStyles();
+	const navigate = useNavigate();
 
 	useEffect(() => {
 		const fetchEvent = async () => {
@@ -98,6 +101,28 @@ const EventDetail: React.FC = () => {
 
 		fetchEvent();
 	}, [reference]);
+	const [isFolded, setIsFolded] = useState(false);
+
+	const {
+		eventContainer,
+		overlay,
+		date,
+		joinButton,
+		fallback,
+		title,
+		description,
+		foldableContent,
+		arrowIcon,
+		foldableWrapper,
+	} = useStyles();
+
+	const handleParticipateClick = () => {
+		navigate(
+			token
+				? '?participate'
+				: `/login?redirect=/events/${reference}?participate`
+		);
+	};
 
 	return (
 		<>
@@ -106,34 +131,52 @@ const EventDetail: React.FC = () => {
 					<CircularProgress />
 				</div>
 			) : (
-				<div className={eventContainer}>
-					<FormContainer className={detailContainer}>
-						<Typography variant='h3'>{event?.title}</Typography>
-						<Divider className={divider} />
-						<img
-							src={
-								event?.image
-									? `data:image/jpeg;base64,${event.image}`
-									: 'event-default.png'
-							}
-							alt={event?.title}
-							className={image}
-						/>
-						<Typography>{event?.description}</Typography>
-					</FormContainer>
-					<div className={rightSideContainer}>
-						{token && (
-							<FormContainer className={actionsContainer}>
-								<Typography>10 people are attending this event</Typography>
-								<Button>Join them</Button>
-							</FormContainer>
-						)}
-						<FormContainer className={calendar}>
-							<LocalizationProvider dateAdapter={AdapterDayjs}>
-								<DateCalendar value={dayjs(event?.date)} disabled />
-							</LocalizationProvider>
-						</FormContainer>
-						<Map event={event} />
+				<div
+					className={eventContainer}
+					style={{
+						backgroundImage: event?.image
+							? `url(data:image/jpeg;base64,${event.image})`
+							: `url(/event-default.png)`,
+					}}
+				>
+					<div className={overlay}>
+						<div className={title}>
+							<Typography>{event?.title}</Typography>
+							<Typography>{event?.subtitle}</Typography>
+						</div>
+						<div className={foldableWrapper}>
+							<IconButton
+								onClick={() => setIsFolded(!isFolded)}
+								className={arrowIcon}
+							>
+								{isFolded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+							</IconButton>
+							<div
+								className={foldableContent}
+								style={{
+									maxHeight: isFolded ? '0' : '500px',
+								}}
+							>
+								<CardComponent>
+									<Typography className={date}>
+										{dayjs(event?.date).format('DD-MM-YYYY')}
+									</Typography>
+									<Typography className={date}>{event?.location}</Typography>
+									<Button
+										className={joinButton}
+										onClick={handleParticipateClick}
+									>
+										Participate
+									</Button>
+								</CardComponent>
+
+								<CardComponent>
+									<Typography className={description}>
+										{event?.description}
+									</Typography>
+								</CardComponent>
+							</div>
+						</div>
 					</div>
 				</div>
 			)}
