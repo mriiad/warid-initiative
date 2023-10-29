@@ -1,12 +1,20 @@
-# warid-initiative
+# Warid Initiative Blood Donation Application
 
-A blood donation application for "Warid Initiative" association based in Morocco
+The Warid Initiative Blood Donation Application is a project aimed at facilitating blood donation activities for the Warid Initiative association based in Morocco. This application streamlines the process of blood donation, making it easier for donors to contribute and for the association to manage donations.
 
 <p align="center">
   <img src="https://user-images.githubusercontent.com/48014410/192161623-ac0f8553-7efc-4358-8c9c-719d7e9afaa3.png">
 </p>
 
-Follow these steps to run the project locally after pulling it:
+## Getting Started
+
+### Prerequisites
+
+* Node.js and npm installed
+* MongoDB account
+
+
+### Installation and Setup
 
 ## Database
 
@@ -56,13 +64,20 @@ Here are some functionalities to test (please replace the port by the one mentio
 
 ## Contributing
 
-Some issues will be created soon in order to improve/fix some parts of the project, so stay tuned
+We welcome contributions to improve and enhance the application. Please feel free to open issues for bugs, enhancements, or feature requests. Stay tuned for issues created by the maintainers for specific tasks and improvements.
 
-NB:
-The config.json must be ignored by running the following git command:
-`git update-index --assume-unchanged ./config.json`
+## Note
+Ensure that config.json is ignored in your Git repository to protect sensitive information. Use the following commands as needed:
 
-To be able to commit a change on it, make sure not to forget your mongodb access username and password and run the following command to make it tracked and committable:
-`git update-index --no-assume-unchanged ./config.json`
+To ignore changes: git update-index --assume-unchanged ./config.json
+To track changes: git update-index --no-assume-unchanged ./config.json
+
+## Contact
+
+For any inquiries or issues, please open an issue on the GitHub repository.
+
+Enjoy contributing to the Warid Initiative Blood Donation Application!
+
+Please make sure to replace <port> in the API call example with the actual port number specified in your config.json file. Additionally, ensure that all the information is accurate and relevant to your project.
 
 Enjoy!
