@@ -1,20 +1,35 @@
+import EventIcon from '@mui/icons-material/Event';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import MapIcon from '@mui/icons-material/Map';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import {
 	Button,
 	CircularProgress,
 	IconButton,
 	Typography,
 } from '@mui/material';
+import Box from '@mui/material/Box';
+import Divider from '@mui/material/Divider';
 import { makeStyles } from '@mui/styles';
-import axios from 'axios';
 import dayjs from 'dayjs';
-import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useQuery } from 'react-query';
+import {
+	Route,
+	Routes,
+	useLocation,
+	useNavigate,
+	useParams,
+} from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
-import { Event } from '../data/Event';
+import colors from '../styles/colors';
+import { useEventStyles } from '../styles/eventStyle';
+import { fetchEventByReference } from '../utils/queries';
+import CanDonate from './CanDonate';
+import EventConfirmation from './EventConfirmation';
 import CardComponent from './shared/CardComponent';
-
 const useStyles = makeStyles({
 	eventContainer: {
 		position: 'relative',
@@ -41,8 +56,10 @@ const useStyles = makeStyles({
 		padding: '10px 20px',
 		background: '#333',
 		color: 'white',
-		'&:hover': {
-			background: '#555',
+		'&.MuiButtonBase-root': {
+			marginTop: '10px',
+			color: 'white',
+			backgroundColor: colors.purple,
 		},
 	},
 	fallback: {
@@ -61,6 +78,7 @@ const useStyles = makeStyles({
 		color: 'black',
 	},
 	foldableContent: {
+		width: '100%',
 		overflow: 'hidden',
 		transition: 'max-height 0.3s ease',
 	},
@@ -80,28 +98,9 @@ const useStyles = makeStyles({
 const EventDetail: React.FC = () => {
 	const { reference } = useParams<{ reference: string }>();
 	const { token, isAdmin } = useAuth();
-	const [event, setEvent] = useState<Event | null>();
-	const [isLoading, setIsLoading] = useState(false);
 	const navigate = useNavigate();
-
-	useEffect(() => {
-		const fetchEvent = async () => {
-			try {
-				setIsLoading(true);
-				const response = await axios.get(
-					`http://localhost:3000/api/events/${reference}`
-				);
-				setEvent(response.data.event);
-			} catch (error) {
-				console.error('Error fetching events', error);
-			} finally {
-				setIsLoading(false);
-			}
-		};
-
-		fetchEvent();
-	}, [reference]);
-	const [isFolded, setIsFolded] = useState(false);
+	const location = useLocation();
+	const initialRoute: boolean = location.pathname === `/events/${reference}`;
 
 	const {
 		eventContainer,
@@ -116,12 +115,22 @@ const EventDetail: React.FC = () => {
 		foldableWrapper,
 	} = useStyles();
 
-	const handleParticipateClick = () => {
-		navigate(
-			token
-				? '?participate'
-				: `/login?redirect=/events/${reference}?participate`
-		);
+	const { infoCard, iconBox, dataBox, verticalDivider } = useEventStyles();
+
+	const {
+		data: event,
+		isLoading,
+		isError,
+	} = useQuery(['event', reference], () => fetchEventByReference(reference));
+
+	const [isFolded, setIsFolded] = useState(false);
+
+	const handleParticipateClick = async () => {
+		if (token) {
+			navigate(`/events/${reference}/can-donate`);
+		} else {
+			navigate(`/login?redirect=/events/${reference}?participate`);
+		}
 	};
 
 	return (
@@ -144,6 +153,7 @@ const EventDetail: React.FC = () => {
 							<Typography>{event?.title}</Typography>
 							<Typography>{event?.subtitle}</Typography>
 						</div>
+
 						<div className={foldableWrapper}>
 							<IconButton
 								onClick={() => setIsFolded(!isFolded)}
@@ -158,25 +168,80 @@ const EventDetail: React.FC = () => {
 								}}
 							>
 								<CardComponent>
-									<Typography className={date}>
-										{dayjs(event?.date).format('DD-MM-YYYY')}
-									</Typography>
-									<Typography className={date}>{event?.location}</Typography>
-									<Button
-										className={joinButton}
-										onClick={handleParticipateClick}
-									>
-										Participate
-									</Button>
+									<Box className={infoCard}>
+										<Box className={iconBox}>
+											<EventIcon />
+										</Box>
+										<Divider
+											orientation='vertical'
+											flexItem
+											className={verticalDivider}
+										/>
+										<Box className={dataBox}>
+											<Typography>
+												{' '}
+												{dayjs(event?.date).format('DD-MM-YYYY')}
+											</Typography>
+										</Box>
+									</Box>
+									<Box className={infoCard}>
+										<Box className={iconBox}>
+											<LocationOnIcon />
+										</Box>
+										<Divider
+											orientation='vertical'
+											flexItem
+											className={verticalDivider}
+										/>
+										<Box className={dataBox}>
+											<Typography>{event?.location}</Typography>
+										</Box>
+									</Box>
+									<Box className={infoCard}>
+										<Box className={iconBox}>
+											<MapIcon />
+										</Box>
+										<Divider
+											orientation='vertical'
+											flexItem
+											className={verticalDivider}
+										/>
+										<Box className={dataBox}>
+											<a
+												href={event?.mapLink}
+												target='_blank'
+												rel='noopener noreferrer'
+											>
+												Open Map
+												<OpenInNewIcon />
+											</a>
+										</Box>
+									</Box>
 								</CardComponent>
-
-								<CardComponent>
-									<Typography className={description}>
-										{event?.description}
-									</Typography>
-								</CardComponent>
+								{initialRoute && (
+									<>
+										{event?.description && (
+											<CardComponent>
+												<Typography className={description}>
+													{event.description}
+												</Typography>
+											</CardComponent>
+										)}
+										<Button
+											className={joinButton}
+											onClick={handleParticipateClick}
+										>
+											Participate
+										</Button>
+									</>
+								)}
 							</div>
 						</div>
+
+						<Routes>
+							<Route path='can-donate' element={<CanDonate />} />
+							<Route path='confirmation' element={<EventConfirmation />} />
+						</Routes>
 					</div>
 				</div>
 			)}

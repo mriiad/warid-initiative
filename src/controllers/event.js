@@ -166,47 +166,59 @@ exports.deleteEvent = (req, res, next) => {
 
 exports.confirmPresence = (req, res, next) => {
 	const { reference } = req.body;
-	User.findById(req.userId)
+
+	let fetchedEvent;
+	Event.findOne({ reference: reference })
+		.then((event) => {
+			if (!event) {
+				const error = new Error(`Event with reference ${reference} not found.`);
+				error.statusCode = STATUS_CODE.NOT_FOUND;
+				throw error;
+			}
+			fetchedEvent = event;
+
+			return User.findById(req.userId);
+		})
 		.then((user) => {
-			Event.findOne({ reference: reference })
-				.then((event) => {
-					if (!event) {
-						return res.status(STATUS_CODE.NOT_FOUND).json({
-							message: `Event with reference ${reference} not found.`,
-						});
-					}
+			// Check if user is already part of the event
+			const isAlreadyParticipating = user.events.some(
+				(eventId) => eventId.toString() === fetchedEvent._id.toString()
+			);
 
-					const eventExists = user.events.find(
-						(ev) => ev.toString() == event.id
-					);
-					if (!eventExists) {
-						user.events.push(event);
-					}
-					const userExists = event.attendees.find(
-						(us) => us.toString() == user.id
-					);
-					if (!userExists) event.attendees.push(user);
+			if (isAlreadyParticipating) {
+				const error = new Error("You're already participating in this event!");
+				error.statusCode = 403;
+				throw error;
+			}
 
-					event.save();
-					return user.save();
-				})
-				.then((result) => {
-					res.status(STATUS_CODE.OK).json({
-						message: 'Successfully added to attendees list!',
-					});
-				})
-				.catch((err) => {
-					if (!err.statusCode) {
-						err.statusCode = STATUS_CODE.INTERNAL_SERVER;
-					}
-					next(err);
-				});
+			// Fetch all events the user is participating in
+			return Event.find({ _id: { $in: user.events } });
+		})
+		.then((events) => {
+			// Check if the user is participating in any future events
+			const hasFutureEvent = events.some((event) => event.date > new Date());
+
+			if (hasFutureEvent) {
+				const error = new Error(
+					"You're already participating in another future event!"
+				);
+				error.statusCode = 403;
+				throw error;
+			}
+
+			fetchedEvent.attendees.push(req.userId);
+
+			return fetchedEvent.save();
+		})
+		.then(() => {
+			res.status(STATUS_CODE.OK).json({
+				message: 'Successfully added to attendees list!',
+			});
 		})
 		.catch((err) => {
-			if (!err.statusCode) {
-				err.statusCode = STATUS_CODE.INTERNAL_SERVER;
-			}
-			console.log('error', err);
-			next(err);
+			const statusCode = err.statusCode || STATUS_CODE.INTERNAL_SERVER;
+			const message = err.message || 'Internal Server Error';
+
+			res.status(statusCode).json({ error: message });
 		});
 };
