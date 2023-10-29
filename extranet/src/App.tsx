@@ -46,7 +46,16 @@ const App = () => {
 	return (
 		<BrowserRouter>
 			<AppContainer>
-				{!isMobile && <NavBar />}
+				{!isMobile ? (
+					<NavBar />
+				) : (
+					<>
+						<MobileHeader />
+						<MobileNavContainer>
+							<MobileNavbar />
+						</MobileNavContainer>
+					</>
+				)}
 				<ContentContainer>
 					<Routes>
 						<Route path='/' element={<Navigate replace to='/signup' />} />
@@ -59,14 +68,6 @@ const App = () => {
 						<Route path='*' element={<SignupForm />} />
 					</Routes>
 				</ContentContainer>
-				{isMobile && (
-					<>
-						<MobileHeader />
-						<MobileNavContainer>
-							<MobileNavbar />
-						</MobileNavContainer>
-					</>
-				)}
 			</AppContainer>
 		</BrowserRouter>
 	);
