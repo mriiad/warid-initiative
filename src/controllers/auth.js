@@ -263,7 +263,7 @@ exports.requestPasswordReset = (req, res, next) => {
 		})
 		.then((user) => {
 			// Send reset email
-			const resetURL = `http://localhost:${config.port}/api/auth/reset-password/${user.passwordResetToken}`;
+			const resetURL = `http://localhost:${config.port}/reset-password/${user.passwordResetToken}`;
 			const message = `Forgot your password? Click the link below to reset it: ${resetURL}`;
 
 			return transporter.sendMail({
@@ -312,9 +312,58 @@ exports.resetPassword = (req, res, next) => {
 			return user.save();
 		})
 		.then(() => {
+			// Send the success email to the user
+			sendPasswordResetSuccessEmail(user.email);
+
 			res.status(200).json({
 				message: 'Password reset successful!',
 			});
+		})
+		.catch((err) => {
+			if (!err.statusCode) {
+				err.statusCode = STATUS_CODE.INTERNAL_SERVER;
+			}
+			next(err);
+		});
+};
+
+function sendPasswordResetSuccessEmail(email) {
+	const mailOptions = {
+		from: 'do-not-reply@warid.ma',
+		to: email,
+		subject: 'Password Reset Successful',
+		text: 'Your password has been reset successfully. You can now log in with your new password.',
+		html: `
+            <p>Your password has been reset successfully.</p>
+            <p>You can now <a href="http://localhost:3001/login">log in</a> with your new password.</p>
+        `,
+	};
+
+	transporter.sendMail(mailOptions, (error, info) => {
+		if (error) {
+			console.error('Error sending email:', error);
+		} else {
+			console.log('Password reset success email sent: ' + info.response);
+		}
+	});
+}
+
+exports.checkResetTokenValidity = (req, res, next) => {
+	const resetToken = req.params.token;
+
+	console.log('resetToken', resetToken);
+
+	User.findOne({
+		passwordResetToken: resetToken,
+		passwordResetExpires: { $gt: moment().utc().toDate() },
+	})
+		.then((user) => {
+			if (!user) {
+				const error = new Error('Token is invalid or has expired.');
+				error.statusCode = STATUS_CODE.BAD_REQUEST;
+				throw error;
+			}
+			res.status(200).json({ message: 'Token is valid.' });
 		})
 		.catch((err) => {
 			if (!err.statusCode) {

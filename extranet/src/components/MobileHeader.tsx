@@ -11,8 +11,8 @@ const HeaderContainer = styled.div`
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	padding: 10px;
-	position: fixed;
+	padding: 18px 12px 10px 21px;
+	background-color: transparent;
 	top: 0;
 	left: 0;
 	right: 0;
