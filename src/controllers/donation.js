@@ -7,47 +7,43 @@ const { STATUS_CODE } = require('../utils/errors/httpStatusCode');
  * This method must be called by the admin to confirm the donation of a user
  */
 exports.donate = (req, res, next) => {
-	const body = req.body;
-	const username = body.username;
-	User.findOne({ username: username })
+	const { bloodGroup, lastDonationDate, donationType, disease } = req.body;
+
+	User.findById(req.userId)
 		.then((user) => {
 			if (!user) {
-				return res
-					.status(STATUS_CODE.NOT_FOUND)
-					.send({ message: 'User Not found.' });
+				throw new ApiError('User not found.', STATUS_CODE.NOT_FOUND);
 			}
-			const userId = user._id;
-
-			Donation.findOne({ userId: userId })
-				.then((donation) => {
-					if (!donation) {
-						return res
-							.status(STATUS_CODE.NOT_FOUND)
-							.send({ message: 'No donation data saved for this user.' });
-					}
-					donation.lastDonationDate = new Date();
-					return donation.save();
-				})
-				.then((result) => {
-					res.status(STATUS_CODE.CREATED).json({
-						message: 'Donation saved!',
-						donationId: result._id,
-						userId: result.userId,
-					});
-				})
-				.catch((err) => {
-					if (!err.statusCode) {
-						err.statusCode = STATUS_CODE.INTERNAL_SERVER;
-					}
-					next(err);
-				});
+			const donation = new Donation({
+				bloodGroup,
+				lastDonationDate,
+				donationType,
+				disease,
+				userId: req.userId,
+			});
+			return donation.save();
+		})
+		.then((donation) => {
+			return User.findByIdAndUpdate(
+				req.userId,
+				{ $push: { donations: donation._id } },
+				{ new: true }
+			);
+		})
+		.then(() => {
+			res.status(STATUS_CODE.CREATED).json({
+				message: 'Donation saved!',
+			});
 		})
 		.catch((err) => {
-			if (!err.statusCode) {
-				err.statusCode = STATUS_CODE.INTERNAL_SERVER;
-			}
-			console.log('error', err);
-			next(err);
+			const statusCode = err.statusCode || STATUS_CODE.INTERNAL_SERVER;
+			res
+				.status(statusCode)
+				.json(
+					err.getErrorResponse
+						? err.getErrorResponse()
+						: { errorMessage: err.message }
+				);
 		});
 };
 
