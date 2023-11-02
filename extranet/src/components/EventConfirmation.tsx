@@ -1,47 +1,61 @@
+import { OpenInNew } from '@mui/icons-material';
 import { useEffect, useState } from 'react';
-import { useMutation } from 'react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
+import { MutationErrorWithData, useTypedMutation } from '../hook/useTypedHook';
 import { confirmEventPresence } from '../utils/queries';
 
-interface MutationResponse {
+interface SuccessfulResponse {
 	message: string;
+}
+
+interface ApiErrorDetails {
+	reference?: string;
 }
 
 const EventConfirmation: React.FC = () => {
 	const { reference } = useParams<{ reference: string }>();
 	const { token } = useAuth();
-	const [isConfirmed, setIsConfirmed] = useState(false);
 	const navigate = useNavigate();
+	const [isConfirmed, setIsConfirmed] = useState(false);
 
-	const mutation = useMutation<MutationResponse>(
-		() => confirmEventPresence(reference, token),
-		{
-			onSuccess: () => {
-				setIsConfirmed(true);
-				setTimeout(() => {
-					navigate('/events');
-				}, 3000);
-			},
-			retry: false,
-		}
-	);
+	const handleNavigate = (ref: string) => () => navigate(`/events/${ref}`);
+
+	const { mutate, isLoading, isError, error, data } = useTypedMutation<
+		SuccessfulResponse,
+		MutationErrorWithData
+	>(() => confirmEventPresence(reference, token), {
+		onSuccess: ({ message }) => {
+			setIsConfirmed(true);
+			console.log(message); // Optionally, log the success message
+			setTimeout(() => navigate('/events'), 3000);
+		},
+		onError: (error) => {
+			console.error('Error:', error);
+		},
+		retry: false,
+	});
 
 	useEffect(() => {
-		mutation.mutate();
-	}, []);
+		mutate();
+	}, [reference, token, mutate]);
 
-	return (
-		<>
-			{mutation.isLoading ? (
-				<div>Confirming your presence...</div>
-			) : isConfirmed ? (
-				<div>Successfully confirmed!</div>
-			) : mutation.isError ? (
-				<div>An error occurred, please try again later.</div>
-			) : null}
-		</>
-	);
+	if (isLoading) return <div>Confirming your presence...</div>;
+	if (isConfirmed) return <div>{data?.message}</div>;
+
+	if (isError && error?.data) {
+		const { errorMessage, details } = error.data;
+		const reference = details?.reference;
+
+		return (
+			<div>
+				{errorMessage}
+				{reference && <OpenInNew onClick={handleNavigate(reference)} />}
+			</div>
+		);
+	}
+
+	return null;
 };
 
 export default EventConfirmation;

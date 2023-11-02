@@ -5,7 +5,7 @@ const { STATUS_CODE } = require('../utils/errors/httpStatusCode');
 const { validationResult } = require('express-validator');
 const mongoose = require('mongoose');
 const fs = require('fs');
-const user = require('../models/user');
+const ApiError = require('../utils/errors/ApiError');
 
 /**
  *
@@ -171,9 +171,12 @@ exports.confirmPresence = (req, res, next) => {
 	Event.findOne({ reference: reference })
 		.then((event) => {
 			if (!event) {
-				const error = new Error(`Event with reference ${reference} not found.`);
-				error.statusCode = STATUS_CODE.NOT_FOUND;
-				throw error;
+				throw new ApiError(
+					`Event with reference ${reference} not found.`,
+					STATUS_CODE.NOT_FOUND,
+					null,
+					['reference']
+				);
 			}
 			fetchedEvent = event;
 
@@ -186,9 +189,11 @@ exports.confirmPresence = (req, res, next) => {
 			);
 
 			if (isAlreadyParticipating) {
-				const error = new Error("You're already participating in this event!");
-				error.statusCode = 403;
-				throw error;
+				throw new ApiError(
+					"You're already participating in this event!",
+					403,
+					null
+				);
 			}
 
 			// Fetch all events the user is participating in
@@ -196,14 +201,15 @@ exports.confirmPresence = (req, res, next) => {
 		})
 		.then((events) => {
 			// Check if the user is participating in any future events
-			const hasFutureEvent = events.some((event) => event.date > new Date());
+			const futureEvent = events.find((event) => event.date > new Date());
 
-			if (hasFutureEvent) {
-				const error = new Error(
-					"You're already participating in another future event!"
+			if (futureEvent) {
+				const { title, reference, date } = futureEvent;
+				throw new ApiError(
+					`You're already participating in another future event: ${reference}`,
+					403,
+					{ title, reference, date }
 				);
-				error.statusCode = 403;
-				throw error;
 			}
 
 			fetchedEvent.attendees.push(req.userId);
@@ -217,8 +223,7 @@ exports.confirmPresence = (req, res, next) => {
 		})
 		.catch((err) => {
 			const statusCode = err.statusCode || STATUS_CODE.INTERNAL_SERVER;
-			const message = err.message || 'Internal Server Error';
 
-			res.status(statusCode).json({ error: message });
+			res.status(statusCode).json(err.getErrorResponse());
 		});
 };
