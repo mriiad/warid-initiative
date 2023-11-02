@@ -1,10 +1,10 @@
 import useMediaQuery from '@mui/material/useMediaQuery';
-import React from 'react';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import styled from 'styled-components';
 import AdminComponent from './components/AdminComponent';
 import CanDonate from './components/CanDonate';
+import DonationComponent from './components/DonationComponents';
 import EventConfirmation from './components/EventConfirmation';
 import EventDetail from './components/EventDetail';
 import EventsComponent from './components/EventsComponent';
@@ -68,6 +68,7 @@ const App = () => {
 								<Route path='can-donate' element={<CanDonate />} />
 								<Route path='confirmation' element={<EventConfirmation />} />
 							</Route>
+							<Route path='/donate' element={<DonationComponent />} />
 							<Route path='/admin' element={<AdminComponent />} />
 							<Route
 								path='/request-reset-password'

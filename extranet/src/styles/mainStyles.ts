@@ -49,7 +49,6 @@ export const authStyles = makeStyles({
 		border: '1px solid white',
 		padding: '30px',
 		marginTop: '20px',
-		width: '540px',
 		'& .MuiOutlinedInput-notchedOutline': {
 			border: 'none',
 			backgroundColor: 'white',
