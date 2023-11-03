@@ -1,5 +1,10 @@
 const express = require('express');
-const { donate, canDonate } = require('../controllers/donation');
+const {
+	donate,
+	canDonate,
+	getDonation,
+	getDonationsByUser,
+} = require('../controllers/donation');
 
 const donationRouter = express.Router();
 
@@ -8,7 +13,16 @@ const checkIfAdmin = require('../utils/checks');
 
 donationRouter.get('/', (req, res, next) => {});
 
-donationRouter.put('/api/donation', isAuth, checkIfAdmin, donate);
+donationRouter.post('/api/donation', isAuth, donate);
+
+donationRouter.get('/api/donation', isAuth, getDonation);
+
+donationRouter.get(
+	'/api/donation/:username',
+	isAuth,
+	checkIfAdmin,
+	getDonationsByUser
+);
 
 donationRouter.get('/api/donation/canDonate', isAuth, canDonate);
 
