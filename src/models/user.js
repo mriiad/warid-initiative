@@ -62,6 +62,13 @@ const userSchema = new Schema({
 			required: false,
 		},
 	],
+	donations: [
+		{
+			type: Schema.Types.ObjectId,
+			ref: 'Donation',
+			required: false,
+		},
+	],
 });
 
 module.exports = mongoose.model('User', userSchema);
