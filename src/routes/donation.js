@@ -8,7 +8,7 @@ const checkIfAdmin = require('../utils/checks');
 
 donationRouter.get('/', (req, res, next) => {});
 
-donationRouter.put('/api/donation', isAuth, checkIfAdmin, donate);
+donationRouter.post('/api/donation', isAuth, donate);
 
 donationRouter.get('/api/donation/canDonate', isAuth, canDonate);
 

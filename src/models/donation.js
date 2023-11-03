@@ -17,6 +17,10 @@ const DonationSchema = new Schema({
 		type: String,
 		required: false,
 	},
+	reelDonationDate: {
+		type: Date,
+		required: false,
+	},
 	disease: {
 		type: String,
 		required: false,
