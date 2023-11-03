@@ -186,6 +186,38 @@ exports.getDonation = (req, res, next) => {
 		});
 };
 
+exports.getDonationsByUser = (req, res, next) => {
+	const username = req.params.username;
+	User.findOne({ username: username })
+		.then((user) => {
+			if (!user) {
+				throw new ApiError('User not found.', STATUS_CODE.NOT_FOUND);
+			}
+
+			return Donation.find({ userId: user._id }).sort({ lastDonationDate: -1 });
+		})
+		.then((donations) => {
+			if (donations.length === 0) {
+				throw new ApiError(
+					'No donations found for this user.',
+					STATUS_CODE.NOT_FOUND
+				);
+			}
+
+			res.status(STATUS_CODE.OK).json(donations);
+		})
+		.catch((err) => {
+			const statusCode = err.statusCode || STATUS_CODE.INTERNAL_SERVER;
+			res
+				.status(statusCode)
+				.json(
+					err.getErrorResponse
+						? err.getErrorResponse()
+						: { errorMessage: err.message }
+				);
+		});
+};
+
 // TODO: markAsDonor
 // Add a method to mark user as donor by setting his reelDonationDate
 // This operation is limited to the admin
