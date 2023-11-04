@@ -34,6 +34,7 @@ const ContentContainer = styled.div`
 	flex-direction: column;
 	align-items: center;
 	padding: 0 19px;
+	margin-bottom: 50px;
 `;
 
 const MobileNavContainer = styled.div`
@@ -52,16 +53,7 @@ const App = () => {
 		<QueryClientProvider client={queryClient}>
 			<BrowserRouter>
 				<AppContainer>
-					{isMobile ? (
-						<>
-							<MobileHeader />
-							<MobileNavContainer>
-								<MobileNavbar />
-							</MobileNavContainer>
-						</>
-					) : (
-						<NavBar />
-					)}
+					{!isMobile ? <NavBar /> : <MobileHeader />}
 					<ContentContainer>
 						<Routes>
 							<Route path='/' element={<Navigate replace to='/signup' />} />
@@ -85,6 +77,13 @@ const App = () => {
 							<Route path='*' element={<SignupForm />} />
 						</Routes>
 					</ContentContainer>
+					{isMobile && (
+						<>
+							<MobileNavContainer>
+								<MobileNavbar />
+							</MobileNavContainer>
+						</>
+					)}
 				</AppContainer>
 			</BrowserRouter>
 		</QueryClientProvider>
