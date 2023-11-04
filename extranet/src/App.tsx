@@ -17,12 +17,15 @@ import ResetPasswordForm from './components/ResetPasswordForm';
 import SignupForm from './components/SignupForm';
 
 const AppContainer = styled.div`
+	background: linear-gradient(to left, #e0d1f5, #f6ecf3 48%, #e0d1f5) no-repeat
+		center/cover;
 	font-family: Arial, sans-serif;
 	margin: 0;
 	padding: 0;
 	display: flex;
 	flex-direction: column;
-	height: 100vh;
+	gap: 48px;
+	min-height: 100vh;
 `;
 
 const ContentContainer = styled.div`
@@ -30,6 +33,7 @@ const ContentContainer = styled.div`
 	display: flex;
 	flex-direction: column;
 	align-items: center;
+	padding: 0 19px;
 `;
 
 const MobileNavContainer = styled.div`
