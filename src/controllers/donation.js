@@ -2,6 +2,7 @@ const Donation = require('../models/donation');
 const User = require('../models/user');
 const { STATUS_CODE } = require('../utils/errors/httpStatusCode');
 const ApiError = require('../utils/errors/ApiError');
+const mongoose = require('mongoose');
 
 /**
  * Utility function to check donation eligibility
@@ -159,7 +160,7 @@ const checkExistingDonation = async (userId, userProvidedDate) => {
 exports.getDonation = (req, res, next) => {
 	const { userId } = req;
 
-	Donation.find({ userId: userId })
+	Donation.find({ userId: mongoose.Types.ObjectId(userId) })
 		.sort({ lastDonationDate: -1 })
 		.limit(1)
 		.exec()
