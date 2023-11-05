@@ -22,6 +22,15 @@ export const fetchCanDonate = async () => {
 	}
 };
 
+export const fetchDonation = async () => {
+	try {
+		const response = await axios.get('http://localhost:3000/api/donation');
+		return response.data;
+	} catch (error) {
+		throw new Error(error.message);
+	}
+};
+
 export const confirmEventPresence = async (
 	reference: string,
 	token: string
