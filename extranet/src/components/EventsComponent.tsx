@@ -2,11 +2,18 @@ import { Button, CircularProgress } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
+import styled from 'styled-components';
 import { Event } from '../data/Event';
 import EventCard from './EventCard';
 
+const EventsContainer = styled.div`
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+`;
+
 const useStyles = makeStyles({
-	eventsContainer: {
+	eventsList: {
 		display: 'flex',
 		flexDirection: 'row',
 		flexWrap: 'wrap',
@@ -19,10 +26,13 @@ const useStyles = makeStyles({
 		alignItems: 'center',
 		minHeight: '100vh',
 	},
+	pagination: {
+		marginBottom: '64px',
+	},
 });
 
 const EventsComponent = () => {
-	const { eventsContainer, fallBack } = useStyles();
+	const { eventsList, fallBack, pagination } = useStyles();
 	const [events, setEvents] = useState<Event[] | null>([]);
 
 	const [page, setPage] = useState(1);
@@ -50,13 +60,13 @@ const EventsComponent = () => {
 	}, [page]);
 
 	return (
-		<div>
+		<EventsContainer>
 			{isLoading ? (
 				<div className={fallBack}>
 					<CircularProgress />
 				</div>
 			) : (
-				<div className={eventsContainer}>
+				<div className={eventsList}>
 					{events.map((event, index) => (
 						<EventCard
 							key={event._id}
@@ -66,7 +76,7 @@ const EventsComponent = () => {
 					))}
 				</div>
 			)}
-			<div>
+			<div className={pagination}>
 				<Button disabled={page === 1} onClick={() => setPage(page - 1)}>
 					Previous
 				</Button>
@@ -74,7 +84,8 @@ const EventsComponent = () => {
 					Next
 				</Button>
 			</div>
-		</div>
+			<div></div>
+		</EventsContainer>
 	);
 };
 

@@ -34,7 +34,6 @@ const ContentContainer = styled.div`
 	flex-direction: column;
 	align-items: center;
 	padding: 0 19px;
-	margin-bottom: 50px;
 `;
 
 const MobileNavContainer = styled.div`
