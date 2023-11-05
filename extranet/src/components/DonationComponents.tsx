@@ -9,14 +9,44 @@ import {
 	TextField,
 	Typography,
 } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import axios from 'axios';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useMutation } from 'react-query';
+import colors from '../styles/colors';
 import { authStyles, mainStyles } from '../styles/mainStyles';
 import FormContainer from './shared/FormContainer';
 
+const useStyles = makeStyles({
+	wrapper: {
+		display: 'grid',
+		placeContent: 'center',
+		backgroundColor: 'var(--background-color)',
+		fontFamily: '"Oswald", sans-serif',
+		fontSize: '24px',
+		fontWeight: 700,
+		textTransform: 'uppercase',
+		color: colors.rose,
+	},
+	topBottom: {
+		gridArea: '1/1/-1/-1',
+	},
+	top: {
+		clipPath: 'polygon(0% 0%, 100% 0%, 100% 48%, 0% 58%)',
+	},
+	bottom: {
+		clipPath: 'polygon(0% 60%, 100% 50%, 100% 100%, 0% 100%)',
+		color: colors.purple,
+		background: 'linear-gradient(177deg, black 53%, colors.rose 65%)',
+		backgroundClip: 'text',
+		WebkitBackgroundClip: 'text',
+		transform: 'translateX(-0.02em)',
+	},
+});
+
 const DonationComponent = () => {
+	const { wrapper, topBottom, top, bottom } = useStyles();
 	const { bar, button, signUp, form } = authStyles();
 	const { subTitle } = mainStyles();
 	const {
@@ -50,7 +80,13 @@ const DonationComponent = () => {
 			</Typography>
 			<Typography variant='h6' align='center' gutterBottom>
 				<span className={subTitle}>
-					Make a donation and make a difference.{' '}
+					Be the
+					<section className={wrapper}>
+						<div className={`${topBottom} ${top}`}>H E E E E R O !</div>
+						<div className={`${topBottom} ${bottom}`} aria-hidden='true'>
+							H E E E E R O !
+						</div>
+					</section>
 				</span>
 			</Typography>
 			<form onSubmit={handleSubmit(onSubmit)} className={form}>
