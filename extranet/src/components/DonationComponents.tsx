@@ -6,16 +6,21 @@ import {
 	InputLabel,
 	MenuItem,
 	Select,
+	Slide,
+	Snackbar,
 	TextField,
 	Typography,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import axios from 'axios';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { useMutation } from 'react-query';
+import { useMutation, useQuery } from 'react-query';
 import colors from '../styles/colors';
 import { authStyles, mainStyles } from '../styles/mainStyles';
+import { fetchDonation } from '../utils/queries';
+import { formatDate } from '../utils/utils';
+import CardComponent from './shared/CardComponent';
 import FormContainer from './shared/FormContainer';
 
 const useStyles = makeStyles({
@@ -43,17 +48,53 @@ const useStyles = makeStyles({
 		WebkitBackgroundClip: 'text',
 		transform: 'translateX(-0.02em)',
 	},
+	alert: {
+		backgroundColor: 'rgba(255, 255, 255, 0.35)',
+	},
 });
 
 const DonationComponent = () => {
-	const { wrapper, topBottom, top, bottom } = useStyles();
+	const { wrapper, topBottom, top, bottom, alert } = useStyles();
 	const { bar, button, signUp, form } = authStyles();
 	const { subTitle } = mainStyles();
+
 	const {
 		handleSubmit,
 		formState: { errors },
 		control,
+		reset,
 	} = useForm();
+
+	const {
+		data: donation,
+		error,
+		isLoading,
+		isError,
+	} = useQuery('donation', fetchDonation);
+
+	const [showSnackbar, setShowSnackbar] = useState(false);
+
+	const defaultLastDonationDate = useMemo(() => {
+		if (isLoading) return '';
+		if (error || !donation) return '';
+		return donation.reelDonationDate
+			? formatDate(donation.reelDonationDate)
+			: formatDate(donation.lastDonationDate);
+	}, [donation, error, isLoading]);
+
+	useEffect(() => {
+		reset({ lastDonationDate: defaultLastDonationDate });
+	}, [defaultLastDonationDate, reset]);
+
+	useEffect(() => {
+		if (defaultLastDonationDate) {
+			setShowSnackbar(true);
+			const timer = setTimeout(() => {
+				setShowSnackbar(false);
+			}, 5000);
+			return () => clearTimeout(timer);
+		}
+	}, [defaultLastDonationDate]);
 
 	const donateMutation = useMutation((data) => {
 		return axios.put('http://localhost:3000/api/donation', data);
@@ -119,12 +160,11 @@ const DonationComponent = () => {
 							)}
 						/>
 					</Grid>
-
 					<Grid item xs={12}>
 						<Controller
 							name='lastDonationDate'
 							control={control}
-							defaultValue=''
+							defaultValue={defaultLastDonationDate}
 							render={({ field }) => (
 								<TextField
 									fullWidth
@@ -186,6 +226,17 @@ const DonationComponent = () => {
 					</Grid>
 				</Grid>
 			</form>
+			<Snackbar
+				anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+				open={showSnackbar}
+				autoHideDuration={5000}
+			>
+				<Slide direction='up' in={showSnackbar} mountOnEnter unmountOnExit>
+					<CardComponent className={alert}>
+						{`Based on your history, your last donation date is: ${defaultLastDonationDate}`}
+					</CardComponent>
+				</Slide>
+			</Snackbar>
 		</FormContainer>
 	);
 };
