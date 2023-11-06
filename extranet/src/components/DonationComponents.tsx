@@ -23,6 +23,7 @@ import { donate, fetchDonation } from '../utils/queries';
 import { formatDate } from '../utils/utils';
 import CardComponent from './shared/CardComponent';
 import FormContainer from './shared/FormContainer';
+import ResponseAnimation from './shared/ResponseAnimation';
 
 const useStyles = makeStyles({
 	wrapper: {
@@ -167,57 +168,11 @@ const DonationComponent = () => {
 			<form onSubmit={handleSubmit(onSubmit)} className={clsx(form, separator)}>
 				<Grid container spacing={2}>
 					{isFormSubmitted ? (
-						<Grid item xs={12}>
-							{isSuccessResponse && (
-								<div className={successAnimation}>
-									<svg
-										className={checkmark}
-										xmlns='http://www.w3.org/2000/svg'
-										viewBox='0 0 52 52'
-									>
-										<circle
-											className={checkmarkCircle}
-											cx='26'
-											cy='26'
-											r='25'
-											fill='none'
-										/>
-										<path
-											className={checkmarkCheck}
-											fill='none'
-											d='M14.1 27.2l7.1 7.2 16.7-16.8'
-										/>
-									</svg>
-								</div>
-							)}
-							{isErrorResponse && (
-								<>
-									<div className={errorAnimation}>
-										<svg
-											className={errorCheckmark}
-											xmlns='http://www.w3.org/2000/svg'
-											viewBox='0 0 52 52'
-										>
-											<circle
-												className={errorCheckmarkCircle}
-												cx='26'
-												cy='26'
-												r='25'
-												fill='none'
-											/>
-											<path
-												className={errorCheckmarkCheck}
-												fill='none'
-												d='M16 16 L36 36 M36 16 L16 36'
-											/>
-										</svg>
-									</div>
-									{errorMessage && (
-										<Typography color='error'>{errorMessage}</Typography>
-									)}
-								</>
-							)}
-						</Grid>
+						<ResponseAnimation
+							isSuccess={isSuccessResponse}
+							isError={isErrorResponse}
+							errorMessage={errorMessage}
+						/>
 					) : (
 						<>
 							<Grid container spacing={2}>
