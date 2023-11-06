@@ -12,13 +12,14 @@ import {
 	Typography,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import axios from 'axios';
+import clsx from 'clsx';
 import { useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useMutation, useQuery } from 'react-query';
+import { ApiErrorResponse } from '../data/ApiErrorResponse';
 import colors from '../styles/colors';
-import { authStyles, mainStyles } from '../styles/mainStyles';
-import { fetchDonation } from '../utils/queries';
+import { animationStyles, authStyles, mainStyles } from '../styles/mainStyles';
+import { donate, fetchDonation } from '../utils/queries';
 import { formatDate } from '../utils/utils';
 import CardComponent from './shared/CardComponent';
 import FormContainer from './shared/FormContainer';
@@ -51,11 +52,24 @@ const useStyles = makeStyles({
 	alert: {
 		backgroundColor: 'rgba(255, 255, 255, 0.35)',
 	},
+	separator: {
+		marginTop: '20px',
+	},
 });
 
 const DonationComponent = () => {
-	const { wrapper, topBottom, top, bottom, alert } = useStyles();
+	const { wrapper, topBottom, top, bottom, alert, separator } = useStyles();
 	const { bar, button, signUp, form } = authStyles();
+	const {
+		successAnimation,
+		checkmark,
+		checkmarkCheck,
+		checkmarkCircle,
+		errorAnimation,
+		errorCheckmark,
+		errorCheckmarkCheck,
+		errorCheckmarkCircle,
+	} = animationStyles();
 	const { subTitle } = mainStyles();
 
 	const {
@@ -96,22 +110,42 @@ const DonationComponent = () => {
 		}
 	}, [defaultLastDonationDate]);
 
-	const donateMutation = useMutation((data) => {
-		return axios.put('http://localhost:3000/api/donation', data);
-	});
+	const donateMutation = useMutation(donate);
 
-	const [, setIsFormSubmitted] = useState<boolean>(false);
-	const onSubmit = (formData) => {
+	const [isFormSubmitted, setIsFormSubmitted] = useState<boolean>(false);
+	const [errorMessage, setErrorMessage] = useState<string | null>(null);
+	const [isSuccessResponse, setIsSuccessAnimationVisible] =
+		useState<boolean>(false);
+	const [isErrorResponse, setIsErrorAnimationVisible] =
+		useState<boolean>(false);
+
+	const onSubmit = (formData: any) => {
 		donateMutation.mutate(formData, {
 			onSuccess: () => {
 				console.log('Form submitted successfully!');
 				setIsFormSubmitted(true);
+				setIsSuccessAnimationVisible(true);
+				setIsErrorAnimationVisible(false);
 			},
-			onError: (error) => {
+			onError: (error: any) => {
 				console.error('Error submitting form:', error);
+				setIsFormSubmitted(true);
+				setIsSuccessAnimationVisible(false);
+				console.log('######### error', error);
+				if (error.data) {
+					const errorResponseData: ApiErrorResponse = error.data;
+					if (error.status !== 404) {
+						setErrorMessage(
+							errorResponseData.errorMessage || 'An error occurred.'
+						);
+						setIsErrorAnimationVisible(true);
+					}
+				}
 			},
 		});
 	};
+
+	console.log('isErrorAnimationVisible', isErrorResponse);
 
 	return (
 		<FormContainer>
@@ -130,100 +164,165 @@ const DonationComponent = () => {
 					</section>
 				</span>
 			</Typography>
-			<form onSubmit={handleSubmit(onSubmit)} className={form}>
+			<form onSubmit={handleSubmit(onSubmit)} className={clsx(form, separator)}>
 				<Grid container spacing={2}>
-					<Grid item xs={12}>
-						<Controller
-							name='bloodGroup'
-							control={control}
-							defaultValue=''
-							render={({ field }) => (
-								<FormControl fullWidth error={Boolean(errors.bloodGroup)}>
-									<InputLabel>Blood Group</InputLabel>
-									<Select {...field}>
-										<MenuItem value=''>
-											<em>None</em>
-										</MenuItem>
-										<MenuItem value='A+'>A+</MenuItem>
-										<MenuItem value='A-'>A-</MenuItem>
-										<MenuItem value='B+'>B+</MenuItem>
-										<MenuItem value='B-'>B-</MenuItem>
-										<MenuItem value='AB+'>AB+</MenuItem>
-										<MenuItem value='AB-'>AB-</MenuItem>
-										<MenuItem value='O+'>O+</MenuItem>
-										<MenuItem value='O-'>O-</MenuItem>
-									</Select>
-									<FormHelperText>
-										{errors.bloodGroup ? 'Blood Group is required' : ''}
-									</FormHelperText>
-								</FormControl>
+					{isFormSubmitted ? (
+						<Grid item xs={12}>
+							{isSuccessResponse && (
+								<div className={successAnimation}>
+									<svg
+										className={checkmark}
+										xmlns='http://www.w3.org/2000/svg'
+										viewBox='0 0 52 52'
+									>
+										<circle
+											className={checkmarkCircle}
+											cx='26'
+											cy='26'
+											r='25'
+											fill='none'
+										/>
+										<path
+											className={checkmarkCheck}
+											fill='none'
+											d='M14.1 27.2l7.1 7.2 16.7-16.8'
+										/>
+									</svg>
+								</div>
 							)}
-						/>
-					</Grid>
-					<Grid item xs={12}>
-						<Controller
-							name='lastDonationDate'
-							control={control}
-							defaultValue={defaultLastDonationDate}
-							render={({ field }) => (
-								<TextField
-									fullWidth
-									label='Last Donation Date'
-									type='date'
-									InputLabelProps={{
-										shrink: true,
-									}}
-									{...field}
-									error={Boolean(errors.lastDonationDate)}
-									helperText={errors.lastDonationDate ? 'Invalid Date' : ''}
-								/>
+							{isErrorResponse && (
+								<>
+									<div className={errorAnimation}>
+										<svg
+											className={errorCheckmark}
+											xmlns='http://www.w3.org/2000/svg'
+											viewBox='0 0 52 52'
+										>
+											<circle
+												className={errorCheckmarkCircle}
+												cx='26'
+												cy='26'
+												r='25'
+												fill='none'
+											/>
+											<path
+												className={errorCheckmarkCheck}
+												fill='none'
+												d='M16 16 L36 36 M36 16 L16 36'
+											/>
+										</svg>
+									</div>
+									{errorMessage && (
+										<Typography color='error'>{errorMessage}</Typography>
+									)}
+								</>
 							)}
-						/>
-					</Grid>
-					<Grid item xs={12}>
-						<Controller
-							name='donationType'
-							control={control}
-							defaultValue=''
-							render={({ field }) => (
-								<FormControl fullWidth error={Boolean(errors.donationType)}>
-									<InputLabel>Donation Type</InputLabel>
-									<Select {...field}>
-										<MenuItem value=''>
-											<em>None</em>
-										</MenuItem>
-										<MenuItem value='Blood'>Blood</MenuItem>
-										<MenuItem value='Plates'>Plates</MenuItem>
-									</Select>
-									<FormHelperText>
-										{errors.donationType ? 'Donation Type is required' : ''}
-									</FormHelperText>
-								</FormControl>
-							)}
-						/>
-					</Grid>
+						</Grid>
+					) : (
+						<>
+							<Grid container spacing={2}>
+								<Grid item xs={12}>
+									<Controller
+										name='bloodGroup'
+										control={control}
+										defaultValue=''
+										render={({ field }) => (
+											<FormControl fullWidth error={Boolean(errors.bloodGroup)}>
+												<InputLabel>Blood Group</InputLabel>
+												<Select {...field}>
+													<MenuItem value=''>
+														<em>None</em>
+													</MenuItem>
+													<MenuItem value='A+'>A+</MenuItem>
+													<MenuItem value='A-'>A-</MenuItem>
+													<MenuItem value='B+'>B+</MenuItem>
+													<MenuItem value='B-'>B-</MenuItem>
+													<MenuItem value='AB+'>AB+</MenuItem>
+													<MenuItem value='AB-'>AB-</MenuItem>
+													<MenuItem value='O+'>O+</MenuItem>
+													<MenuItem value='O-'>O-</MenuItem>
+												</Select>
+												<FormHelperText>
+													{errors.bloodGroup ? 'Blood Group is required' : ''}
+												</FormHelperText>
+											</FormControl>
+										)}
+									/>
+								</Grid>
+								<Grid item xs={12}>
+									<Controller
+										name='lastDonationDate'
+										control={control}
+										defaultValue={defaultLastDonationDate}
+										render={({ field }) => (
+											<TextField
+												fullWidth
+												label='Last Donation Date'
+												type='date'
+												InputLabelProps={{
+													shrink: true,
+												}}
+												{...field}
+												error={Boolean(errors.lastDonationDate)}
+												helperText={
+													errors.lastDonationDate ? 'Invalid Date' : ''
+												}
+											/>
+										)}
+									/>
+								</Grid>
+								<Grid item xs={12}>
+									<Controller
+										name='donationType'
+										control={control}
+										defaultValue=''
+										render={({ field }) => (
+											<FormControl
+												fullWidth
+												error={Boolean(errors.donationType)}
+											>
+												<InputLabel>Donation Type</InputLabel>
+												<Select {...field}>
+													<MenuItem value=''>
+														<em>None</em>
+													</MenuItem>
+													<MenuItem value='Blood'>Blood</MenuItem>
+													<MenuItem value='Plates'>Plates</MenuItem>
+												</Select>
+												<FormHelperText>
+													{errors.donationType
+														? 'Donation Type is required'
+														: ''}
+												</FormHelperText>
+											</FormControl>
+										)}
+									/>
+								</Grid>
 
-					<Grid item xs={12}>
-						<Controller
-							name='disease'
-							control={control}
-							defaultValue=''
-							render={({ field }) => (
-								<TextField
-									fullWidth
-									label='Disease'
-									{...field}
-									error={Boolean(errors.disease)}
-									helperText={errors.disease ? 'Disease is required' : ''}
-								/>
-							)}
-						/>
-					</Grid>
-					<Grid item xs={12}>
-						<Button type='submit' className={button}>
-							Donate
-						</Button>
-					</Grid>
+								<Grid item xs={12}>
+									<Controller
+										name='disease'
+										control={control}
+										defaultValue=''
+										render={({ field }) => (
+											<TextField
+												fullWidth
+												label='Disease'
+												{...field}
+												error={Boolean(errors.disease)}
+												helperText={errors.disease ? 'Disease is required' : ''}
+											/>
+										)}
+									/>
+								</Grid>
+								<Grid item xs={12}>
+									<Button type='submit' className={button}>
+										Donate
+									</Button>
+								</Grid>
+							</Grid>
+						</>
+					)}
 				</Grid>
 			</form>
 			<Snackbar
