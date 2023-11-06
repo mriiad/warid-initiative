@@ -18,7 +18,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { useMutation, useQuery } from 'react-query';
 import { ApiErrorResponse } from '../data/ApiErrorResponse';
 import colors from '../styles/colors';
-import { animationStyles, authStyles, mainStyles } from '../styles/mainStyles';
+import { authStyles, mainStyles } from '../styles/mainStyles';
 import { donate, fetchDonation } from '../utils/queries';
 import { formatDate } from '../utils/utils';
 import CardComponent from './shared/CardComponent';
@@ -61,16 +61,6 @@ const useStyles = makeStyles({
 const DonationComponent = () => {
 	const { wrapper, topBottom, top, bottom, alert, separator } = useStyles();
 	const { bar, button, signUp, form } = authStyles();
-	const {
-		successAnimation,
-		checkmark,
-		checkmarkCheck,
-		checkmarkCircle,
-		errorAnimation,
-		errorCheckmark,
-		errorCheckmarkCheck,
-		errorCheckmarkCircle,
-	} = animationStyles();
 	const { subTitle } = mainStyles();
 
 	const {
