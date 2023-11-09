@@ -73,8 +73,8 @@ const DonationComponent = () => {
 		handleSubmit,
 		formState: { errors },
 		control,
-		reset,
 		setValue,
+		setError,
 	} = useForm();
 
 	const {
@@ -157,15 +157,24 @@ const DonationComponent = () => {
 			},
 			onError: (error: any) => {
 				console.error('Error submitting form:', error);
-				setIsFormSubmitted(true);
 				setIsSuccessAnimationVisible(false);
+				const errorResponseData: ApiErrorResponse = error.data;
+				if (errorResponseData.errorKeys) {
+					errorResponseData.errorKeys.forEach((errorKey) => {
+						// Set error on each field based on the server response
+						setError(errorKey, {
+							message: `${errorKey} is invalid`,
+						});
+					});
+				}
 				console.log('######### error', error);
 				if (error.data) {
 					const errorResponseData: ApiErrorResponse = error.data;
-					if (error.status !== 404) {
+					if (error.status !== 404 && error.status !== 400) {
 						setErrorMessage(
 							errorResponseData.errorMessage || 'An error occurred.'
 						);
+						setIsFormSubmitted(true);
 						setIsErrorAnimationVisible(true);
 					}
 				}

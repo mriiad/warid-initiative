@@ -50,7 +50,7 @@ export const authStyles = makeStyles({
 		padding: '30px',
 		marginTop: '20px',
 		'& .MuiOutlinedInput-notchedOutline': {
-			border: 'none',
+			borderColor: 'white',
 			backgroundColor: 'white',
 			borderRadius: '20px',
 		},

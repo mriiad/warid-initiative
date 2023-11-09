@@ -78,7 +78,7 @@ exports.donate = async (req, res, next) => {
 			throw new ApiError(
 				'You are not eligible to donate at this time.',
 				STATUS_CODE.FORBIDDEN,
-				[{ key: 'lastDonationDate', value: lastDD }]
+				['lastDonationDate']
 			);
 		}
 
@@ -142,7 +142,7 @@ const checkExistingDonation = async (userId, userProvidedDate) => {
 				throw new ApiError(
 					'The provided last donation date is older than your most recent donation.',
 					STATUS_CODE.BAD_REQUEST,
-					{ userProvidedDate }
+					['lastDonationDate']
 				);
 			}
 		}
