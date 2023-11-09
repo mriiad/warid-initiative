@@ -78,9 +78,7 @@ exports.donate = async (req, res, next) => {
 			throw new ApiError(
 				'You are not eligible to donate at this time.',
 				STATUS_CODE.FORBIDDEN,
-				{
-					lastDD,
-				}
+				[{ key: 'lastDonationDate', value: lastDD }]
 			);
 		}
 
