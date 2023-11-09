@@ -9,10 +9,6 @@ interface SuccessfulResponse {
 	message: string;
 }
 
-interface ApiErrorDetails {
-	reference?: string;
-}
-
 const EventConfirmation: React.FC = () => {
 	const { reference } = useParams<{ reference: string }>();
 	const { token } = useAuth();
