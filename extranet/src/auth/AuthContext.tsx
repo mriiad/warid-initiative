@@ -38,25 +38,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 	}, []);
 
 	const refreshToken = useCallback(async () => {
-		try {
-			const response = await axios.post(
-				'http://localhost:3000/api/auth/refresh-token',
-				{
-					refreshToken: localStorage.getItem('refreshToken'),
-				}
-			);
+		// Check if there is a current token and refreshToken available
+		const currentToken = localStorage.getItem('token');
+		const currentRefreshToken = localStorage.getItem('refreshToken');
 
-			const newToken = response.data.accessToken;
-			const newRefreshToken = response.data.refreshToken;
+		// Only proceed if both token and refreshToken are present
+		if (currentToken && currentRefreshToken) {
+			try {
+				const response = await axios.post(
+					'http://localhost:3000/api/auth/refresh-token',
+					{ refreshToken: currentRefreshToken }
+				);
 
-			// Update local storage and state
-			setToken(newToken);
-			localStorage.setItem('token', newToken);
-			localStorage.setItem('refreshToken', newRefreshToken);
+				const newToken = response.data.accessToken;
+				const newRefreshToken = response.data.refreshToken;
 
-			axios.defaults.headers['Authorization'] = `Bearer ${newToken}`;
-		} catch (error) {
-			console.error('Failed to refresh token:', error);
+				setToken(newToken);
+				localStorage.setItem('token', newToken);
+				localStorage.setItem('refreshToken', newRefreshToken);
+
+				axios.defaults.headers['Authorization'] = `Bearer ${newToken}`;
+			} catch (error) {
+				console.error('Failed to refresh token:', error);
+			}
 		}
 	}, []);
 
