@@ -16,6 +16,9 @@ import clsx from 'clsx';
 import { useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useMutation, useQuery } from 'react-query';
+import { useNavigate } from 'react-router-dom';
+import { useSwipeable } from 'react-swipeable';
+import { useAuth } from '../auth/AuthContext';
 import { ApiErrorResponse } from '../data/ApiErrorResponse';
 import colors from '../styles/colors';
 import { authStyles, mainStyles } from '../styles/mainStyles';
@@ -59,15 +62,19 @@ const useStyles = makeStyles({
 });
 
 const DonationComponent = () => {
+	const { token } = useAuth();
 	const { wrapper, topBottom, top, bottom, alert, separator } = useStyles();
 	const { bar, button, signUp, form } = authStyles();
 	const { subTitle } = mainStyles();
+
+	const navigate = useNavigate();
 
 	const {
 		handleSubmit,
 		formState: { errors },
 		control,
 		reset,
+		setValue,
 	} = useForm();
 
 	const {
@@ -75,21 +82,20 @@ const DonationComponent = () => {
 		error,
 		isLoading,
 		isError,
-	} = useQuery('donation', fetchDonation);
+	} = useQuery('donation', fetchDonation, {
+		enabled: !!token,
+	});
 
 	const [showSnackbar, setShowSnackbar] = useState(false);
+	const [reviewSnackbarOpen, setReviewSnackbarOpen] = useState(false);
 
 	const defaultLastDonationDate = useMemo(() => {
 		if (isLoading) return '';
-		if (error || !donation) return '';
+		if (error || !donation || !token) return '';
 		return donation.reelDonationDate
 			? formatDate(donation.reelDonationDate)
 			: formatDate(donation.lastDonationDate);
-	}, [donation, error, isLoading]);
-
-	useEffect(() => {
-		reset({ lastDonationDate: defaultLastDonationDate });
-	}, [defaultLastDonationDate, reset]);
+	}, [donation, error, isLoading, token]);
 
 	useEffect(() => {
 		if (defaultLastDonationDate) {
@@ -101,6 +107,27 @@ const DonationComponent = () => {
 		}
 	}, [defaultLastDonationDate]);
 
+	useEffect(() => {
+		// If the user is logged in and there is pending form data, load it
+		if (token) {
+			const storedFormData = sessionStorage.getItem('pendingDonationFormData');
+			if (storedFormData) {
+				const formData = JSON.parse(storedFormData);
+				// Overwrite the `lastDonationDate` by the initially fetched value
+				if (defaultLastDonationDate) {
+					formData['lastDonationDate'] = defaultLastDonationDate;
+				}
+				// Use form methods to set the data
+				Object.keys(formData).forEach((key) => {
+					setValue(key, formData[key]);
+				});
+				// Clear the stored data since it's now being used
+				sessionStorage.removeItem('pendingDonationFormData');
+				setReviewSnackbarOpen(true);
+			}
+		}
+	}, [token, setValue, defaultLastDonationDate]);
+
 	const donateMutation = useMutation(donate);
 
 	const [isFormSubmitted, setIsFormSubmitted] = useState<boolean>(false);
@@ -111,6 +138,16 @@ const DonationComponent = () => {
 		useState<boolean>(false);
 
 	const onSubmit = (formData: any) => {
+		if (!token) {
+			// Store formData in localStorage or sessionStorage
+			sessionStorage.setItem(
+				'pendingDonationFormData',
+				JSON.stringify(formData)
+			);
+			// Redirect user to /login with a redirect parameter
+			navigate('/login?redirect=/donate');
+			return; // Prevent further execution of onSubmit
+		}
 		donateMutation.mutate(formData, {
 			onSuccess: () => {
 				console.log('Form submitted successfully!');
@@ -136,7 +173,13 @@ const DonationComponent = () => {
 		});
 	};
 
-	console.log('isErrorAnimationVisible', isErrorResponse);
+	const reviewSnackbarHandlers = useSwipeable({
+		onSwipedUp: () => setReviewSnackbarOpen(false),
+		delta: 10,
+		preventScrollOnSwipe: true,
+		trackTouch: true,
+		trackMouse: true,
+	});
 
 	return (
 		<FormContainer>
@@ -272,8 +315,27 @@ const DonationComponent = () => {
 			</form>
 			<Snackbar
 				anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+				open={reviewSnackbarOpen}
+				onClose={() => setReviewSnackbarOpen(false)}
+				style={{ top: 0 }}
+			>
+				<Slide
+					direction='up'
+					in={reviewSnackbarOpen}
+					mountOnEnter
+					unmountOnExit
+					{...reviewSnackbarHandlers}
+				>
+					<CardComponent className={alert}>
+						{'Please review your form data before submitting.'}
+					</CardComponent>
+				</Slide>
+			</Snackbar>
+			<Snackbar
+				anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
 				open={showSnackbar}
 				autoHideDuration={5000}
+				style={{ top: reviewSnackbarOpen ? 100 : 0 }}
 			>
 				<Slide direction='up' in={showSnackbar} mountOnEnter unmountOnExit>
 					<CardComponent className={alert}>
