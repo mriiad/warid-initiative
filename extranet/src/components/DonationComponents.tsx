@@ -6,8 +6,6 @@ import {
 	InputLabel,
 	MenuItem,
 	Select,
-	Slide,
-	Snackbar,
 	TextField,
 	Typography,
 } from '@mui/material';
@@ -24,9 +22,9 @@ import colors from '../styles/colors';
 import { authStyles, mainStyles } from '../styles/mainStyles';
 import { donate, fetchDonation } from '../utils/queries';
 import { formatDate } from '../utils/utils';
-import CardComponent from './shared/CardComponent';
 import FormContainer from './shared/FormContainer';
 import ResponseAnimation from './shared/ResponseAnimation';
+import SnackbarComponent from './shared/SnackbarComponent';
 
 const useStyles = makeStyles({
 	wrapper: {
@@ -100,10 +98,6 @@ const DonationComponent = () => {
 	useEffect(() => {
 		if (defaultLastDonationDate) {
 			setShowSnackbar(true);
-			const timer = setTimeout(() => {
-				setShowSnackbar(false);
-			}, 5000);
-			return () => clearTimeout(timer);
 		}
 	}, [defaultLastDonationDate]);
 
@@ -322,36 +316,19 @@ const DonationComponent = () => {
 					)}
 				</Grid>
 			</form>
-			<Snackbar
-				anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+			<SnackbarComponent
 				open={reviewSnackbarOpen}
-				onClose={() => setReviewSnackbarOpen(false)}
-				style={{ top: 0 }}
-			>
-				<Slide
-					direction='up'
-					in={reviewSnackbarOpen}
-					mountOnEnter
-					unmountOnExit
-					{...reviewSnackbarHandlers}
-				>
-					<CardComponent className={alert}>
-						{'Please review your form data before submitting.'}
-					</CardComponent>
-				</Slide>
-			</Snackbar>
-			<Snackbar
-				anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+				message='Please review your form data before submitting.'
+				handleClose={() => setReviewSnackbarOpen(false)}
+				offsetTop={0}
+			/>
+			<SnackbarComponent
 				open={showSnackbar}
+				message={`Based on your history, your last donation date is: ${defaultLastDonationDate}`}
+				handleClose={() => setShowSnackbar(false)}
 				autoHideDuration={5000}
-				style={{ top: reviewSnackbarOpen ? 100 : 0 }}
-			>
-				<Slide direction='up' in={showSnackbar} mountOnEnter unmountOnExit>
-					<CardComponent className={alert}>
-						{`Based on your history, your last donation date is: ${defaultLastDonationDate}`}
-					</CardComponent>
-				</Slide>
-			</Snackbar>
+				offsetTop={reviewSnackbarOpen ? 100 : 0}
+			/>
 		</FormContainer>
 	);
 };

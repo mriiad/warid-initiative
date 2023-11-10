@@ -48,7 +48,6 @@ export const authStyles = makeStyles({
 		borderRadius: '30px',
 		border: '1px solid white',
 		padding: '30px',
-		marginTop: '20px',
 		'& .MuiOutlinedInput-notchedOutline': {
 			borderColor: 'white',
 			backgroundColor: 'white',
@@ -61,6 +60,27 @@ export const authStyles = makeStyles({
 			color: colors.purple,
 			fontWeight: 500,
 			fontSize: 'clamp(14px, 1.3vw, 18px)',
+		},
+		'& .MuiRadio-root.Mui-checked': {
+			color: colors.purple,
+		},
+	},
+	formField: {
+		'& .MuiOutlinedInput-notchedOutline': {
+			borderColor: 'white',
+			backgroundColor: 'white',
+			borderRadius: '20px',
+		},
+		'& .MuiInputBase-input': {
+			height: '2em',
+		},
+		'& .MuiOutlinedInput-input': {
+			color: colors.purple,
+			fontWeight: 500,
+			fontSize: 'clamp(14px, 1.3vw, 18px)',
+		},
+		'& .MuiRadio-root.Mui-checked': {
+			color: colors.purple,
 		},
 	},
 	container: {
