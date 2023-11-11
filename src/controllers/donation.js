@@ -3,6 +3,7 @@ const User = require('../models/user');
 const { STATUS_CODE } = require('../utils/errors/httpStatusCode');
 const ApiError = require('../utils/errors/ApiError');
 const mongoose = require('mongoose');
+const { addDays, formatDate } = require('../utils/utils');
 
 /**
  * Utility function to check donation eligibility
@@ -15,7 +16,6 @@ const checkDonationEligibility = (userId) => {
 				throw new ApiError('User not found.', STATUS_CODE.NOT_FOUND);
 			}
 			user = foundUser;
-			// Sort by lastDonationDate in descending order and limit to 1 result
 			return Donation.find({ userId: userId })
 				.sort({ lastDonationDate: -1 })
 				.limit(1);
@@ -23,31 +23,36 @@ const checkDonationEligibility = (userId) => {
 		.then((donations) => {
 			const currentDate = new Date();
 			let donationAvailability = false;
-			const donation = donations[0]; // Get the first (and only) donation from the array
+			const donation = donations[0];
 
-			// If no donation record is found for the user
 			if (!donation) {
-				return { canDonate: true, lastDonationDate: null };
+				return {
+					canDonate: true,
+					lastDonationDate: null,
+					nextDonationDate: null,
+				};
 			}
 
-			// Use reelDonationDate if it's set, otherwise use lastDonationDate
 			const donationDate = donation.reelDonationDate
 				? donation.reelDonationDate
 				: donation.lastDonationDate;
+			const daysToAdd = user.gender === 'male' ? 60 : 90;
+			const nextDonationDate = addDays(donationDate, daysToAdd);
 
 			const timeDifference = currentDate - new Date(donationDate);
 			const daysDifference = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
 
-			if (user.gender === 'male' && daysDifference >= 60) {
+			if (
+				(user.gender === 'male' && daysDifference >= 60) ||
+				(user.gender === 'female' && daysDifference >= 90)
+			) {
 				donationAvailability = true;
 			}
 
-			if (user.gender === 'female' && daysDifference >= 90) {
-				donationAvailability = true;
-			}
 			return {
 				canDonate: donationAvailability,
-				lastDonationDate: donationDate,
+				lastDonationDate: formatDate(donationDate),
+				nextDonationDate: formatDate(nextDonationDate),
 			};
 		});
 };
@@ -71,12 +76,15 @@ exports.canDonate = (req, res, next) => {
 exports.donate = async (req, res, next) => {
 	try {
 		const { bloodGroup, lastDonationDate, donationType, disease } = req.body;
-		const { canDonate, lastDonationDate: lastDD } =
-			await checkDonationEligibility(req.userId);
+		const {
+			canDonate,
+			lastDonationDate: lastDD,
+			nextDonationDate,
+		} = await checkDonationEligibility(req.userId);
 
 		if (!canDonate) {
 			throw new ApiError(
-				'You are not eligible to donate at this time.',
+				`Based on your last donation date, you are not eligible to donate at this time. You can register for a new donation starting ${nextDonationDate}`,
 				STATUS_CODE.FORBIDDEN,
 				['lastDonationDate']
 			);
@@ -158,7 +166,7 @@ const checkExistingDonation = async (userId, userProvidedDate) => {
 exports.getDonation = (req, res, next) => {
 	const { userId } = req;
 
-	Donation.find({ userId: mongoose.Types.ObjectId(userId) })
+	Donation.find({ userId: new mongoose.Types.ObjectId(userId) })
 		.sort({ lastDonationDate: -1 })
 		.limit(1)
 		.exec()
