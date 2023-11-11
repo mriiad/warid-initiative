@@ -126,5 +126,12 @@ export const authStyles = makeStyles({
 	},
 	form: {
 		textAlign: 'center',
+		'& .MuiGrid-root': {
+			width: '100%',
+			marginLeft: 0,
+			'& .MuiGrid-item': {
+				paddingLeft: 0,
+			},
+		},
 	},
 });

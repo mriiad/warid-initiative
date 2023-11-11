@@ -15,7 +15,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useMutation, useQuery } from 'react-query';
 import { useNavigate } from 'react-router-dom';
-import { useSwipeable } from 'react-swipeable';
 import { useAuth } from '../auth/AuthContext';
 import { ApiErrorResponse } from '../data/ApiErrorResponse';
 import colors from '../styles/colors';
@@ -175,14 +174,6 @@ const DonationComponent = () => {
 			},
 		});
 	};
-
-	const reviewSnackbarHandlers = useSwipeable({
-		onSwipedUp: () => setReviewSnackbarOpen(false),
-		delta: 10,
-		preventScrollOnSwipe: true,
-		trackTouch: true,
-		trackMouse: true,
-	});
 
 	return (
 		<FormContainer>

@@ -4,7 +4,7 @@ import React from 'react';
 import colors from '../../styles/colors';
 
 const animationStyles = makeStyles({
-	successAnimation: { margin: '94px auto' },
+	successAnimation: { margin: '80px auto' },
 	checkmark: {
 		width: 100,
 		height: 100,
@@ -36,7 +36,8 @@ const animationStyles = makeStyles({
 		strokeDashoffset: 48,
 		animation: '$stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards',
 	},
-	errorAnimation: { margin: '94px auto' },
+	errorAnimation: { margin: '80px auto' },
+	successMessage: { color: colors.purple },
 	errorCheckmark: {
 		width: 100,
 		height: 100,
@@ -106,6 +107,7 @@ const ResponseAnimation: React.FC<ResponseAnimationProps> = ({
 }) => {
 	const {
 		successAnimation,
+		successMessage,
 		checkmark,
 		checkmarkCheck,
 		checkmarkCircle,
@@ -118,26 +120,34 @@ const ResponseAnimation: React.FC<ResponseAnimationProps> = ({
 	return (
 		<div>
 			{isSuccess && (
-				<div className={successAnimation}>
-					<svg
-						className={checkmark}
-						xmlns='http://www.w3.org/2000/svg'
-						viewBox='0 0 52 52'
-					>
-						<circle
-							className={checkmarkCircle}
-							cx='26'
-							cy='26'
-							r='25'
-							fill='none'
-						/>
-						<path
-							className={checkmarkCheck}
-							fill='none'
-							d='M14.1 27.2l7.1 7.2 16.7-16.8'
-						/>
-					</svg>
-				</div>
+				<>
+					<div className={successAnimation}>
+						<svg
+							className={checkmark}
+							xmlns='http://www.w3.org/2000/svg'
+							viewBox='0 0 52 52'
+						>
+							<circle
+								className={checkmarkCircle}
+								cx='26'
+								cy='26'
+								r='25'
+								fill='none'
+							/>
+							<path
+								className={checkmarkCheck}
+								fill='none'
+								d='M14.1 27.2l7.1 7.2 16.7-16.8'
+							/>
+						</svg>
+					</div>
+					<div className={successMessage}>
+						<Typography>Donation request registred successfully!</Typography>
+						<Typography>
+							Our team will contact you soon to provide more details.
+						</Typography>
+					</div>
+				</>
 			)}
 			{isError && (
 				<>
