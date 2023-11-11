@@ -1,5 +1,6 @@
 import { makeStyles } from '@mui/styles';
-import React from 'react';
+import clsx from 'clsx';
+import React, { forwardRef } from 'react';
 
 const useStyles = makeStyles({
 	card: {
@@ -18,12 +19,19 @@ const useStyles = makeStyles({
 
 interface CardProps {
 	children?: React.ReactNode;
+	className?: string;
 }
 
-const CardComponent: React.FC<CardProps> = ({ children }) => {
-	const { card } = useStyles();
+const CardComponent = forwardRef<HTMLDivElement, CardProps>(
+	({ children, className }, ref) => {
+		const { card } = useStyles();
 
-	return <div className={card}>{children}</div>;
-};
+		return (
+			<div className={clsx(card, className)} ref={ref}>
+				{children}
+			</div>
+		);
+	}
+);
 
 export default CardComponent;

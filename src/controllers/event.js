@@ -174,7 +174,6 @@ exports.confirmPresence = (req, res, next) => {
 				throw new ApiError(
 					`Event with reference ${reference} not found.`,
 					STATUS_CODE.NOT_FOUND,
-					null,
 					['reference']
 				);
 			}
@@ -189,11 +188,7 @@ exports.confirmPresence = (req, res, next) => {
 			);
 
 			if (isAlreadyParticipating) {
-				throw new ApiError(
-					"You're already participating in this event!",
-					403,
-					null
-				);
+				throw new ApiError("You're already participating in this event!", 403);
 			}
 
 			// Fetch all events the user is participating in
@@ -207,8 +202,7 @@ exports.confirmPresence = (req, res, next) => {
 				const { title, reference, date } = futureEvent;
 				throw new ApiError(
 					`You're already participating in another future event: ${reference}`,
-					403,
-					{ title, reference, date }
+					403
 				);
 			}
 

@@ -1,4 +1,13 @@
-import { Button, Grid, TextField, Typography } from '@mui/material';
+import {
+	Button,
+	FormControl,
+	FormControlLabel,
+	Grid,
+	Radio,
+	RadioGroup,
+	TextField,
+	Typography,
+} from '@mui/material';
 import axios from 'axios';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
@@ -9,7 +18,7 @@ import { authStyles, mainStyles } from '../styles/mainStyles';
 import FormContainer from './shared/FormContainer';
 
 const SignupForm = () => {
-	const { bar, button, signUp, form } = authStyles();
+	const { formField, bar, button, signUp, form } = authStyles();
 	const { subTitle, textButton } = mainStyles();
 	const {
 		handleSubmit,
@@ -29,6 +38,7 @@ const SignupForm = () => {
 			onSuccess: () => {
 				console.log('Form submitted successfully!');
 				setIsFormSubmitted(true);
+				navigate('/login?new-user');
 			},
 			onError: (error) => {
 				console.error('Error submitting form:', error);
@@ -116,6 +126,45 @@ const SignupForm = () => {
 									error={Boolean(errors.password)}
 									helperText={errors.password ? 'Password is required' : ''}
 								/>
+							)}
+						/>
+					</Grid>
+					<Grid item xs={12} className={formField}>
+						<Controller
+							name='gender'
+							control={control}
+							defaultValue=''
+							rules={{ required: 'Gender is required' }}
+							render={({ field }) => (
+								<FormControl component='fieldset' fullWidth>
+									<RadioGroup
+										row
+										{...field}
+										style={{
+											backgroundColor: 'white',
+											borderRadius: '20px',
+											padding: '10px',
+										}}
+									>
+										<FormControlLabel
+											value='male'
+											control={<Radio />}
+											label='Male'
+											style={{ margin: '0 10px' }}
+										/>
+										<FormControlLabel
+											value='female'
+											control={<Radio />}
+											label='Female'
+											style={{ margin: '0 10px' }}
+										/>
+									</RadioGroup>
+									{errors.gender && (
+										<Typography color='error' variant='caption'>
+											{errors.gender.message}
+										</Typography>
+									)}
+								</FormControl>
 							)}
 						/>
 					</Grid>

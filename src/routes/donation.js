@@ -17,13 +17,13 @@ donationRouter.post('/api/donation', isAuth, donate);
 
 donationRouter.get('/api/donation', isAuth, getDonation);
 
+donationRouter.get('/api/donation/canDonate', isAuth, canDonate);
+
 donationRouter.get(
 	'/api/donation/:username',
 	isAuth,
 	checkIfAdmin,
 	getDonationsByUser
 );
-
-donationRouter.get('/api/donation/canDonate', isAuth, canDonate);
 
 module.exports = donationRouter;

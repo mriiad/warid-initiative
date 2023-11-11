@@ -34,7 +34,7 @@ const useStyles = makeStyles({
 	eventContainer: {
 		position: 'relative',
 		height: '100vh',
-		width: '-webkit-fill-available',
+		width: '100vw',
 		backgroundSize: 'cover',
 		backgroundPosition: 'center',
 		display: 'flex',

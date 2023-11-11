@@ -1,21 +1,14 @@
-import {
-	Alert,
-	Button,
-	Grid,
-	Snackbar,
-	TextField,
-	Typography,
-} from '@mui/material';
+import { Button, Grid, TextField, Typography } from '@mui/material';
 import axios from 'axios';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useMutation } from 'react-query';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { LoginFormData } from '../data/authData';
-import colors from '../styles/colors';
 import { authStyles, mainStyles } from '../styles/mainStyles';
 import FormContainer from './shared/FormContainer';
+import SnackbarComponent from './shared/SnackbarComponent';
 
 const LoginForm = () => {
 	const { setToken, setUserId, setIsAdmin } = useAuth();
@@ -31,11 +24,15 @@ const LoginForm = () => {
 	const navigate = useNavigate();
 	const location = useLocation();
 	const passwordReset = location.state?.passwordReset;
-	const [openSnackbar, setOpenSnackbar] = useState(passwordReset);
+	const [passwordResetSnackbarOpen, setPasswordResetSnackbarOpen] =
+		useState(passwordReset);
+	const [signUpSnackbarOpen, setSignUpSnackbarOpen] = useState(false);
 
-	const handleCloseSnackbar = () => {
-		setOpenSnackbar(false);
-	};
+	useEffect(() => {
+		if (new URLSearchParams(location.search).has('new-user')) {
+			setSignUpSnackbarOpen(true);
+		}
+	}, [location]);
 
 	const loginMutation = useMutation((data: FormData) => {
 		return axios.post('http://localhost:3000/api/auth/login', data);
@@ -70,19 +67,18 @@ const LoginForm = () => {
 
 	return (
 		<FormContainer>
-			<Snackbar
-				anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-				open={openSnackbar}
-				autoHideDuration={6000}
-				onClose={handleCloseSnackbar}
-			>
-				<Alert
-					onClose={handleCloseSnackbar}
-					style={{ backgroundColor: colors.green, color: 'white' }}
-				>
-					Your password has been reset successfully!
-				</Alert>
-			</Snackbar>
+			<SnackbarComponent
+				open={passwordResetSnackbarOpen}
+				handleClose={() => setPasswordResetSnackbarOpen(false)}
+				message='Your password has been reset successfully!'
+				autoHideDuration={5000}
+			/>
+			<SnackbarComponent
+				open={signUpSnackbarOpen}
+				handleClose={() => setSignUpSnackbarOpen(false)}
+				message='Your account has been successfully created. You can now log in.'
+				autoHideDuration={5000}
+			/>
 			<Typography variant='h2' align='center' gutterBottom className={signUp}>
 				Log In
 				<span className={bar}></span>

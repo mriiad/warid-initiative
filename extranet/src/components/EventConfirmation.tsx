@@ -9,10 +9,6 @@ interface SuccessfulResponse {
 	message: string;
 }
 
-interface ApiErrorDetails {
-	reference?: string;
-}
-
 const EventConfirmation: React.FC = () => {
 	const { reference } = useParams<{ reference: string }>();
 	const { token } = useAuth();
@@ -27,7 +23,6 @@ const EventConfirmation: React.FC = () => {
 	>(() => confirmEventPresence(reference, token), {
 		onSuccess: ({ message }) => {
 			setIsConfirmed(true);
-			console.log(message); // Optionally, log the success message
 			setTimeout(() => navigate('/events'), 3000);
 		},
 		onError: (error) => {

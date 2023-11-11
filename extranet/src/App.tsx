@@ -1,10 +1,10 @@
 import useMediaQuery from '@mui/material/useMediaQuery';
-import React from 'react';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import styled from 'styled-components';
 import AdminComponent from './components/AdminComponent';
 import CanDonate from './components/CanDonate';
+import DonationComponent from './components/DonationComponents';
 import EventConfirmation from './components/EventConfirmation';
 import EventDetail from './components/EventDetail';
 import EventsComponent from './components/EventsComponent';
@@ -17,12 +17,15 @@ import ResetPasswordForm from './components/ResetPasswordForm';
 import SignupForm from './components/SignupForm';
 
 const AppContainer = styled.div`
+	background: linear-gradient(to left, #e0d1f5, #f6ecf3 48%, #e0d1f5) no-repeat
+		center/cover;
 	font-family: Arial, sans-serif;
 	margin: 0;
 	padding: 0;
 	display: flex;
 	flex-direction: column;
-	height: 100vh;
+	gap: 48px;
+	min-height: 100vh;
 `;
 
 const ContentContainer = styled.div`
@@ -30,6 +33,7 @@ const ContentContainer = styled.div`
 	display: flex;
 	flex-direction: column;
 	align-items: center;
+	padding: 0 19px;
 `;
 
 const MobileNavContainer = styled.div`
@@ -48,16 +52,7 @@ const App = () => {
 		<QueryClientProvider client={queryClient}>
 			<BrowserRouter>
 				<AppContainer>
-					{isMobile ? (
-						<>
-							<MobileHeader />
-							<MobileNavContainer>
-								<MobileNavbar />
-							</MobileNavContainer>
-						</>
-					) : (
-						<NavBar />
-					)}
+					{!isMobile ? <NavBar /> : <MobileHeader />}
 					<ContentContainer>
 						<Routes>
 							<Route path='/' element={<Navigate replace to='/signup' />} />
@@ -68,6 +63,7 @@ const App = () => {
 								<Route path='can-donate' element={<CanDonate />} />
 								<Route path='confirmation' element={<EventConfirmation />} />
 							</Route>
+							<Route path='/donate' element={<DonationComponent />} />
 							<Route path='/admin' element={<AdminComponent />} />
 							<Route
 								path='/request-reset-password'
@@ -80,6 +76,13 @@ const App = () => {
 							<Route path='*' element={<SignupForm />} />
 						</Routes>
 					</ContentContainer>
+					{isMobile && (
+						<>
+							<MobileNavContainer>
+								<MobileNavbar />
+							</MobileNavContainer>
+						</>
+					)}
 				</AppContainer>
 			</BrowserRouter>
 		</QueryClientProvider>
