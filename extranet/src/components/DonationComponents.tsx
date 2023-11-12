@@ -60,7 +60,7 @@ const useStyles = makeStyles({
 
 const DonationComponent = () => {
 	const { token } = useAuth();
-	const { wrapper, topBottom, top, bottom, alert, separator } = useStyles();
+	const { wrapper, topBottom, top, bottom, separator } = useStyles();
 	const { bar, button, signUp, form } = authStyles();
 	const { subTitle } = mainStyles();
 
@@ -160,7 +160,6 @@ const DonationComponent = () => {
 						});
 					});
 				}
-				console.log('######### error', error);
 				if (error.data) {
 					const errorResponseData: ApiErrorResponse = error.data;
 					if (error.status !== 404 && error.status !== 400) {

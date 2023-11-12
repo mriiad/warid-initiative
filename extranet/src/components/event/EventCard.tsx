@@ -5,8 +5,8 @@ import { Card, CardContent, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Event } from '../data/Event';
-import colors from '../styles/colors';
+import { Event } from '../../data/Event';
+import colors from '../../styles/colors';
 
 interface EventCardProps {
 	event: Event;
