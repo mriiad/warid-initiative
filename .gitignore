@@ -1,4 +1,6 @@
 /node_modules/
 /extranet/node_modules
+/extranet/build/
+/extranet/package-lock.json
 /config.json
 /package-lock.json

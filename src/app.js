@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const authRouter = require('./routes/auth');
 const donationRouter = require('./routes/donation');
 const eventRouter = require('./routes/event');
+const path = require('path');
 
 const config = require('../config.json');
 
@@ -14,25 +15,17 @@ const app = express();
 
 app.use(bodyParser.json());
 
-const allowedOrigins = ['http://localhost:3001', 'http://localhost:3000'];
-
-app.use(
-	cors({
-		origin: function (origin, callback) {
-			if (allowedOrigins.includes(origin) || !origin) {
-				callback(null, true);
-			} else {
-				callback(new Error('Not allowed by CORS'));
-			}
-		},
-	})
-);
-
 app.use(authRouter);
 
 app.use(donationRouter);
 
 app.use(eventRouter);
+
+app.use(express.static(path.join(__dirname, '../extranet/build')));
+
+app.get('*', (req, res) => {
+	res.sendFile(path.join(__dirname, '../extranet/build', 'index.html'));
+});
 
 mongoose
 	.connect(
