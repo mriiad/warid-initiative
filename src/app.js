@@ -13,12 +13,12 @@ const dbConfig = config.dbConfig;
 
 const app = express();
 
+app.use(cors());
+
 app.use(bodyParser.json());
 
 app.use(authRouter);
-
 app.use(donationRouter);
-
 app.use(eventRouter);
 
 app.use(express.static(path.join(__dirname, '../extranet/build')));
