@@ -28,23 +28,24 @@ const SignupForm = () => {
 
 	const navigate = useNavigate();
 
-	const signUpMutation = useMutation((data: FormData) => {
+	const signUpMutation = useMutation((data: SignupFormData) => {
 		return axios.put('http://localhost:3000/api/auth/signup', data);
 	});
 
 	const [, setIsFormSubmitted] = useState<boolean>(false);
-	const onSubmit = (formData: FormData) => {
+	const onSubmit = (formData: SignupFormData) => {
 		signUpMutation.mutate(formData, {
-			onSuccess: () => {
-				console.log('Form submitted successfully!');
-				setIsFormSubmitted(true);
-				navigate('/login?new-user');
-			},
-			onError: (error) => {
-				console.error('Error submitting form:', error);
-			},
+		  onSuccess: () => {
+			console.log('Form submitted successfully!');
+			setIsFormSubmitted(true);
+			navigate('/login?new-user');
+		  },
+		  onError: (error) => {
+			console.error('Error submitting form:', error);
+		  },
 		});
-	};
+	  };
+	  
 
 	const [, setPhoneNumber] = useState('');
 	const onChange = (e) => {

@@ -5,7 +5,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { useMutation } from 'react-query';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
-import { LoginFormData } from '../data/authData';
+import { LoginFormData, SignupFormData } from '../data/authData';
 import { authStyles, mainStyles } from '../styles/mainStyles';
 import FormContainer from './shared/FormContainer';
 import SnackbarComponent from './shared/SnackbarComponent';
@@ -34,12 +34,13 @@ const LoginForm = () => {
 		}
 	}, [location]);
 
-	const loginMutation = useMutation((data: FormData) => {
+	const loginMutation = useMutation((data: SignupFormData) => {
+		console.log("################## LOGIN !!")
 		return axios.post('http://localhost:3000/api/auth/login', data);
 	});
 
 	const [, setIsFormSubmitted] = useState<boolean>(false);
-	const onSubmit = (formData: FormData) => {
+	const onSubmit = (formData: SignupFormData) => {
 		loginMutation.mutate(formData, {
 			onSuccess: (data) => {
 				setToken(data.data.token);
