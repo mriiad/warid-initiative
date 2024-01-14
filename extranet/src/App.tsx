@@ -12,6 +12,7 @@ import LoginForm from './components/LoginForm';
 import MobileHeader from './components/MobileHeader';
 import MobileNavbar from './components/MobileNavbar';
 import NavBar from './components/NavBar';
+import NotFoundPage from './components/NotFoundPage';
 import PasswordResetForm from './components/PasswordResetForm';
 import ResetPasswordForm from './components/ResetPasswordForm';
 import SignupForm from './components/SignupForm';
@@ -73,15 +74,13 @@ const App = () => {
 								path='/reset-password/:resetToken'
 								element={<ResetPasswordForm />}
 							/>
-							<Route path='*' element={<SignupForm />} />
+							<Route path='*' element={<NotFoundPage />} />
 						</Routes>
 					</ContentContainer>
 					{isMobile && (
-						<>
-							<MobileNavContainer>
-								<MobileNavbar />
-							</MobileNavContainer>
-						</>
+						<MobileNavContainer>
+							<MobileNavbar />
+						</MobileNavContainer>
 					)}
 				</AppContainer>
 			</BrowserRouter>
