@@ -1,12 +1,11 @@
-import React from 'react';
-
 import { Button, Grid, TextField, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { authStyles, mainStyles } from '../../styles/mainStyles';
 import { createEvent } from '../../utils/queries';
 import FormContainer from '../shared/FormContainer';
+import ResponseAnimation from '../shared/ResponseAnimation';
 
 interface IFormInput {
 	title: string;
@@ -22,18 +21,29 @@ const useStyles = makeStyles({
 	formWrapper: {
 		marginBottom: '88px',
 	},
+	fileInput: {
+		marginTop: '20px',
+	},
 });
+
 const EventForm: React.FC = () => {
 	const { bar, button, form } = authStyles();
 	const { subTitle } = mainStyles();
-	const { formWrapper } = useStyles();
+	const { formWrapper, fileInput } = useStyles();
 
 	const {
 		control,
 		handleSubmit,
 		formState: { errors },
+		setError,
+		reset,
 	} = useForm<IFormInput>();
+
 	const [image, setImage] = useState<File | null>(null);
+	const [isFormSubmitted, setIsFormSubmitted] = useState<boolean>(false);
+	const [isSuccessResponse, setIsSuccessResponse] = useState<boolean>(false);
+	const [isErrorResponse, setIsErrorResponse] = useState<boolean>(false);
+	const [errorMessage, setErrorMessage] = useState<string>('');
 
 	const onSubmit = async (data: IFormInput) => {
 		try {
@@ -49,10 +59,26 @@ const EventForm: React.FC = () => {
 			}
 
 			const response = await createEvent(formData);
-			console.log(response.message);
+			setIsFormSubmitted(true);
+			setIsSuccessResponse(true);
 		} catch (error) {
-			console.error(error);
+			setIsFormSubmitted(true);
+			setIsSuccessResponse(false);
+			setIsErrorResponse(true);
+			setErrorMessage(
+				error.response?.data?.errorMessage || 'An error occurred.'
+			);
+			if (error.response?.data?.errorKeys) {
+				error.response.data.errorKeys.forEach((key: string) => {
+					setError(key as keyof IFormInput, { message: 'Invalid input' });
+				});
+			}
 		}
+	};
+
+	const handleCreateAnotherEvent = () => {
+		setIsFormSubmitted(false);
+		reset();
 	};
 
 	const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -60,6 +86,27 @@ const EventForm: React.FC = () => {
 			setImage(e.target.files[0]);
 		}
 	};
+
+	if (isFormSubmitted) {
+		return (
+			<FormContainer className={formWrapper}>
+				<ResponseAnimation
+					responseMessage={'Event created successfully!'}
+					actionMessage={'Want to create more ? click belows'}
+					isSuccess={isSuccessResponse}
+					isError={isErrorResponse}
+					errorMessage={errorMessage}
+				/>
+				<Button
+					onClick={handleCreateAnotherEvent}
+					className={button}
+					style={{ marginTop: '20px' }}
+				>
+					Create Another Event
+				</Button>
+			</FormContainer>
+		);
+	}
 
 	return (
 		<FormContainer className={formWrapper}>

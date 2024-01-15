@@ -195,6 +195,8 @@ const DonationComponent = () => {
 				<Grid container spacing={2}>
 					{isFormSubmitted ? (
 						<ResponseAnimation
+							responseMessage='Donation request registred successfully!'
+							actionMessage='Our team will contact you soon to provide more details.'
 							isSuccess={isSuccessResponse}
 							isError={isErrorResponse}
 							errorMessage={errorMessage}
