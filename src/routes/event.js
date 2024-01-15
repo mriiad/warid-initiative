@@ -32,6 +32,7 @@ const multerFilter = (req, file, cb) => {
 const upload = multer({
 	storage: multerStorage,
 	fileFilter: multerFilter,
+	limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB limit
 });
 
 const eventRouter = express.Router();
@@ -47,6 +48,16 @@ eventRouter.post(
 	isAuth,
 	checkIfAdmin,
 	upload.single('image'),
+	(req, res, next) => {
+		const err = new Error('File too large');
+		err.statusCode = STATUS_CODE.PAYLOAD_TOO_LARGE;
+		if (req.fileValidationError) {
+			return next(req.fileValidationError);
+		} else if (!req.file) {
+			return next(err);
+		}
+		next();
+	},
 	createEvent
 );
 

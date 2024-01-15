@@ -83,6 +83,14 @@ exports.createEvent = (req, res, next) => {
 		);
 	}
 
+	// Handling file size error
+	if (req.fileValidationError) {
+		return res.status(STATUS_CODE.PAYLOAD_TOO_LARGE).json({
+			message: 'File too large. Please upload a file smaller than 5MB.',
+		});
+	}
+
+	// Extracting fields from the request body
 	const { title, subtitle, location, date, mapLink, description } = req.body;
 
 	// Using file path instead of reading the file content
