@@ -95,12 +95,16 @@ const animationStyles = makeStyles({
 });
 
 interface ResponseAnimationProps {
+	responseMessage: string;
+	actionMessage: string;
 	isSuccess: boolean;
 	isError: boolean;
 	errorMessage?: string | null;
 }
 
 const ResponseAnimation: React.FC<ResponseAnimationProps> = ({
+	responseMessage,
+	actionMessage,
 	isSuccess,
 	isError,
 	errorMessage,
@@ -142,10 +146,8 @@ const ResponseAnimation: React.FC<ResponseAnimationProps> = ({
 						</svg>
 					</div>
 					<div className={successMessage}>
-						<Typography>Donation request registred successfully!</Typography>
-						<Typography>
-							Our team will contact you soon to provide more details.
-						</Typography>
+						<Typography>{responseMessage}</Typography>
+						<Typography>{actionMessage}</Typography>
 					</div>
 				</>
 			)}
