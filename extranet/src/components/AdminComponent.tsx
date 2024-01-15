@@ -1,5 +1,13 @@
+import { useNavigate } from 'react-router-dom';
 import ActionButton from './shared/ActionButton';
 
 export default function AdminComponent() {
-	return <ActionButton title='Add Event' onClick={null} />;
+	const navigate = useNavigate();
+
+	return (
+		<ActionButton
+			title='Add Event'
+			onClick={() => navigate('/events/create')}
+		/>
+	);
 }

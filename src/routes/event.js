@@ -21,10 +21,10 @@ const multerStorage = multer.diskStorage({
 
 // Multer Filter
 const multerFilter = (req, file, cb) => {
-	if (file.mimetype.split('/')[1] === 'png') {
+	if (file.mimetype.startsWith('image/')) {
 		cb(null, true);
 	} else {
-		cb(new Error('Not a PDF File!!'), false);
+		cb(new Error('Only image files are allowed!'), false);
 	}
 };
 

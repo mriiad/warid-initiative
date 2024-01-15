@@ -1,9 +1,12 @@
 import { OpenInNew } from '@mui/icons-material';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useAuth } from '../auth/AuthContext';
-import { MutationErrorWithData, useTypedMutation } from '../hook/useTypedHook';
-import { confirmEventPresence } from '../utils/queries';
+import { useAuth } from '../../auth/AuthContext';
+import {
+	MutationErrorWithData,
+	useTypedMutation,
+} from '../../hook/useTypedHook';
+import { confirmEventPresence } from '../../utils/queries';
 
 interface SuccessfulResponse {
 	message: string;

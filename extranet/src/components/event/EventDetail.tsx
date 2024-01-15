@@ -23,13 +23,13 @@ import {
 	useNavigate,
 	useParams,
 } from 'react-router-dom';
-import { useAuth } from '../auth/AuthContext';
-import colors from '../styles/colors';
-import { useEventStyles } from '../styles/eventStyle';
-import { fetchEventByReference } from '../utils/queries';
-import CanDonate from './CanDonate';
+import { useAuth } from '../../auth/AuthContext';
+import colors from '../../styles/colors';
+import { useEventStyles } from '../../styles/eventStyle';
+import { fetchEventByReference } from '../../utils/queries';
+import CanDonate from '../CanDonate';
+import CardComponent from '../shared/CardComponent';
 import EventConfirmation from './EventConfirmation';
-import CardComponent from './shared/CardComponent';
 const useStyles = makeStyles({
 	eventContainer: {
 		position: 'relative',

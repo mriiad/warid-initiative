@@ -2,12 +2,10 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import styled from 'styled-components';
+import { useAuth } from './auth/AuthContext';
 import AdminComponent from './components/AdminComponent';
 import CanDonate from './components/CanDonate';
 import DonationComponent from './components/DonationComponents';
-import EventConfirmation from './components/EventConfirmation';
-import EventDetail from './components/EventDetail';
-import EventsComponent from './components/EventsComponent';
 import LoginForm from './components/LoginForm';
 import MobileHeader from './components/MobileHeader';
 import MobileNavbar from './components/MobileNavbar';
@@ -16,6 +14,10 @@ import NotFoundPage from './components/NotFoundPage';
 import PasswordResetForm from './components/PasswordResetForm';
 import ResetPasswordForm from './components/ResetPasswordForm';
 import SignupForm from './components/SignupForm';
+import EventConfirmation from './components/event/EventConfirmation';
+import EventDetail from './components/event/EventDetail';
+import EventForm from './components/event/EventForm';
+import EventsComponent from './components/event/EventsComponent';
 
 const AppContainer = styled.div`
 	background: linear-gradient(to left, #e0d1f5, #f6ecf3 48%, #e0d1f5) no-repeat
@@ -48,6 +50,7 @@ const queryClient = new QueryClient();
 
 const App = () => {
 	const isMobile = useMediaQuery('(max-width:600px)');
+	const { isAdmin } = useAuth();
 
 	return (
 		<QueryClientProvider client={queryClient}>
@@ -60,6 +63,9 @@ const App = () => {
 							<Route path='/signup' element={<SignupForm />} />
 							<Route path='/login' element={<LoginForm />} />
 							<Route path='/events' element={<EventsComponent />} />
+							{isAdmin && (
+								<Route path='/events/create' element={<EventForm />} />
+							)}
 							<Route path='/events/:reference/*' element={<EventDetail />}>
 								<Route path='can-donate' element={<CanDonate />} />
 								<Route path='confirmation' element={<EventConfirmation />} />

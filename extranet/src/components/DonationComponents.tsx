@@ -60,7 +60,7 @@ const useStyles = makeStyles({
 
 const DonationComponent = () => {
 	const { token } = useAuth();
-	const { wrapper, topBottom, top, bottom, alert, separator } = useStyles();
+	const { wrapper, topBottom, top, bottom, separator } = useStyles();
 	const { bar, button, signUp, form } = authStyles();
 	const { subTitle } = mainStyles();
 
@@ -160,7 +160,6 @@ const DonationComponent = () => {
 						});
 					});
 				}
-				console.log('######### error', error);
 				if (error.data) {
 					const errorResponseData: ApiErrorResponse = error.data;
 					if (error.status !== 404 && error.status !== 400) {
@@ -196,6 +195,8 @@ const DonationComponent = () => {
 				<Grid container spacing={2}>
 					{isFormSubmitted ? (
 						<ResponseAnimation
+							responseMessage='Donation request registred successfully!'
+							actionMessage='Our team will contact you soon to provide more details.'
 							isSuccess={isSuccessResponse}
 							isError={isErrorResponse}
 							errorMessage={errorMessage}

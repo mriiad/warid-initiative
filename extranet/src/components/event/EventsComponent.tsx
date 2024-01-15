@@ -3,7 +3,7 @@ import { makeStyles } from '@mui/styles';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import { Event } from '../data/Event';
+import { Event } from '../../data/Event';
 import EventCard from './EventCard';
 
 const EventsContainer = styled.div`
