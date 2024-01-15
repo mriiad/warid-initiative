@@ -15,6 +15,7 @@ import NavBar from './components/NavBar';
 import PasswordResetForm from './components/PasswordResetForm';
 import ResetPasswordForm from './components/ResetPasswordForm';
 import SignupForm from './components/SignupForm';
+import UsersList from './components/UsersList';
 
 const AppContainer = styled.div`
 	background: linear-gradient(to left, #e0d1f5, #f6ecf3 48%, #e0d1f5) no-repeat
@@ -74,6 +75,8 @@ const App = () => {
 								element={<ResetPasswordForm />}
 							/>
 							<Route path='*' element={<SignupForm />} />
+							// add route of user liste component
+							<Route path='/users' element={< UsersList/>} />
 						</Routes>
 					</ContentContainer>
 					{isMobile && (
