@@ -4,6 +4,7 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const authRouter = require('./routes/auth');
 const donationRouter = require('./routes/donation');
+const userRouter = require('./routes/user');
 const eventRouter = require('./routes/event');
 const path = require('path');
 
@@ -16,6 +17,8 @@ const app = express();
 app.use(bodyParser.json());
 
 app.use(authRouter);
+
+app.use(userRouter);
 
 app.use(donationRouter);
 

@@ -1,5 +1,5 @@
 const express = require('express');
-const usersRouter = express.Router();
+const userRouter = express.Router();
 const { getUsers } = require('../controllers/user');
 
 // Define a route to display users to admin
