@@ -62,3 +62,16 @@ export const confirmEventPresence = async (
 		throw error.response;
 	}
 };
+
+export const createEvent = async (
+	data: FormData
+): Promise<{ message: string }> => {
+	try {
+		const response = await axios.post('http://localhost:3000/api/event', data, {
+			headers: { 'Content-Type': 'multipart/form-data' },
+		});
+		return response.data;
+	} catch (error) {
+		throw error.response;
+	}
+};

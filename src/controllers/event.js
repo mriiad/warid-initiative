@@ -71,54 +71,64 @@ exports.getEvent = async (req, res, next) => {
 };
 
 exports.createEvent = (req, res, next) => {
+	// Validating the request body
 	const errors = validationResult(req);
 	if (!errors.isEmpty()) {
-		const error = new Error('Validation failed, entered data is incorrect.');
-		error.statusCode = STATUS_CODE.UNPROCESSABLE_ENTITY;
-		throw error;
+		return next(
+			new ApiError(
+				'Validation failed, entered data is incorrect.',
+				STATUS_CODE.UNPROCESSABLE_ENTITY,
+				errors.array().map((e) => e.param)
+			)
+		);
 	}
-	const { title, subtitle, image, location, date, mapLink, description } =
-		req.body;
-	const { path } = req.file || '';
-	let eventImage;
-	if (path !== undefined) eventImage = fs.readFileSync(path);
+
+	const { title, subtitle, location, date, mapLink, description } = req.body;
+
+	// Using file path instead of reading the file content
+	const imagePath = req.file ? req.file.path : null;
 
 	const reference = `WEVENT${date.replaceAll('-', '')}`;
-	Event.findOne({ reference: reference }).then((event) => {
-		if (event) {
-			return res.status(STATUS_CODE.FORBIDDEN).send({
-				message: `An event with the same reference ${reference} is already created.`,
+
+	// Checking for an existing event with the same reference
+	Event.findOne({ reference: reference })
+		.then((existingEvent) => {
+			if (existingEvent) {
+				throw new ApiError(
+					`An event with the same reference ${reference} is already created.`,
+					STATUS_CODE.FORBIDDEN
+				);
+			}
+
+			const newEvent = new Event({
+				reference: reference,
+				title: title,
+				subtitle: subtitle,
+				image: imagePath, // Storing the path of the image
+				location: location,
+				date: date,
+				mapLink: mapLink,
+				description: description,
 			});
-		}
-	});
-	const event = new Event({
-		reference: reference,
-		title: title,
-		subtitle: subtitle,
-		image: eventImage,
-		location: location,
-		date: date,
-		mapLink: mapLink,
-		description: description,
-	});
-	event
-		.save()
+
+			return newEvent.save();
+		})
 		.then((result) => {
-			if (path !== undefined)
-				fs.unlink(path, function (err) {
-					if (err) return console.log(err);
-					console.log('file deleted successfully');
-				});
-			return res.status(STATUS_CODE.CREATED).json({
+			res.status(STATUS_CODE.CREATED).json({
 				message: 'Event created successfully!',
-				post: event,
+				event: result,
 			});
 		})
 		.catch((err) => {
+			// Error handling
 			if (!err.statusCode) {
 				err.statusCode = STATUS_CODE.INTERNAL_SERVER;
 			}
-			next(err);
+			next(
+				err instanceof ApiError
+					? err
+					: new ApiError(err.message, err.statusCode)
+			);
 		});
 };
 

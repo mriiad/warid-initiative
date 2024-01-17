@@ -14,6 +14,8 @@ const dbConfig = config.dbConfig;
 
 const app = express();
 
+app.use(cors());
+
 app.use(bodyParser.json());
 
 app.use(authRouter);
