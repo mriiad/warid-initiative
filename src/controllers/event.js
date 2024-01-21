@@ -5,6 +5,7 @@ const { STATUS_CODE } = require('../utils/errors/httpStatusCode');
 const { validationResult } = require('express-validator');
 const mongoose = require('mongoose');
 const fs = require('fs');
+const path = require('path');
 const ApiError = require('../utils/errors/ApiError');
 
 /**
@@ -70,66 +71,78 @@ exports.getEvent = async (req, res, next) => {
 	}
 };
 
-exports.createEvent = (req, res, next) => {
-	// Validating the request body
-	const errors = validationResult(req);
-	if (!errors.isEmpty()) {
-		return next(
-			new ApiError(
+exports.createEvent = async (req, res) => {
+	try {
+		// Validating the request body
+		const errors = validationResult(req);
+		if (!errors.isEmpty()) {
+			throw new ApiError(
 				'Validation failed, entered data is incorrect.',
 				STATUS_CODE.UNPROCESSABLE_ENTITY,
 				errors.array().map((e) => e.param)
-			)
-		);
-	}
-
-	const { title, subtitle, location, date, mapLink, description } = req.body;
-
-	// Using file path instead of reading the file content
-	const imagePath = req.file ? req.file.path : null;
-
-	const reference = `WEVENT${date.replaceAll('-', '')}`;
-
-	// Checking for an existing event with the same reference
-	Event.findOne({ reference: reference })
-		.then((existingEvent) => {
-			if (existingEvent) {
-				throw new ApiError(
-					`An event with the same reference ${reference} is already created.`,
-					STATUS_CODE.FORBIDDEN
-				);
-			}
-
-			const newEvent = new Event({
-				reference: reference,
-				title: title,
-				subtitle: subtitle,
-				image: imagePath, // Storing the path of the image
-				location: location,
-				date: date,
-				mapLink: mapLink,
-				description: description,
-			});
-
-			return newEvent.save();
-		})
-		.then((result) => {
-			res.status(STATUS_CODE.CREATED).json({
-				message: 'Event created successfully!',
-				event: result,
-			});
-		})
-		.catch((err) => {
-			// Error handling
-			if (!err.statusCode) {
-				err.statusCode = STATUS_CODE.INTERNAL_SERVER;
-			}
-			next(
-				err instanceof ApiError
-					? err
-					: new ApiError(err.message, err.statusCode)
 			);
+		}
+
+		// Handling file size error
+		if (req.fileValidationError) {
+			throw new ApiError(
+				'File too large. Please upload a file smaller than 5MB.',
+				STATUS_CODE.PAYLOAD_TOO_LARGE
+			);
+		}
+
+		// Extracting fields from the request body
+		const { title, subtitle, location, date, mapLink, description } = req.body;
+		const imagePath = req.file ? req.file.path : null;
+		const reference = `WEVENT${date.replaceAll('-', '')}`;
+
+		// Checking for an existing event with the same reference
+		const existingEvent = await Event.findOne({ reference: reference });
+		if (existingEvent) {
+			throw new ApiError(
+				`An event with the same reference ${reference} is already created.`,
+				STATUS_CODE.FORBIDDEN
+			);
+		}
+
+		// Creating a new event
+		const newEvent = new Event({
+			reference: reference,
+			title: title,
+			subtitle: subtitle,
+			image: imagePath,
+			location: location,
+			date: date,
+			mapLink: mapLink,
+			description: description,
 		});
+
+		// Save the event
+		const result = await newEvent.save();
+
+		// If the event is saved successfully and there's an image file, delete the file
+		if (req.file) {
+			const filePath = path.join(__dirname, '../..', req.file.path); // Adjust the path as needed
+			fs.unlink(filePath, (err) => {
+				if (err) {
+					// Log error or handle as necessary
+					console.error('Failed to delete file:', err);
+				}
+			});
+		}
+
+		// Sending success response
+		res.status(STATUS_CODE.CREATED).json({
+			message: 'Event created successfully!',
+			event: result,
+		});
+	} catch (err) {
+		// Handling errors
+		res.status(err.statusCode || STATUS_CODE.INTERNAL_SERVER).json({
+			message: err.message || 'Internal Server Error',
+			errorKeys: err.errorKeys || [],
+		});
+	}
 };
 
 exports.deleteEvent = (req, res, next) => {
