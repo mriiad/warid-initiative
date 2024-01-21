@@ -62,9 +62,10 @@ eventRouter.post('/api/event', isAuth, checkIfAdmin, (req, res, next) => {
 				throw new ApiError('No file provided', STATUS_CODE.BAD_REQUEST);
 			}
 
-			const eventData = await createEvent(req, res, req.file);
+			// Create the event
+			const eventData = await createEvent(req);
 
-			// Send response
+			// Send response here
 			res.status(STATUS_CODE.CREATED).json({
 				message: 'Event created successfully!',
 				event: eventData,

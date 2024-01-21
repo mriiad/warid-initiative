@@ -71,7 +71,7 @@ exports.getEvent = async (req, res, next) => {
 	}
 };
 
-exports.createEvent = async (req, res) => {
+exports.createEvent = async (req) => {
 	try {
 		// Validating the request body
 		const errors = validationResult(req);
@@ -122,26 +122,17 @@ exports.createEvent = async (req, res) => {
 
 		// If the event is saved successfully and there's an image file, delete the file
 		if (req.file) {
-			const filePath = path.join(__dirname, '../..', req.file.path); // Adjust the path as needed
+			const filePath = path.join(__dirname, '../..', req.file.path);
 			fs.unlink(filePath, (err) => {
 				if (err) {
-					// Log error or handle as necessary
 					console.error('Failed to delete file:', err);
 				}
 			});
 		}
 
-		// Sending success response
-		res.status(STATUS_CODE.CREATED).json({
-			message: 'Event created successfully!',
-			event: result,
-		});
+		return result;
 	} catch (err) {
-		// Handling errors
-		res.status(err.statusCode || STATUS_CODE.INTERNAL_SERVER).json({
-			message: err.message || 'Internal Server Error',
-			errorKeys: err.errorKeys || [],
-		});
+		throw err;
 	}
 };
 
