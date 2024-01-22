@@ -72,68 +72,45 @@ exports.getEvent = async (req, res, next) => {
 };
 
 exports.createEvent = async (req) => {
-	try {
-		// Validating the request body
-		const errors = validationResult(req);
-		if (!errors.isEmpty()) {
-			throw new ApiError(
-				'Validation failed, entered data is incorrect.',
-				STATUS_CODE.UNPROCESSABLE_ENTITY,
-				errors.array().map((e) => e.param)
-			);
-		}
-
-		// Handling file size error
-		if (req.fileValidationError) {
-			throw new ApiError(
-				'File too large. Please upload a file smaller than 5MB.',
-				STATUS_CODE.PAYLOAD_TOO_LARGE
-			);
-		}
-
-		// Extracting fields from the request body
-		const { title, subtitle, location, date, mapLink, description } = req.body;
-		const imagePath = req.file ? req.file.path : null;
-		const reference = `WEVENT${date.replaceAll('-', '')}`;
-
-		// Checking for an existing event with the same reference
-		const existingEvent = await Event.findOne({ reference: reference });
-		if (existingEvent) {
-			throw new ApiError(
-				`An event with the same reference ${reference} is already created.`,
-				STATUS_CODE.FORBIDDEN
-			);
-		}
-
-		// Creating a new event
-		const newEvent = new Event({
-			reference: reference,
-			title: title,
-			subtitle: subtitle,
-			image: imagePath,
-			location: location,
-			date: date,
-			mapLink: mapLink,
-			description: description,
-		});
-
-		// Save the event
-		const result = await newEvent.save();
-
-		// If the event is saved successfully and there's an image file, delete the file
-		if (req.file) {
-			const filePath = path.join(__dirname, '../..', req.file.path);
-			fs.unlink(filePath, (err) => {
-				if (err) {
-					console.error('Failed to delete file:', err);
-				}
-			});
-		}
-
-		return result;
-	} catch (err) {
-		throw err;
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		throw new Error('Validation failed, entered data is incorrect.');
+		// Note: You might want to create a custom error class to handle different status codes
 	}
+
+	const { title, subtitle, location, date, mapLink, description } = req.body;
+	let eventImage = null;
+
+	if (req.file && req.file.path) {
+		eventImage = fs.readFileSync(req.file.path);
+	}
+
+	const reference = `WEVENT${date.replaceAll('-', '')}`;
+
+	const existingEvent = await Event.findOne({ reference: reference });
+	if (existingEvent) {
+		throw new Error(
+			`An event with the same reference ${reference} is already created.`
+		);
+	}
+
+	const newEvent = new Event({
+		reference: reference,
+		title: title,
+		subtitle: subtitle,
+		image: eventImage,
+		location: location,
+		date: date,
+		mapLink: mapLink,
+		description: description,
+	});
+
+	const result = await newEvent.save();
+	if (req.file && req.file.path) {
+		fs.unlinkSync(req.file.path); // Use synchronous version for simplicity
+	}
+
+	return result;
 };
 
 exports.deleteEvent = (req, res, next) => {
