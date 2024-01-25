@@ -2,8 +2,12 @@ const User = require('../models/user');
 const Profile = require('../models/profile');
 
 exports.updateUserInfo = (req, res, next) => {
+	//
 	const userId = req.userId;
+	console.log('userId', userId);
 	const { firstname, lastname, birthdate, gender } = req.body;
+
+	let userFound;
 
 	User.findById(userId)
 		.then((user) => {
@@ -13,7 +17,7 @@ exports.updateUserInfo = (req, res, next) => {
 				throw error;
 			}
 
-			// Check if the user already has a profile
+			userFound = user;
 			return Profile.findOne({ user: user._id });
 		})
 		.then((profile) => {
@@ -25,7 +29,7 @@ exports.updateUserInfo = (req, res, next) => {
 				profile.gender = gender;
 				return profile.save();
 			} else {
-				// Create a new profile
+				// Create a new profile and update the User model
 				const newProfile = new Profile({
 					user: userId,
 					firstname,
@@ -33,7 +37,10 @@ exports.updateUserInfo = (req, res, next) => {
 					birthdate,
 					gender,
 				});
-				return newProfile.save();
+				return newProfile.save().then((savedProfile) => {
+					userFound.profile = savedProfile._id; // Update the User model with the new profile reference
+					return userFound.save();
+				});
 			}
 		})
 		.then(() => {
@@ -51,18 +58,25 @@ exports.checkUserProfile = async (req, res, next) => {
 	try {
 		const userId = req.userId;
 
-		const user = await User.findById(userId);
+		const user = await User.findById(userId).populate('profile');
+		console.log('userId', userId);
 		if (!user) {
 			return res.status(404).json({ message: 'User not found' });
 		}
 
 		// Check if the user's profile information is complete
-		// All data is set
-		const isProfileComplete =
-			user.firstname && user.lastname && user.birthdate && user.gender;
+		if (!user.profile) {
+			return res.status(200).json({ isProfileComplete: false });
+		}
+
+		const { firstname, lastname, birthdate, gender } = user.profile;
+		const isProfileComplete = firstname && lastname && birthdate && gender;
+		console.log('profile', user.profile);
+		console.log('isProfileComplete', isProfileComplete);
 
 		res.status(200).json({ isProfileComplete });
 	} catch (err) {
+		console.error(err);
 		if (!err.statusCode) {
 			err.statusCode = 500;
 		}

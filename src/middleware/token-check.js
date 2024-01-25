@@ -26,6 +26,7 @@ exports.isAuth = (req, res, next) => {
 		error.statusCode = STATUS_CODE.UNAUTHORIZED;
 		throw error;
 	}
+	console.log('decodedToken', decodedToken);
 	req.userId = decodedToken.userId;
 	next();
 };

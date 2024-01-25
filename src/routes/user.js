@@ -5,6 +5,6 @@ const userRouter = express.Router();
 
 userRouter.put('/api/user/update', isAuth, updateUserInfo);
 
-userRouter.put('/api/user/check-profile', checkUserProfile);
+userRouter.get('/api/user/check-profile', isAuth, checkUserProfile);
 
 module.exports = userRouter;
