@@ -81,7 +81,7 @@ const SignupForm = () => {
 							render={({ field }) => (
 								<TextField
 									fullWidth
-									label='Username'
+									label='CIN'
 									required
 									{...field}
 									error={Boolean(errors.username)}

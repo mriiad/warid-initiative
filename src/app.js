@@ -4,6 +4,7 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const errorHandler = require('./middleware/error-handler');
 const authRouter = require('./routes/auth');
+const userRouter = require('./routes/user');
 const donationRouter = require('./routes/donation');
 const eventRouter = require('./routes/event');
 const path = require('path');
@@ -19,6 +20,7 @@ app.use(cors());
 app.use(bodyParser.json());
 
 app.use(authRouter);
+app.use(userRouter);
 app.use(donationRouter);
 app.use(eventRouter);
 
