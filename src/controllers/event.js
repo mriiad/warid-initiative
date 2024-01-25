@@ -73,7 +73,6 @@ exports.getEvent = async (req, res, next) => {
 
 exports.createEvent = async (req) => {
 	try {
-		// Validating the request body
 		const errors = validationResult(req);
 		if (!errors.isEmpty()) {
 			throw new ApiError(
@@ -83,7 +82,6 @@ exports.createEvent = async (req) => {
 			);
 		}
 
-		// Handling file size error
 		if (req.fileValidationError) {
 			throw new ApiError(
 				'File too large. Please upload a file smaller than 5MB.',
@@ -91,12 +89,15 @@ exports.createEvent = async (req) => {
 			);
 		}
 
-		// Extracting fields from the request body
 		const { title, subtitle, location, date, mapLink, description } = req.body;
-		const imagePath = req.file ? req.file.path : null;
+		let eventImage = null;
+
+		if (req.file && req.file.path) {
+			eventImage = fs.readFileSync(req.file.path);
+		}
+
 		const reference = `WEVENT${date.replaceAll('-', '')}`;
 
-		// Checking for an existing event with the same reference
 		const existingEvent = await Event.findOne({ reference: reference });
 		if (existingEvent) {
 			throw new ApiError(
@@ -105,24 +106,21 @@ exports.createEvent = async (req) => {
 			);
 		}
 
-		// Creating a new event
 		const newEvent = new Event({
 			reference: reference,
 			title: title,
 			subtitle: subtitle,
-			image: imagePath,
+			image: eventImage,
 			location: location,
 			date: date,
 			mapLink: mapLink,
 			description: description,
 		});
 
-		// Save the event
 		const result = await newEvent.save();
 
-		// If the event is saved successfully and there's an image file, delete the file
-		if (req.file) {
-			const filePath = path.join(__dirname, '../..', req.file.path);
+		if (req.file && req.file.path) {
+			const filePath = path.join(__dirname, '../..', req.file.path); // Adjust the path as needed
 			fs.unlink(filePath, (err) => {
 				if (err) {
 					console.error('Failed to delete file:', err);
