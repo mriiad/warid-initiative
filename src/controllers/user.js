@@ -2,12 +2,10 @@ const User = require('../models/user');
 const Profile = require('../models/profile');
 
 exports.updateUserInfo = (req, res, next) => {
-	const username = req.params.username;
+	const userId = req.userId;
 	const { firstname, lastname, birthdate, gender } = req.body;
 
-	let userFound;
-
-	User.findOne({ username: username })
+	User.findById(userId)
 		.then((user) => {
 			if (!user) {
 				const error = new Error('User not found.');
@@ -15,7 +13,6 @@ exports.updateUserInfo = (req, res, next) => {
 				throw error;
 			}
 
-			userFound = user;
 			// Check if the user already has a profile
 			return Profile.findOne({ user: user._id });
 		})
@@ -30,7 +27,7 @@ exports.updateUserInfo = (req, res, next) => {
 			} else {
 				// Create a new profile
 				const newProfile = new Profile({
-					user: userFound._id,
+					user: userId,
 					firstname,
 					lastname,
 					birthdate,
@@ -39,7 +36,7 @@ exports.updateUserInfo = (req, res, next) => {
 				return newProfile.save();
 			}
 		})
-		.then((result) => {
+		.then(() => {
 			res.status(200).json({ message: 'User profile updated successfully!' });
 		})
 		.catch((err) => {
