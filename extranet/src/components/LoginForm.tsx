@@ -7,6 +7,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { LoginFormData } from '../data/authData';
 import { authStyles, mainStyles } from '../styles/mainStyles';
+import { checkProfileCompleteness } from '../utils/queries';
 import FormContainer from './shared/FormContainer';
 import SnackbarComponent from './shared/SnackbarComponent';
 
@@ -41,7 +42,7 @@ const LoginForm = () => {
 	const [, setIsFormSubmitted] = useState<boolean>(false);
 	const onSubmit = (formData: FormData) => {
 		loginMutation.mutate(formData, {
-			onSuccess: (data) => {
+			onSuccess: async (data) => {
 				setToken(data.data.token);
 				setUserId(data.data.userId);
 				setIsAdmin(data.data.isAdmin);
@@ -56,7 +57,14 @@ const LoginForm = () => {
 				if (redirectURL) {
 					navigate(redirectURL);
 				} else {
-					navigate('/');
+					navigate('/events');
+				}
+
+				const isProfileComplete = await checkProfileCompleteness();
+				if (!isProfileComplete) {
+					navigate('/update-profile');
+				} else {
+					navigate('/events');
 				}
 			},
 			onError: (error) => {
