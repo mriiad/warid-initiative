@@ -49,3 +49,26 @@ exports.updateUserInfo = (req, res, next) => {
 			next(err);
 		});
 };
+
+exports.checkUserProfile = async (req, res, next) => {
+	try {
+		const userId = req.userId;
+
+		const user = await User.findById(userId);
+		if (!user) {
+			return res.status(404).json({ message: 'User not found' });
+		}
+
+		// Check if the user's profile information is complete
+		// All data is set
+		const isProfileComplete =
+			user.firstname && user.lastname && user.birthdate && user.gender;
+
+		res.status(200).json({ isProfileComplete });
+	} catch (err) {
+		if (!err.statusCode) {
+			err.statusCode = 500;
+		}
+		next(err);
+	}
+};
