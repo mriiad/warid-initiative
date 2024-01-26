@@ -12,6 +12,11 @@ const profileSchema = new Schema({
 	lastname: String,
 	birthdate: Date,
 	gender: { type: String, enum: ['male', 'female'] },
+	bloodGroup: {
+		type: String,
+		enum: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
+		required: false,
+	},
 });
 
 module.exports = mongoose.model('Profile', profileSchema);
