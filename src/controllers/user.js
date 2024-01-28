@@ -68,8 +68,9 @@ exports.checkUserProfile = async (req, res, next) => {
 			return res.status(200).json({ isProfileComplete: false });
 		}
 
-		const { firstname, lastname, birthdate, gender } = user.profile;
-		const isProfileComplete = firstname && lastname && birthdate && gender;
+		const { firstname, lastname, birthdate, gender, bloodGroup } = user.profile;
+		const isProfileComplete =
+			firstname && lastname && birthdate && gender && bloodGroup;
 
 		res.status(200).json({ isProfileComplete });
 	} catch (err) {
@@ -79,4 +80,38 @@ exports.checkUserProfile = async (req, res, next) => {
 		}
 		next(err);
 	}
+};
+
+exports.getProfile = (req, res, next) => {
+	const userId = req.userId;
+	User.findById(userId)
+		.populate('profile') // Populate the profile field in the found user document
+		.then((user) => {
+			if (!user) {
+				const error = new Error('User not found.');
+				error.statusCode = 404;
+				throw error;
+			}
+
+			if (!user.profile) {
+				// If the user has no profile, return an empty object
+				return res.status(200).json({});
+			}
+
+			// If the user has a profile, return it
+			res.status(200).json({
+				firstname: user.profile.firstname,
+				lastname: user.profile.lastname,
+				birthdate: user.profile.birthdate,
+				gender: user.profile.gender,
+				bloodGroup: user.profile.bloodGroup,
+			});
+		})
+		.catch((err) => {
+			console.error(err);
+			if (!err.statusCode) {
+				err.statusCode = 500;
+			}
+			next(err);
+		});
 };
