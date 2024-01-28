@@ -2,10 +2,8 @@ const User = require('../models/user');
 const Profile = require('../models/profile');
 
 exports.updateUserInfo = (req, res, next) => {
-	//
 	const userId = req.userId;
-	console.log('userId', userId);
-	const { firstname, lastname, birthdate, gender } = req.body;
+	const { firstname, lastname, birthdate, gender, bloodGroup } = req.body;
 
 	let userFound;
 
@@ -27,6 +25,7 @@ exports.updateUserInfo = (req, res, next) => {
 				profile.lastname = lastname;
 				profile.birthdate = birthdate;
 				profile.gender = gender;
+				profile.bloodGroup = bloodgroup;
 				return profile.save();
 			} else {
 				// Create a new profile and update the User model
@@ -36,6 +35,7 @@ exports.updateUserInfo = (req, res, next) => {
 					lastname,
 					birthdate,
 					gender,
+					bloodGroup,
 				});
 				return newProfile.save().then((savedProfile) => {
 					userFound.profile = savedProfile._id; // Update the User model with the new profile reference
@@ -59,7 +59,6 @@ exports.checkUserProfile = async (req, res, next) => {
 		const userId = req.userId;
 
 		const user = await User.findById(userId).populate('profile');
-		console.log('userId', userId);
 		if (!user) {
 			return res.status(404).json({ message: 'User not found' });
 		}
@@ -71,8 +70,6 @@ exports.checkUserProfile = async (req, res, next) => {
 
 		const { firstname, lastname, birthdate, gender } = user.profile;
 		const isProfileComplete = firstname && lastname && birthdate && gender;
-		console.log('profile', user.profile);
-		console.log('isProfileComplete', isProfileComplete);
 
 		res.status(200).json({ isProfileComplete });
 	} catch (err) {
