@@ -14,6 +14,7 @@ import NotFoundPage from './components/NotFoundPage';
 import PasswordResetForm from './components/PasswordResetForm';
 import ResetPasswordForm from './components/ResetPasswordForm';
 import SignupForm from './components/SignupForm';
+import UserProfileForm from './components/UserProfileForm';
 import EventConfirmation from './components/event/EventConfirmation';
 import EventDetail from './components/event/EventDetail';
 import EventForm from './components/event/EventForm';
@@ -62,6 +63,7 @@ const App = () => {
 							<Route path='/' element={<Navigate replace to='/signup' />} />
 							<Route path='/signup' element={<SignupForm />} />
 							<Route path='/login' element={<LoginForm />} />
+							<Route path='/update-profile' element={<UserProfileForm />} />
 							<Route path='/events' element={<EventsComponent />} />
 							{isAdmin && (
 								<Route path='/events/create' element={<EventForm />} />

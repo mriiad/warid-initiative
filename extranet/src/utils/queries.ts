@@ -75,3 +75,14 @@ export const createEvent = async (
 		throw error.response;
 	}
 };
+
+export const checkProfileCompleteness = async () => {
+	try {
+		const response = await axios.get('/api/user/check-profile');
+		const { isProfileComplete } = response.data;
+		return isProfileComplete;
+	} catch (error) {
+		console.error('Error checking profile completeness:', error);
+		return false;
+	}
+};
