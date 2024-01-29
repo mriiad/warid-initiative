@@ -25,7 +25,7 @@ exports.updateUserInfo = (req, res, next) => {
 				profile.lastname = lastname;
 				profile.birthdate = birthdate;
 				profile.gender = gender;
-				profile.bloodGroup = bloodgroup;
+				profile.bloodGroup = bloodGroup;
 				return profile.save();
 			} else {
 				// Create a new profile and update the User model
