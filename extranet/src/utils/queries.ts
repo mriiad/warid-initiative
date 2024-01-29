@@ -86,3 +86,12 @@ export const checkProfileCompleteness = async () => {
 		return false;
 	}
 };
+
+export const fetchUserProfile = async () => {
+	try {
+		const response = await axios.get('/api/user/profile');
+		return response.data;
+	} catch (error) {
+		throw new Error(error.message);
+	}
+};

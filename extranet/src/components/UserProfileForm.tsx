@@ -14,10 +14,14 @@ import {
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import axios from 'axios';
+import { useEffect } from 'react';
 import { Controller, useForm } from 'react-hook-form';
+import { useQuery } from 'react-query';
 import { useNavigate } from 'react-router-dom';
 import { ProfileFormData } from '../data/ProfileFormData';
 import { authStyles } from '../styles/mainStyles';
+import { fetchUserProfile } from '../utils/queries';
+import { formatDate } from '../utils/utils';
 import FormContainer from './shared/FormContainer';
 
 const useStyles = makeStyles({
@@ -32,10 +36,27 @@ const UserProfileForm = () => {
 	const { align } = useStyles();
 
 	const {
+		data: userProfile,
+		isLoading: isLoadingUserProfile,
+		isError: hasUserProfileError,
+	} = useQuery('userProfile', fetchUserProfile);
+
+	const {
 		handleSubmit,
 		formState: { errors },
 		control,
+		setValue,
 	} = useForm<ProfileFormData>();
+
+	useEffect(() => {
+		if (userProfile) {
+			setValue('firstname', userProfile.firstname || '');
+			setValue('lastname', userProfile.lastname || '');
+			setValue('birthdate', formatDate(userProfile.birthdate) || '');
+			setValue('gender', userProfile.gender || 'male');
+			setValue('bloodGroup', userProfile.bloodGroup || '');
+		}
+	}, [userProfile, setValue]);
 
 	const updateProfile = async (data: ProfileFormData) => {
 		try {
