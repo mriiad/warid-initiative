@@ -14,11 +14,16 @@ import {
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import axios from 'axios';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useQuery } from 'react-query';
 import { useNavigate } from 'react-router-dom';
-import { ProfileFormData, fieldDisplayNames } from '../data/ProfileFormData';
+import {
+	BloodGroup,
+	Gender,
+	ProfileFormData,
+	fieldDisplayNames,
+} from '../data/ProfileFormData';
 import { authStyles } from '../styles/mainStyles';
 import { fetchUserProfile } from '../utils/queries';
 import { formatDate } from '../utils/utils';
@@ -46,14 +51,35 @@ const UserProfileForm = () => {
 	const [showSnackbar, setShowSnackbar] = useState(false);
 	const [incompleteFieldsMessage, setIncompleteFieldsMessage] = useState('');
 
-	const { data: userProfile } = useQuery('userProfile', fetchUserProfile);
+	const { data: userProfile } = useQuery<ProfileFormData>(
+		'userProfile',
+		fetchUserProfile,
+		{
+			refetchOnWindowFocus: false,
+			refetchOnMount: true,
+			retry: 5,
+		}
+	);
+
+	const defaultProfileValues = useMemo(
+		() => ({
+			firstname: '',
+			lastname: '',
+			birthdate: '',
+			gender: Gender.Male,
+			bloodGroup: BloodGroup.None,
+		}),
+		[]
+	);
 
 	const {
 		handleSubmit,
 		formState: { errors },
 		control,
 		setValue,
-	} = useForm<ProfileFormData>();
+	} = useForm<ProfileFormData>({
+		defaultValues: defaultProfileValues,
+	});
 
 	useEffect(() => {
 		if (userProfile) {
@@ -65,6 +91,7 @@ const UserProfileForm = () => {
 				'gender',
 				'bloodGroup',
 			];
+
 			fields.forEach((field) => {
 				let value = userProfile[field] || '';
 				if (field === 'birthdate' && userProfile.birthdate) {
@@ -137,7 +164,7 @@ const UserProfileForm = () => {
 						<Controller
 							name='gender'
 							control={control}
-							defaultValue='male'
+							defaultValue={Gender.Male}
 							rules={{ required: 'Gender is required' }}
 							render={({ field }) => (
 								<FormControl component='fieldset' fullWidth>
