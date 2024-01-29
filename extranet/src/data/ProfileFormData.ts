@@ -16,3 +16,11 @@ export interface ProfileFormData {
 	gender: 'male' | 'female';
 	bloodGroup: BloodGroup;
 }
+
+export const fieldDisplayNames: { [K in keyof ProfileFormData]: string } = {
+	firstname: 'First Name',
+	lastname: 'Last Name',
+	birthdate: 'Birthdate',
+	gender: 'Gender',
+	bloodGroup: 'Blood Group',
+};
