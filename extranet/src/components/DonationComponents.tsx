@@ -81,6 +81,9 @@ const DonationComponent = () => {
 		isError,
 	} = useQuery('donation', fetchDonation, {
 		enabled: !!token,
+		refetchOnWindowFocus: false,
+		refetchOnMount: true,
+		retry: 5,
 	});
 
 	const [showSnackbar, setShowSnackbar] = useState(false);
