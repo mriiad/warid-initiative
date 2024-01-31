@@ -138,9 +138,8 @@ const Navbar = () => {
 						<li className={routesListItem}>
 							<Link
 								to='/'
-								className={`${routesLink} ${
-									selectedRoute === '/' ? activeLink : ''
-								}`}
+								className={`${routesLink} ${selectedRoute === '/' ? activeLink : ''
+									}`}
 								onClick={() => handleRouteChange('/')}
 							>
 								Home
@@ -149,9 +148,8 @@ const Navbar = () => {
 						<li className={routesListItem}>
 							<Link
 								to='/about'
-								className={`${routesLink} ${
-									selectedRoute === '/about' ? activeLink : ''
-								}`}
+								className={`${routesLink} ${selectedRoute === '/about' ? activeLink : ''
+									}`}
 								onClick={() => handleRouteChange('/about')}
 							>
 								About
@@ -160,9 +158,8 @@ const Navbar = () => {
 						<li className={routesListItem}>
 							<Link
 								to='/events?page=1'
-								className={`${routesLink} ${
-									selectedRoute === '/events' ? activeLink : ''
-								}`}
+								className={`${routesLink} ${selectedRoute === '/events' ? activeLink : ''
+									}`}
 								onClick={() => handleRouteChange('/events?page=1')}
 							>
 								Events
@@ -178,6 +175,20 @@ const Navbar = () => {
 									onClick={() => handleRouteChange('/admin')}
 								>
 									Admin
+								</Link>
+							</li>
+						)}
+						
+						{token && isAdmin && (
+							<li className={routesListItem}>
+								<Link
+									to='/users'
+									className={`${routesLink} ${
+										selectedRoute === '/users' ? activeLink : ''
+									}`}
+									onClick={() => handleRouteChange('/users')}
+								>
+									Users
 								</Link>
 							</li>
 						)}
