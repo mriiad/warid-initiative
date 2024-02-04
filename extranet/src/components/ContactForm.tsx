@@ -4,11 +4,10 @@ import { makeStyles } from '@mui/styles';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { useMutation, useQuery } from 'react-query';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
+import { ProfileFormData } from '../data/ProfileFormData';
 import { authStyles } from '../styles/mainStyles';
-import { fetchUserProfile } from '../utils/queries';
 import FormContainer from './shared/FormContainer';
 
 const useStyles = makeStyles({
@@ -32,27 +31,28 @@ const ContactForm = () => {
 	const { align } = useStyles();
 	const navigate = useNavigate();
 
-	const [localUserProfile, setLocalUserProfile] = useState(null);
+	const [localUserProfile, setLocalUserProfile] =
+		useState<ProfileFormData>(null);
+	const [isProfileLoading, setIsProfileLoading] = useState<boolean>(true);
 
-	const { data: userProfile, isLoading: isProfileLoading } = useQuery(
-		'userProfile',
-		fetchUserProfile,
-		{
-			enabled: !!token,
-			cacheTime: 0,
-			staleTime: 0,
-			onSuccess: (data) => {
-				setLocalUserProfile(userProfile);
-			},
-			onError: (err: any) => {
-				if (err.response && err.response.status === 401) {
-					setLocalUserProfile(null);
-				}
-			},
+	useEffect(() => {
+		if (token) {
+			setIsProfileLoading(true);
+			axios
+				.get('/api/user/profile')
+				.then((response) => {
+					setLocalUserProfile(response.data);
+				})
+				.catch((error) => {
+					console.error('Error fetching user profile:', error);
+				})
+				.finally(() => {
+					setIsProfileLoading(false);
+				});
+		} else {
+			setLocalUserProfile(null);
 		}
-	);
-
-	const { firstname, lastname } = localUserProfile || {};
+	}, [token]);
 
 	const {
 		handleSubmit,
@@ -75,26 +75,17 @@ const ContactForm = () => {
 		if (!isProfileLoading && localUserProfile) {
 			setValue('firstname', localUserProfile.firstname || '');
 			setValue('lastname', localUserProfile.lastname || '');
-			setValue('email', localUserProfile.email || '');
-			setValue('phoneNumber', localUserProfile.phoneNumber || '');
 		}
-		if (!token) setLocalUserProfile(null);
-	}, [localUserProfile, setValue, isProfileLoading, token]);
+	}, [localUserProfile, setValue, isProfileLoading]);
 
-	const contactMutation = useMutation((data: ContactFormData) => {
-		return axios.post('http://localhost:3000/api/contact-us', data);
-	});
-
-	const onSubmit = (formData: ContactFormData) => {
-		contactMutation.mutate(formData, {
-			onSuccess: () => {
-				console.log('Contact form submitted successfully!');
-				navigate('/');
-			},
-			onError: (error) => {
-				console.error('Error submitting contact form:', error);
-			},
-		});
+	const onSubmit = async (formData: ContactFormData) => {
+		try {
+			await axios.post('http://localhost:3000/api/contact-us', formData);
+			console.log('Contact form submitted successfully!');
+			navigate('/');
+		} catch (error) {
+			console.error('Error submitting contact form:', error);
+		}
 	};
 
 	return (
@@ -105,12 +96,11 @@ const ContactForm = () => {
 			</Typography>
 			<form onSubmit={handleSubmit(onSubmit)} className={form}>
 				<Grid container spacing={2}>
-					{!firstname && (
+					{!localUserProfile?.firstname && (
 						<Grid item xs={12}>
 							<Controller
 								name='firstname'
 								control={control}
-								defaultValue=''
 								render={({ field }) => (
 									<TextField
 										fullWidth
@@ -126,12 +116,11 @@ const ContactForm = () => {
 							/>
 						</Grid>
 					)}
-					{!lastname && (
+					{!localUserProfile?.lastname && (
 						<Grid item xs={12}>
 							<Controller
 								name='lastname'
 								control={control}
-								defaultValue=''
 								render={({ field }) => (
 									<TextField
 										fullWidth
@@ -150,7 +139,6 @@ const ContactForm = () => {
 							<Controller
 								name='email'
 								control={control}
-								defaultValue=''
 								render={({ field }) => (
 									<TextField
 										fullWidth
@@ -169,7 +157,6 @@ const ContactForm = () => {
 							<Controller
 								name='phoneNumber'
 								control={control}
-								defaultValue=''
 								render={({ field }) => (
 									<TextField
 										fullWidth
@@ -189,7 +176,6 @@ const ContactForm = () => {
 						<Controller
 							name='subject'
 							control={control}
-							defaultValue=''
 							render={({ field }) => (
 								<TextField
 									fullWidth
@@ -206,7 +192,6 @@ const ContactForm = () => {
 						<Controller
 							name='message'
 							control={control}
-							defaultValue=''
 							render={({ field }) => (
 								<TextField
 									fullWidth
