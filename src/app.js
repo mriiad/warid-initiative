@@ -7,6 +7,7 @@ const authRouter = require('./routes/auth');
 const userRouter = require('./routes/user');
 const donationRouter = require('./routes/donation');
 const eventRouter = require('./routes/event');
+const contactRouter = require('./routes/contact');
 const path = require('path');
 
 const config = require('../config.json');
@@ -23,6 +24,7 @@ app.use(authRouter);
 app.use(userRouter);
 app.use(donationRouter);
 app.use(eventRouter);
+app.use(contactRouter);
 
 app.use(express.static(path.join(__dirname, '../extranet/build')));
 
