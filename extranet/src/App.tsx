@@ -5,6 +5,7 @@ import styled from 'styled-components';
 import { useAuth } from './auth/AuthContext';
 import AdminComponent from './components/AdminComponent';
 import CanDonate from './components/CanDonate';
+import ContactForm from './components/ContactForm';
 import DonationComponent from './components/DonationComponents';
 import LoginForm from './components/LoginForm';
 import MobileHeader from './components/MobileHeader';
@@ -73,6 +74,7 @@ const App = () => {
 								<Route path='confirmation' element={<EventConfirmation />} />
 							</Route>
 							<Route path='/donate' element={<DonationComponent />} />
+							<Route path='/contact' element={<ContactForm />} />
 							<Route path='/admin' element={<AdminComponent />} />
 							<Route
 								path='/request-reset-password'

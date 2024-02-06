@@ -1,4 +1,5 @@
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
+import EmailIcon from '@mui/icons-material/Email';
 import EventIcon from '@mui/icons-material/Event';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import HomeIcon from '@mui/icons-material/Home';
@@ -51,6 +52,11 @@ const MobileNavbar = () => {
 			<Link to='/donate'>
 				<FavoriteIcon
 					className={currentRoute === '/donate' ? activeIcon : icon}
+				/>
+			</Link>
+			<Link to='/contact'>
+				<EmailIcon
+					className={currentRoute === '/contact' ? activeIcon : icon}
 				/>
 			</Link>
 			{token && isAdmin && (
