@@ -4,15 +4,18 @@ import { makeStyles } from '@mui/styles';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { ProfileFormData } from '../data/ProfileFormData';
 import { authStyles } from '../styles/mainStyles';
 import FormContainer from './shared/FormContainer';
+import ResponseAnimation from './shared/ResponseAnimation';
 
 const useStyles = makeStyles({
 	align: {
 		marginBottom: '80px',
+	},
+	formWrapper: {
+		marginBottom: '88px',
 	},
 });
 
@@ -28,8 +31,12 @@ interface ContactFormData {
 const ContactForm = () => {
 	const { token } = useAuth();
 	const { bar, button, signUp, form } = authStyles();
-	const { align } = useStyles();
-	const navigate = useNavigate();
+	const { align, formWrapper } = useStyles();
+
+	const [isFormSubmitted, setIsFormSubmitted] = useState<boolean>(false);
+	const [isSuccessResponse, setIsSuccessResponse] = useState<boolean>(false);
+	const [isErrorResponse, setIsErrorResponse] = useState<boolean>(false);
+	const [errorMessage, setErrorMessage] = useState<string>('');
 
 	const [localUserProfile, setLocalUserProfile] =
 		useState<ProfileFormData>(null);
@@ -59,6 +66,7 @@ const ContactForm = () => {
 		formState: { errors },
 		control,
 		setValue,
+		reset,
 	} = useForm<ContactFormData>({
 		defaultValues: {
 			firstname: '',
@@ -80,13 +88,44 @@ const ContactForm = () => {
 
 	const onSubmit = async (formData: ContactFormData) => {
 		try {
+			setIsFormSubmitted(true);
 			await axios.post('http://localhost:3000/api/contact-us', formData);
 			console.log('Contact form submitted successfully!');
-			navigate('/');
+			setIsSuccessResponse(true);
+			setIsErrorResponse(false);
 		} catch (error) {
 			console.error('Error submitting contact form:', error);
+			setIsErrorResponse(true);
+			setIsSuccessResponse(false);
+			setErrorMessage(error.message || 'Error submitting contact form');
 		}
 	};
+
+	const handleSendAnotherMessage = () => {
+		setIsFormSubmitted(false);
+		if (isSuccessResponse) reset();
+	};
+
+	if (isFormSubmitted) {
+		return (
+			<FormContainer className={formWrapper}>
+				<ResponseAnimation
+					responseMessage='Your message has been sent successfully!'
+					actionMessage='We will get back to you shortly.'
+					isSuccess={isSuccessResponse}
+					isError={isErrorResponse}
+					errorMessage={errorMessage}
+				/>
+				<Button
+					onClick={handleSendAnotherMessage}
+					className={button}
+					style={{ marginTop: '20px' }}
+				>
+					Send another message
+				</Button>
+			</FormContainer>
+		);
+	}
 
 	return (
 		<FormContainer className={align}>
