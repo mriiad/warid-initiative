@@ -14,6 +14,12 @@ code {
     monospace;
 }
 
+@font-face {
+  font-family: "Moroccan";
+  src: local("maghribi-font"),
+    url("./fonts/maghribi-font.ttf") format("truetype");
+}
+
 * {
   box-sizing: border-box;
 }
