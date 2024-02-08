@@ -61,5 +61,8 @@
   "devDependencies": {
     "@types/leaflet": "^1.9.6",
     "@types/react-leaflet": "^3.0.0"
+  },
+  "engines": {
+    "node": "21.6.1"
   }
 }
