@@ -12,20 +12,25 @@ const useStyles = makeStyles({
 			height: '30%',
 			position: 'relative',
 			zIndex: 1,
+			opacity: 0,
+			animation: '$slideIn 0.5s ease-out forwards',
 		},
 		'& > img:nth-of-type(1)': {
 			maxWidth: '30%',
 			top: '-2px',
 			marginRight: '-5%',
+			animationDelay: '0.5s',
 		},
 		'& > img:nth-of-type(2)': {
 			maxWidth: '50%',
 			zIndex: 2,
+			animationDelay: '1s',
 		},
 		'& > img:nth-of-type(3)': {
 			maxWidth: '30%',
 			top: '-6px',
 			marginLeft: '-5%',
+			animationDelay: '1.5s',
 		},
 	},
 	blockImage: {
@@ -34,6 +39,29 @@ const useStyles = makeStyles({
 		marginTop: '8px',
 		marginLeft: 'auto',
 		marginRight: 'auto',
+		opacity: 0,
+		animation: '$fadeInUp 0.5s ease-out forwards',
+		animationDelay: '2s',
+	},
+	'@keyframes slideIn': {
+		from: {
+			transform: 'translateX(100%)',
+			opacity: 0,
+		},
+		to: {
+			transform: 'translateX(0)',
+			opacity: 1,
+		},
+	},
+	'@keyframes fadeInUp': {
+		from: {
+			transform: 'translateY(20px)',
+			opacity: 0,
+		},
+		to: {
+			transform: 'translateY(0)',
+			opacity: 1,
+		},
 	},
 });
 
