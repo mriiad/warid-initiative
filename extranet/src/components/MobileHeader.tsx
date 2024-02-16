@@ -73,7 +73,7 @@ const MobileHeader = () => {
 
 	return (
 		<HeaderContainer isEventPage={isEventPage}>
-			<LogoContainer onClick={() => navigate('/signup')}>
+			<LogoContainer onClick={() => navigate('/home')}>
 				<img src='/warid-logo.png' alt='Logo' className={logoImage} />
 			</LogoContainer>
 			{token ? (

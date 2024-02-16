@@ -7,6 +7,7 @@ import AdminComponent from './components/AdminComponent';
 import CanDonate from './components/CanDonate';
 import ContactForm from './components/ContactForm';
 import DonationComponent from './components/DonationComponents';
+import LandingPage from './components/LandingPage';
 import LoginForm from './components/LoginForm';
 import MobileHeader from './components/MobileHeader';
 import MobileNavbar from './components/MobileNavbar';
@@ -73,7 +74,8 @@ const App = () => {
 					{!isMobile ? <NavBar /> : <MobileHeader />}
 					<ContentContainer>
 						<Routes>
-							<Route path='/' element={<Navigate replace to='/signup' />} />
+							<Route path='/' element={<Navigate replace to='/home' />} />
+							<Route path='/home' element={<LandingPage />} />
 							<Route path='/signup' element={<SignupForm />} />
 							<Route path='/login' element={<LoginForm />} />
 							<Route path='/update-profile' element={<UserProfileForm />} />
