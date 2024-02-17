@@ -1,10 +1,9 @@
 import React from 'react';
 import { User } from '../data/User';
-import styled from 'styled-components';
 import colors from '../styles/colors';
 import { makeStyles } from '@mui/styles';
 import ActionButton from './shared/ActionButton';
-
+import Typography from '@mui/material/Typography';
 
 interface UserCardProps {
     user: User;
@@ -14,6 +13,23 @@ interface UserCardProps {
     animationDelay: string;
 }
 
+const useStyles = makeStyles({
+    userCard: ({ animationDelay, isAdmin }: { animationDelay: string; isAdmin: boolean }) => ({
+        background: isAdmin ? 'pink' : colors.formWhite,
+        borderRadius: '30px',
+        border: '1px solid white',
+        padding: '30px',
+        width: '370px',
+      }),
+    buttons: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        width: '110px',
+        marginTop: '20px',
+    },
+});
+
 const UserCard: React.FC<UserCardProps> = ({
     user,
     onUpdate,
@@ -22,36 +38,19 @@ const UserCard: React.FC<UserCardProps> = ({
     animationDelay,
 }) => {
 
-    const isAdminText = user.isAdmin ? 'Yes' : 'No';
-    const isAdminBackgroundColor = user.isAdmin ? 'pink' : 'colors.formWhite';
-
-    const cardStyle: React.CSSProperties = {
-        animationDelay,
-        background: isAdminBackgroundColor,
-        borderRadius: '30px',
-        border: '1px solid white',
-        padding: '30px',
-        width: '370px',
-
-    };
-    const buttons: React.CSSProperties = {
-        display: 'flex',
-        justifyContent: 'space-between',
-        width: '110px',
-    };
+    const classes = useStyles({ animationDelay, isAdmin: user.isAdmin });
 
     return (
 
-        <div className="user-card" style={cardStyle}>
+        <div className={classes.userCard} >
             <div>
-                <p><b>Username :</b> {user.username}</p>
-                <p><b>Email :</b> {user.email}</p>
-                <p><b>Phone Number : </b>{user.phoneNumber}</p>
-                <p><b>Gender :</b> {user.gender}</p>
-                <p><b>IsAdmin :</b> {isAdminText}</p>
+                <Typography variant="subtitle1"><b>Username :</b> {user.username}</Typography>
+                <Typography variant="subtitle1"><b>Email :</b> {user.email}</Typography>
+                <Typography variant="subtitle1"><b>Phone Number : </b>{user.phoneNumber}</Typography>
+                <Typography variant="subtitle1"><b>Gender :</b> {user.gender}</Typography>
             </div>
             
-            <div style={buttons}>
+            <div className={classes.buttons}>
                 <ActionButton
                     title='Update'
                     onClick={() => onUpdate(user._id)}
@@ -60,10 +59,14 @@ const UserCard: React.FC<UserCardProps> = ({
                     title='Delete'
                     onClick={() => onDelete(user._id)}
                 />
-                <ActionButton
-                    title='Make Admin'
-                    onClick={() => onMakeAdmin(user._id)}
-                />
+                
+                 {!user.isAdmin && ( 
+                    <ActionButton
+                        title='Make Admin'
+                        onClick={() => onMakeAdmin(user._id)}
+                    />
+                )}
+                
 
             </div>
         </div>
