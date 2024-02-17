@@ -50,7 +50,7 @@ const UsersComponent = () => {
 				`http://localhost:3000/api/users?page=${page}`
 			  );
 			  setUsers(response.data.users);
-			  setTotalPages(Math.ceil(response.data.totalItems / 5));
+			  setTotalPages(Math.ceil(response.data.totalItems / 10));
 			} catch (error) {
 			  console.error('Error fetching users', error);
 			} finally {
@@ -75,7 +75,7 @@ const UsersComponent = () => {
 		   // To handle 
 		  console.log(`Making user with ID ${userId} as admin`);
 		};
-	  
+	   
 		return (
 		  <UsersContainer className={usersList}>
 			{isLoading ? (
@@ -105,6 +105,8 @@ const UsersComponent = () => {
 			  </>
 			)}
 		  </UsersContainer>
+		  
+		  
 		);
 
 };
