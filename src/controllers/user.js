@@ -5,30 +5,27 @@ const { STATUS_CODE } = require('../utils/errors/httpStatusCode');
 // Get all users
 exports.getUsers = async (req, res, next) => {
     try {
-
-        //pagination parameters
         const currentPage = Number(req.query.page) || 1;
         const perPage = 10;
-        const skip = (currentPage - 1) * perPage;
 
-        // Fetch users from database
+        const totalItems = await User.countDocuments();
 
         const users = await User.find(
             {},
             'username email phoneNumber gender isAdmin'
         )
-            .skip(skip)
+            .skip((currentPage - 1) * perPage)
             .limit(perPage);
-            
-        // Send users list in the response
-        res.status(STATUS_CODE.OK).json({ users });
-    } catch (error) {
-        // handle error
-        const apiError = new ApiError(
-            'Internal Server Error',
-            STATUS_CODE.INTERNAL_SERVER
-        );
 
-        res.status(apiError.statusCode).json(apiError.getErrorResponse());
+        res.status(STATUS_CODE.OK).json({
+            message: 'Fetched users successfully.',
+            users: users,
+            totalItems: totalItems,
+        });
+    } catch (err) {
+        if (!err.statusCode) {
+            err.statusCode = STATUS_CODE.INTERNAL_SERVER;
+        }
+        next(err);
     }
 };
