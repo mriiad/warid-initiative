@@ -61,9 +61,9 @@ const MobileNavbar = () => {
 						className={currentRoute === '/admin' ? activeIcon : icon}
 					/>
 				</Link>
-                <Link to='/users'>
-				<GroupIcon className={currentRoute === '/users' ? activeIcon : icon} />
-			  </Link>
+                <Link to='/users?page=1'>
+				<GroupIcon className={currentRoute.startsWith('/users') ? activeIcon : icon} />
+			    </Link>
 			  </>
 			)}
 		</div>
