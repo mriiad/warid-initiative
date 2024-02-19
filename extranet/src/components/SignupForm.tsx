@@ -9,7 +9,7 @@ import { authStyles, mainStyles } from '../styles/mainStyles';
 import FormContainer from './shared/FormContainer';
 
 const SignupForm = () => {
-	const { bar, button, signUp, form } = authStyles();
+	const { formField, bar, button, signUp, form } = authStyles();
 	const { subTitle, textButton } = mainStyles();
 	const {
 		handleSubmit,
@@ -29,6 +29,7 @@ const SignupForm = () => {
 			onSuccess: () => {
 				console.log('Form submitted successfully!');
 				setIsFormSubmitted(true);
+				navigate('/login?new-user');
 			},
 			onError: (error) => {
 				console.error('Error submitting form:', error);
@@ -71,7 +72,7 @@ const SignupForm = () => {
 							render={({ field }) => (
 								<TextField
 									fullWidth
-									label='Username'
+									label='CIN'
 									required
 									{...field}
 									error={Boolean(errors.username)}

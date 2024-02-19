@@ -1,5 +1,4 @@
-export interface ApiErrorResponse<T = any> {
+export interface ApiErrorResponse<T = unknown> {
 	errorMessage: string;
-	details?: T;
 	errorKeys: string[];
 }

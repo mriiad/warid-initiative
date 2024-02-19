@@ -5,6 +5,7 @@ const { STATUS_CODE } = require('../utils/errors/httpStatusCode');
 const { validationResult } = require('express-validator');
 const mongoose = require('mongoose');
 const fs = require('fs');
+const path = require('path');
 const ApiError = require('../utils/errors/ApiError');
 
 /**
@@ -70,56 +71,67 @@ exports.getEvent = async (req, res, next) => {
 	}
 };
 
-exports.createEvent = (req, res, next) => {
-	const errors = validationResult(req);
-	if (!errors.isEmpty()) {
-		const error = new Error('Validation failed, entered data is incorrect.');
-		error.statusCode = STATUS_CODE.UNPROCESSABLE_ENTITY;
-		throw error;
-	}
-	const { title, subtitle, image, location, date, mapLink, description } =
-		req.body;
-	const { path } = req.file || '';
-	let eventImage;
-	if (path !== undefined) eventImage = fs.readFileSync(path);
+exports.createEvent = async (req) => {
+	try {
+		const errors = validationResult(req);
+		if (!errors.isEmpty()) {
+			throw new ApiError(
+				'Validation failed, entered data is incorrect.',
+				STATUS_CODE.UNPROCESSABLE_ENTITY,
+				errors.array().map((e) => e.param)
+			);
+		}
 
-	const reference = `WEVENT${date.replaceAll('-', '')}`;
-	Event.findOne({ reference: reference }).then((event) => {
-		if (event) {
-			return res.status(STATUS_CODE.FORBIDDEN).send({
-				message: `An event with the same reference ${reference} is already created.`,
+		if (req.fileValidationError) {
+			throw new ApiError(
+				'File too large. Please upload a file smaller than 5MB.',
+				STATUS_CODE.PAYLOAD_TOO_LARGE
+			);
+		}
+
+		const { title, subtitle, location, date, mapLink, description } = req.body;
+		let eventImage = null;
+
+		if (req.file && req.file.path) {
+			eventImage = fs.readFileSync(req.file.path);
+		}
+
+		const reference = `WEVENT${date.replaceAll('-', '')}`;
+
+		const existingEvent = await Event.findOne({ reference: reference });
+		if (existingEvent) {
+			throw new ApiError(
+				`An event with the same reference ${reference} is already created.`,
+				STATUS_CODE.FORBIDDEN
+			);
+		}
+
+		const newEvent = new Event({
+			reference: reference,
+			title: title,
+			subtitle: subtitle,
+			image: eventImage,
+			location: location,
+			date: date,
+			mapLink: mapLink,
+			description: description,
+		});
+
+		const result = await newEvent.save();
+
+		if (req.file && req.file.path) {
+			const filePath = path.join(__dirname, '../..', req.file.path); // Adjust the path as needed
+			fs.unlink(filePath, (err) => {
+				if (err) {
+					console.error('Failed to delete file:', err);
+				}
 			});
 		}
-	});
-	const event = new Event({
-		reference: reference,
-		title: title,
-		subtitle: subtitle,
-		image: eventImage,
-		location: location,
-		date: date,
-		mapLink: mapLink,
-		description: description,
-	});
-	event
-		.save()
-		.then((result) => {
-			if (path !== undefined)
-				fs.unlink(path, function (err) {
-					if (err) return console.log(err);
-					console.log('file deleted successfully');
-				});
-			return res.status(STATUS_CODE.CREATED).json({
-				message: 'Event created successfully!',
-				post: event,
-			});
-		})
-		.catch((err) => {
-			if (!err.statusCode) {
-				err.statusCode = STATUS_CODE.INTERNAL_SERVER;
-			}
-			next(err);
-		});
+
+		return result;
+	} catch (err) {
+		throw err;
+	}
 };
 
 exports.deleteEvent = (req, res, next) => {
@@ -174,7 +186,6 @@ exports.confirmPresence = (req, res, next) => {
 				throw new ApiError(
 					`Event with reference ${reference} not found.`,
 					STATUS_CODE.NOT_FOUND,
-					null,
 					['reference']
 				);
 			}
@@ -189,11 +200,7 @@ exports.confirmPresence = (req, res, next) => {
 			);
 
 			if (isAlreadyParticipating) {
-				throw new ApiError(
-					"You're already participating in this event!",
-					403,
-					null
-				);
+				throw new ApiError("You're already participating in this event!", 403);
 			}
 
 			// Fetch all events the user is participating in
@@ -207,8 +214,7 @@ exports.confirmPresence = (req, res, next) => {
 				const { title, reference, date } = futureEvent;
 				throw new ApiError(
 					`You're already participating in another future event: ${reference}`,
-					403,
-					{ title, reference, date }
+					403
 				);
 			}
 

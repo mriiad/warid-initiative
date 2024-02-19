@@ -1,3 +1,5 @@
+import { format } from 'date-fns';
+
 export const extractLatLng = (
 	url: string
 ): { latitude: number; longitude: number } => {
@@ -12,4 +14,9 @@ export const extractLatLng = (
 	} else {
 		return null;
 	}
+};
+
+export const formatDate = (dateString) => {
+	if (!dateString) return '';
+	return format(new Date(dateString), 'yyyy-MM-dd');
 };

@@ -1,16 +1,15 @@
 import { OpenInNew } from '@mui/icons-material';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useAuth } from '../auth/AuthContext';
-import { MutationErrorWithData, useTypedMutation } from '../hook/useTypedHook';
-import { confirmEventPresence } from '../utils/queries';
+import { useAuth } from '../../auth/AuthContext';
+import {
+	MutationErrorWithData,
+	useTypedMutation,
+} from '../../hook/useTypedHook';
+import { confirmEventPresence } from '../../utils/queries';
 
 interface SuccessfulResponse {
 	message: string;
-}
-
-interface ApiErrorDetails {
-	reference?: string;
 }
 
 const EventConfirmation: React.FC = () => {
@@ -27,7 +26,6 @@ const EventConfirmation: React.FC = () => {
 	>(() => confirmEventPresence(reference, token), {
 		onSuccess: ({ message }) => {
 			setIsConfirmed(true);
-			console.log(message); // Optionally, log the success message
 			setTimeout(() => navigate('/events'), 3000);
 		},
 		onError: (error) => {

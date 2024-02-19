@@ -28,6 +28,13 @@ const LogoContainer = styled.div`
 	display: flex;
 	align-items: center;
 	cursor: pointer;
+	background-color: transparent;
+	padding: 12px;
+	border-width: 0.8px;
+	overflow: visible;
+	border: 2px solid rgb(255 255 255 / 25%);
+	border-radius: 18px;
+	box-shadow: 0px 4px 20px 0px rgba(255, 48, 103, 0.3);
 `;
 
 const useStyles = makeStyles({

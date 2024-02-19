@@ -49,16 +49,9 @@ Here are some functionalities to test (please replace the port by the one mentio
 ```
 {
     "username": "username",
-    "firstName": "First Name",
-    "lastName": "Last Name",
-    "birthDate": "2002-12-09",
     "email": "email@email.com",
-    "gender": "male",
     "password": "password",
     "phoneNumber": "0000000000",
-    "bloodGroup": "Aplus",
-    "lastDonationDate": "2022-01-01",
-    "donationType": "blood"
 }
 ```
 

@@ -27,7 +27,7 @@ const transporter = nodemailer.createTransport({
 
 exports.signup = (req, res, next) => {
 	const body = req.body;
-	const { username, email, password, phoneNumber } = body;
+	const { username, email, password, gender, phoneNumber } = body;
 	const errors = validationResult(req);
 	if (!errors.isEmpty()) {
 		const error = new Error('Validation failed.');
@@ -44,6 +44,7 @@ exports.signup = (req, res, next) => {
 				email,
 				password: hashedPw,
 				phoneNumber,
+				gender,
 				isAdmin: false,
 				isActive: false,
 				confirmationCode: token,

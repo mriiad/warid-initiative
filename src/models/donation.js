@@ -5,10 +5,6 @@ const Schema = mongoose.Schema;
  */
 
 const DonationSchema = new Schema({
-	bloodGroup: {
-		type: String,
-		required: true,
-	},
 	lastDonationDate: {
 		type: Date,
 		required: false,

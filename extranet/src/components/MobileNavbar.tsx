@@ -1,7 +1,8 @@
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
+import EmailIcon from '@mui/icons-material/Email';
 import EventIcon from '@mui/icons-material/Event';
+import FavoriteIcon from '@mui/icons-material/Favorite';
 import HomeIcon from '@mui/icons-material/Home';
-import InfoIcon from '@mui/icons-material/Info';
 import { makeStyles } from '@mui/styles';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
@@ -33,21 +34,29 @@ const useStyles = makeStyles({
 
 const MobileNavbar = () => {
 	const { token, isAdmin } = useAuth();
-	const { icon, activeIcon } = useStyles();
+	const { navbar, icon, activeIcon } = useStyles();
 	const location = useLocation();
 	const currentRoute = location.pathname;
 
 	return (
-		<div className={useStyles().navbar}>
+		<div className={navbar}>
 			<Link to='/'>
 				<HomeIcon className={currentRoute === '/' ? activeIcon : icon} />
 			</Link>
-			<Link to='/about'>
-				<InfoIcon className={currentRoute === '/about' ? activeIcon : icon} />
-			</Link>
+
 			<Link to='/events?page=1'>
 				<EventIcon
 					className={currentRoute.startsWith('/events') ? activeIcon : icon}
+				/>
+			</Link>
+			<Link to='/donate'>
+				<FavoriteIcon
+					className={currentRoute === '/donate' ? activeIcon : icon}
+				/>
+			</Link>
+			<Link to='/contact'>
+				<EmailIcon
+					className={currentRoute === '/contact' ? activeIcon : icon}
 				/>
 			</Link>
 			{token && isAdmin && (
