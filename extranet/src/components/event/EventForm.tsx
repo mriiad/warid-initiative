@@ -66,7 +66,7 @@ const EventForm: React.FC = () => {
 			setIsSuccessResponse(false);
 			setIsErrorResponse(true);
 			setErrorMessage(
-				error.response?.data?.errorMessage || 'An error occurred.'
+				error.data?.errorMessage || 'Error while creating the event'
 			);
 			if (error.response?.data?.errorKeys) {
 				error.response.data.errorKeys.forEach((key: string) => {
@@ -78,7 +78,7 @@ const EventForm: React.FC = () => {
 
 	const handleCreateAnotherEvent = () => {
 		setIsFormSubmitted(false);
-		reset();
+		if (isSuccessResponse) reset();
 	};
 
 	const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -94,7 +94,7 @@ const EventForm: React.FC = () => {
 					responseMessage={'Event created successfully!'}
 					actionMessage={'Want to create more ? click belows'}
 					isSuccess={isSuccessResponse}
-					isError={isErrorResponse}
+					isError={!isSuccessResponse && isErrorResponse}
 					errorMessage={errorMessage}
 				/>
 				<Button
@@ -102,7 +102,9 @@ const EventForm: React.FC = () => {
 					className={button}
 					style={{ marginTop: '20px' }}
 				>
-					Create Another Event
+					{isSuccessResponse
+						? 'Create Another Event'
+						: 'Back To Event Creation'}
 				</Button>
 			</FormContainer>
 		);

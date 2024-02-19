@@ -2,10 +2,13 @@ const bodyParser = require('body-parser');
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
+const errorHandler = require('./middleware/error-handler');
 const authRouter = require('./routes/auth');
+const userRouter = require('./routes/user');
 const donationRouter = require('./routes/donation');
 const userRouter = require('./routes/user');
 const eventRouter = require('./routes/event');
+const contactRouter = require('./routes/contact');
 const path = require('path');
 
 const config = require('../config.json');
@@ -19,18 +22,19 @@ app.use(cors());
 app.use(bodyParser.json());
 
 app.use(authRouter);
-
-app.use(userRouter);
-
 app.use(donationRouter);
 
 app.use(eventRouter);
+app.use(contactRouter);
 
 app.use(express.static(path.join(__dirname, '../extranet/build')));
 
 app.get('*', (req, res) => {
 	res.sendFile(path.join(__dirname, '../extranet/build', 'index.html'));
 });
+
+// Use the error-handling middleware
+app.use(errorHandler);
 
 mongoose
 	.connect(

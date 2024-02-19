@@ -11,7 +11,6 @@ exports.isAuth = (req, res, next) => {
 		throw error;
 	}
 	const token = authHeader.split(' ')[1];
-	console.log('token', token);
 	let decodedToken;
 	try {
 		decodedToken = jwt.verify(token, config.authConfig.SECRET_KEY);

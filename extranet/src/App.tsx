@@ -5,7 +5,8 @@ import styled from 'styled-components';
 import { useAuth } from './auth/AuthContext';
 import AdminComponent from './components/AdminComponent';
 import CanDonate from './components/CanDonate';
-import DonationComponent from './components/DonationComponent';
+import ContactForm from './components/ContactForm';
+import DonationComponent from './components/DonationComponents';
 import LoginForm from './components/LoginForm';
 import MobileHeader from './components/MobileHeader';
 import MobileNavbar from './components/MobileNavbar';
@@ -15,6 +16,7 @@ import PasswordResetForm from './components/PasswordResetForm';
 import ResetPasswordForm from './components/ResetPasswordForm';
 import SignupForm from './components/SignupForm';
 import UsersComponent from './components/UsersComponent';
+import UserProfileForm from './components/UserProfileForm';
 import EventConfirmation from './components/event/EventConfirmation';
 import EventDetail from './components/event/EventDetail';
 import EventForm from './components/event/EventForm';
@@ -63,6 +65,7 @@ const App = () => {
 							<Route path='/' element={<Navigate replace to='/signup' />} />
 							<Route path='/signup' element={<SignupForm />} />
 							<Route path='/login' element={<LoginForm />} />
+							<Route path='/update-profile' element={<UserProfileForm />} />
 							<Route path='/events' element={<EventsComponent />} />
 							{isAdmin && (
 								<Route path='/events/create' element={<EventForm />} />
@@ -73,6 +76,7 @@ const App = () => {
 							</Route>
 							<Route path='/donate' element={<DonationComponent />} />
 							{isAdmin && <Route path='/users' element={<UsersComponent />} />}
+							<Route path='/contact' element={<ContactForm />} />
 							<Route path='/admin' element={<AdminComponent />} />
 							<Route
 								path='/request-reset-password'
