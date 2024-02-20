@@ -2,9 +2,6 @@ const User = require('../models/user');
 const ApiError = require('../utils/errors/ApiError');
 const { STATUS_CODE } = require('../utils/errors/httpStatusCode');
 const Profile = require('../models/profile');
-const User = require('../models/user');
-const ApiError = require('../utils/errors/ApiError');
-const { STATUS_CODE } = require('../utils/errors/httpStatusCode');
 
 // Get all users
 exports.getUsers = async (req, res, next) => {

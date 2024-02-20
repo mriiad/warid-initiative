@@ -6,7 +6,6 @@ const errorHandler = require('./middleware/error-handler');
 const authRouter = require('./routes/auth');
 const userRouter = require('./routes/user');
 const donationRouter = require('./routes/donation');
-const userRouter = require('./routes/user');
 const eventRouter = require('./routes/event');
 const contactRouter = require('./routes/contact');
 const path = require('path');
