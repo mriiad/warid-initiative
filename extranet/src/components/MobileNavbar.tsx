@@ -7,7 +7,6 @@ import { makeStyles } from '@mui/styles';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import colors from '../styles/colors';
-import GroupIcon from '@mui/icons-material/Group';
 
 const useStyles = makeStyles({
 	navbar: {
@@ -62,15 +61,12 @@ const MobileNavbar = () => {
 			</Link>
 			{token && isAdmin && (
 				<>
-				<Link to='/admin'>
-					<AdminPanelSettingsIcon
-						className={currentRoute === '/admin' ? activeIcon : icon}
-					/>
-				</Link>
-                <Link to='/users?page=1'>
-				<GroupIcon className={currentRoute.startsWith('/users') ? activeIcon : icon} />
-			    </Link>
-			  </>
+					<Link to='/admin'>
+						<AdminPanelSettingsIcon
+							className={currentRoute === '/admin' ? activeIcon : icon}
+						/>
+					</Link>
+				</>
 			)}
 		</div>
 	);
