@@ -179,20 +179,7 @@ const Navbar = () => {
 							</li>
 						)}
 						
-						{token && isAdmin && (
-							<li className={routesListItem}>
-								<Link
-									to='/users?page=1'
-									className={`${routesLink} ${
-										selectedRoute === '/users' ? activeLink : ''
-									}`}
-									onClick={() => handleRouteChange('/users?page=1')}
-								>
-									Users
-								</Link>
-							</li>
-							
-						)}
+						
 					</ul>
 				</nav>
 			</div>
