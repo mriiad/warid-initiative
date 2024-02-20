@@ -1,5 +1,6 @@
 const Donation = require('../models/donation');
 const User = require('../models/user');
+const Profile = require('../models/profile');
 const { STATUS_CODE } = require('../utils/errors/httpStatusCode');
 const ApiError = require('../utils/errors/ApiError');
 const mongoose = require('mongoose');
@@ -179,7 +180,25 @@ exports.getDonation = (req, res, next) => {
 				);
 			}
 
-			res.status(STATUS_CODE.OK).json(recentDonation);
+			// Fetch the user's profile to get the bloodGroup
+			return Profile.findOne({ user: new mongoose.Types.ObjectId(userId) })
+				.select('bloodGroup')
+				.then((profile) => {
+					if (!profile) {
+						throw new ApiError(
+							'User profile not found.',
+							STATUS_CODE.NOT_FOUND
+						);
+					}
+
+					// Add bloodGroup to the recentDonation object
+					const donationWithBloodGroup = {
+						...recentDonation.toObject(),
+						bloodGroup: profile.bloodGroup,
+					};
+
+					res.status(STATUS_CODE.OK).json(donationWithBloodGroup);
+				});
 		})
 		.catch((err) => {
 			const statusCode = err.statusCode || STATUS_CODE.INTERNAL_SERVER;

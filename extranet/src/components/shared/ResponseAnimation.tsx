@@ -37,7 +37,7 @@ const animationStyles = makeStyles({
 		animation: '$stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards',
 	},
 	errorAnimation: { margin: '80px auto' },
-	successMessage: { color: colors.purple },
+	successMessage: { color: colors.purple, textAlign: 'center' },
 	errorCheckmark: {
 		width: 100,
 		height: 100,

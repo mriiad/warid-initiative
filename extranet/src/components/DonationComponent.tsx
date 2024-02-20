@@ -81,10 +81,14 @@ const DonationComponent = () => {
 		isError,
 	} = useQuery('donation', fetchDonation, {
 		enabled: !!token,
+		refetchOnWindowFocus: false,
+		refetchOnMount: true,
+		retry: 5,
 	});
 
 	const [showSnackbar, setShowSnackbar] = useState(false);
 	const [reviewSnackbarOpen, setReviewSnackbarOpen] = useState(false);
+	const [isBloodGroupEditable, setIsBloodGroupEditable] = useState(true);
 
 	const defaultLastDonationDate = useMemo(() => {
 		if (isLoading) return '';
@@ -95,10 +99,15 @@ const DonationComponent = () => {
 	}, [donation, error, isLoading, token]);
 
 	useEffect(() => {
+		if (donation) {
+			setValue('bloodGroup', donation.bloodGroup);
+			setIsBloodGroupEditable(!donation.bloodGroup);
+		}
+
 		if (defaultLastDonationDate) {
 			setShowSnackbar(true);
 		}
-	}, [defaultLastDonationDate]);
+	}, [defaultLastDonationDate, donation, setValue]);
 
 	useEffect(() => {
 		// If the user is logged in and there is pending form data, load it
@@ -210,7 +219,11 @@ const DonationComponent = () => {
 										control={control}
 										defaultValue=''
 										render={({ field }) => (
-											<FormControl fullWidth error={Boolean(errors.bloodGroup)}>
+											<FormControl
+												fullWidth
+												error={Boolean(errors.bloodGroup)}
+												disabled={!isBloodGroupEditable}
+											>
 												<InputLabel>Blood Group</InputLabel>
 												<Select {...field}>
 													<MenuItem value=''>
