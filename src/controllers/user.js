@@ -16,7 +16,8 @@ exports.getUsers = async (req, res, next) => {
 			'username email phoneNumber gender isAdmin'
 		)
 			.skip((currentPage - 1) * perPage)
-			.limit(perPage);
+			.limit(perPage)
+            .lean();
 
 		res.status(STATUS_CODE.OK).json({
 			message: 'Fetched users successfully.',
