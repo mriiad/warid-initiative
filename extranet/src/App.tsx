@@ -16,6 +16,7 @@ import PasswordResetForm from './components/PasswordResetForm';
 import ResetPasswordForm from './components/ResetPasswordForm';
 import SignupForm from './components/SignupForm';
 import UserProfileForm from './components/UserProfileForm';
+import UsersComponent from './components/UsersComponent';
 import EventConfirmation from './components/event/EventConfirmation';
 import EventDetail from './components/event/EventDetail';
 import EventForm from './components/event/EventForm';
@@ -74,6 +75,7 @@ const App = () => {
 								<Route path='confirmation' element={<EventConfirmation />} />
 							</Route>
 							<Route path='/donate' element={<DonationComponent />} />
+							{isAdmin && <Route path='/users' element={<UsersComponent />} />}
 							<Route path='/contact' element={<ContactForm />} />
 							<Route path='/admin' element={<AdminComponent />} />
 							<Route

@@ -6,6 +6,7 @@ const { isAuth } = require('../middleware/token-check');
 // Define a route to display users to admin
 userRouter.get('/api/users', getUsers);
 const {
+	getUsers,
 	updateUserInfo,
 	checkUserProfile,
 	getProfile,
