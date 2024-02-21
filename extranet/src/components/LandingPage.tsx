@@ -8,6 +8,9 @@ const useStyles = makeStyles({
 		fontFamily: 'MoroccanFont',
 		src: `url('/moroccan-font.ttf') format('truetype')`,
 	},
+	landingContainer: {
+		margin: '0 -19px',
+	},
 	imageContainer: {
 		display: 'flex',
 		flexDirection: 'row',
@@ -69,7 +72,7 @@ const useStyles = makeStyles({
 		height: 'auto',
 		marginLeft: 'auto',
 		marginRight: 'auto',
-		marginTop: '32px',
+		marginTop: '-42px',
 		opacity: 0,
 		animation: '$fadeInUp 0.5s ease-out forwards',
 		animationDelay: '3s',
@@ -84,6 +87,14 @@ const useStyles = makeStyles({
 		fontSize: '48px',
 		color: colors.purple,
 		fontWeight: 600,
+	},
+	contentBox: {
+		backgroundImage: 'url(/landing-page/main_background.png)',
+		backgroundSize: 'cover',
+		width: '100%',
+		padding: '20px',
+		boxSizing: 'border-box',
+		marginTop: '50px',
 	},
 	noMargin: { margin: 0 },
 	'@keyframes slideIn': {
@@ -107,12 +118,13 @@ const useStyles = makeStyles({
 		},
 	},
 	marginBottomFix: {
-		marginBottom: '60px', // Adjust based on navbar height to ensure visibility of the last element
+		marginBottom: '60px',
 	},
 });
 
 const LandingPage: React.FC = () => {
 	const {
+		landingContainer,
 		imageContainer,
 		blockImage,
 		textParagraph,
@@ -121,11 +133,12 @@ const LandingPage: React.FC = () => {
 		bigNumber,
 		highlightedText,
 		marginBottomFix,
+		contentBox,
 		noMargin,
 	} = useStyles();
 
 	return (
-		<Box>
+		<Box className={landingContainer}>
 			<div className={imageContainer}>
 				<img src='/landing-page/title1.png' alt='Title 1' />
 				<img src='/landing-page/title2.png' alt='Title 2' />
@@ -136,30 +149,32 @@ const LandingPage: React.FC = () => {
 				جمعية مغربية غرضها الرئيسي تحسيس الناس بأهمية التبرع الدوري وتزويد بنك
 				الدم المحلي بكميات كافية من أكياس الدم من أجل مساعدة مرضى السرطان
 			</p>
-			<img
-				src='/landing-page/main1.png'
-				alt='Warid Team'
-				className={mainImage}
-			/>
-			<p className={`${textParagraph} ${highlightedText}`}>نحن</p>
-			<img
-				src='/landing-page/avatar.png'
-				alt='Main Visual'
-				className={`${mainImage} ${avatarImage}`}
-			/>
-			<p className={`${textParagraph} ${bigNumber}`}>100</p>
-			<p className={`${textParagraph} ${highlightedText} ${noMargin}`}>
-				متطوع ومتطوعة
-			</p>
-			<p className={`${textParagraph}`}>
-				تتراوح أعمارهم بين 18 و27 عاماً
-				<br />
-				ذوو معرفة ومؤهلات عالية في مختلف المجالات والتخصصات، يجمعهم هدف مشترك
-				وهو خدمتكم
-			</p>
-			<p className={`${textParagraph} ${highlightedText} ${marginBottomFix}`}>
-				وأنتم الآن
-			</p>
+			<Box className={contentBox}>
+				<img
+					src='/landing-page/main1.png'
+					alt='Warid Team'
+					className={mainImage}
+				/>
+				<p className={`${textParagraph} ${highlightedText}`}>نحن</p>
+				<img
+					src='/landing-page/avatar.png'
+					alt='Main Visual'
+					className={`${mainImage} ${avatarImage}`}
+				/>
+				<p className={`${textParagraph} ${bigNumber}`}>100</p>
+				<p className={`${textParagraph} ${highlightedText} ${noMargin}`}>
+					متطوع ومتطوعة
+				</p>
+				<p className={textParagraph}>
+					تتراوح أعمارهم بين 18 و27 عاماً
+					<br />
+					ذوو معرفة ومؤهلات عالية في مختلف المجالات والتخصصات، يجمعهم هدف مشترك
+					وهو خدمتكم
+				</p>
+				<p className={`${textParagraph} ${highlightedText} ${marginBottomFix}`}>
+					وأنتم الآن
+				</p>
+			</Box>
 		</Box>
 	);
 };
