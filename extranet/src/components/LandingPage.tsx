@@ -9,7 +9,24 @@ const useStyles = makeStyles({
 		src: `url('/moroccan-font.ttf') format('truetype')`,
 	},
 	landingContainer: {
-		margin: '0 -19px',
+		margin: '0 -19px 55px -19px',
+	},
+	mainImageContainer: {
+		margin: '0 -20px',
+		display: 'flex',
+		flexWrap: 'wrap',
+		alignItems: 'center',
+		flexDirection: 'row',
+		justifyContent: 'center',
+		marginBottom: '48px',
+	},
+	mainImageBody: {
+		width: '28%',
+		height: 'auto',
+		margin: '0 -12px',
+		maxWidth: '100%',
+		boxSizing: 'border-box',
+		objectFit: 'cover',
 	},
 	imageContainer: {
 		display: 'flex',
@@ -96,6 +113,45 @@ const useStyles = makeStyles({
 		boxSizing: 'border-box',
 		marginTop: '50px',
 	},
+	textBackground: {
+		width: '180px',
+		height: '48px',
+		margin: 'auto',
+		display: 'flex',
+		borderRadius: '16px',
+		backgroundColor: colors.purple,
+		alignItems: 'center',
+		justifyContent: 'center',
+		'& > p': {
+			fontFamily: 'MoroccanFont',
+			fontSize: '24px',
+			color: 'white',
+		},
+	},
+
+	numberBackground: {
+		padding: '5px',
+		height: '110px',
+		color: 'white',
+		margin: '0 3px',
+		display: 'inline-flex',
+		fontSize: '77px',
+		minWidth: '72px',
+		textAlign: 'center',
+		alignItems: 'center',
+		fontWeight: 'bold',
+		borderRadius: '40px',
+		justifyContent: 'center',
+		backgroundColor: colors.purple,
+		fontFamily: '"Digital Numbers", sans-serif',
+		boxShadow: '-2px -4px 0px 0px #3b2a8261',
+	},
+	numbersContainer: {
+		display: 'flex',
+		justifyContent: 'center',
+		alignItems: 'center',
+		margin: '30px 0',
+	},
 	noMargin: { margin: 0 },
 	'@keyframes slideIn': {
 		from: {
@@ -125,6 +181,8 @@ const useStyles = makeStyles({
 const LandingPage: React.FC = () => {
 	const {
 		landingContainer,
+		mainImageContainer,
+		mainImageBody,
 		imageContainer,
 		blockImage,
 		textParagraph,
@@ -134,8 +192,13 @@ const LandingPage: React.FC = () => {
 		highlightedText,
 		marginBottomFix,
 		contentBox,
+		textBackground,
+		numberBackground,
+		numbersContainer,
 		noMargin,
 	} = useStyles();
+
+	const donorsTotal = ['8', '4', '7', '5', '0'];
 
 	return (
 		<Box className={landingContainer}>
@@ -174,6 +237,38 @@ const LandingPage: React.FC = () => {
 				<p className={`${textParagraph} ${highlightedText} ${marginBottomFix}`}>
 					وأنتم الآن
 				</p>
+				<div className={mainImageContainer}>
+					<img
+						src='/landing-page/donor1.png'
+						alt='Donor 1'
+						className={mainImageBody}
+					/>
+					<img
+						src='/landing-page/donor2.png'
+						alt='Donor 2'
+						className={mainImageBody}
+					/>
+					<img
+						src='/landing-page/donor3.png'
+						alt='Donor 3'
+						className={mainImageBody}
+					/>
+					<img
+						src='/landing-page/donor4.png'
+						alt='Donor 4'
+						className={mainImageBody}
+					/>
+				</div>
+				<div className={textBackground}>
+					<p>متبرع دوري</p>
+				</div>
+				<div className={numbersContainer}>
+					{donorsTotal.map((number, index) => (
+						<Box key={index} className={numberBackground}>
+							{number}
+						</Box>
+					))}
+				</div>
 			</Box>
 		</Box>
 	);
