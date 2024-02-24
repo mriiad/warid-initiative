@@ -18,7 +18,7 @@ const useStyles = makeStyles({
 		alignItems: 'center',
 		flexDirection: 'row',
 		justifyContent: 'center',
-		marginBottom: '48px',
+		marginBottom: '15px',
 	},
 	mainImageBody: {
 		width: '28%',
@@ -113,19 +113,34 @@ const useStyles = makeStyles({
 		boxSizing: 'border-box',
 		marginTop: '50px',
 	},
-	textBackground: {
+	textBackgroundContainer: {
 		width: '180px',
-		height: '48px',
+		height: '72px',
 		margin: 'auto',
-		display: 'flex',
-		borderRadius: '16px',
-		backgroundColor: colors.purple,
-		alignItems: 'center',
-		justifyContent: 'center',
-		'& > p': {
-			fontFamily: 'MoroccanFont',
-			fontSize: '24px',
-			color: 'white',
+		'& > img': {
+			position: 'relative',
+			zIndex: 1,
+			width: '20%',
+			height: 'auto',
+			display: 'block',
+			marginLeft: 'auto',
+			marginRight: 'auto',
+			marginBottom: '-30px',
+		},
+		'& > div': {
+			height: '48px',
+			display: 'flex',
+			borderRadius: '16px',
+			backgroundColor: colors.purple,
+			alignItems: 'center',
+			justifyContent: 'center',
+			position: 'relative',
+			top: '20px',
+			'& > p': {
+				fontFamily: 'MoroccanFont',
+				fontSize: '24px',
+				color: 'white',
+			},
 		},
 	},
 
@@ -150,7 +165,7 @@ const useStyles = makeStyles({
 		display: 'flex',
 		justifyContent: 'center',
 		alignItems: 'center',
-		margin: '30px 0',
+		margin: '24px 0',
 	},
 	noMargin: { margin: 0 },
 	'@keyframes slideIn': {
@@ -192,7 +207,7 @@ const LandingPage: React.FC = () => {
 		highlightedText,
 		marginBottomFix,
 		contentBox,
-		textBackground,
+		textBackgroundContainer,
 		numberBackground,
 		numbersContainer,
 		noMargin,
@@ -259,8 +274,14 @@ const LandingPage: React.FC = () => {
 						className={mainImageBody}
 					/>
 				</div>
-				<div className={textBackground}>
-					<p>متبرع دوري</p>
+				<div className={textBackgroundContainer}>
+					<img
+						src='/landing-page/heart-with-background.png'
+						alt='Heart with background'
+					/>
+					<div>
+						<p>متبرع دوري</p>
+					</div>
 				</div>
 				<div className={numbersContainer}>
 					{donorsTotal.map((number, index) => (
