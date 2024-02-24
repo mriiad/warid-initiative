@@ -2,6 +2,7 @@ import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import React from 'react';
 import colors from '../styles/colors';
+import PhotoGallery from './PhotoGallery';
 
 const useStyles = makeStyles({
 	'@font-face': {
@@ -96,7 +97,7 @@ const useStyles = makeStyles({
 	},
 	avatarImage: {
 		maxWidth: '20%',
-		marginTop: '20px',
+		marginTop: '0',
 		marginBottom: '8px',
 	},
 	bigNumber: {
@@ -143,7 +144,6 @@ const useStyles = makeStyles({
 			},
 		},
 	},
-
 	numberBackground: {
 		padding: '5px',
 		height: '110px',
@@ -167,6 +167,14 @@ const useStyles = makeStyles({
 		alignItems: 'center',
 		margin: '24px 0',
 	},
+	gallery: {
+		marginTop: '48px',
+		paddingTop: '8px',
+		height: '352px',
+		'& > p': {
+			color: 'white',
+		},
+	},
 	noMargin: { margin: 0 },
 	'@keyframes slideIn': {
 		from: {
@@ -188,8 +196,9 @@ const useStyles = makeStyles({
 			opacity: 1,
 		},
 	},
-	marginBottomFix: {
-		marginBottom: '60px',
+	title: {
+		fontSize: '50px',
+		margin: '36px 0 24px 0',
 	},
 });
 
@@ -205,9 +214,10 @@ const LandingPage: React.FC = () => {
 		avatarImage,
 		bigNumber,
 		highlightedText,
-		marginBottomFix,
+		title,
 		contentBox,
 		textBackgroundContainer,
+		gallery,
 		numberBackground,
 		numbersContainer,
 		noMargin,
@@ -233,7 +243,7 @@ const LandingPage: React.FC = () => {
 					alt='Warid Team'
 					className={mainImage}
 				/>
-				<p className={`${textParagraph} ${highlightedText}`}>نحن</p>
+				<p className={`${textParagraph} ${highlightedText} ${title}`}>نحن</p>
 				<img
 					src='/landing-page/avatar.png'
 					alt='Main Visual'
@@ -249,7 +259,7 @@ const LandingPage: React.FC = () => {
 					ذوو معرفة ومؤهلات عالية في مختلف المجالات والتخصصات، يجمعهم هدف مشترك
 					وهو خدمتكم
 				</p>
-				<p className={`${textParagraph} ${highlightedText} ${marginBottomFix}`}>
+				<p className={`${textParagraph} ${highlightedText} ${title}`}>
 					وأنتم الآن
 				</p>
 				<div className={mainImageContainer}>
@@ -289,6 +299,12 @@ const LandingPage: React.FC = () => {
 							{number}
 						</Box>
 					))}
+				</div>
+				<div className={gallery}>
+					<p className={`${textParagraph} ${highlightedText} ${title}`}>
+						معرض الصور
+					</p>
+					<PhotoGallery />
 				</div>
 			</Box>
 		</Box>
