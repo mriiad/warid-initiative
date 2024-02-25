@@ -138,34 +138,31 @@ const Navbar = () => {
 						<li className={routesListItem}>
 							<Link
 								to='/'
-								className={`${routesLink} ${
-									selectedRoute === '/' ? activeLink : ''
-								}`}
+								className={`${routesLink} ${selectedRoute === '/' ? activeLink : ''
+									}`}
 								onClick={() => handleRouteChange('/')}
 							>
-								Home
+								الرئيسية
 							</Link>
 						</li>
 						<li className={routesListItem}>
 							<Link
 								to='/about'
-								className={`${routesLink} ${
-									selectedRoute === '/about' ? activeLink : ''
-								}`}
+								className={`${routesLink} ${selectedRoute === '/about' ? activeLink : ''
+									}`}
 								onClick={() => handleRouteChange('/about')}
 							>
-								About
+								بخصوص
 							</Link>
 						</li>
 						<li className={routesListItem}>
 							<Link
 								to='/events?page=1'
-								className={`${routesLink} ${
-									selectedRoute === '/events' ? activeLink : ''
-								}`}
+								className={`${routesLink} ${selectedRoute === '/events' ? activeLink : ''
+									}`}
 								onClick={() => handleRouteChange('/events?page=1')}
 							>
-								Events
+								الفعاليات
 							</Link>
 						</li>
 						{token && isAdmin && (
@@ -177,23 +174,25 @@ const Navbar = () => {
 									}`}
 									onClick={() => handleRouteChange('/admin')}
 								>
-									Admin
+									المشرف
 								</Link>
 							</li>
 						)}
+						
+						
 					</ul>
 				</nav>
 			</div>
 			<div className={mainButton}>
 				{token ? (
 					<ActionButton
-						title='Logout'
+						title='تسجيل الخروج'
 						icon={<ArrowCircleLeftIcon className={loginIcon} />}
 						onClick={() => handleLogout()}
 					/>
 				) : (
 					<ActionButton
-						title='Login'
+						title='تسجيل الدخول'
 						icon={<ArrowCircleRightIcon className={loginIcon} />}
 						onClick={() => navigate('/login')}
 					/>

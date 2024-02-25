@@ -186,16 +186,16 @@ const DonationComponent = () => {
 	return (
 		<FormContainer>
 			<Typography variant='h2' align='center' gutterBottom className={signUp}>
-				Donate
+			    تبرع
 				<span className={bar}></span>
 			</Typography>
 			<Typography variant='h6' align='center' gutterBottom>
 				<span className={subTitle}>
-					Be the
+				    كن أنت 
 					<section className={wrapper}>
-						<div className={`${topBottom} ${top}`}>H E E E E R O !</div>
+						<div className={`${topBottom} ${top}`}>!البطل</div>
 						<div className={`${topBottom} ${bottom}`} aria-hidden='true'>
-							H E E E E R O !
+						   !البطل
 						</div>
 					</section>
 				</span>
@@ -224,7 +224,7 @@ const DonationComponent = () => {
 												error={Boolean(errors.bloodGroup)}
 												disabled={!isBloodGroupEditable}
 											>
-												<InputLabel>Blood Group</InputLabel>
+												<InputLabel>فصيلة الدم</InputLabel>
 												<Select {...field}>
 													<MenuItem value=''>
 														<em>None</em>
@@ -239,7 +239,7 @@ const DonationComponent = () => {
 													<MenuItem value='O-'>O-</MenuItem>
 												</Select>
 												<FormHelperText>
-													{errors.bloodGroup ? 'Blood Group is required' : ''}
+													{errors.bloodGroup ? 'فصيلة الدم مطلوبة' : ''}
 												</FormHelperText>
 											</FormControl>
 										)}
@@ -253,7 +253,7 @@ const DonationComponent = () => {
 										render={({ field }) => (
 											<TextField
 												fullWidth
-												label='Last Donation Date'
+												label='تاريخ آخر تبرع'
 												type='date'
 												InputLabelProps={{
 													shrink: true,
@@ -261,7 +261,7 @@ const DonationComponent = () => {
 												{...field}
 												error={Boolean(errors.lastDonationDate)}
 												helperText={
-													errors.lastDonationDate ? 'Invalid Date' : ''
+													errors.lastDonationDate ? 'تاريخ غير صالح' : ''
 												}
 											/>
 										)}
@@ -277,17 +277,17 @@ const DonationComponent = () => {
 												fullWidth
 												error={Boolean(errors.donationType)}
 											>
-												<InputLabel>Donation Type</InputLabel>
+												<InputLabel>نوع التبرع</InputLabel>
 												<Select {...field}>
 													<MenuItem value=''>
-														<em>None</em>
+														<em>لا شيء</em>
 													</MenuItem>
-													<MenuItem value='Blood'>Blood</MenuItem>
-													<MenuItem value='Plates'>Plates</MenuItem>
+													<MenuItem value='Blood'>الدم</MenuItem>
+													<MenuItem value='Plates'>الصفائح</MenuItem>
 												</Select>
 												<FormHelperText>
 													{errors.donationType
-														? 'Donation Type is required'
+														? 'نوع التبرع مطلوب'
 														: ''}
 												</FormHelperText>
 											</FormControl>
@@ -303,17 +303,17 @@ const DonationComponent = () => {
 										render={({ field }) => (
 											<TextField
 												fullWidth
-												label='Disease'
+												label='المرض'
 												{...field}
 												error={Boolean(errors.disease)}
-												helperText={errors.disease ? 'Disease is required' : ''}
+												helperText={errors.disease ? 'المرض مطلوب' : ''}
 											/>
 										)}
 									/>
 								</Grid>
 								<Grid item xs={12}>
 									<Button type='submit' className={button}>
-										Donate
+									   تبرع 
 									</Button>
 								</Grid>
 							</Grid>

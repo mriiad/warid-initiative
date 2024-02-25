@@ -19,23 +19,24 @@ const SignupForm = () => {
 
 	const navigate = useNavigate();
 
-	const signUpMutation = useMutation((data: FormData) => {
+	const signUpMutation = useMutation((data: SignupFormData) => {
 		return axios.put('http://localhost:3000/api/auth/signup', data);
 	});
 
 	const [, setIsFormSubmitted] = useState<boolean>(false);
-	const onSubmit = (formData: FormData) => {
+	const onSubmit = (formData: SignupFormData) => {
 		signUpMutation.mutate(formData, {
-			onSuccess: () => {
-				console.log('Form submitted successfully!');
-				setIsFormSubmitted(true);
-				navigate('/login?new-user');
-			},
-			onError: (error) => {
-				console.error('Error submitting form:', error);
-			},
+		  onSuccess: () => {
+			console.log('Form submitted successfully!');
+			setIsFormSubmitted(true);
+			navigate('/login?new-user');
+		  },
+		  onError: (error) => {
+			console.error('Error submitting form:', error);
+		  },
 		});
-	};
+	  };
+	  
 
 	const [, setPhoneNumber] = useState('');
 	const onChange = (e) => {
@@ -47,19 +48,19 @@ const SignupForm = () => {
 
 	const validateEmail = (value) => {
 		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-		return emailRegex.test(value) || 'Please enter a valid email address.';
+		return emailRegex.test(value) || 'الرجاء إدخال عنوان بريد إلكتروني صالح.';
 	};
 
 	return (
 		<FormContainer>
 			<Typography variant='h2' align='center' gutterBottom className={signUp}>
-				Sign Up
+			    التسجيل 
 				<span className={bar}></span>
 			</Typography>
 			<Typography variant='h6' align='center' gutterBottom>
-				<span className={subTitle}>Do you have an account? </span>
+				<span className={subTitle}>هل لديك حساب؟ </span>
 				<span className={textButton} onClick={() => navigate('/login')}>
-					Login
+				    تسجيل الدخول      
 				</span>
 			</Typography>
 			<form onSubmit={handleSubmit(onSubmit)} className={form}>
@@ -72,11 +73,11 @@ const SignupForm = () => {
 							render={({ field }) => (
 								<TextField
 									fullWidth
-									label='CIN'
+									label='رقم الهوية الوطنية'
 									required
 									{...field}
 									error={Boolean(errors.username)}
-									helperText={errors.username ? 'Username is required' : ''}
+									helperText={errors.username ? 'اسم المستخدم مطلوب' : ''}
 								/>
 							)}
 						/>
@@ -89,7 +90,7 @@ const SignupForm = () => {
 							render={({ field }) => (
 								<TextField
 									fullWidth
-									label='Email'
+									label='البريد الإلكتروني'
 									required
 									{...field}
 									error={Boolean(errors.email)}
@@ -97,7 +98,7 @@ const SignupForm = () => {
 								/>
 							)}
 							rules={{
-								required: 'Email is required',
+								required: 'البريد الإلكتروني مطلوب',
 								validate: validateEmail,
 							}}
 						/>
@@ -112,10 +113,10 @@ const SignupForm = () => {
 									fullWidth
 									type='password'
 									required
-									label='Password'
+									label='كلمة المرور'
 									{...field}
 									error={Boolean(errors.password)}
-									helperText={errors.password ? 'Password is required' : ''}
+									helperText={errors.password ? 'كلمة المرور مطلوبة' : ''}
 								/>
 							)}
 						/>
@@ -128,19 +129,19 @@ const SignupForm = () => {
 							render={({ field }) => (
 								<TextField
 									fullWidth
-									label='Phone number'
+									label='رقم الهاتف'
 									type='tel'
 									required
 									{...field}
 									error={Boolean(errors.username)}
-									helperText={errors.username ? 'Username is required' : ''}
+									helperText={errors.username ? 'اسم المستخدم مطلوب' : ''}
 								/>
 							)}
 						/>
 					</Grid>
 					<Grid item xs={12}>
 						<Button type='submit' className={button}>
-							Submit
+						   إرسال 
 						</Button>
 					</Grid>
 				</Grid>

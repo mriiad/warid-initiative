@@ -60,11 +60,13 @@ const MobileNavbar = () => {
 				/>
 			</Link>
 			{token && isAdmin && (
-				<Link to='/admin'>
-					<AdminPanelSettingsIcon
-						className={currentRoute === '/admin' ? activeIcon : icon}
-					/>
-				</Link>
+				<>
+					<Link to='/admin'>
+						<AdminPanelSettingsIcon
+							className={currentRoute === '/admin' ? activeIcon : icon}
+						/>
+					</Link>
+				</>
 			)}
 		</div>
 	);

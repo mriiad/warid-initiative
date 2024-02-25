@@ -53,21 +53,21 @@ const CanDonate: React.FC = () => {
 					<CircularProgress />
 				) : canDonate === null ? (
 					<Typography className={resultMessage}>
-						Unable to determine eligibility.
+						غير قادر على تحديد الأهلية.
 					</Typography>
 				) : canDonate ? (
 					<Typography className={resultMessage}>
-						Based on your last donation date, you are allowed to donate.
+						بناءً على تاريخ تبرعك الأخير، يُسمح لك بالتبرع.
 					</Typography>
 				) : (
 					<Typography className={resultMessage}>
-						Sorry, you are not allowed to donate.
+						عذرًا، لا يُسمح لك بالتبرع.
 					</Typography>
 				)}
 			</CardComponent>
 
 			<Button className={confirmButton} onClick={handleConfirmClick}>
-				Confirm
+				تأكيد
 			</Button>
 		</>
 	);

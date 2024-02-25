@@ -110,8 +110,8 @@ const ContactForm = () => {
 		return (
 			<FormContainer className={formWrapper}>
 				<ResponseAnimation
-					responseMessage='Your message has been sent successfully!'
-					actionMessage='We will get back to you shortly.'
+					responseMessage='تم إرسال رسالتك بنجاح!'
+					actionMessage='سنقوم بالرد عليك قريبًا.'
 					isSuccess={isSuccessResponse}
 					isError={isErrorResponse}
 					errorMessage={errorMessage}
@@ -121,7 +121,7 @@ const ContactForm = () => {
 					className={button}
 					style={{ marginTop: '20px' }}
 				>
-					Send another message
+					إرسال رسالة أخرى
 				</Button>
 			</FormContainer>
 		);
@@ -130,7 +130,7 @@ const ContactForm = () => {
 	return (
 		<FormContainer className={align}>
 			<Typography variant='h2' align='center' gutterBottom className={signUp}>
-				Contact Us
+				تواصل معنا
 				<span className={bar}></span>
 			</Typography>
 			<form onSubmit={handleSubmit(onSubmit)} className={form}>
@@ -143,12 +143,12 @@ const ContactForm = () => {
 								render={({ field }) => (
 									<TextField
 										fullWidth
-										label='First Name'
+										label='الاسم الشخصي '
 										required
 										{...field}
 										error={Boolean(errors.firstname)}
 										helperText={
-											errors.firstname ? 'First name is required' : ''
+											errors.firstname ? 'الاسم الشخصي مطلوب' : ''
 										}
 									/>
 								)}
@@ -163,11 +163,11 @@ const ContactForm = () => {
 								render={({ field }) => (
 									<TextField
 										fullWidth
-										label='Last Name'
+										label='الاسم العائلي'
 										required
 										{...field}
 										error={Boolean(errors.lastname)}
-										helperText={errors.lastname ? 'Last name is required' : ''}
+										helperText={errors.lastname ? 'الاسم العائلي مطلوب' : ''}
 									/>
 								)}
 							/>
@@ -181,11 +181,11 @@ const ContactForm = () => {
 								render={({ field }) => (
 									<TextField
 										fullWidth
-										label='Email'
+										label='البريد الإلكتروني'
 										required
 										{...field}
 										error={Boolean(errors.email)}
-										helperText={errors.email ? 'Email is required' : ''}
+										helperText={errors.email ? 'البريد الإلكتروني مطلوب' : ''}
 									/>
 								)}
 							/>
@@ -199,12 +199,12 @@ const ContactForm = () => {
 								render={({ field }) => (
 									<TextField
 										fullWidth
-										label='Phone Number'
+										label='رقم الهاتف'
 										required
 										{...field}
 										error={Boolean(errors.phoneNumber)}
 										helperText={
-											errors.phoneNumber ? 'Phone number is required' : ''
+											errors.phoneNumber ? 'رقم الهاتف مطلوب' : ''
 										}
 									/>
 								)}
@@ -218,11 +218,11 @@ const ContactForm = () => {
 							render={({ field }) => (
 								<TextField
 									fullWidth
-									label='Subject'
+									label='الموضوع'
 									required
 									{...field}
 									error={Boolean(errors.subject)}
-									helperText={errors.subject ? 'Subject is required' : ''}
+									helperText={errors.subject ? 'الموضوع مطلوب' : ''}
 								/>
 							)}
 						/>
@@ -234,20 +234,20 @@ const ContactForm = () => {
 							render={({ field }) => (
 								<TextField
 									fullWidth
-									label='Message'
+									label='الرسالة'
 									required
 									multiline
 									rows={4}
 									{...field}
 									error={Boolean(errors.message)}
-									helperText={errors.message ? 'Message is required' : ''}
+									helperText={errors.message ? 'الرسالة مطلوبة' : ''}
 								/>
 							)}
 						/>
 					</Grid>
 					<Grid item xs={12}>
 						<Button type='submit' className={button}>
-							Submit
+							إرسال
 						</Button>
 					</Grid>
 				</Grid>

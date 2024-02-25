@@ -5,9 +5,16 @@ export default function AdminComponent() {
 	const navigate = useNavigate();
 
 	return (
+		<div>
 		<ActionButton
-			title='Add Event'
+			title='إضافة حدث'
 			onClick={() => navigate('/events/create')}
 		/>
+       
+		<ActionButton
+			title='لائحة المستخدمين'
+			onClick={() => navigate('/users?page=1')}
+		/>
+		</div>
 	);
 }

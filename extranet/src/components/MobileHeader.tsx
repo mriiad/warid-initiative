@@ -78,13 +78,13 @@ const MobileHeader = () => {
 			</LogoContainer>
 			{token ? (
 				<ActionButton
-					title='Logout'
+					title='تسجيل الخروج'
 					icon={<ArrowCircleLeftIcon />}
 					onClick={handleLogout}
 				/>
 			) : (
 				<ActionButton
-					title='Login'
+					title='تسجيل الدخول'
 					icon={<ArrowCircleRightIcon />}
 					onClick={() => navigate('/login')}
 				/>

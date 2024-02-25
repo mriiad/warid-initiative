@@ -91,8 +91,8 @@ const EventForm: React.FC = () => {
 		return (
 			<FormContainer className={formWrapper}>
 				<ResponseAnimation
-					responseMessage={'Event created successfully!'}
-					actionMessage={'Want to create more ? click belows'}
+					responseMessage={'تم إنشاء الحدث بنجاح!'}
+					actionMessage={'هل ترغب في إنشاء المزيد؟ انقر أدناه'}
 					isSuccess={isSuccessResponse}
 					isError={!isSuccessResponse && isErrorResponse}
 					errorMessage={errorMessage}
@@ -103,8 +103,8 @@ const EventForm: React.FC = () => {
 					style={{ marginTop: '20px' }}
 				>
 					{isSuccessResponse
-						? 'Create Another Event'
-						: 'Back To Event Creation'}
+						? 'إنشاء حدث آخر'
+						: 'العودة إلى إنشاء الحدث'}
 				</Button>
 			</FormContainer>
 		);
@@ -113,7 +113,7 @@ const EventForm: React.FC = () => {
 	return (
 		<FormContainer className={formWrapper}>
 			<Typography variant='h4' align='center' className={subTitle}>
-				Create Event
+				إنشاء حدث
 				<span className={bar}></span>
 			</Typography>
 			<form onSubmit={handleSubmit(onSubmit)} className={form}>
@@ -122,11 +122,11 @@ const EventForm: React.FC = () => {
 						<Controller
 							name='title'
 							control={control}
-							rules={{ required: 'Title is required' }}
+							rules={{ required: 'العنوان مطلوب' }}
 							render={({ field }) => (
 								<TextField
 									{...field}
-									label='Title'
+									label='العنوان'
 									error={Boolean(errors.title)}
 									helperText={errors.title?.message}
 								/>
@@ -138,7 +138,7 @@ const EventForm: React.FC = () => {
 						<Controller
 							name='subtitle'
 							control={control}
-							render={({ field }) => <TextField {...field} label='Subtitle' />}
+							render={({ field }) => <TextField {...field} label='العنوان الفرعي' />}
 						/>
 					</Grid>
 
@@ -146,11 +146,11 @@ const EventForm: React.FC = () => {
 						<Controller
 							name='location'
 							control={control}
-							rules={{ required: 'Location is required' }}
+							rules={{ required: 'الموقع مطلوب' }}
 							render={({ field }) => (
 								<TextField
 									{...field}
-									label='Location'
+									label='موقع الحدث'
 									error={Boolean(errors.location)}
 									helperText={errors.location?.message}
 								/>
@@ -162,11 +162,11 @@ const EventForm: React.FC = () => {
 						<Controller
 							name='date'
 							control={control}
-							rules={{ required: 'Date is required' }}
+							rules={{ required: 'التاريخ مطلوب' }}
 							render={({ field }) => (
 								<TextField
 									{...field}
-									label='Date'
+									label='التاريخ'
 									type='date'
 									InputLabelProps={{ shrink: true }}
 									error={Boolean(errors.date)}
@@ -180,7 +180,7 @@ const EventForm: React.FC = () => {
 						<Controller
 							name='mapLink'
 							control={control}
-							render={({ field }) => <TextField {...field} label='Map Link' />}
+							render={({ field }) => <TextField {...field} label='رابط الخريطة' />}
 						/>
 					</Grid>
 
@@ -188,11 +188,11 @@ const EventForm: React.FC = () => {
 						<Controller
 							name='description'
 							control={control}
-							rules={{ required: 'Description is required' }}
+							rules={{ required: 'الوصف مطلوب' }}
 							render={({ field }) => (
 								<TextField
 									{...field}
-									label='Description'
+									label='الوصف'
 									multiline
 									rows={4}
 									error={Boolean(errors.description)}
@@ -203,12 +203,31 @@ const EventForm: React.FC = () => {
 					</Grid>
 
 					<Grid item xs={12}>
-						<input type='file' onChange={handleImageChange} />
+						<label htmlFor="upload-file">
+							<input
+								type="file"
+								id="upload-file"
+								onChange={handleImageChange}
+								style={{ display: 'none' }}
+							/>
+							<Button
+								component="span"
+								variant="contained"
+								
+							>
+								اختر ملف
+							</Button>
+						</label>
+						{image ? (
+							<span>الملف المحدد: {image.name}</span>
+						) : (
+							<span>لم يتم اختيار أي ملف</span>
+						)}
 					</Grid>
 
 					<Grid item xs={12}>
 						<Button type='submit' className={button}>
-							Create Event
+							إنشاء الحدث
 						</Button>
 					</Grid>
 				</Grid>

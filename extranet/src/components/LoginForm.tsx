@@ -11,7 +11,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { useMutation } from 'react-query';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
-import { LoginFormData } from '../data/authData';
+import { LoginFormData, SignupFormData } from '../data/authData';
 import { authStyles, mainStyles } from '../styles/mainStyles';
 import FormContainer from './shared/FormContainer';
 import SnackbarComponent from './shared/SnackbarComponent';
@@ -58,12 +58,12 @@ const LoginForm = () => {
 		}
 	}, [location]);
 
-	const loginMutation = useMutation((data: FormData) => {
+	const loginMutation = useMutation((data: SignupFormData) => {
 		return axios.post('http://localhost:3000/api/auth/login', data);
 	});
 
 	const [, setIsFormSubmitted] = useState<boolean>(false);
-	const onSubmit = (formData: FormData) => {
+	const onSubmit = (formData: SignupFormData) => {
 		loginMutation.mutate(formData, {
 			onSuccess: async (data) => {
 				setToken(data.data.token);
@@ -112,13 +112,13 @@ const LoginForm = () => {
 					<SnackbarComponent
 						open={passwordResetSnackbarOpen}
 						handleClose={() => setPasswordResetSnackbarOpen(false)}
-						message='Your password has been reset successfully!'
+						message='!تمت إعادة تعيين كلمة المرور بنجاح'
 						autoHideDuration={5000}
 					/>
 					<SnackbarComponent
 						open={signUpSnackbarOpen}
 						handleClose={() => setSignUpSnackbarOpen(false)}
-						message='Your account has been successfully created. You can now log in.'
+						message='.تم إنشاء حسابك بنجاح. يمكنك الآن تسجيل الدخول'
 						autoHideDuration={5000}
 					/>
 					<Typography
@@ -127,13 +127,13 @@ const LoginForm = () => {
 						gutterBottom
 						className={signUp}
 					>
-						Log In
+						تسجيل الدخول
 						<span className={bar}></span>
 					</Typography>
 					<Typography variant='h6' align='center' gutterBottom>
-						<span className={subTitle}>Don't have an account? </span>
+						<span className={subTitle}>ليس لديك حساب؟</span>
 						<span className={textButton} onClick={() => navigate('/signup')}>
-							Signup
+							التسجيل
 						</span>
 					</Typography>
 					<form onSubmit={handleSubmit(onSubmit)} className={form}>
@@ -146,11 +146,11 @@ const LoginForm = () => {
 									render={({ field }) => (
 										<TextField
 											fullWidth
-											label='Username'
+											label='اسم المستخدم'
 											required
 											{...field}
 											error={Boolean(errors.username)}
-											helperText={errors.username ? 'Username is required' : ''}
+											helperText={errors.username ? 'اسم المستخدم مطلوب' : ''}
 										/>
 									)}
 								/>
@@ -164,11 +164,11 @@ const LoginForm = () => {
 										<TextField
 											fullWidth
 											type='password'
-											label='Password'
+											label='كلمة المرور'
 											required
 											{...field}
 											error={Boolean(errors.password)}
-											helperText={errors.password ? 'Password is required' : ''}
+											helperText={errors.password ? 'كلمة المرور مطلوبة' : ''}
 										/>
 									)}
 								/>
@@ -180,7 +180,7 @@ const LoginForm = () => {
 									style={{ color: 'white' }}
 									className={button}
 								>
-									Log In
+									تسجيل الدخول
 								</Button>
 							</Grid>
 							<Grid item xs={12}>
@@ -191,7 +191,7 @@ const LoginForm = () => {
 									className={textButton}
 									onClick={() => navigate('/request-reset-password')}
 								>
-									Forgot Password?
+									هل نسيت كلمة المرور؟
 								</Typography>
 							</Grid>
 						</Grid>
