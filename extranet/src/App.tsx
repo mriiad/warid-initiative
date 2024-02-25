@@ -21,10 +21,10 @@ import EventConfirmation from './components/event/EventConfirmation';
 import EventDetail from './components/event/EventDetail';
 import EventForm from './components/event/EventForm';
 import EventsComponent from './components/event/EventsComponent';
+import LandingPage from './components/home/LandingPage';
 
 const AppContainer = styled.div`
-	background: linear-gradient(to left, #e0d1f5, #f6ecf3 48%, #e0d1f5) no-repeat
-		center/cover;
+	position: relative;
 	font-family: Arial, sans-serif;
 	margin: 0;
 	padding: 0;
@@ -32,6 +32,19 @@ const AppContainer = styled.div`
 	flex-direction: column;
 	gap: 48px;
 	min-height: 100vh;
+
+	&:before {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background: url('/background-cover.png') no-repeat center/cover;
+		opacity: 0.07;
+	}
+
+	background: linear-gradient(to left, #e0d1f5, #f6ecf3 48%, #e0d1f5);
 `;
 
 const ContentContainer = styled.div`
@@ -62,7 +75,8 @@ const App = () => {
 					{!isMobile ? <NavBar /> : <MobileHeader />}
 					<ContentContainer>
 						<Routes>
-							<Route path='/' element={<Navigate replace to='/signup' />} />
+							<Route path='/' element={<Navigate replace to='/home' />} />
+							<Route path='/home' element={<LandingPage />} />
 							<Route path='/signup' element={<SignupForm />} />
 							<Route path='/login' element={<LoginForm />} />
 							<Route path='/update-profile' element={<UserProfileForm />} />
