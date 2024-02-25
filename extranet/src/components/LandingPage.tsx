@@ -1,6 +1,6 @@
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import React from 'react';
+import { useEffect, useRef, useState } from 'react';
 import colors from '../styles/colors';
 import PartnersList from './PartnersList';
 import PhotoGallery from './PhotoGallery';
@@ -215,7 +215,7 @@ const useStyles = makeStyles({
 	},
 });
 
-const LandingPage: React.FC = () => {
+const LandingPage = () => {
 	const {
 		landingContainer,
 		mainImageContainer,
@@ -236,8 +236,50 @@ const LandingPage: React.FC = () => {
 		partnersContainer,
 		noMargin,
 	} = useStyles();
+	const numbersRef = useRef(null);
+	const [animatedNumber, setAnimatedNumber] = useState('00000');
+	const [startAnimation, setStartAnimation] = useState(false);
 
-	const donorsTotal = ['8', '4', '7', '5', '0'];
+	useEffect(() => {
+		const observer = new IntersectionObserver(
+			(entries) => {
+				if (entries[0].isIntersecting) {
+					setStartAnimation(true);
+				}
+			},
+			{ threshold: 0.5 }
+		);
+
+		if (numbersRef.current) {
+			observer.observe(numbersRef.current);
+		}
+
+		return () => {
+			observer.disconnect();
+		};
+	}, []);
+
+	useEffect(() => {
+		if (startAnimation) {
+			const targetNumber = 84750;
+			const duration = 3000;
+			const start = performance.now();
+
+			const animateCount = (now) => {
+				const elapsedTime = now - start;
+				const progress = Math.min(elapsedTime / duration, 1);
+				const currentNumber = Math.floor(progress * targetNumber);
+
+				setAnimatedNumber(currentNumber.toString().padStart(5, '0'));
+
+				if (progress < 1) {
+					requestAnimationFrame(animateCount);
+				}
+			};
+
+			requestAnimationFrame(animateCount);
+		}
+	}, [startAnimation]);
 
 	return (
 		<Box className={landingContainer}>
@@ -307,10 +349,10 @@ const LandingPage: React.FC = () => {
 						<p>متبرع دوري</p>
 					</div>
 				</div>
-				<div className={numbersContainer}>
-					{donorsTotal.map((number, index) => (
+				<div className={numbersContainer} ref={numbersRef}>
+					{animatedNumber.split('').map((num, index) => (
 						<Box key={index} className={numberBackground}>
-							{number}
+							{num}
 						</Box>
 					))}
 				</div>
