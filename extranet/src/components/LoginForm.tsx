@@ -59,7 +59,6 @@ const LoginForm = () => {
 	}, [location]);
 
 	const loginMutation = useMutation((data: SignupFormData) => {
-		console.log("################## LOGIN !!")
 		return axios.post('http://localhost:3000/api/auth/login', data);
 	});
 
@@ -134,7 +133,7 @@ const LoginForm = () => {
 					<Typography variant='h6' align='center' gutterBottom>
 						<span className={subTitle}>ليس لديك حساب؟</span>
 						<span className={textButton} onClick={() => navigate('/signup')}>
-						   التسجيل
+							التسجيل
 						</span>
 					</Typography>
 					<form onSubmit={handleSubmit(onSubmit)} className={form}>
