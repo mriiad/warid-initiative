@@ -23,7 +23,7 @@ const PasswordResetForm = () => {
 				console.log('Reset password request sent successfully!');
 				navigate('/login', {
 					state: {
-						resetMessage: 'Please check your email for a password reset link.',
+						resetMessage: '.يرجى التحقق من بريدك الإلكتروني للحصول على رابط إعادة تعيين كلمة المرور',
 					},
 				});
 			})
@@ -35,7 +35,7 @@ const PasswordResetForm = () => {
 	return (
 		<FormContainer>
 			<Typography variant='h2' align='center' gutterBottom className={signUp}>
-				Reset Password
+			   إعادة تعيين كلمة المرور
 				<span className={bar}></span>
 			</Typography>
 			<form onSubmit={handleSubmit(onSubmit)} className={form}>
@@ -48,11 +48,11 @@ const PasswordResetForm = () => {
 							render={({ field }) => (
 								<TextField
 									fullWidth
-									label='Email'
+									label='البريد الإلكتروني'
 									required
 									{...field}
 									error={Boolean(errors.email)}
-									helperText={errors.email ? 'Email is required' : ''}
+									helperText={errors.email ? 'البريد الإلكتروني مطلوب' : ''}
 								/>
 							)}
 						/>
@@ -64,7 +64,7 @@ const PasswordResetForm = () => {
 							className={button}
 							style={{ color: 'white' }}
 						>
-							Send Reset Link
+							إرسال رابط إعادة التعيين
 						</Button>
 					</Grid>
 				</Grid>

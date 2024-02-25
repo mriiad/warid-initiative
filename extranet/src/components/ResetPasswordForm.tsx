@@ -46,14 +46,14 @@ const ResetPasswordForm = () => {
 	const { errorText, forgotPasswordText } = useResetPasswordFormStyles();
 
 	const validatePasswordsMatch = (value: string) => {
-		return value === getValues('password') || 'Passwords do not match';
+		return value === getValues('password') || 'كلمات المرور غير متطابقة';
 	};
 
 	const onSubmit = async (formData: FormData) => {
 		if (formData.password !== formData.confirmPassword) {
 			setError('confirmPassword', {
 				type: 'manual',
-				message: 'Passwords do not match',
+				message: 'كلمات المرور غير متطابقة',
 			});
 			return;
 		}
@@ -91,7 +91,7 @@ const ResetPasswordForm = () => {
 		return (
 			<FormContainer>
 				<Typography variant='h6' align='center'>
-					Checking token validity...
+				     ...التحقق من صحة الرمز
 				</Typography>
 			</FormContainer>
 		);
@@ -101,7 +101,7 @@ const ResetPasswordForm = () => {
 		return (
 			<FormContainer>
 				<Typography variant='h6' className={errorText}>
-					This password reset link is invalid or has expired.
+				   .هذا الرابط لإعادة تعيين كلمة المرور غير صالح أو انتهت صلاحيته
 				</Typography>
 				<Grid container justifyContent='center'>
 					<Grid item className={forgotPasswordText}>
@@ -110,7 +110,7 @@ const ResetPasswordForm = () => {
 							className={textButton}
 							onClick={() => navigate('/request-reset-password')}
 						>
-							Reset again?
+			              إعادة تعيين كلمة المرور مرة أخرى؟
 						</Typography>
 					</Grid>
 				</Grid>
@@ -130,12 +130,12 @@ const ResetPasswordForm = () => {
 						<Controller
 							name='password'
 							control={control}
-							rules={{ required: 'Password is required' }}
+							rules={{ required: 'كلمة المرور مطلوبة' }}
 							render={({ field }) => (
 								<TextField
 									fullWidth
 									type='password'
-									label='New Password'
+									label='كلمة المرور الجديدة'
 									required
 									error={Boolean(errors.password)}
 									helperText={errors.password?.message}
@@ -149,14 +149,14 @@ const ResetPasswordForm = () => {
 							name='confirmPassword'
 							control={control}
 							rules={{
-								required: 'Please confirm your password',
+								required: 'الرجاء تأكيد كلمة المرور',
 								validate: validatePasswordsMatch,
 							}}
 							render={({ field }) => (
 								<TextField
 									fullWidth
 									type='password'
-									label='Confirm New Password'
+									label='تأكيد كلمة المرور الجديدة'
 									required
 									error={Boolean(errors.confirmPassword)}
 									helperText={errors.confirmPassword?.message}
@@ -172,7 +172,7 @@ const ResetPasswordForm = () => {
 							className={button}
 							style={{ color: 'white' }}
 						>
-							Reset Password
+							إعادة تعيين كلمة المرور
 						</Button>
 					</Grid>
 				</Grid>

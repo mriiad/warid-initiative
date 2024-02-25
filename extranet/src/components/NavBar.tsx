@@ -142,7 +142,7 @@ const Navbar = () => {
 									}`}
 								onClick={() => handleRouteChange('/')}
 							>
-								الرئيسية
+								الصفحة الرئيسية
 							</Link>
 						</li>
 						<li className={routesListItem}>
