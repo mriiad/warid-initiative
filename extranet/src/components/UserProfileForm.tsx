@@ -102,9 +102,7 @@ const UserProfileForm = () => {
 			});
 
 			if (missingFields.length > 0) {
-				const formattedMessage = `من فضلك، قم بتوفير التفاصيل التالية ؟ ${missingFields.join(
-					', '
-				)}.`;
+				const formattedMessage = `من فضلك، قم بتوفير التفاصيل المطلوبة أسفله.`;
 				setIncompleteFieldsMessage(formattedMessage);
 				setShowSnackbar(true);
 			}
@@ -127,7 +125,7 @@ const UserProfileForm = () => {
 	return (
 		<FormContainer className={align}>
 			<Typography variant='h2' align='center' gutterBottom className={signUp}>
-				اكمل ملفك الشخصي
+				المرجو إكمال ملفك الشخصي
 				<span className={bar}></span>
 			</Typography>
 			<form onSubmit={handleSubmit(onSubmit)} className={form}>
@@ -220,7 +218,7 @@ const UserProfileForm = () => {
 					</Grid>
 					<Grid item xs={12}>
 						<Button type='submit' className={button}>
-						تحديث
+							تحديث
 						</Button>
 					</Grid>
 				</Grid>
