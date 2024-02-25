@@ -2,6 +2,7 @@ import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import React from 'react';
 import colors from '../styles/colors';
+import PartnersList from './PartnersList';
 import PhotoGallery from './PhotoGallery';
 
 const useStyles = makeStyles({
@@ -19,7 +20,6 @@ const useStyles = makeStyles({
 		alignItems: 'center',
 		flexDirection: 'row',
 		justifyContent: 'center',
-		marginBottom: '15px',
 	},
 	mainImageBody: {
 		width: '28%',
@@ -70,11 +70,11 @@ const useStyles = makeStyles({
 		animationDelay: '2s',
 	},
 	textParagraph: {
+		padding: '0 8px',
 		fontFamily: 'MoroccanFont',
 		textAlign: 'center',
 		fontSize: '24px',
 		color: colors.purple,
-		marginTop: '60px',
 		opacity: 0,
 		animation: '$fadeInUp 0.5s ease-out forwards',
 		animationDelay: '2.5s',
@@ -168,11 +168,23 @@ const useStyles = makeStyles({
 		margin: '24px 0',
 	},
 	gallery: {
-		marginTop: '48px',
-		paddingTop: '8px',
 		height: '352px',
 		'& > p': {
 			color: 'white',
+		},
+		'& > img': {
+			position: 'relative',
+			width: '20%',
+			height: 'auto',
+			display: 'block',
+			marginLeft: 'auto',
+			marginRight: 'auto',
+			marginTop: '20px',
+		},
+	},
+	partnersContainer: {
+		'& > p': {
+			color: colors.purple,
 		},
 	},
 	noMargin: { margin: 0 },
@@ -198,7 +210,8 @@ const useStyles = makeStyles({
 	},
 	title: {
 		fontSize: '50px',
-		margin: '36px 0 24px 0',
+		margin: '36px auto 24px auto',
+		width: 'fit-content',
 	},
 });
 
@@ -220,6 +233,7 @@ const LandingPage: React.FC = () => {
 		gallery,
 		numberBackground,
 		numbersContainer,
+		partnersContainer,
 		noMargin,
 	} = useStyles();
 
@@ -305,6 +319,13 @@ const LandingPage: React.FC = () => {
 						معرض الصور
 					</p>
 					<PhotoGallery />
+					<img src='/landing-page/heart.png' alt='Heart' />
+				</div>
+				<div className={partnersContainer}>
+					<p className={`${textParagraph} ${highlightedText} ${title}`}>
+						شركاؤنا
+					</p>
+					<PartnersList />
 				</div>
 			</Box>
 		</Box>
