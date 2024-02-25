@@ -4,6 +4,9 @@ import colors from '../styles/colors';
 import { makeStyles } from '@mui/styles';
 import ActionButton from './shared/ActionButton';
 import Typography from '@mui/material/Typography';
+import EmailIcon from '@mui/icons-material/Email';
+import PhoneIcon from '@mui/icons-material/Phone';
+import GenderIcon from '@mui/icons-material/Gesture';
 
 interface UserCardProps {
     user: User;
@@ -20,12 +23,27 @@ const useStyles = makeStyles({
         border: '1px solid white',
         padding: '30px',
         width: '370px',
-      }),
+    }),
+    userTitle: {
+        textAlign: 'center',
+        marginBottom: '10px',
+    },
+    adminIcons: {
+        color: 'white',
+        backgroundColor: '#78A083',
+        borderRadius: '3px',
+        fontSize: '16px',
+        fontWeight: 'bold',
+        padding: '3px 7px',
+        position: 'absolute',
+        right: '60px',
+
+    },
     buttons: {
         display: 'flex',
-        justifyContent: 'space-between',
+        justifyContent: 'space-around',
         alignItems: 'center',
-        width: '110px',
+        width: '300px',
         marginTop: '20px',
     },
 });
@@ -44,12 +62,20 @@ const UserCard: React.FC<UserCardProps> = ({
 
         <div className={classes.userCard} >
             <div>
-                <Typography variant="subtitle1"><b>Username :</b> {user.username}</Typography>
-                <Typography variant="subtitle1"><b>Email :</b> {user.email}</Typography>
-                <Typography variant="subtitle1"><b>Phone Number : </b>{user.phoneNumber}</Typography>
-                <Typography variant="subtitle1"><b>Gender :</b> {user.gender}</Typography>
+                {user.isAdmin && (
+                    <div className={classes.adminIcons}>
+
+                        <span>Admin</span>
+
+                    </div>
+                )}
+
+                <Typography variant="h5" className={classes.userTitle}><b>{user.username}</b></Typography>
+                <Typography variant="subtitle1"><EmailIcon />{user.email}</Typography>
+                <Typography variant="subtitle1"> <PhoneIcon />{user.phoneNumber}</Typography>
+                <Typography variant="subtitle1"> <GenderIcon /> {user.gender}</Typography>
             </div>
-            
+
             <div className={classes.buttons}>
                 <ActionButton
                     title='Update'
@@ -59,17 +85,17 @@ const UserCard: React.FC<UserCardProps> = ({
                     title='Delete'
                     onClick={() => onDelete(user._id)}
                 />
-                
-                 {!user.isAdmin && ( 
+
+                {!user.isAdmin && (
                     <ActionButton
                         title='Make Admin'
                         onClick={() => onMakeAdmin(user._id)}
                     />
                 )}
-                
+
 
             </div>
-        </div>
+        </div >
 
 
     );
