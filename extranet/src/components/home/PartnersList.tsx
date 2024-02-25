@@ -6,10 +6,9 @@ const useStyles = makeStyles({
 		display: 'flex',
 		flexWrap: 'wrap',
 		justifyContent: 'space-around',
-		padding: '10px',
 	},
 	logo: {
-		width: '25%',
+		width: '30%',
 		margin: '5px',
 		height: 'auto',
 		objectFit: 'cover',
@@ -19,7 +18,7 @@ const useStyles = makeStyles({
 const PartnersList = () => {
 	const classes = useStyles();
 	const logos = Array.from(
-		{ length: 9 },
+		{ length: 8 },
 		(_, i) => `/landing-page/partners/image${i + 1}.png`
 	);
 
