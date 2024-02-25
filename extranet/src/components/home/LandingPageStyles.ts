@@ -158,6 +158,8 @@ export const useLandingPageStyles = makeStyles({
 		boxShadow: '-2px -4px 0px 0px #3b2a8261',
 	},
 	numbersContainer: {
+		position: 'relative',
+		zIndex: 1,
 		display: 'flex',
 		justifyContent: 'center',
 		alignItems: 'center',
@@ -175,12 +177,37 @@ export const useLandingPageStyles = makeStyles({
 			display: 'block',
 			marginLeft: 'auto',
 			marginRight: 'auto',
-			marginTop: '20px',
+			marginTop: '40px',
 		},
 	},
 	partnersContainer: {
 		'& > p': {
 			color: colors.purple,
+		},
+	},
+	footer: {
+		marginTop: '-100px',
+		'& > img': {
+			width: '100%',
+			marginBottom: '-8px',
+		},
+		'& > div': {
+			display: 'flex',
+			flexDirection: 'column',
+			alignItems: 'center',
+			justifyContent: 'center',
+			height: '200px',
+			backgroundColor: colors.purple,
+			'& > a': {
+				position: 'relative',
+				zIndex: 1,
+				'& > img': {
+					display: 'block',
+					width: '68px',
+					height: 'auto',
+				},
+			},
+			'& > p': { color: 'white', fontWeight: 'bold' },
 		},
 	},
 	noMargin: { margin: 0 },

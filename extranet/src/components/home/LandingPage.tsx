@@ -22,6 +22,7 @@ const LandingPage = () => {
 		textBackgroundContainer,
 		gallery,
 		partnersContainer,
+		footer,
 		noMargin,
 	} = useLandingPageStyles();
 	const numbersRef = useRef(null);
@@ -152,6 +153,19 @@ const LandingPage = () => {
 					<PartnersList />
 				</div>
 			</Box>
+			<div className={footer}>
+				<img src='/landing-page/casablanca.png' alt='Casablanca' />
+				<div>
+					<a
+						href='https://www.instagram.com/warid_initiative'
+						target='_blank'
+						rel='noopener noreferrer'
+					>
+						<img src='/landing-page/ig-logo.png' alt='Instagram' />
+					</a>
+					<p>© 2024 WARID</p>
+				</div>
+			</div>
 		</Box>
 	);
 };
