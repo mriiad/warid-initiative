@@ -65,7 +65,7 @@ const UserCard: React.FC<UserCardProps> = ({
                 {user.isAdmin && (
                     <div className={classes.adminIcons}>
 
-                        <span>Admin</span>
+                        <span>مشرف</span>
 
                     </div>
                 )}
@@ -78,17 +78,17 @@ const UserCard: React.FC<UserCardProps> = ({
 
             <div className={classes.buttons}>
                 <ActionButton
-                    title='Update'
+                    title='تحديث'
                     onClick={() => onUpdate(user._id)}
                 />
                 <ActionButton
-                    title='Delete'
+                    title='حذف'
                     onClick={() => onDelete(user._id)}
                 />
 
                 {!user.isAdmin && (
                     <ActionButton
-                        title='Make Admin'
+                        title='تعيين مشرف'
                         onClick={() => onMakeAdmin(user._id)}
                     />
                 )}

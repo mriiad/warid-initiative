@@ -100,10 +100,10 @@ const UsersComponent = () => {
 					<div className={pagination}>
 
 						<Button disabled={page === 1} onClick={() => setPage(page - 1)}>
-							Previous
+							السابق
 						</Button>
 						<Button disabled={page >= totalPages} onClick={() => setPage(page + 1)}>
-							Next
+							التالي
 						</Button>
 
 					</div>

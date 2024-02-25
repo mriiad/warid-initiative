@@ -38,7 +38,7 @@ const EventConfirmation: React.FC = () => {
 		mutate();
 	}, [reference, token, mutate]);
 
-	if (isLoading) return <div>Confirming your presence...</div>;
+	if (isLoading) return <div>يتم تأكيد حضورك ...</div>;
 	if (isConfirmed) return <div>{data?.message}</div>;
 
 	if (isError && error?.data) {

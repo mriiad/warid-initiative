@@ -212,7 +212,7 @@ const EventDetail: React.FC = () => {
 												target='_blank'
 												rel='noopener noreferrer'
 											>
-												Open Map
+												 فتح الخريطة
 												<OpenInNewIcon />
 											</a>
 										</Box>
@@ -231,7 +231,7 @@ const EventDetail: React.FC = () => {
 											className={joinButton}
 											onClick={handleParticipateClick}
 										>
-											Participate
+											المشاركة
 										</Button>
 									</>
 								)}

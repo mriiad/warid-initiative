@@ -142,7 +142,7 @@ const Navbar = () => {
 									}`}
 								onClick={() => handleRouteChange('/')}
 							>
-								Home
+								الرئيسية
 							</Link>
 						</li>
 						<li className={routesListItem}>
@@ -152,7 +152,7 @@ const Navbar = () => {
 									}`}
 								onClick={() => handleRouteChange('/about')}
 							>
-								About
+								بخصوص
 							</Link>
 						</li>
 						<li className={routesListItem}>
@@ -162,7 +162,7 @@ const Navbar = () => {
 									}`}
 								onClick={() => handleRouteChange('/events?page=1')}
 							>
-								Events
+								الفعاليات
 							</Link>
 						</li>
 						{token && isAdmin && (
@@ -174,7 +174,7 @@ const Navbar = () => {
 									}`}
 									onClick={() => handleRouteChange('/admin')}
 								>
-									Admin
+									المشرف
 								</Link>
 							</li>
 						)}
@@ -186,13 +186,13 @@ const Navbar = () => {
 			<div className={mainButton}>
 				{token ? (
 					<ActionButton
-						title='Logout'
+						title='تسجيل الخروج'
 						icon={<ArrowCircleLeftIcon className={loginIcon} />}
 						onClick={() => handleLogout()}
 					/>
 				) : (
 					<ActionButton
-						title='Login'
+						title='تسجيل الدخول'
 						icon={<ArrowCircleRightIcon className={loginIcon} />}
 						onClick={() => navigate('/login')}
 					/>
