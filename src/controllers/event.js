@@ -200,7 +200,7 @@ exports.confirmPresence = (req, res, next) => {
 			);
 
 			if (isAlreadyParticipating) {
-				throw new ApiError("You're already participating in this event!", 403);
+				throw new ApiError("أنت بالفعل مشارك في هذه الفعالية!", 403);
 			}
 
 			// Fetch all events the user is participating in
@@ -213,7 +213,7 @@ exports.confirmPresence = (req, res, next) => {
 			if (futureEvent) {
 				const { title, reference, date } = futureEvent;
 				throw new ApiError(
-					`You're already participating in another future event: ${reference}`,
+					`أنت بالفعل مشارك في فعالية مستقبلية أخرى: ${reference}`,
 					403
 				);
 			}
@@ -224,7 +224,7 @@ exports.confirmPresence = (req, res, next) => {
 		})
 		.then(() => {
 			res.status(STATUS_CODE.OK).json({
-				message: 'Successfully added to attendees list!',
+				message: '!تمت إضافتك بنجاح إلى قائمة المشاركين ',
 			});
 		})
 		.catch((err) => {
