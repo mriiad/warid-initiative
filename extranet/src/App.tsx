@@ -7,7 +7,6 @@ import AdminComponent from './components/AdminComponent';
 import CanDonate from './components/CanDonate';
 import ContactForm from './components/ContactForm';
 import DonationComponent from './components/DonationComponents';
-import LandingPage from './components/LandingPage';
 import LoginForm from './components/LoginForm';
 import MobileHeader from './components/MobileHeader';
 import MobileNavbar from './components/MobileNavbar';
@@ -21,6 +20,7 @@ import EventConfirmation from './components/event/EventConfirmation';
 import EventDetail from './components/event/EventDetail';
 import EventForm from './components/event/EventForm';
 import EventsComponent from './components/event/EventsComponent';
+import LandingPage from './components/home/LandingPage';
 
 const AppContainer = styled.div`
 	position: relative;
