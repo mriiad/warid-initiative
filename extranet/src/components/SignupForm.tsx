@@ -73,7 +73,7 @@ const SignupForm = () => {
 							render={({ field }) => (
 								<TextField
 									fullWidth
-									label='رقم الهوية الوطنية'
+									label='رقم البطاقة الوطنية'
 									required
 									{...field}
 									error={Boolean(errors.username)}
