@@ -7,7 +7,7 @@ const {
 	updateUserInfo,
 	checkUserProfile,
 	getProfile,
-	searchUserByUsername,
+	searchUser,
 } = require('../controllers/user');
 
 userRouter.get('/api/users', getUsers);
@@ -18,11 +18,6 @@ userRouter.get('/api/user/check-profile', isAuth, checkUserProfile);
 
 userRouter.get('/api/user/profile', isAuth, getProfile);
 
-userRouter.get(
-	'/api/searchUsers/:username',
-	isAuth,
-	checkIfAdmin,
-	searchUserByUsername
-);
+userRouter.post('/api/searchUsers', isAuth, checkIfAdmin, searchUser);
 
 module.exports = userRouter;

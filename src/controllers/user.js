@@ -175,9 +175,10 @@ exports.getProfile = (req, res, next) => {
 		});
 };
 
-exports.searchUserByUsername = async (req, res, next) => {
+exports.searchUser = async (req, res, next) => {
 	try {
-		const username = req.params.username;
+		const { username } = req.body;
+
 		if (!username) {
 			throw new ApiError(
 				'Username parameter is required.',
