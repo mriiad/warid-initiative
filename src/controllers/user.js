@@ -17,7 +17,7 @@ exports.getUsers = async (req, res, next) => {
 		)
 			.skip((currentPage - 1) * perPage)
 			.limit(perPage)
-            .lean();
+			.lean();
 
 		res.status(STATUS_CODE.OK).json({
 			message: 'Fetched users successfully.',
@@ -173,4 +173,36 @@ exports.getProfile = (req, res, next) => {
 			}
 			next(err);
 		});
+};
+
+exports.searchUserByUsername = async (req, res, next) => {
+	try {
+		const username = req.params.username;
+		if (!username) {
+			throw new ApiError(
+				'Username parameter is required.',
+				STATUS_CODE.BAD_REQUEST
+			);
+		}
+
+		const user = await User.findOne({ username }).select(
+			'username email phoneNumber gender isAdmin'
+		);
+
+		if (!user) {
+			return res
+				.status(STATUS_CODE.NOT_FOUND)
+				.json({ message: 'User not found.' });
+		}
+
+		res.status(STATUS_CODE.OK).json({
+			message: 'User found.',
+			user,
+		});
+	} catch (err) {
+		if (!err.statusCode) {
+			err.statusCode = STATUS_CODE.INTERNAL_SERVER;
+		}
+		next(err);
+	}
 };
