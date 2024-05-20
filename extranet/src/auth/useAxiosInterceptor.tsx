@@ -16,20 +16,26 @@ export const useAxiosInterceptor = (refreshToken) => {
 		const responseInterceptor = axios.interceptors.response.use(
 			(response) => response,
 			async (error) => {
-				if (error.response && error.response.status === 401) {
-					const requestUrl = error.config.url;
+				const originalRequest = error.config;
+				if (
+					error.response &&
+					error.response.status === 401 &&
+					!originalRequest._retry
+				) {
+					const requestUrl = originalRequest.url;
 					const excludedEndpoints = [
 						'http://localhost:3000/api/auth/login',
 						'http://localhost:3000/api/auth/refresh-token',
 					];
 
 					if (!excludedEndpoints.includes(requestUrl)) {
+						originalRequest._retry = true;
 						try {
 							await refreshToken();
-							error.config.headers[
+							originalRequest.headers[
 								'Authorization'
 							] = `Bearer ${localStorage.getItem('token')}`;
-							return axios(error.config);
+							return axios(originalRequest);
 						} catch (refreshError) {
 							return Promise.reject(refreshError);
 						}
