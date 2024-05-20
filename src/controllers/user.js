@@ -2,6 +2,7 @@ const User = require('../models/user');
 const ApiError = require('../utils/errors/ApiError');
 const { STATUS_CODE } = require('../utils/errors/httpStatusCode');
 const Profile = require('../models/profile');
+const { calculateAge } = require('../utils/utils');
 
 // Get all users
 exports.getUsers = async (req, res, next) => {
@@ -175,35 +176,70 @@ exports.getProfile = (req, res, next) => {
 		});
 };
 
-exports.searchUser = async (req, res, next) => {
+exports.searchUsers = async (req, res, next) => {
 	try {
-		const { username } = req.body;
+		const { username, firstname, lastname, ageRange, availableForDonation } =
+			req.body;
+		const query = {};
 
-		if (!username) {
-			throw new ApiError(
-				'Username parameter is required.',
-				STATUS_CODE.BAD_REQUEST
+		if (username) {
+			query.username = { $regex: new RegExp(username, 'i') };
+		}
+
+		if (firstname || lastname) {
+			query.$and = [];
+			if (firstname) {
+				query.$and.push({
+					'profile.firstname': { $regex: new RegExp(firstname, 'i') },
+				});
+			}
+			if (lastname) {
+				query.$and.push({
+					'profile.lastname': { $regex: new RegExp(lastname, 'i') },
+				});
+			}
+		}
+
+		let users = await User.find(query)
+			.populate('profile')
+			.select('-password -confirmationCode');
+
+		if (ageRange || availableForDonation !== undefined) {
+			users = await Promise.all(
+				users.map(async (user) => {
+					const userAge =
+						user.profile && user.profile.birthdate
+							? calculateAge(user.profile.birthdate)
+							: null;
+					const donationEligibility = await checkDonationEligibility(user._id);
+
+					let isAgeMatch = true;
+					if (ageRange && ageRange.length === 2) {
+						isAgeMatch = userAge >= ageRange[0] && userAge <= ageRange[1];
+					}
+
+					let isDonationEligible = true;
+					if (availableForDonation !== undefined) {
+						isDonationEligible = availableForDonation
+							? donationEligibility.canDonate
+							: !donationEligibility.canDonate;
+					}
+
+					return isAgeMatch && isDonationEligible ? user : null;
+				})
 			);
 		}
 
-		const user = await User.findOne({ username }).select(
-			'username email phoneNumber gender isAdmin'
-		);
+		users = users.filter((user) => user !== null);
 
-		if (!user) {
+		if (users.length === 0) {
 			return res
 				.status(STATUS_CODE.NOT_FOUND)
-				.json({ message: 'User not found.' });
+				.json({ message: 'No users found.' });
 		}
 
-		res.status(STATUS_CODE.OK).json({
-			message: 'User found.',
-			user,
-		});
+		res.status(STATUS_CODE.OK).json({ users });
 	} catch (err) {
-		if (!err.statusCode) {
-			err.statusCode = STATUS_CODE.INTERNAL_SERVER;
-		}
 		next(err);
 	}
 };
