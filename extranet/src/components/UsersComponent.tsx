@@ -1,48 +1,28 @@
-import { useEffect, useState } from 'react';
-import { Button, CircularProgress } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import { Button, CircularProgress, Typography } from '@mui/material';
 import axios from 'axios';
-import styled from 'styled-components';
-import { User } from '../data/User';
-import UserCard from './UserCard';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
+import { authStyles, mainStyles } from '../styles/mainStyles';
+import UserCard from './UserCard';
+import UserFilter from './UserFilter';
 
 const UsersContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
 `;
 
-const useStyles = makeStyles({
-	usersList: {
-		display: 'flex',
-		flexDirection: 'row',
-		flexWrap: 'wrap',
-		gap: '20px',
-		justifyContent: 'center',
-	},
-	fallBack: {
-		display: 'flex',
-		justifyContent: 'center',
-		alignItems: 'center',
-		minHeight: '100vh',
-	},
-	pagination: {
-		marginBottom: '64px',
-	},
-});
-
 const UsersComponent = () => {
-
 	const navigate = useNavigate();
-
-	const { usersList, fallBack, pagination } = useStyles();
-	const [users, setUsers] = useState<User[] | null>([]);
-
+	const { bar, button, form } = authStyles();
+	const { textButton, subTitle } = mainStyles();
+	const [users, setUsers] = useState([]);
 	const [page, setPage] = useState(1);
 	const [totalPages, setTotalPages] = useState(0);
-
 	const [isLoading, setIsLoading] = useState(false);
+	const [isFilterOpen, setIsFilterOpen] = useState(false);
+	const [filters, setFilters] = useState({});
 
 	useEffect(() => {
 		const fetchUsers = async () => {
@@ -61,33 +41,68 @@ const UsersComponent = () => {
 		};
 
 		fetchUsers();
-		navigate(`/users?page=${page}`); // Log the URL
+		navigate(`/users?page=${page}`);
 	}, [page, navigate]);
 
-	const handleUpdate = (userId: string) => {
-		// To handle 
+	const handleFilterApply = async (newFilters) => {
+		setFilters(newFilters);
+		try {
+			setIsLoading(true);
+			const response = await axios.post(
+				'http://localhost:3000/api/searchUsers',
+				newFilters
+			);
+			setUsers(response.data.users || []);
+			setTotalPages(1);
+		} catch (error) {
+			console.error('Error applying filters', error);
+		} finally {
+			setIsLoading(false);
+		}
+	};
+
+	const handleUpdate = (userId) => {
 		console.log(`Updating user with ID ${userId}`);
 	};
 
-	const handleDelete = (userId: string) => {
-		// To handle 
+	const handleDelete = (userId) => {
 		console.log(`Deleting user with ID ${userId}`);
 	};
 
-	const handleMakeAdmin = (userId: string) => {
-		// To handle 
+	const handleMakeAdmin = (userId) => {
 		console.log(`Making user with ID ${userId} as admin`);
 	};
 
 	return (
-		<UsersContainer className={usersList}>
-			{isLoading ? (
-				<div className={fallBack}>
-					<CircularProgress />
-				</div>
-			) : (
-				<>
-					{users.map((user, index) => (
+		<>
+			<Button
+				variant='contained'
+				color='primary'
+				className={button}
+				onClick={() => setIsFilterOpen(true)}
+				style={{ position: 'fixed', bottom: 100, right: 20, zIndex: 1000 }}
+			>
+				Filter
+			</Button>
+			<UserFilter
+				open={isFilterOpen}
+				onClose={() => setIsFilterOpen(false)}
+				onApply={handleFilterApply}
+			/>
+			<UsersContainer>
+				{isLoading ? (
+					<div
+						style={{
+							display: 'flex',
+							justifyContent: 'center',
+							alignItems: 'center',
+							minHeight: '100vh',
+						}}
+					>
+						<CircularProgress />
+					</div>
+				) : (
+					users.map((user, index) => (
 						<UserCard
 							key={user._id}
 							user={user}
@@ -96,25 +111,33 @@ const UsersComponent = () => {
 							onMakeAdmin={handleMakeAdmin}
 							animationDelay={`${index * 0.2}s`}
 						/>
-					))}
-					<div className={pagination}>
-
-						<Button disabled={page === 1} onClick={() => setPage(page - 1)}>
-							السابق
-						</Button>
-						<Button disabled={page >= totalPages} onClick={() => setPage(page + 1)}>
-							التالي
-						</Button>
-
-					</div>
-
-				</>
+					))
+				)}
+			</UsersContainer>
+			{!isLoading && users.length === 0 && (
+				<Typography variant='h6'>No users found.</Typography>
 			)}
-		</UsersContainer>
-
-
+			{!isLoading && totalPages > 1 && (
+				<div
+					style={{
+						display: 'flex',
+						justifyContent: 'center',
+						marginBottom: '64px',
+					}}
+				>
+					<Button disabled={page === 1} onClick={() => setPage(page - 1)}>
+						Previous
+					</Button>
+					<Button
+						disabled={page >= totalPages}
+						onClick={() => setPage(page + 1)}
+					>
+						Next
+					</Button>
+				</div>
+			)}
+		</>
 	);
-
 };
 
 export default UsersComponent;
