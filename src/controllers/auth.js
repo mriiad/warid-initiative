@@ -59,13 +59,13 @@ exports.signup = (req, res, next) => {
 			return transporter.sendMail({
 				from: 'do-not-reply@warid.ma',
 				to: email,
-				subject: 'Activation du compte',
-				text: `Bonjour M. ${username}, veuillez activez votre compte s'il vous plait. Merci`,
-				html: `<h1>Email Confirmation</h1>
-					<h2>Hello ${username}</h2>
-					<p>Thank you for subscribing. Please confirm your email by clicking on the following link</p>
-					<a href=${activationLink}> Click here</a>
-					</div>`,
+				subject: 'تفعيل الحساب',
+				text: `مرحبًا بك، ${username}، يرجى تفعيل حسابك. شكرًا لك`,
+				html: `<h1>تأكيد البريد الإلكتروني</h1>
+                <h2>مرحبًا ${username}</h2>
+                <p>شكرًا للاشتراك. يرجى تأكيد بريدك الإلكتروني عن طريق النقر على الرابط التالي</p>
+                <a href=${activationLink}>اضغط هنا</a>
+                </div>`,
 			});
 		})
 		.catch((err) => {

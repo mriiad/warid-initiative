@@ -72,10 +72,10 @@ const NotFoundPage = () => {
 				className={svgIllustration}
 			/>
 			<Typography className={description}>
-				Oops! The page you're looking for isn't here.
+		       عفوًا! الصفحة التي تبحث عنها غير موجودة هنا
 			</Typography>
 			<div className={homeButton} onClick={() => navigate('/')}>
-				Go Back Home
+			    العودة إلى الصفحة الرئيسية
 			</div>
 		</div>
 	);

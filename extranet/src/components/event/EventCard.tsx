@@ -208,7 +208,7 @@ const EventCard: React.FC<EventCardProps> = ({ event, animationDelay }) => {
 								rel='noopener noreferrer'
 								className={link}
 							>
-								خريطة الطريق
+								موقع الحدث
 							</a>
 						</Typography>
 					</div>

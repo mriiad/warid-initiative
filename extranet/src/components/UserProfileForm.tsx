@@ -102,9 +102,7 @@ const UserProfileForm = () => {
 			});
 
 			if (missingFields.length > 0) {
-				const formattedMessage = `Could you please provide the following details? ${missingFields.join(
-					', '
-				)}.`;
+				const formattedMessage = `من فضلك، قم بتوفير التفاصيل المطلوبة أسفله.`;
 				setIncompleteFieldsMessage(formattedMessage);
 				setShowSnackbar(true);
 			}
@@ -116,7 +114,7 @@ const UserProfileForm = () => {
 			await axios.put('/api/user/update', data);
 			navigate('/events');
 		} catch (error) {
-			console.error('Error updating profile:', error);
+			console.error(':حدث خطأ أثناء تحديث الملف الشخصي', error);
 		}
 	};
 
@@ -127,7 +125,7 @@ const UserProfileForm = () => {
 	return (
 		<FormContainer className={align}>
 			<Typography variant='h2' align='center' gutterBottom className={signUp}>
-				Complete Your Profile
+				المرجو إكمال ملفك الشخصي
 				<span className={bar}></span>
 			</Typography>
 			<form onSubmit={handleSubmit(onSubmit)} className={form}>
@@ -135,29 +133,29 @@ const UserProfileForm = () => {
 					<Grid item xs={12}>
 						<FormControlField
 							name='firstname'
-							label='First Name'
+							label='الاسم الشخصي'
 							control={control}
 							error={errors.firstname}
-							helperText={errors.firstname ? 'First name is required' : ''}
+							helperText={errors.firstname ? 'الاسم الشخصي مطلوب' : ''}
 						/>
 					</Grid>
 					<Grid item xs={12}>
 						<FormControlField
 							name='lastname'
-							label='Last Name'
+							label='الاسم العائلي'
 							control={control}
 							error={errors.lastname}
-							helperText={errors.lastname ? 'Last name is required' : ''}
+							helperText={errors.lastname ? 'الاسم العائلي مطلوب' : ''}
 						/>
 					</Grid>
 					<Grid item xs={12}>
 						<FormControlField
 							name='birthdate'
-							label='Birthdate'
+							label='تاريخ الميلاد'
 							control={control}
 							type='date'
 							error={errors.birthdate}
-							helperText={errors.birthdate ? 'Birthdate is required' : ''}
+							helperText={errors.birthdate ? 'تاريخ الميلاد مطلوب' : ''}
 						/>
 					</Grid>
 					<Grid item xs={12} className={formField}>
@@ -165,20 +163,20 @@ const UserProfileForm = () => {
 							name='gender'
 							control={control}
 							defaultValue={Gender.Male}
-							rules={{ required: 'Gender is required' }}
+							rules={{ required: 'الجنس مطلوب' }}
 							render={({ field }) => (
 								<FormControl component='fieldset' fullWidth>
 									<RadioGroup row {...field} className={radioGroup}>
 										<FormControlLabel
 											value='male'
 											control={<Radio />}
-											label='Male'
+											label='ذكر'
 											className={radioMargin}
 										/>
 										<FormControlLabel
 											value='female'
 											control={<Radio />}
-											label='Female'
+											label='أنثى'
 											className={radioMargin}
 										/>
 									</RadioGroup>
@@ -197,10 +195,10 @@ const UserProfileForm = () => {
 							control={control}
 							render={({ field }) => (
 								<FormControl fullWidth error={Boolean(errors.bloodGroup)}>
-									<InputLabel>Blood Group</InputLabel>
+									<InputLabel>فصيلة الدم</InputLabel>
 									<Select {...field}>
 										<MenuItem value=''>
-											<em>None</em>
+											<em>لا أعرف نوع الفصيلة</em>
 										</MenuItem>
 										<MenuItem value='A+'>A+</MenuItem>
 										<MenuItem value='A-'>A-</MenuItem>
@@ -212,7 +210,7 @@ const UserProfileForm = () => {
 										<MenuItem value='O-'>O-</MenuItem>
 									</Select>
 									<FormHelperText>
-										{errors.bloodGroup ? 'Blood Group is required' : ''}
+										{errors.bloodGroup ? 'فصيلة الدم مطلوبة' : ''}
 									</FormHelperText>
 								</FormControl>
 							)}
@@ -220,7 +218,7 @@ const UserProfileForm = () => {
 					</Grid>
 					<Grid item xs={12}>
 						<Button type='submit' className={button}>
-							Update
+							تحديث
 						</Button>
 					</Grid>
 				</Grid>

@@ -173,7 +173,7 @@ const DonationComponent = () => {
 					const errorResponseData: ApiErrorResponse = error.data;
 					if (error.status !== 404 && error.status !== 400) {
 						setErrorMessage(
-							errorResponseData.errorMessage || 'An error occurred.'
+							errorResponseData.errorMessage || '.حدث خطأ'
 						);
 						setIsFormSubmitted(true);
 						setIsErrorAnimationVisible(true);
@@ -204,8 +204,8 @@ const DonationComponent = () => {
 				<Grid container spacing={2}>
 					{isFormSubmitted ? (
 						<ResponseAnimation
-							responseMessage='Donation request registred successfully!'
-							actionMessage='Our team will contact you soon to provide more details.'
+							responseMessage='تم تسجيل طلب التبرع بنجاح'
+							actionMessage='سيقوم فريقنا بالاتصال بك قريبًا لتوفير المزيد من التفاصيل'
 							isSuccess={isSuccessResponse}
 							isError={isErrorResponse}
 							errorMessage={errorMessage}
@@ -227,7 +227,7 @@ const DonationComponent = () => {
 												<InputLabel>فصيلة الدم</InputLabel>
 												<Select {...field}>
 													<MenuItem value=''>
-														<em>None</em>
+														<em>لا أعرف نوع الفصيلة</em>
 													</MenuItem>
 													<MenuItem value='A+'>A+</MenuItem>
 													<MenuItem value='A-'>A-</MenuItem>
@@ -280,7 +280,7 @@ const DonationComponent = () => {
 												<InputLabel>نوع التبرع</InputLabel>
 												<Select {...field}>
 													<MenuItem value=''>
-														<em>لا شيء</em>
+														<em>الدم / الصفائح</em>
 													</MenuItem>
 													<MenuItem value='Blood'>الدم</MenuItem>
 													<MenuItem value='Plates'>الصفائح</MenuItem>

@@ -137,22 +137,22 @@ const Navbar = () => {
 					<ul className={routesList}>
 						<li className={routesListItem}>
 							<Link
-								to='/'
-								className={`${routesLink} ${selectedRoute === '/' ? activeLink : ''
+								to='/donate'
+								className={`${routesLink} ${selectedRoute === '/donate' ? activeLink : ''
 									}`}
-								onClick={() => handleRouteChange('/')}
+								onClick={() => handleRouteChange('/donate')}
 							>
-								الرئيسية
+								تبرع الآن
 							</Link>
 						</li>
 						<li className={routesListItem}>
 							<Link
-								to='/about'
-								className={`${routesLink} ${selectedRoute === '/about' ? activeLink : ''
+								to='/contact'
+								className={`${routesLink} ${selectedRoute === '/contact' ? activeLink : ''
 									}`}
-								onClick={() => handleRouteChange('/about')}
+								onClick={() => handleRouteChange('/contact')}
 							>
-								بخصوص
+								التواصل
 							</Link>
 						</li>
 						<li className={routesListItem}>
@@ -162,24 +162,34 @@ const Navbar = () => {
 									}`}
 								onClick={() => handleRouteChange('/events?page=1')}
 							>
-								الفعاليات
+								الأحداث
 							</Link>
 						</li>
+
 						{token && isAdmin && (
 							<li className={routesListItem}>
 								<Link
 									to='/admin'
-									className={`${routesLink} ${
-										selectedRoute === '/admin' ? activeLink : ''
-									}`}
+									className={`${routesLink} ${selectedRoute === '/admin' ? activeLink : ''
+										}`}
 									onClick={() => handleRouteChange('/admin')}
 								>
-									المشرف
+									قائمة المهام
 								</Link>
 							</li>
 						)}
-						
-						
+						<li className={routesListItem}>
+							<Link
+								to='/'
+								className={`${routesLink} ${selectedRoute === '/' ? activeLink : ''
+									}`}
+								onClick={() => handleRouteChange('/')}
+							>
+								الصفحة الرئيسية
+							</Link>
+						</li>
+
+
 					</ul>
 				</nav>
 			</div>
