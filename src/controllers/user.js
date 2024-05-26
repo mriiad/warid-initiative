@@ -3,35 +3,7 @@ const ApiError = require('../utils/errors/ApiError');
 const { STATUS_CODE } = require('../utils/errors/httpStatusCode');
 const Profile = require('../models/profile');
 const { calculateAge } = require('../utils/utils');
-
-// Get all users
-exports.getUsers = async (req, res, next) => {
-	try {
-		const currentPage = Number(req.query.page) || 1;
-		const perPage = 10;
-
-		const totalItems = await User.countDocuments();
-
-		const users = await User.find(
-			{},
-			'username email phoneNumber gender isAdmin'
-		)
-			.skip((currentPage - 1) * perPage)
-			.limit(perPage)
-			.lean();
-
-		res.status(STATUS_CODE.OK).json({
-			message: 'Fetched users successfully.',
-			users: users,
-			totalItems: totalItems,
-		});
-	} catch (err) {
-		if (!err.statusCode) {
-			err.statusCode = STATUS_CODE.INTERNAL_SERVER;
-		}
-		next(err);
-	}
-};
+const { checkDonationEligibility } = require('./donation');
 
 // Get all users
 exports.getUsers = async (req, res, next) => {
@@ -178,8 +150,13 @@ exports.getProfile = (req, res, next) => {
 
 exports.searchUsers = async (req, res, next) => {
 	try {
-		const { username, firstname, lastname, ageRange, availableForDonation } =
-			req.body;
+		const {
+			username,
+			firstname,
+			lastname,
+			age: ageRange,
+			availableForDonation,
+		} = req.body;
 		const query = {};
 
 		if (username) {
@@ -211,7 +188,13 @@ exports.searchUsers = async (req, res, next) => {
 						user.profile && user.profile.birthdate
 							? calculateAge(user.profile.birthdate)
 							: null;
+
+					console.log('userAge', userAge);
+
 					const donationEligibility = await checkDonationEligibility(user._id);
+
+					console.log('donationEligibility', donationEligibility);
+					console.log('userAge', donationEligibility);
 
 					let isAgeMatch = true;
 					if (ageRange && ageRange.length === 2) {

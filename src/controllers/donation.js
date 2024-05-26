@@ -9,7 +9,7 @@ const { addDays, formatDate } = require('../utils/utils');
 /**
  * Utility function to check donation eligibility
  */
-const checkDonationEligibility = (userId) => {
+exports.checkDonationEligibility = (userId) => {
 	let user;
 	return User.findById(userId)
 		.then((foundUser) => {
