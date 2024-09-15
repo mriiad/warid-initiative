@@ -7,35 +7,38 @@ const config = require('../../config.json');
 const { STATUS_CODE } = require('../utils/errors/httpStatusCode');
 const crypto = require('crypto');
 const moment = require('moment-timezone');
+const { Client, LocalAuth } = require('whatsapp-web.js');
+const qrcode = require('qrcode-terminal');
 
-const { email, password, host, secureConnection, port, ciphers, requireTLS } =
-	config.mailerConfig;
+const client = new Client({
+	authStrategy: new LocalAuth(),
+	puppeteer: { headless: true },
+});
 
-const transporter = nodemailer.createTransport({
-	host: host,
-	secureConnection: secureConnection,
-	port: port,
-	tls: {
-		ciphers: ciphers,
-	},
-	requireTLS: requireTLS,
-	auth: {
-		user: email,
-		pass: password,
-	},
+client.initialize();
+
+client.on('qr', (qr) => {
+	// Generate and display the QR code in terminal
+	qrcode.generate(qr, { small: true });
+});
+
+client.on('ready', () => {
+	console.log('Client is ready!');
 });
 
 exports.signup = (req, res, next) => {
 	const body = req.body;
 	const { username, email, password, gender, phoneNumber } = body;
 	const errors = validationResult(req);
+
 	if (!errors.isEmpty()) {
 		const error = new Error('Validation failed.');
 		error.statusCode = STATUS_CODE.BAD_REQUEST;
-		throw error;
+		error.data = errors.array();
+		return next(error);
 	}
+
 	const token = jwt.sign({ email: req.body.email }, config.secret);
-	var activationLink = `http://localhost:${config.port}/api/auth/activation/${token}`;
 	bcrypt
 		.hash(password, 12)
 		.then((hashedPw) => {
@@ -51,22 +54,18 @@ exports.signup = (req, res, next) => {
 			});
 			return user.save();
 		})
-		.then((result) => {
+		.then((user) => {
 			res.status(201).json({
 				message: 'User created!',
-				userId: result._id,
+				userId: user._id,
 			});
-			return transporter.sendMail({
-				from: 'do-not-reply@warid.ma',
-				to: email,
-				subject: 'Activation du compte',
-				text: `Bonjour M. ${username}, veuillez activez votre compte s'il vous plait. Merci`,
-				html: `<h1>Email Confirmation</h1>
-					<h2>Hello ${username}</h2>
-					<p>Thank you for subscribing. Please confirm your email by clicking on the following link</p>
-					<a href=${activationLink}> Click here</a>
-					</div>`,
-			});
+
+			const internationalPhoneNumber = `212${phoneNumber.substring(1)}@c.us`;
+			console.log('internationalPhoneNumber', internationalPhoneNumber);
+			return client.sendMessage(
+				internationalPhoneNumber,
+				`Hello ${username}, your account was created successfully!`
+			);
 		})
 		.catch((err) => {
 			if (!err.statusCode) {
@@ -75,6 +74,14 @@ exports.signup = (req, res, next) => {
 			next(err);
 		});
 };
+
+client.on('qr', (qr) => {
+	console.log('QR RECEIVED', qr);
+});
+
+client.on('ready', () => {
+	console.log('Client is ready!');
+});
 
 exports.login = (req, res, next) => {
 	const body = req.body;
