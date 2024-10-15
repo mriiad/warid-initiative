@@ -16,6 +16,7 @@ import { authStyles, mainStyles } from '../styles/mainStyles';
 import FormContainer from './shared/FormContainer';
 import SnackbarComponent from './shared/SnackbarComponent';
 
+
 const LoginForm = () => {
 	const { setToken, setUserId, setIsAdmin } = useAuth();
 
@@ -87,6 +88,8 @@ const LoginForm = () => {
 					navigate('/update-profile');
 				} else {
 					navigate('/events');
+					//console.log('token is: ', localStorage.getItem('token'));
+					
 				}
 			},
 			onError: (error) => {

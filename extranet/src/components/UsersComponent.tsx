@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
-import { Button, CircularProgress } from '@mui/material';
+import { Button, CircularProgress, Snackbar } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import axios from 'axios';
 import styled from 'styled-components';
 import { User } from '../data/User';
 import UserCard from './UserCard';
 import { useNavigate } from 'react-router-dom';
+import { deleteUser } from '../utils/queries';
+import { useAuth } from '../auth/AuthContext';
 
 const UsersContainer = styled.div`
   display: flex;
@@ -44,6 +46,11 @@ const UsersComponent = () => {
 
 	const [isLoading, setIsLoading] = useState(false);
 
+	const [message, setMessage] = useState<string | null>(null);
+
+    const { token } = useAuth();
+
+
 	useEffect(() => {
 		const fetchUsers = async () => {
 			try {
@@ -69,10 +76,28 @@ const UsersComponent = () => {
 		console.log(`Updating user with ID ${userId}`);
 	};
 
-	const handleDelete = (userId: string) => {
+	const handleDelete = async(username: string) => {
 		// To handle 
-		console.log(`Deleting user with ID ${userId}`);
+		console.log(`Deleting user with name ${username}`);
+		const confirmDelete = window.confirm(`Are you sure you want to delete the user ${username}?`);
+		if (!confirmDelete) return;
+
+		try {
+			setIsLoading(true);
+			await deleteUser(username, token);
+			setUsers((prevUsers) => prevUsers?.filter((user) => user.username !== username) || []);
+			setMessage("User deleted successfully");
+		} catch (error) {
+			setMessage(`Error deleting user: ${error.message}`);
+		} finally {
+			setIsLoading(false);
+		}
+
 	};
+	const handleCloseSnackbar = () => {
+		setMessage(null);
+	};
+
 
 	const handleMakeAdmin = (userId: string) => {
 		// To handle 
@@ -107,6 +132,14 @@ const UsersComponent = () => {
 						</Button>
 
 					</div>
+                    {message && (
+						<Snackbar
+							open={Boolean(message)}
+							autoHideDuration={4000}
+							onClose={handleCloseSnackbar}
+							message={message}
+						/>
+					)}
 
 				</>
 			)}
