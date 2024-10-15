@@ -95,3 +95,20 @@ export const fetchUserProfile = async () => {
 		throw new Error(error.message);
 	}
 };
+
+
+export const deleteUser = async (username: string, token: string) => {
+    try {
+		const response = await axios.delete(`/api/deleteUser/${username}`,
+			{
+				headers: {
+					Authorization: `Bearer ${token}`,
+				},
+			}
+		);
+		return response.data;
+	} catch (error) {
+		throw new Error(error.message);
+	}
+
+};
