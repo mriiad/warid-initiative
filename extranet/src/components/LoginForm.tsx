@@ -88,8 +88,6 @@ const LoginForm = () => {
 					navigate('/update-profile');
 				} else {
 					navigate('/events');
-					//console.log('token is: ', localStorage.getItem('token'));
-					
 				}
 			},
 			onError: (error) => {
