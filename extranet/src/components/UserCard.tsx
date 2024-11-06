@@ -83,7 +83,7 @@ const UserCard: React.FC<UserCardProps> = ({
                 />
                 <ActionButton
                     title='حذف'
-                    onClick={() => onDelete(user._id)}
+                    onClick={() => onDelete(user.username)}
                 />
 
                 {!user.isAdmin && (
