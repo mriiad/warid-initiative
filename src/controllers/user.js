@@ -246,21 +246,22 @@ exports.searchUsers = async (req, res, next) => {
 
 exports.deleteUser = async (req, res, next) => {
   try {
-    const {username} = req.params;
-	if (!username) {
-		return res.status(STATUS_CODE.BAD_REQUEST).json({ message: "Username is required" });
-	}
-    const user = await User.findOneAndDelete({username: username});
+    const { username } = req.params;
+    if (!username) {
+      return res.status(STATUS_CODE.BAD_REQUEST).json({ message: "Username is required" });
+    }
+    
+    const user = await User.findOneAndDelete({ username: username });
     if (!user) {
       return res.status(STATUS_CODE.NOT_FOUND).json({ message: "User not found" });
-	  
-	}
-	res.status(STATUS_CODE.OK).json({ message: "User deleted successfully" });
-
+    }
+    
+    res.status(STATUS_CODE.OK).json({ message: "User deleted successfully" });
   } catch (err) {
-	if (!err.statusCode) {
-		err.statusCode = STATUS_CODE.INTERNAL_SERVER;
-	  }
+    if (!err.statusCode) {
+      err.statusCode = STATUS_CODE.INTERNAL_SERVER;
+    }
     next(err);
   }
 };
+
