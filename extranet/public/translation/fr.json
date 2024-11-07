@@ -1,0 +1,94 @@
+{
+    "header": {
+        "Home": "Page d’accueil",
+        "Event": "Evénements",
+        "Admin": "Admin",
+        "Login": "Se connecter",
+        "Logout": "Se déconnecter"
+    },
+    "login": {
+        "Login": "Se connecter",
+        "NoAccount": "Tu n'as pas un compte ?",
+        "SignUp": "S'inscrire",
+        "User": "Nom d'utilisateur",
+        "Password": "Mot de passe",
+        "PasswordMiss": "Mot de passe oublié ?"
+    },
+    "signup": {
+        "SignUp": "S'inscrire",
+        "HaveAccount": "Tu as déjà un compte ?",
+        "Login": "Se connecter",
+        "CIN": "Numéro de CIN",
+        "Email": "Email",
+        "Password": "Mot de passe",
+        "Tel": "Numéro de téléphone",
+        "Submit": "Envoyer"
+    },
+    "home": {
+        "Paragraphe1": "Association marocaine dont le but principal est de sensibiliser les gens à l’importance du don périodique et de fournir à la banque de sang locale des quantités suffisantes de poches de sang afin d’aider les patients atteints de cancer",
+        "Paragraphe2": "Nous sommes",
+        "Paragraphe3": "bénévoles",
+        "Paragraphe4": "âgés de 18 à 27 ans Avec des connaissances et des qualifications élevées dans divers domaines et disciplines, unis par un objectif commun qui est de vous servir",
+        "Paragraphe5": "Et vous êtes maintenant",
+        "Paragraphe6": "Donateurs périodiques",
+        "Photos": "Galerie de photos",
+        "Partenaire": "Nos partenaires"
+    },
+    "ErrorPage": {
+        "ErrorMsg": "Oups! La page que vous recherchez n’est pas ici.",
+        "ErrorButton": "Retour à la page d’accueil"
+    },
+    "Events": {
+        "Title": "",
+        "Subtitle": "",
+        "Addres": "",
+        "Local": "Localisation",
+        "Before": "précédant",
+        "After": "suivant"
+    },
+    "EventDetails": {
+        "Description": "",
+        "Participate": "Participer"
+    },
+    "EventParticipation": {
+        "cant": "Désolé, vous n’êtes pas autorisé à faire un don.",
+        "confirm": "Confirmer",
+        "AttendMsg": "Votre présence est en cours de confirmation ...",
+        "confirmMsg": "Ajouté avec succès à la liste des participants !"
+    },
+    "CreateEvent": {
+        "Create": "Créer un événement",
+        "Title": "Titre",
+        "NoTitle": "Le titre est requis",
+        "Subtitle": "Sous-titre",
+        "Addres": "L'addresse",
+        "NoAddres": "L’adresse est requise",
+        "Date": "Date ",
+        "NoDate": "La date est requise",
+        "Local": "Lien de localisation",
+        "Description": "Description",
+        "NoDescription": "La description est requise",
+        "Photo": "Sélectionner une photo",
+        "WithoutPhoto": "Aucune image n’a été sélectionnée",
+        "WithPhoto": "Photo sélectionnée :",
+        "Button": "Créer un événement",
+        "ErrorMsg": "Erreur lors de la création de l’événement",
+        "InvalidInput": "Informations invalides",
+        "ErrorButton": "Retour à la création d’événements",
+        "SuccessMsg": "Événement créé avec succès!",
+        "ActionMsg": "Vous voulez en créer plus ? Cliquez ci-dessous",
+        "SuccesButton": "Créer un autre événement"
+    },
+    "Admin": {
+        "events": "Ajouter un événement",
+        "users": "Liste des utilisateurs"
+    },
+    "UsersList": {
+        "isAdmin": "Admin",
+        "modify": "Modifier",
+        "delete": "Supprimer",
+        "admin": "Rendre admin",
+        "Before": "précédant",
+        "After": "suivant"
+    }
+}
