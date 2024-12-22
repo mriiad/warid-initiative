@@ -1,0 +1,94 @@
+{
+    "header": {
+        "Home": "Home",
+        "Event": "Events",
+        "Admin": "Admin",
+        "Login": "Login",
+        "Logout": "Logout"
+    },
+    "login": {
+        "Login": "Login",
+        "NoAccount": "Don't have an account?",
+        "SignUp": "Sign Up",
+        "User": "Username",
+        "Password": "Password",
+        "PasswordMiss": "Forgot your password?"
+    },
+    "signup": {
+        "SignUp": "Sign Up",
+        "HaveAccount": "Already have an account?",
+        "Login": "Login",
+        "CIN": "CIN Number",
+        "Email": "Email",
+        "Password": "Password",
+        "Tel": "Phone Number",
+        "Submit": "Submit"
+    },
+    "home": {
+        "Paragraphe1": "A Moroccan association whose main goal is to raise awareness about the importance of periodic donation and to provide the local blood bank with sufficient quantities of blood bags to help cancer patients",
+        "Paragraphe2": "We are",
+        "Paragraphe3": "volunteers",
+        "Paragraphe4": "aged between 18 and 27, with high knowledge and qualifications in various fields and disciplines, united by a common goal: to serve you",
+        "Paragraphe5": "And you are now",
+        "Paragraphe6": "periodic donors",
+        "Photos": "Photo Gallery",
+        "Partenaire": "Our Partners"
+    },
+    "ErrorPage": {
+        "ErrorMsg": "Oops! The page you are looking for is not here.",
+        "ErrorButton": "Back to Home"
+    },
+    "Events": {
+        "Title": "",
+        "Subtitle": "",
+        "Addres": "",
+        "Local": "Location",
+        "Before": "Previous",
+        "After": "Next"
+    },
+    "EventDetails": {
+        "Description": "",
+        "Participate": "Participate"
+    },
+    "EventParticipation": {
+        "cant": "Sorry, you are not eligible to donate.",
+        "confirm": "Confirm",
+        "AttendMsg": "Your attendance is being confirmed...",
+        "confirmMsg": "Successfully added to the participants' list!"
+    },
+    "CreateEvent": {
+        "Create": "Create Event",
+        "Title": "Title",
+        "NoTitle": "Title is required",
+        "Subtitle": "Subtitle",
+        "Addres": "Address",
+        "NoAddres": "Address is required",
+        "Date": "Date",
+        "NoDate": "Date is required",
+        "Local": "Location Link",
+        "Description": "Description",
+        "NoDescription": "Description is required",
+        "Photo": "Select a Photo",
+        "WithoutPhoto": "No photo selected",
+        "WithPhoto": "Photo selected:",
+        "Button": "Create Event",
+        "ErrorMsg": "Error creating event",
+        "InvalidInput": "Invalid information",
+        "ErrorButton": "Back to Event Creation",
+        "SuccessMsg": "Event created successfully!",
+        "ActionMsg": "Want to create more? Click below",
+        "SuccesButton": "Create Another Event"
+    },
+    "Admin": {
+        "events": "Add Event",
+        "users": "Users List"
+    },
+    "UsersList": {
+        "isAdmin": "Admin",
+        "modify": "Modify",
+        "delete": "Delete",
+        "admin": "Make Admin",
+        "Before": "Previous",
+        "After": "Next"
+    }
+}
