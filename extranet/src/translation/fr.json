@@ -1,6 +1,7 @@
 {
     "header": {
         "Home": "Page d’accueil",
+        "About" : "About",
         "Event": "Evénements",
         "Admin": "Admin",
         "Login": "Se connecter",
@@ -11,8 +12,12 @@
         "NoAccount": "Tu n'as pas un compte ?",
         "SignUp": "S'inscrire",
         "User": "Nom d'utilisateur",
+        "UserRequired":"Le nom d'utilisateur est requis",
         "Password": "Mot de passe",
-        "PasswordMiss": "Mot de passe oublié ?"
+        "PasswordRequired":"Le mot de passe est requis",
+        "PasswordMiss": "Mot de passe oublié ?",
+        "SignUpDone" : "Votre compte a bien été créé. Vous pouvez maintenant vous connecter.",
+        "ResetPasswordDone" : "Réinitialisation du mot de passe réussie !"
     },
     "signup": {
         "SignUp": "S'inscrire",

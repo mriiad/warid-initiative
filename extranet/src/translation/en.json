@@ -1,6 +1,7 @@
 {
     "header": {
         "Home": "Home",
+        "About": "About",
         "Event": "Events",
         "Admin": "Admin",
         "Login": "Login",
@@ -11,8 +12,12 @@
         "NoAccount": "Don't have an account?",
         "SignUp": "Sign Up",
         "User": "Username",
+        "UserRequired":"Username is required",
         "Password": "Password",
-        "PasswordMiss": "Forgot your password?"
+        "PasswordRequired":"Password is required",
+        "PasswordMiss": "Forgot your password?",
+        "SignUpDone" : "Your account has been successfully created. You can now log in.",
+        "ResetPasswordDone" : "Password reset successfully!"
     },
     "signup": {
         "SignUp": "Sign Up",
