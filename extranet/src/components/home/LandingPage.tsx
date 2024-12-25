@@ -4,8 +4,10 @@ import { useLandingPageStyles } from './LandingPageStyles';
 import NumbersContainer from './NumbersContainer';
 import PartnersList from './PartnersList';
 import PhotoGallery from './PhotoGallery';
+import { useTranslation } from 'react-i18next';
 
 const LandingPage = () => {
+	const { t }: { t: (key: string) => string } = useTranslation();
 	const {
 		landingContainer,
 		mainImageContainer,
@@ -79,8 +81,7 @@ const LandingPage = () => {
 			</div>
 			<img src='/landing-page/title.png' alt='Title' className={blockImage} />
 			<p className={textParagraph}>
-				جمعية مغربية غرضها الرئيسي تحسيس الناس بأهمية التبرع الدوري وتزويد بنك
-				الدم المحلي بكميات كافية من أكياس الدم من أجل مساعدة مرضى السرطان
+			    {t('home.Paragraphe1')}
 			</p>
 			<Box className={contentBox}>
 				<img
@@ -88,7 +89,7 @@ const LandingPage = () => {
 					alt='Warid Team'
 					className={mainImage}
 				/>
-				<p className={`${textParagraph} ${highlightedText} ${title}`}>نحن</p>
+				<p className={`${textParagraph} ${highlightedText} ${title}`}> {t('home.Paragraphe2')} </p>
 				<img
 					src='/landing-page/avatar.png'
 					alt='Main Visual'
@@ -96,16 +97,15 @@ const LandingPage = () => {
 				/>
 				<p className={`${textParagraph} ${bigNumber}`}>100</p>
 				<p className={`${textParagraph} ${highlightedText} ${noMargin}`}>
-					متطوع ومتطوعة
+				    {t('home.Paragraphe3')} 
 				</p>
 				<p className={textParagraph}>
-					تتراوح أعمارهم بين 18 و27 عاماً
+				    {t('home.Paragraphe4P1')}
 					<br />
-					ذوو معرفة ومؤهلات عالية في مختلف المجالات والتخصصات، يجمعهم هدف مشترك
-					وهو خدمتكم
+					{t('home.Paragraphe4P2')}
 				</p>
 				<p className={`${textParagraph} ${highlightedText} ${title}`}>
-					وأنتم الآن
+				    {t('home.Paragraphe5')}
 				</p>
 				<div className={mainImageContainer}>
 					<img
@@ -135,20 +135,20 @@ const LandingPage = () => {
 						alt='Heart with background'
 					/>
 					<div>
-						<p>متبرع دوري</p>
+						<p>{t('home.Paragraphe6')}</p>
 					</div>
 				</div>
 				<NumbersContainer animatedNumber={animatedNumber} ref={numbersRef} />
 				<div className={gallery}>
 					<p className={`${textParagraph} ${highlightedText} ${title}`}>
-						معرض الصور
+					    {t('home.Photos')}
 					</p>
 					<PhotoGallery />
 					<img src='/landing-page/heart.png' alt='Heart' />
 				</div>
 				<div className={partnersContainer}>
 					<p className={`${textParagraph} ${highlightedText} ${title}`}>
-						شركاؤنا
+					    {t('home.Partners')}
 					</p>
 					<PartnersList />
 				</div>

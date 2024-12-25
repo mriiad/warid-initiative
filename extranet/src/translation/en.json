@@ -33,11 +33,12 @@
         "Paragraphe1": "A Moroccan association whose main goal is to raise awareness about the importance of periodic donation and to provide the local blood bank with sufficient quantities of blood bags to help cancer patients",
         "Paragraphe2": "We are",
         "Paragraphe3": "volunteers",
-        "Paragraphe4": "aged between 18 and 27, with high knowledge and qualifications in various fields and disciplines, united by a common goal: to serve you",
+        "Paragraphe4P1": "aged between 18 and 27",
+        "Paragraphe4P2": "With high knowledge and qualifications in various fields and disciplines, united by a common goal: to serve you",
         "Paragraphe5": "And you are now",
-        "Paragraphe6": "periodic donors",
+        "Paragraphe6": "Periodic donors",
         "Photos": "Photo Gallery",
-        "Partenaire": "Our Partners"
+        "Partners": "Our Partners"
     },
     "ErrorPage": {
         "ErrorMsg": "Oops! The page you are looking for is not here.",

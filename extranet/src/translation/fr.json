@@ -33,11 +33,12 @@
         "Paragraphe1": "Association marocaine dont le but principal est de sensibiliser les gens à l’importance du don périodique et de fournir à la banque de sang locale des quantités suffisantes de poches de sang afin d’aider les patients atteints de cancer",
         "Paragraphe2": "Nous sommes",
         "Paragraphe3": "bénévoles",
-        "Paragraphe4": "âgés de 18 à 27 ans Avec des connaissances et des qualifications élevées dans divers domaines et disciplines, unis par un objectif commun qui est de vous servir",
+        "Paragraphe4P1": "âgés de 18 à 27 ans",
+        "Paragraphe4P2": "Avec des connaissances et des qualifications élevées dans divers domaines et disciplines, unis par un objectif commun qui est de vous servir",
         "Paragraphe5": "Et vous êtes maintenant",
         "Paragraphe6": "Donateurs périodiques",
         "Photos": "Galerie de photos",
-        "Partenaire": "Nos partenaires"
+        "Partners": "Nos partenaires"
     },
     "ErrorPage": {
         "ErrorMsg": "Oups! La page que vous recherchez n’est pas ici.",
