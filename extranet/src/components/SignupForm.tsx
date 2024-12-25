@@ -7,8 +7,10 @@ import { useNavigate } from 'react-router-dom';
 import { SignupFormData } from '../data/authData';
 import { authStyles, mainStyles } from '../styles/mainStyles';
 import FormContainer from './shared/FormContainer';
+import { useTranslation } from 'react-i18next';
 
 const SignupForm = () => {
+	const { t }: { t: (key: string) => string } = useTranslation();
 	const { formField, bar, button, signUp, form } = authStyles();
 	const { subTitle, textButton } = mainStyles();
 	const {
@@ -48,19 +50,21 @@ const SignupForm = () => {
 
 	const validateEmail = (value) => {
 		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-		return emailRegex.test(value) || 'الرجاء إدخال عنوان بريد إلكتروني صالح.';
+		return emailRegex.test(value) || t('signup.InvalidEmail') ;
 	};
 
 	return (
 		<FormContainer>
-			<Typography variant='h2' align='center' gutterBottom className={signUp}>
-			    التسجيل 
+			<Typography variant='h2' align='center' gutterBottom className={signUp}>	
+			    {t('signup.SignUp')}
 				<span className={bar}></span>
 			</Typography>
 			<Typography variant='h6' align='center' gutterBottom>
-				<span className={subTitle}>هل لديك حساب؟ </span>
+				<span className={subTitle}>
+				    {t('signup.HaveAccount')}
+				</span>
 				<span className={textButton} onClick={() => navigate('/login')}>
-				    تسجيل الدخول      
+				    {t('signup.Login')}  
 				</span>
 			</Typography>
 			<form onSubmit={handleSubmit(onSubmit)} className={form}>
@@ -73,11 +77,11 @@ const SignupForm = () => {
 							render={({ field }) => (
 								<TextField
 									fullWidth
-									label='رقم الهوية الوطنية'
+									label={t('signup.CIN')}
 									required
 									{...field}
 									error={Boolean(errors.username)}
-									helperText={errors.username ? 'اسم المستخدم مطلوب' : ''}
+									helperText={errors.username ? t('signup.CINRequired') : ''}
 								/>
 							)}
 						/>
@@ -90,7 +94,7 @@ const SignupForm = () => {
 							render={({ field }) => (
 								<TextField
 									fullWidth
-									label='البريد الإلكتروني'
+									label={t('signup.Email')}
 									required
 									{...field}
 									error={Boolean(errors.email)}
@@ -98,7 +102,7 @@ const SignupForm = () => {
 								/>
 							)}
 							rules={{
-								required: 'البريد الإلكتروني مطلوب',
+								required: t('signup.EmailRequired'),
 								validate: validateEmail,
 							}}
 						/>
@@ -113,10 +117,10 @@ const SignupForm = () => {
 									fullWidth
 									type='password'
 									required
-									label='كلمة المرور'
+									label= {t('signup.Password')}
 									{...field}
 									error={Boolean(errors.password)}
-									helperText={errors.password ? 'كلمة المرور مطلوبة' : ''}
+									helperText={errors.password ? t('signup.PasswordRequired') : ''}
 								/>
 							)}
 						/>
@@ -129,7 +133,7 @@ const SignupForm = () => {
 							render={({ field }) => (
 								<TextField
 									fullWidth
-									label='رقم الهاتف'
+									label= {t('signup.Tel')}
 									type='tel'
 									required
 									{...field}
@@ -141,7 +145,7 @@ const SignupForm = () => {
 					</Grid>
 					<Grid item xs={12}>
 						<Button type='submit' className={button}>
-						   إرسال 
+						    {t('signup.Submit')}
 						</Button>
 					</Grid>
 				</Grid>

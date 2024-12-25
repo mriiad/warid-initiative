@@ -24,8 +24,12 @@
         "HaveAccount": "Already have an account?",
         "Login": "Login",
         "CIN": "CIN Number",
+        "CINRequired":"CIN number is required",
         "Email": "Email",
+        "EmailRequired":"Email is required",
+        "InvalidEmail":" Please enter a valid email address",
         "Password": "Password",
+        "PasswordRequired":"Password is required",
         "Tel": "Phone Number",
         "Submit": "Submit"
     },
