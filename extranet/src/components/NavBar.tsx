@@ -8,6 +8,7 @@ import { useAuth } from '../auth/AuthContext';
 import colors from '../styles/colors';
 import { mainStyles } from '../styles/mainStyles';
 import ActionButton from './shared/ActionButton';
+import LanguageSwitcher from './LanguageSwitcher';
 
 const useStyles = makeStyles({
 	navbar: {
@@ -77,6 +78,11 @@ const useStyles = makeStyles({
 		fontSize: '1.2rem',
 		marginLeft: '8px',
 	},
+	mainButton: {
+		display: 'flex',
+		alignItems: 'center', 
+		gap: '20px', 
+	  },
 });
 
 const Navbar = () => {
@@ -91,9 +97,10 @@ const Navbar = () => {
 		activeLink,
 		logo,
 		loginIcon,
+		mainButton,
 	} = useStyles();
 
-	const { mainButton } = mainStyles();
+	//  const { mainButton } = mainStyles();
 
 	const navigate = useNavigate();
 	const location = useLocation();
@@ -197,6 +204,7 @@ const Navbar = () => {
 						onClick={() => navigate('/login')}
 					/>
 				)}
+				<LanguageSwitcher />
 			</div>
 		</div>
 	);
