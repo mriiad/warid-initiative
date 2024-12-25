@@ -15,8 +15,10 @@ import { LoginFormData, SignupFormData } from '../data/authData';
 import { authStyles, mainStyles } from '../styles/mainStyles';
 import FormContainer from './shared/FormContainer';
 import SnackbarComponent from './shared/SnackbarComponent';
+import { useTranslation } from 'react-i18next';
 
 const LoginForm = () => {
+	const { t }: { t: (key: string) => string } = useTranslation();
 	const { setToken, setUserId, setIsAdmin } = useAuth();
 
 	const { bar, button, signUp, form } = authStyles();
@@ -112,13 +114,13 @@ const LoginForm = () => {
 					<SnackbarComponent
 						open={passwordResetSnackbarOpen}
 						handleClose={() => setPasswordResetSnackbarOpen(false)}
-						message='!تمت إعادة تعيين كلمة المرور بنجاح'
+						message={t('login.ResetPasswordDone')}
 						autoHideDuration={5000}
 					/>
 					<SnackbarComponent
 						open={signUpSnackbarOpen}
 						handleClose={() => setSignUpSnackbarOpen(false)}
-						message='.تم إنشاء حسابك بنجاح. يمكنك الآن تسجيل الدخول'
+						message={t('login.SignUpDone')}
 						autoHideDuration={5000}
 					/>
 					<Typography
@@ -127,13 +129,13 @@ const LoginForm = () => {
 						gutterBottom
 						className={signUp}
 					>
-						تسجيل الدخول
+						 {t('login.Login')}
 						<span className={bar}></span>
 					</Typography>
 					<Typography variant='h6' align='center' gutterBottom>
-						<span className={subTitle}>ليس لديك حساب؟</span>
+						<span className={subTitle}>{t('login.NoAccount')}</span>
 						<span className={textButton} onClick={() => navigate('/signup')}>
-							التسجيل
+						{t('login.SignUp')}
 						</span>
 					</Typography>
 					<form onSubmit={handleSubmit(onSubmit)} className={form}>
@@ -146,11 +148,10 @@ const LoginForm = () => {
 									render={({ field }) => (
 										<TextField
 											fullWidth
-											label='اسم المستخدم'
-											required
+											label={t('login.User')}											required
 											{...field}
 											error={Boolean(errors.username)}
-											helperText={errors.username ? 'اسم المستخدم مطلوب' : ''}
+											helperText={errors.username ? t('login.UserRequired') : ''}
 										/>
 									)}
 								/>
@@ -164,11 +165,11 @@ const LoginForm = () => {
 										<TextField
 											fullWidth
 											type='password'
-											label='كلمة المرور'
+											label={t('login.Password')}
 											required
 											{...field}
 											error={Boolean(errors.password)}
-											helperText={errors.password ? 'كلمة المرور مطلوبة' : ''}
+											helperText={errors.password ? t('login.PasswordRequired') : ''}
 										/>
 									)}
 								/>
@@ -180,7 +181,7 @@ const LoginForm = () => {
 									style={{ color: 'white' }}
 									className={button}
 								>
-									تسجيل الدخول
+									{t('login.Login')}
 								</Button>
 							</Grid>
 							<Grid item xs={12}>
@@ -191,7 +192,7 @@ const LoginForm = () => {
 									className={textButton}
 									onClick={() => navigate('/request-reset-password')}
 								>
-									هل نسيت كلمة المرور؟
+									{t('login.PasswordMiss')}
 								</Typography>
 							</Grid>
 						</Grid>

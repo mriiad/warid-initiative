@@ -9,6 +9,7 @@ import colors from '../styles/colors';
 import { mainStyles } from '../styles/mainStyles';
 import ActionButton from './shared/ActionButton';
 import LanguageSwitcher from './LanguageSwitcher';
+import { useTranslation } from 'react-i18next';
 
 const useStyles = makeStyles({
 	navbar: {
@@ -86,6 +87,7 @@ const useStyles = makeStyles({
 });
 
 const Navbar = () => {
+	const { t }: { t: (key: string) => string } = useTranslation();
 	const { token, setToken, isAdmin, setIsAdmin, setUserId } = useAuth();
 
 	const {
@@ -149,7 +151,7 @@ const Navbar = () => {
 									}`}
 								onClick={() => handleRouteChange('/')}
 							>
-								الرئيسية
+								{t('header.Home')}
 							</Link>
 						</li>
 						<li className={routesListItem}>
@@ -159,7 +161,7 @@ const Navbar = () => {
 									}`}
 								onClick={() => handleRouteChange('/about')}
 							>
-								بخصوص
+								{t('header.About')}
 							</Link>
 						</li>
 						<li className={routesListItem}>
@@ -169,7 +171,7 @@ const Navbar = () => {
 									}`}
 								onClick={() => handleRouteChange('/events?page=1')}
 							>
-								الفعاليات
+								{t('header.Event')}
 							</Link>
 						</li>
 						{token && isAdmin && (
@@ -181,7 +183,7 @@ const Navbar = () => {
 									}`}
 									onClick={() => handleRouteChange('/admin')}
 								>
-									المشرف
+									{t('header.Admin')}
 								</Link>
 							</li>
 						)}
@@ -193,13 +195,13 @@ const Navbar = () => {
 			<div className={mainButton}>
 				{token ? (
 					<ActionButton
-						title='تسجيل الخروج'
+						title={t('header.Logout')}
 						icon={<ArrowCircleLeftIcon className={loginIcon} />}
 						onClick={() => handleLogout()}
 					/>
 				) : (
 					<ActionButton
-						title='تسجيل الدخول'
+						title={t('header.Login')}
 						icon={<ArrowCircleRightIcon className={loginIcon} />}
 						onClick={() => navigate('/login')}
 					/>
