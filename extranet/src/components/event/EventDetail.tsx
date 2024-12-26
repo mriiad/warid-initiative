@@ -30,6 +30,8 @@ import { fetchEventByReference } from '../../utils/queries';
 import CanDonate from '../CanDonate';
 import CardComponent from '../shared/CardComponent';
 import EventConfirmation from './EventConfirmation';
+import { useTranslation } from 'react-i18next';
+
 const useStyles = makeStyles({
 	eventContainer: {
 		position: 'relative',
@@ -96,6 +98,7 @@ const useStyles = makeStyles({
 });
 
 const EventDetail: React.FC = () => {
+	const { t }: { t: (key: string) => string } = useTranslation();
 	const { reference } = useParams<{ reference: string }>();
 	const { token, isAdmin } = useAuth();
 	const navigate = useNavigate();
@@ -212,7 +215,7 @@ const EventDetail: React.FC = () => {
 												target='_blank'
 												rel='noopener noreferrer'
 											>
-												 فتح الخريطة
+												  {t('EventDetails.Local')}
 												<OpenInNewIcon />
 											</a>
 										</Box>
@@ -231,7 +234,7 @@ const EventDetail: React.FC = () => {
 											className={joinButton}
 											onClick={handleParticipateClick}
 										>
-											المشاركة
+											{t('EventDetails.Participate')}
 										</Button>
 									</>
 								)}

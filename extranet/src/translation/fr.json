@@ -58,6 +58,7 @@
     },
     "EventDetails": {
         "Description": "",
+        "Local":"Ouvrir la carte",
         "Participate": "Participer"
     },
     "EventParticipation": {

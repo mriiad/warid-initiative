@@ -58,6 +58,7 @@
     },
     "EventDetails": {
         "Description": "",
+        "Local":"فتح الخريطة",
         "Participate": "المشاركة"
     },
     "EventParticipation": {

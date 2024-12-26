@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { Event } from '../../data/Event';
 import EventCard from './EventCard';
+import { useTranslation } from 'react-i18next';
 
 const EventsContainer = styled.div`
 	display: flex;
@@ -32,6 +33,7 @@ const useStyles = makeStyles({
 });
 
 const EventsComponent = () => {
+	const { t }: { t: (key: string) => string } = useTranslation();
 	const { eventsList, fallBack, pagination } = useStyles();
 	const [events, setEvents] = useState<Event[] | null>([]);
 
@@ -78,10 +80,10 @@ const EventsComponent = () => {
 			)}
 			<div className={pagination}>
 				<Button disabled={page === 1} onClick={() => setPage(page - 1)}>
-				    السابق
+				    {t('Events.Before')}
 				</Button>
 				<Button disabled={page >= totalPages} onClick={() => setPage(page + 1)}>
-				    التالي
+				    {t('Events.After')}
 				</Button>
 			</div>
 			<div></div>

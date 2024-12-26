@@ -7,6 +7,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Event } from '../../data/Event';
 import colors from '../../styles/colors';
+import { useTranslation } from 'react-i18next';
 
 interface EventCardProps {
 	event: Event;
@@ -150,6 +151,7 @@ const useStyles = makeStyles({
 });
 
 const EventCard: React.FC<EventCardProps> = ({ event, animationDelay }) => {
+	const { t }: { t: (key: string) => string } = useTranslation();
 	const {
 		cardContainer,
 		titleContainer,
@@ -208,7 +210,7 @@ const EventCard: React.FC<EventCardProps> = ({ event, animationDelay }) => {
 								rel='noopener noreferrer'
 								className={link}
 							>
-								خريطة الطريق
+								{t('Events.Local')}
 							</a>
 						</Typography>
 					</div>
