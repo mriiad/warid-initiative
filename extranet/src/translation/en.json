@@ -100,5 +100,16 @@
         "admin": "Make Admin",
         "Before": "Previous",
         "After": "Next"
+   },
+   "UpdateProfil": {
+        "Title" : "Complete your profile",
+        "FirstName":"First Name",
+        "LastName":"Last Name",
+        "Birthdate":"Birthdate",
+        "Male":"Male",
+        "Female":"Female",
+        "BloodGroup":"BloodGroup",
+        "Message":"",
+        "Button":"Update"
     }
 }

@@ -1,7 +1,7 @@
 {
     "header": {
         "Home": "Page d’accueil",
-        "About" : "About",
+        "About": "About",
         "Event": "Evénements",
         "Admin": "Admin",
         "Login": "Se connecter",
@@ -12,24 +12,24 @@
         "NoAccount": "Tu n'as pas un compte ?",
         "SignUp": "S'inscrire",
         "User": "Nom d'utilisateur",
-        "UserRequired":"Le nom d'utilisateur est requis",
+        "UserRequired": "Le nom d'utilisateur est requis",
         "Password": "Mot de passe",
-        "PasswordRequired":"Le mot de passe est requis",
+        "PasswordRequired": "Le mot de passe est requis",
         "PasswordMiss": "Mot de passe oublié ?",
-        "SignUpDone" : "Votre compte a bien été créé. Vous pouvez maintenant vous connecter.",
-        "ResetPasswordDone" : "Réinitialisation du mot de passe réussie !"
+        "SignUpDone": "Votre compte a bien été créé. Vous pouvez maintenant vous connecter.",
+        "ResetPasswordDone": "Réinitialisation du mot de passe réussie !"
     },
     "signup": {
         "SignUp": "S'inscrire",
         "HaveAccount": "Tu as déjà un compte ?",
         "Login": "Se connecter",
         "CIN": "Numéro de CIN",
-        "CINRequired":"CIN est requis",
+        "CINRequired": "CIN est requis",
         "Email": "Adresse e-mail",
-        "EmailRequired":"L'adresse e-mail est requise",
-        "InvalidEmail" :" Veuillez saisir une adresse e-mail valide.",
+        "EmailRequired": "L'adresse e-mail est requise",
+        "InvalidEmail": " Veuillez saisir une adresse e-mail valide.",
         "Password": "Mot de passe",
-        "PasswordRequired":"Le mot de passe est requis",	
+        "PasswordRequired": "Le mot de passe est requis",
         "Tel": "Numéro de téléphone",
         "Submit": "Envoyer"
     },
@@ -100,5 +100,16 @@
         "admin": "Rendre admin",
         "Before": "précédant",
         "After": "suivant"
+    },
+    "UpdateProfil": {
+        "Title": "Complétez votre profil",
+        "FirstName": "Prénom",
+        "LastName": "Nom",
+        "Birthdate": "Date de naissance",
+        "Male": "Homme",
+        "Female": "Femme",
+        "BloodGroup": "Groupe sanguin",
+        "Message": "",
+        "Button": "Mettre à jour"
     }
 }
