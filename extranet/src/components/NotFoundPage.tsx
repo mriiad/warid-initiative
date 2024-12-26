@@ -2,6 +2,7 @@ import { Typography } from '@mui/material';
 import makeStyles from '@mui/styles/makeStyles';
 import { useNavigate } from 'react-router-dom';
 import colors from '../styles/colors';
+import { useTranslation } from 'react-i18next';
 
 const useStyles = makeStyles({
 	notFoundContainer: {
@@ -52,6 +53,7 @@ const useStyles = makeStyles({
 });
 
 const NotFoundPage = () => {
+	const { t }: { t: (key: string) => string } = useTranslation();
 	const navigate = useNavigate();
 	const {
 		notFoundContainer,
@@ -72,10 +74,10 @@ const NotFoundPage = () => {
 				className={svgIllustration}
 			/>
 			<Typography className={description}>
-				Oops! The page you're looking for isn't here.
+			    {t('ErrorPage.ErrorMsg')}
 			</Typography>
 			<div className={homeButton} onClick={() => navigate('/')}>
-				Go Back Home
+			    {t('ErrorPage.ErrorButton')}
 			</div>
 		</div>
 	);
