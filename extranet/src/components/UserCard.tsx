@@ -7,7 +7,7 @@ import Typography from '@mui/material/Typography';
 import EmailIcon from '@mui/icons-material/Email';
 import PhoneIcon from '@mui/icons-material/Phone';
 import GenderIcon from '@mui/icons-material/Gesture';
-
+import { useTranslation } from 'react-i18next';
 interface UserCardProps {
     user: User;
     onUpdate: (userId: string) => void;
@@ -55,7 +55,8 @@ const UserCard: React.FC<UserCardProps> = ({
     onMakeAdmin,
     animationDelay,
 }) => {
-
+    
+    const { t }: { t: (key: string) => string } = useTranslation();
     const classes = useStyles({ animationDelay, isAdmin: user.isAdmin });
 
     return (
@@ -65,7 +66,7 @@ const UserCard: React.FC<UserCardProps> = ({
                 {user.isAdmin && (
                     <div className={classes.adminIcons}>
 
-                        <span>مشرف</span>
+                        <span>{t('UsersList.isAdmin')}</span>
 
                     </div>
                 )}
@@ -78,17 +79,17 @@ const UserCard: React.FC<UserCardProps> = ({
 
             <div className={classes.buttons}>
                 <ActionButton
-                    title='تحديث'
+                    title={t('UsersList.update')}
                     onClick={() => onUpdate(user._id)}
                 />
                 <ActionButton
-                    title='حذف'
+                    title={t('UsersList.delete')}
                     onClick={() => onDelete(user._id)}
                 />
 
                 {!user.isAdmin && (
                     <ActionButton
-                        title='تعيين مشرف'
+                        title={t('UsersList.makeAdmin')}
                         onClick={() => onMakeAdmin(user._id)}
                     />
                 )}

@@ -6,6 +6,7 @@ import styled from 'styled-components';
 import { User } from '../data/User';
 import UserCard from './UserCard';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 const UsersContainer = styled.div`
   display: flex;
@@ -33,7 +34,7 @@ const useStyles = makeStyles({
 });
 
 const UsersComponent = () => {
-
+    const { t }: { t: (key: string) => string } = useTranslation(); 
 	const navigate = useNavigate();
 
 	const { usersList, fallBack, pagination } = useStyles();
@@ -100,10 +101,10 @@ const UsersComponent = () => {
 					<div className={pagination}>
 
 						<Button disabled={page === 1} onClick={() => setPage(page - 1)}>
-							السابق
+						    {t('UsersList.Before')}
 						</Button>
 						<Button disabled={page >= totalPages} onClick={() => setPage(page + 1)}>
-							التالي
+						    {t('UsersList.After')}
 						</Button>
 
 					</div>
