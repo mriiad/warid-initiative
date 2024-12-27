@@ -6,7 +6,7 @@ import { authStyles, mainStyles } from '../../styles/mainStyles';
 import { createEvent } from '../../utils/queries';
 import FormContainer from '../shared/FormContainer';
 import ResponseAnimation from '../shared/ResponseAnimation';
-
+import { useTranslation } from 'react-i18next';
 interface IFormInput {
 	title: string;
 	subtitle: string;
@@ -27,6 +27,7 @@ const useStyles = makeStyles({
 });
 
 const EventForm: React.FC = () => {
+	const { t }: { t: (key: string) => string } = useTranslation();
 	const { bar, button, form } = authStyles();
 	const { subTitle } = mainStyles();
 	const { formWrapper, fileInput } = useStyles();
@@ -66,11 +67,11 @@ const EventForm: React.FC = () => {
 			setIsSuccessResponse(false);
 			setIsErrorResponse(true);
 			setErrorMessage(
-				error.data?.errorMessage || 'Error while creating the event'
+				error.data?.errorMessage || t('CreateEvent.ErrorMsg')
 			);
 			if (error.response?.data?.errorKeys) {
 				error.response.data.errorKeys.forEach((key: string) => {
-					setError(key as keyof IFormInput, { message: 'Invalid input' });
+					setError(key as keyof IFormInput, { message: t('CreateEvent.InvalidInput') });
 				});
 			}
 		}
@@ -91,8 +92,8 @@ const EventForm: React.FC = () => {
 		return (
 			<FormContainer className={formWrapper}>
 				<ResponseAnimation
-					responseMessage={'تم إنشاء الحدث بنجاح!'}
-					actionMessage={'هل ترغب في إنشاء المزيد؟ انقر أدناه'}
+					responseMessage={t('CreateEvent.SuccessMsg')}
+					actionMessage={t('CreateEvent.ActionMsg')}
 					isSuccess={isSuccessResponse}
 					isError={!isSuccessResponse && isErrorResponse}
 					errorMessage={errorMessage}
@@ -103,8 +104,8 @@ const EventForm: React.FC = () => {
 					style={{ marginTop: '20px' }}
 				>
 					{isSuccessResponse
-						? 'إنشاء حدث آخر'
-						: 'العودة إلى إنشاء الحدث'}
+						? t('CreateEvent.SuccesButton')
+						: t('CreateEvent.ErrorButton') }
 				</Button>
 			</FormContainer>
 		);
@@ -113,7 +114,7 @@ const EventForm: React.FC = () => {
 	return (
 		<FormContainer className={formWrapper}>
 			<Typography variant='h4' align='center' className={subTitle}>
-				إنشاء حدث
+			    {t('CreateEvent.Create')}
 				<span className={bar}></span>
 			</Typography>
 			<form onSubmit={handleSubmit(onSubmit)} className={form}>
@@ -122,11 +123,11 @@ const EventForm: React.FC = () => {
 						<Controller
 							name='title'
 							control={control}
-							rules={{ required: 'العنوان مطلوب' }}
+							rules={{ required: t('CreateEvent.NoTitle')	}}
 							render={({ field }) => (
 								<TextField
 									{...field}
-									label='العنوان'
+									label={t('CreateEvent.Title')}
 									error={Boolean(errors.title)}
 									helperText={errors.title?.message}
 								/>
@@ -138,7 +139,7 @@ const EventForm: React.FC = () => {
 						<Controller
 							name='subtitle'
 							control={control}
-							render={({ field }) => <TextField {...field} label='العنوان الفرعي' />}
+							render={({ field }) => <TextField {...field} label={t('CreateEvent.Subtitle')}	/>}
 						/>
 					</Grid>
 
@@ -146,11 +147,11 @@ const EventForm: React.FC = () => {
 						<Controller
 							name='location'
 							control={control}
-							rules={{ required: 'الموقع مطلوب' }}
+							rules={{ required: t('CreateEvent.NoAddress') }}
 							render={({ field }) => (
 								<TextField
 									{...field}
-									label='موقع الحدث'
+									label={t('CreateEvent.Address')}
 									error={Boolean(errors.location)}
 									helperText={errors.location?.message}
 								/>
@@ -162,11 +163,11 @@ const EventForm: React.FC = () => {
 						<Controller
 							name='date'
 							control={control}
-							rules={{ required: 'التاريخ مطلوب' }}
+							rules={{ required: t('CreateEvent.NoDate') }}
 							render={({ field }) => (
 								<TextField
 									{...field}
-									label='التاريخ'
+									label={t('CreateEvent.Date')}
 									type='date'
 									InputLabelProps={{ shrink: true }}
 									error={Boolean(errors.date)}
@@ -180,7 +181,7 @@ const EventForm: React.FC = () => {
 						<Controller
 							name='mapLink'
 							control={control}
-							render={({ field }) => <TextField {...field} label='رابط الخريطة' />}
+							render={({ field }) => <TextField {...field} label={t('CreateEvent.Link')} />}
 						/>
 					</Grid>
 
@@ -188,11 +189,11 @@ const EventForm: React.FC = () => {
 						<Controller
 							name='description'
 							control={control}
-							rules={{ required: 'الوصف مطلوب' }}
+							rules={{ required: t('CreateEvent.NoDescription') }}
 							render={({ field }) => (
 								<TextField
 									{...field}
-									label='الوصف'
+									label={t('CreateEvent.Description')}
 									multiline
 									rows={4}
 									error={Boolean(errors.description)}
@@ -215,19 +216,19 @@ const EventForm: React.FC = () => {
 								variant="contained"
 								
 							>
-								اختر ملف
+								{t('CreateEvent.Photo')}
 							</Button>
 						</label>
 						{image ? (
-							<span>الملف المحدد: {image.name}</span>
+							<span> {t('CreateEvent.WithPhoto')} {image.name}</span>
 						) : (
-							<span>لم يتم اختيار أي ملف</span>
+							<span>{t('CreateEvent.WithoutPhoto')}</span>
 						)}
 					</Grid>
 
 					<Grid item xs={12}>
 						<Button type='submit' className={button}>
-							إنشاء الحدث
+						    {t('CreateEvent.Button')}
 						</Button>
 					</Grid>
 				</Grid>
