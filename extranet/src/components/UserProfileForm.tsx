@@ -29,6 +29,7 @@ import { fetchUserProfile } from '../utils/queries';
 import { formatDate } from '../utils/utils';
 import FormContainer from './shared/FormContainer';
 import SnackbarComponent from './shared/SnackbarComponent';
+import { useTranslation } from 'react-i18next';
 
 const useStyles = makeStyles({
 	align: {
@@ -45,6 +46,7 @@ const useStyles = makeStyles({
 });
 
 const UserProfileForm = () => {
+	const { t }: { t: (key: string) => string } = useTranslation();
 	const navigate = useNavigate();
 	const { align, radioGroup, radioMargin } = useStyles();
 	const { formField, button, signUp, form, bar } = authStyles();
@@ -127,7 +129,7 @@ const UserProfileForm = () => {
 	return (
 		<FormContainer className={align}>
 			<Typography variant='h2' align='center' gutterBottom className={signUp}>
-				Complete Your Profile
+			    {t('UserProfil.Title')}
 				<span className={bar}></span>
 			</Typography>
 			<form onSubmit={handleSubmit(onSubmit)} className={form}>
@@ -135,29 +137,29 @@ const UserProfileForm = () => {
 					<Grid item xs={12}>
 						<FormControlField
 							name='firstname'
-							label='First Name'
+							label={t('UserProfil.FirstName')}
 							control={control}
 							error={errors.firstname}
-							helperText={errors.firstname ? 'First name is required' : ''}
+							helperText={errors.firstname ? t('UserProfil.FirstNameRequired') : ''}
 						/>
 					</Grid>
 					<Grid item xs={12}>
 						<FormControlField
 							name='lastname'
-							label='Last Name'
+							label={t('UserProfil.LastName')}
 							control={control}
 							error={errors.lastname}
-							helperText={errors.lastname ? 'Last name is required' : ''}
+							helperText={errors.lastname ? t('UserProfil.LastNameRequired') : ''}
 						/>
 					</Grid>
 					<Grid item xs={12}>
 						<FormControlField
 							name='birthdate'
-							label='Birthdate'
+							label={t('UserProfil.Birthdate')}
 							control={control}
 							type='date'
 							error={errors.birthdate}
-							helperText={errors.birthdate ? 'Birthdate is required' : ''}
+							helperText={errors.birthdate ? t('UserProfil.BirthdateRequired') : ''}
 						/>
 					</Grid>
 					<Grid item xs={12} className={formField}>
@@ -165,20 +167,20 @@ const UserProfileForm = () => {
 							name='gender'
 							control={control}
 							defaultValue={Gender.Male}
-							rules={{ required: 'Gender is required' }}
+							rules={{ required: t('UserProfil.GenderRequired') }}
 							render={({ field }) => (
 								<FormControl component='fieldset' fullWidth>
 									<RadioGroup row {...field} className={radioGroup}>
 										<FormControlLabel
 											value='male'
 											control={<Radio />}
-											label='Male'
+											label={t('UserProfil.Male')}
 											className={radioMargin}
 										/>
 										<FormControlLabel
 											value='female'
 											control={<Radio />}
-											label='Female'
+											label={t('UserProfil.Female')}
 											className={radioMargin}
 										/>
 									</RadioGroup>
@@ -197,10 +199,10 @@ const UserProfileForm = () => {
 							control={control}
 							render={({ field }) => (
 								<FormControl fullWidth error={Boolean(errors.bloodGroup)}>
-									<InputLabel>Blood Group</InputLabel>
+									<InputLabel>{t('UserProfil.BloodGroup')}</InputLabel>
 									<Select {...field}>
 										<MenuItem value=''>
-											<em>None</em>
+											<em>{t('UserProfil.None')}</em>
 										</MenuItem>
 										<MenuItem value='A+'>A+</MenuItem>
 										<MenuItem value='A-'>A-</MenuItem>
@@ -212,7 +214,7 @@ const UserProfileForm = () => {
 										<MenuItem value='O-'>O-</MenuItem>
 									</Select>
 									<FormHelperText>
-										{errors.bloodGroup ? 'Blood Group is required' : ''}
+										{errors.bloodGroup ? t('UserProfil.BloodGrpRequired') : ''}
 									</FormHelperText>
 								</FormControl>
 							)}
@@ -220,7 +222,7 @@ const UserProfileForm = () => {
 					</Grid>
 					<Grid item xs={12}>
 						<Button type='submit' className={button}>
-							Update
+						{t('UserProfil.Button')}
 						</Button>
 					</Grid>
 				</Grid>

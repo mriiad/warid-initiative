@@ -104,14 +104,20 @@
         "Before": "Previous",
         "After": "Next"
    },
-   "UpdateProfil": {
+   "UserProfil": {
         "Title" : "Complete your profile",
         "FirstName":"First Name",
+        "FirstNameRequired":"First name is required",
         "LastName":"Last Name",
+        "LastNameRequired":"Last name is required",
         "Birthdate":"Birthdate",
+        "BirthdateRequired":"Birthdate is required",
         "Male":"Male",
         "Female":"Female",
+        "GenderRequired":"Gender is required",
         "BloodGroup":"BloodGroup",
+        "BloodGrpRequired":"Blood group is required",
+        "None":"None",
         "Message":"",
         "Button":"Update"
     }

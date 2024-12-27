@@ -104,14 +104,20 @@
         "Before": "précédant",
         "After": "suivant"
     },
-    "UpdateProfil": {
+    "UserProfil": {
         "Title": "Complétez votre profil",
         "FirstName": "Prénom",
+        "FirstNameRequired":"Le prénom est requis",
         "LastName": "Nom",
+        "LastNameRequired":"Le nom est requis",
         "Birthdate": "Date de naissance",
+        "BirthdateRequired":"La date de naissance est requise",
         "Male": "Homme",
         "Female": "Femme",
+        "GenderRequired":"Le genre est requis",
         "BloodGroup": "Groupe sanguin",
+        "BloodGrpRequired":"Le groupe sanguin est requis",
+        "None":"Aucun",
         "Message": "",
         "Button": "Mettre à jour"
     }

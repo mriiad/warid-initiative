@@ -104,14 +104,20 @@
         "Before": "السابق",
         "After": "التالي"
     },
-    "UpdateProfil": {
+    "UserProfil": {
         "Title": "أكمل ملفك الشخصي",
         "FirstName": "الاسم الأول",
+        "FirstNameRequired":"الاسم الأول مطلوب",
         "LastName": "اسم العائلة",
+        "LastNameRequired":"اسم العائلة المطلوب",
         "Birthdate": "تاريخ الميلاد",
+        "BirthdateRequired":"تاريخ الميلاد مطلوب",
         "Male": "ذكر",
         "Female": "أنثى",
+        "GenderRequired":"الجنس المطلوب",
         "BloodGroup": "فصيلة الدم",
+        "BloodGrpRequired":"فصيلة الدم مطلوبة",
+        "None": "لا أعرف",
         "Message": "",
         "Button": "تحديث"
     }
