@@ -62,7 +62,9 @@
         "Participate": "Participate"
     },
     "EventParticipation": {
+        "notSure": "Unable to determine eligibility.",
         "cant": "Sorry, you are not eligible to donate.",
+        "can": "Based on the date of your last donation, you are allowed to donate",
         "confirm": "Confirm",
         "AttendMsg": "Your attendance is being confirmed...",
         "confirmMsg": "Successfully added to the participants' list!"

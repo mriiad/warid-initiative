@@ -6,6 +6,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import colors from '../styles/colors';
 import { fetchCanDonate, fetchEventByReference } from '../utils/queries';
 import CardComponent from './shared/CardComponent';
+import { useTranslation } from 'react-i18next';
 
 const useStyles = makeStyles({
 	resultMessage: {
@@ -25,6 +26,7 @@ const useStyles = makeStyles({
 });
 
 const CanDonate: React.FC = () => {
+	const { t }: { t: (key: string) => string } = useTranslation();
 	const navigate = useNavigate();
 	const { reference } = useParams<{ reference: string }>();
 
@@ -53,21 +55,21 @@ const CanDonate: React.FC = () => {
 					<CircularProgress />
 				) : canDonate === null ? (
 					<Typography className={resultMessage}>
-						غير قادر على تحديد الأهلية.
+						 {t('EventParticipation.notSure')}
 					</Typography>
 				) : canDonate ? (
 					<Typography className={resultMessage}>
-						بناءً على تاريخ تبرعك الأخير، يُسمح لك بالتبرع.
+					     {t('EventParticipation.can')}
 					</Typography>
 				) : (
 					<Typography className={resultMessage}>
-						عذرًا، لا يُسمح لك بالتبرع.
+						 {t('EventParticipation.cant')}
 					</Typography>
 				)}
 			</CardComponent>
 
 			<Button className={confirmButton} onClick={handleConfirmClick}>
-				تأكيد
+			    {t('EventParticipation.confirm')}
 			</Button>
 		</>
 	);

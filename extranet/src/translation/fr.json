@@ -62,7 +62,9 @@
         "Participate": "Participer"
     },
     "EventParticipation": {
+        "notSure":"impossible de déterminer l’éligibilité.",
         "cant": "Désolé, vous n’êtes pas autorisé à faire un don.",
+        "can":"Sur la base de la date de votre dernier don, vous êtes autorisé à faire un don",
         "confirm": "Confirmer",
         "AttendMsg": "Votre présence est en cours de confirmation ...",
         "confirmMsg": "Ajouté avec succès à la liste des participants !"
