@@ -22,6 +22,7 @@ import EventDetail from './components/event/EventDetail';
 import EventForm from './components/event/EventForm';
 import EventsComponent from './components/event/EventsComponent';
 import LandingPage from './components/home/LandingPage';
+import EventParticipants from './components/event/EventParticipants';
 
 const AppContainer = styled.div`
 	position: relative;
@@ -88,6 +89,7 @@ const App = () => {
 								<Route path='can-donate' element={<CanDonate />} />
 								<Route path='confirmation' element={<EventConfirmation />} />
 							</Route>
+							<Route path='/events/:reference/participants' element={<EventParticipants />}/>
 							<Route path='/donate' element={<DonationComponent />} />
 							{isAdmin && <Route path='/users' element={<UsersComponent />} />}
 							<Route path='/contact' element={<ContactForm />} />

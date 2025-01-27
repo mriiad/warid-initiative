@@ -132,6 +132,9 @@ const EventDetail: React.FC = () => {
 			navigate(`/login?redirect=/events/${reference}?participate`);
 		}
 	};
+	const handleClick = async () => {
+		navigate(`/events/${reference}/participants`);
+	}
 
 	return (
 		<>
@@ -212,7 +215,7 @@ const EventDetail: React.FC = () => {
 												target='_blank'
 												rel='noopener noreferrer'
 											>
-												 فتح الخريطة
+												فتح الخريطة
 												<OpenInNewIcon />
 											</a>
 										</Box>
@@ -233,6 +236,15 @@ const EventDetail: React.FC = () => {
 										>
 											المشاركة
 										</Button>
+										{isAdmin && (
+											<Button
+												className={joinButton}
+												onClick={handleClick}
+											>
+												لائحة المشاركين
+											</Button>
+										)}
+
 									</>
 								)}
 							</div>
