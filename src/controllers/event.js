@@ -128,7 +128,7 @@ exports.attendeeConfirmation = async (req, res, next) => {
 	  }
   
 	  const userIndex = event.attendees.findIndex(
-		(attendee) => attendee._id.toString() === req.params.userId.toString()
+		(attendee) => attendee.user.toString() === req.params.userId.toString()
 	  );
   
 	  if (userIndex !== -1) {
@@ -207,6 +207,7 @@ exports.createEvent = async (req) => {
     throw err;
   }
 };
+
 
 exports.deleteEvent = (req, res, next) => {
   const { reference } = req.body;
@@ -311,4 +312,5 @@ exports.confirmPresence = (req, res, next) => {
       res.status(statusCode).json(err.getErrorResponse());
     });
 };
+
 
