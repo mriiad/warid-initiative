@@ -1,11 +1,10 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import styled from 'styled-components';
-import { Card, CardContent, Typography, Button } from '@mui/material';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import PhoneIcon from '@mui/icons-material/Phone';
-import BloodtypeIcon from '@mui/icons-material/Bloodtype';
-
+import { Typography, Button, CircularProgress } from '@mui/material';
+import { fetchEventAttendees, attendeeConfirmation } from '../../utils/queries';
+import { useAuth } from '../../auth/AuthContext';
+import ParticipantCard from './ParticipantCard';
 
 const EventContainer = styled.div`
   margin-top: 90px;
@@ -17,32 +16,10 @@ const EventContainer = styled.div`
   padding: 10px;
 `;
 
-const ParticipantCard = styled(Card)`
-  width: 100%;
-  max-width: 400px;
-  margin: 10px 0;
-  background-color: transparent !important;
-  border-radius: 10px;
-  box-shadow: 2px 5px 5px rgba(0, 0, 0, 0.2);
-`;
-
-const StyledButton = styled(Button)`
-  font-size: 12px;
-  padding: 5px 10px;
-  margin-right: 5px;
-`;
-
 const ButtonContainer = styled.div`
   display: flex;
   justify-content: space-between;
   margin-top: 10px;
-`;
-
-const InfoRow = styled(Typography)`
-  display: flex;
-  align-items: center;
-  font-size: 14px;
-  margin: 5px 0;
 `;
 
 const PaginationButton = styled(Button)`
@@ -50,98 +27,130 @@ const PaginationButton = styled(Button)`
 `;
 
 interface Participant {
-  id: number;
+  id: string;
   firstName: string;
   lastName: string;
-  phone: string;
+  phoneNumber: string;
   bloodGroup: string;
   confirmed: boolean;
 }
 
 const EventParticipants: React.FC = () => {
   const { reference } = useParams<{ reference: string }>();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [participants, setParticipants] = useState<Participant[] | null>(null);
+  const { token } = useAuth();
 
-  // Sample data for participants
-  const [allParticipants, setAllParticipants] = useState<Participant[]>(
-    Array.from({ length: 32 }, (_, i) => ({
-      id: i,
-      firstName: `First ${i + 1}`,
-      lastName: `Last ${i + 1}`,
-      phone: `06${Math.floor(10000000 + Math.random() * 90000000)}`,
-      bloodGroup: ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'][i % 8],
-      confirmed: false,  
-    }))
-  );
-
-  const [currentPage, setCurrentPage] = useState(0);
-  const rowsPerPage = 8;
-  const totalPages = Math.ceil(allParticipants.length / rowsPerPage);
+  const [page, setPage] = useState(1);
+  const rowsPerPage = 10;
+  const [totalPages, setTotalPages] = useState(1);
 
   
-  const visibleParticipants = useMemo(
-    () => allParticipants.slice(currentPage * rowsPerPage, (currentPage + 1) * rowsPerPage),
-    [allParticipants, currentPage]
-  );
+  useEffect(() => {
+    if (!token || !reference) return; 
+  
+    const loadParticipants = async () => {
+      try {
+        setLoading(true);
+        const data = await fetchEventAttendees(reference, token);
+        setParticipants(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+  
+    loadParticipants();
+  }, [reference, token]); 
+  
 
-  const handleConfirmation = (id: number, isPresent: boolean) => {
-    setAllParticipants(prevParticipants =>
-      prevParticipants.map(participant =>
-        participant.id === id ? { ...participant, confirmed: true } : participant
-      )
-    );
+  useEffect(() => {
+    if (participants) {
+      setTotalPages(Math.max(1, Math.ceil(participants.length / rowsPerPage)));
+    }
+  }, [participants]);
 
-    console.log(isPresent ? "Donation date should be updated." : "Donation date should not be updated.");
+  const visibleParticipants = participants?.slice(
+    (page - 1) * rowsPerPage,
+    page * rowsPerPage
+  ) || [];
+
+  const handleConfirmation = async (id: string, confirmed: boolean) => {
+    try {
+      if (!token) {
+        throw new Error("User is not authenticated");
+      }
+
+      await attendeeConfirmation(reference,id, token);
+
+      setParticipants((prevParticipants) =>
+        prevParticipants
+          ? prevParticipants.map((participant) =>
+            participant.id === id ? { ...participant, confirmed: true } : participant
+          )
+          : []
+      );
+    } catch (error: any) {
+      setError(error.message);
+    }
   };
+  
+  if (error) {
+    return (
+      <Typography align="center" color="error">
+        Error: {error}
+      </Typography>
+    );
+  }
 
   return (
     <EventContainer>
       <Typography variant="h5" align="center">
-        List of Participants for this event: {reference}
+        The list of Participants:
       </Typography>
 
-      {visibleParticipants.map((participant) => (
-        <ParticipantCard key={participant.id}>
-          <CardContent>
-            <Typography variant="h6">{participant.firstName} {participant.lastName}</Typography>
-            <InfoRow><PhoneIcon fontSize="small" style={{ marginRight: 5, color: 'black' }} /> {participant.phone}</InfoRow>
-            <InfoRow><BloodtypeIcon fontSize="small" style={{ marginRight: 5, color: 'red' }} /> {participant.bloodGroup}</InfoRow>
+      {loading ? (
+        <div style={{ textAlign: 'center', marginTop: '20px' }}>
+          <CircularProgress />
+        </div>
+      ) : participants === null || participants.length === 0 ? (
+        <Typography align="center">No participants found.</Typography>
+      ) : (
+        <>
+          {visibleParticipants.map((participant) => (
+            <ParticipantCard
+              key={participant.id}
+              participant={participant}
+              handleConfirmation={handleConfirmation}
+            />
+          ))}
+          {totalPages > 1 && (
+            <ButtonContainer>
+              {page > 1 && (
+                <PaginationButton
+                  variant="text"
+                  color="primary"
+                  onClick={() => setPage((prev) => prev - 1)}
+                >
+                  Previous
+                </PaginationButton>
+              )}
+              {page < totalPages && (
+                <PaginationButton
+                  variant="text"
+                  color="primary"
+                  onClick={() => setPage((prev) => prev + 1)}
+                >
+                  Next
+                </PaginationButton>
+              )}
+            </ButtonContainer>
+          )}
 
-            {participant.confirmed ? (
-              <InfoRow style={{ color: 'green' }}>
-                <CheckCircleIcon fontSize="small" style={{ marginRight: 5, color: 'green' }}/> Checked
-              </InfoRow>
-            ) : (
-              <ButtonContainer>
-                <StyledButton variant="outlined" color="success" onClick={() => handleConfirmation(participant.id, true)}>
-                  Yes
-                </StyledButton>
-                <StyledButton variant="outlined" color="error" onClick={() => handleConfirmation(participant.id, false)}>
-                  No
-                </StyledButton>
-              </ButtonContainer>
-            )}
-          </CardContent>
-        </ParticipantCard>
-      ))}
-
-      <ButtonContainer>
-        <PaginationButton
-          variant="text"
-          color="primary"
-          onClick={() => setCurrentPage(prev => Math.max(prev - 1, 0))}
-          disabled={currentPage === 0}
-        >
-          Previous
-        </PaginationButton>
-        <PaginationButton
-          variant="text"
-          color="primary"
-          onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages - 1))}
-          disabled={currentPage === totalPages - 1}
-        >
-          Next
-        </PaginationButton>
-      </ButtonContainer>
+        </>
+      )}
     </EventContainer>
   );
 };
