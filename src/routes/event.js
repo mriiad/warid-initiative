@@ -2,8 +2,10 @@ const express = require('express');
 const {
 	getEvents,
 	getEvent,
+	getEventAttendees,
 	createEvent,
 	confirmPresence,
+	attendeeConfirmation,
 	deleteEvent,
 } = require('../controllers/event');
 const { STATUS_CODE } = require('../utils/errors/httpStatusCode');
@@ -44,6 +46,8 @@ const checkIfAdmin = require('../utils/checks');
 eventRouter.get('/api/events', getEvents);
 
 eventRouter.get('/api/events/:reference', getEvent);
+eventRouter.get('/api/events/:reference/attendees', isAuth, checkIfAdmin, getEventAttendees);
+eventRouter.put('/api/events/:reference/attendees/:userId/confirmation', isAuth, checkIfAdmin, attendeeConfirmation);
 
 eventRouter.post('/api/event', isAuth, checkIfAdmin, (req, res, next) => {
 	upload.single('image')(req, res, async (err) => {
@@ -79,5 +83,6 @@ eventRouter.post('/api/event', isAuth, checkIfAdmin, (req, res, next) => {
 eventRouter.delete('/api/event', isAuth, checkIfAdmin, deleteEvent);
 
 eventRouter.put('/api/event/confirmPresence', isAuth, confirmPresence);
+
 
 module.exports = eventRouter;
