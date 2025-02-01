@@ -60,6 +60,7 @@ const useStyles = makeStyles({
 			marginTop: '10px',
 			color: 'white',
 			backgroundColor: colors.purple,
+			marginRight: '15px',
 		},
 	},
 	fallback: {
