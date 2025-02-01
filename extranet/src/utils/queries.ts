@@ -8,6 +8,20 @@ export const fetchEventByReference = async (reference: string) => {
 		throw new Error(error.message);
 	}
 };
+export const fetchEventAttendees = async (reference: string, token: string) => {
+	try {
+		const response = await axios.get(`/api/events/${reference}/attendees`,
+			{
+				headers: {
+					Authorization: `Bearer ${token}`,
+				},
+			}
+		);
+		return response.data.participants;
+	} catch (error) {
+		throw new Error(error.message);
+	}
+};
 
 export const donate = async (data: {
 	bloodGroup: string;
@@ -63,6 +77,27 @@ export const confirmEventPresence = async (
 	}
 };
 
+export const attendeeConfirmation = async (
+	reference: string,
+	userId: string,
+	token: string
+): Promise<{ message: string }> => {
+	try {
+		const response = await axios.put(
+			`/api/events/${reference}/attendees/${userId}/confirmation`,
+			{
+				headers: {
+					Authorization: `Bearer ${token}`,
+				},
+			}
+		);
+		return response.data;
+	} catch (error: any) {
+		console.error("Error confirming attendance:", error?.response?.data?.message || error?.message);
+		throw new Error(error?.response?.data?.message || "Failed to confirm attendance.");
+	}
+};
+
 export const createEvent = async (
 	data: FormData
 ): Promise<{ message: string }> => {
@@ -98,7 +133,7 @@ export const fetchUserProfile = async () => {
 
 
 export const deleteUser = async (username: string, token: string) => {
-    try {
+	try {
 		const response = await axios.delete(`/api/deleteUser/${username}`,
 			{
 				headers: {
