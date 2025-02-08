@@ -9,7 +9,7 @@ const ParticipantCardWrapper = styled(Card)`
   width: 100%;
   max-width: 400px;
   margin: 10px 0;
-  background-color: transparent !important;
+  background-color: linear-gradient(to left, #e0d1f5, #f6ecf3 48%, #e0d1f5);
   border-radius: 10px;
   box-shadow: 2px 5px 5px rgba(0, 0, 0, 0.2);
 `;
