@@ -1,7 +1,15 @@
-import { Button, Grid, TextField, Typography } from '@mui/material';
+import {
+	Button,
+	Checkbox,
+	FormControlLabel,
+	Grid,
+	TextField,
+	Typography,
+} from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import React, { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom';
 import { authStyles, mainStyles } from '../../styles/mainStyles';
 import { createEvent } from '../../utils/queries';
 import FormContainer from '../shared/FormContainer';
@@ -15,6 +23,7 @@ interface IFormInput {
 	mapLink: string;
 	description: string;
 	image: FileList;
+	isGeneric: boolean;
 }
 
 const useStyles = makeStyles({
@@ -30,6 +39,7 @@ const EventForm: React.FC = () => {
 	const { bar, button, form } = authStyles();
 	const { subTitle } = mainStyles();
 	const { formWrapper, fileInput } = useStyles();
+	const navigate = useNavigate();
 
 	const {
 		control,
@@ -37,7 +47,11 @@ const EventForm: React.FC = () => {
 		formState: { errors },
 		setError,
 		reset,
-	} = useForm<IFormInput>();
+	} = useForm<IFormInput>({
+		defaultValues: {
+			isGeneric: false,
+		},
+	});
 
 	const [image, setImage] = useState<File | null>(null);
 	const [isFormSubmitted, setIsFormSubmitted] = useState<boolean>(false);
@@ -54,6 +68,7 @@ const EventForm: React.FC = () => {
 			formData.append('date', data.date);
 			formData.append('mapLink', data.mapLink ?? '');
 			formData.append('description', data.description);
+			formData.append('isGeneric', data.isGeneric.toString());
 			if (image) {
 				formData.append('image', image);
 			}
@@ -102,9 +117,7 @@ const EventForm: React.FC = () => {
 					className={button}
 					style={{ marginTop: '20px' }}
 				>
-					{isSuccessResponse
-						? 'إنشاء حدث آخر'
-						: 'العودة إلى إنشاء الحدث'}
+					{isSuccessResponse ? 'إنشاء حدث آخر' : 'العودة إلى إنشاء الحدث'}
 				</Button>
 			</FormContainer>
 		);
@@ -138,7 +151,9 @@ const EventForm: React.FC = () => {
 						<Controller
 							name='subtitle'
 							control={control}
-							render={({ field }) => <TextField {...field} label='العنوان الفرعي' />}
+							render={({ field }) => (
+								<TextField {...field} label='العنوان الفرعي' />
+							)}
 						/>
 					</Grid>
 
@@ -180,7 +195,9 @@ const EventForm: React.FC = () => {
 						<Controller
 							name='mapLink'
 							control={control}
-							render={({ field }) => <TextField {...field} label='رابط الخريطة' />}
+							render={({ field }) => (
+								<TextField {...field} label='رابط الخريطة' />
+							)}
 						/>
 					</Grid>
 
@@ -203,18 +220,29 @@ const EventForm: React.FC = () => {
 					</Grid>
 
 					<Grid item xs={12}>
-						<label htmlFor="upload-file">
+						<Controller
+							name='isGeneric'
+							control={control}
+							render={({ field }) => (
+								<FormControlLabel
+									control={
+										<Checkbox checked={field.value} onChange={field.onChange} />
+									}
+									label='حدث عام'
+								/>
+							)}
+						/>
+					</Grid>
+
+					<Grid item xs={12}>
+						<label htmlFor='upload-file'>
 							<input
-								type="file"
-								id="upload-file"
+								type='file'
+								id='upload-file'
 								onChange={handleImageChange}
 								style={{ display: 'none' }}
 							/>
-							<Button
-								component="span"
-								variant="contained"
-								
-							>
+							<Button component='span' variant='contained'>
 								اختر ملف
 							</Button>
 						</label>

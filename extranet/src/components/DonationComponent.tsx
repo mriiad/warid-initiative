@@ -19,7 +19,7 @@ import { useAuth } from '../auth/AuthContext';
 import { ApiErrorResponse } from '../data/ApiErrorResponse';
 import colors from '../styles/colors';
 import { authStyles, mainStyles } from '../styles/mainStyles';
-import { donate, fetchDonation } from '../utils/queries';
+import { donate, fetchDonation, fetchEvents } from '../utils/queries';
 import { formatDate } from '../utils/utils';
 import FormContainer from './shared/FormContainer';
 import ResponseAnimation from './shared/ResponseAnimation';
@@ -72,6 +72,7 @@ const DonationComponent = () => {
 		control,
 		setValue,
 		setError,
+		watch,
 	} = useForm();
 
 	const {
@@ -86,16 +87,24 @@ const DonationComponent = () => {
 		retry: 5,
 	});
 
+	const { data: events } = useQuery('events', fetchEvents, {
+		enabled: !!token,
+		refetchOnWindowFocus: false,
+		refetchOnMount: true,
+		retry: 3,
+	});
+
 	const [showSnackbar, setShowSnackbar] = useState(false);
 	const [reviewSnackbarOpen, setReviewSnackbarOpen] = useState(false);
 	const [isBloodGroupEditable, setIsBloodGroupEditable] = useState(true);
+	const donationType = watch('donationType');
 
-	const defaultLastDonationDate = useMemo(() => {
+	const defaultDonationDate = useMemo(() => {
 		if (isLoading) return '';
 		if (error || !donation || !token) return '';
 		return donation.reelDonationDate
 			? formatDate(donation.reelDonationDate)
-			: formatDate(donation.lastDonationDate);
+			: formatDate(donation.donationDate);
 	}, [donation, error, isLoading, token]);
 
 	useEffect(() => {
@@ -104,10 +113,10 @@ const DonationComponent = () => {
 			setIsBloodGroupEditable(!donation.bloodGroup);
 		}
 
-		if (defaultLastDonationDate) {
+		if (defaultDonationDate) {
 			setShowSnackbar(true);
 		}
-	}, [defaultLastDonationDate, donation, setValue]);
+	}, [defaultDonationDate, donation, setValue]);
 
 	useEffect(() => {
 		// If the user is logged in and there is pending form data, load it
@@ -115,9 +124,8 @@ const DonationComponent = () => {
 			const storedFormData = sessionStorage.getItem('pendingDonationFormData');
 			if (storedFormData) {
 				const formData = JSON.parse(storedFormData);
-				// Overwrite the `lastDonationDate` by the initially fetched value
-				if (defaultLastDonationDate) {
-					formData['lastDonationDate'] = defaultLastDonationDate;
+				if (defaultDonationDate) {
+					formData['donationDate'] = defaultDonationDate;
 				}
 				// Use form methods to set the data
 				Object.keys(formData).forEach((key) => {
@@ -128,7 +136,7 @@ const DonationComponent = () => {
 				setReviewSnackbarOpen(true);
 			}
 		}
-	}, [token, setValue, defaultLastDonationDate]);
+	}, [token, setValue, defaultDonationDate]);
 
 	const donateMutation = useMutation(donate);
 
@@ -186,16 +194,16 @@ const DonationComponent = () => {
 	return (
 		<FormContainer>
 			<Typography variant='h2' align='center' gutterBottom className={signUp}>
-			    تبرع
+				تبرع
 				<span className={bar}></span>
 			</Typography>
 			<Typography variant='h6' align='center' gutterBottom>
 				<span className={subTitle}>
-				    كن أنت 
+					كن أنت
 					<section className={wrapper}>
 						<div className={`${topBottom} ${top}`}>!البطل</div>
 						<div className={`${topBottom} ${bottom}`} aria-hidden='true'>
-						   !البطل
+							!البطل
 						</div>
 					</section>
 				</span>
@@ -247,22 +255,25 @@ const DonationComponent = () => {
 								</Grid>
 								<Grid item xs={12}>
 									<Controller
-										name='lastDonationDate'
+										name='donationDate'
 										control={control}
-										defaultValue={defaultLastDonationDate}
+										defaultValue=''
+										rules={{
+											required: 'تاريخ التبرع مطلوب',
+										}}
 										render={({ field }) => (
 											<TextField
-												fullWidth
-												label='تاريخ آخر تبرع'
+												{...field}
+												label='تاريخ التبرع'
+												error={Boolean(errors.donationDate)}
+												helperText={
+													errors.donationDate ? 'تاريخ التبرع مطلوب' : ''
+												}
 												type='date'
+												fullWidth
 												InputLabelProps={{
 													shrink: true,
 												}}
-												{...field}
-												error={Boolean(errors.lastDonationDate)}
-												helperText={
-													errors.lastDonationDate ? 'تاريخ غير صالح' : ''
-												}
 											/>
 										)}
 									/>
@@ -272,6 +283,9 @@ const DonationComponent = () => {
 										name='donationType'
 										control={control}
 										defaultValue=''
+										rules={{
+											required: 'نوع التبرع مطلوب',
+										}}
 										render={({ field }) => (
 											<FormControl
 												fullWidth
@@ -280,59 +294,74 @@ const DonationComponent = () => {
 												<InputLabel>نوع التبرع</InputLabel>
 												<Select {...field}>
 													<MenuItem value=''>
-														<em>لا شيء</em>
+														<em>None</em>
 													</MenuItem>
-													<MenuItem value='Blood'>الدم</MenuItem>
-													<MenuItem value='Plates'>الصفائح</MenuItem>
+													<MenuItem value='regular'>تبرع منتظم</MenuItem>
+													<MenuItem value='event'>تبرع في حدث</MenuItem>
 												</Select>
 												<FormHelperText>
-													{errors.donationType
-														? 'نوع التبرع مطلوب'
-														: ''}
+													{errors.donationType ? 'نوع التبرع مطلوب' : ''}
 												</FormHelperText>
 											</FormControl>
 										)}
 									/>
 								</Grid>
 
-								<Grid item xs={12}>
-									<Controller
-										name='disease'
-										control={control}
-										defaultValue=''
-										render={({ field }) => (
-											<TextField
-												fullWidth
-												label='المرض'
-												{...field}
-												error={Boolean(errors.disease)}
-												helperText={errors.disease ? 'المرض مطلوب' : ''}
-											/>
-										)}
-									/>
-								</Grid>
-								<Grid item xs={12}>
-									<Button type='submit' className={button}>
-									   تبرع 
-									</Button>
-								</Grid>
+								{donationType === 'event' && (
+									<Grid item xs={12}>
+										<Controller
+											name='eventId'
+											control={control}
+											defaultValue=''
+											rules={{
+												required: 'الحدث مطلوب',
+											}}
+											render={({ field }) => (
+												<FormControl fullWidth error={Boolean(errors.eventId)}>
+													<InputLabel>الحدث</InputLabel>
+													<Select {...field}>
+														<MenuItem value=''>
+															<em>None</em>
+														</MenuItem>
+														{events &&
+															events
+																.filter((event) => !event.isGeneric)
+																.map((event) => (
+																	<MenuItem key={event._id} value={event._id}>
+																		{event.title} ({formatDate(event.date)})
+																	</MenuItem>
+																))}
+													</Select>
+													<FormHelperText>
+														{errors.eventId ? 'الحدث مطلوب' : ''}
+													</FormHelperText>
+												</FormControl>
+											)}
+										/>
+									</Grid>
+								)}
 							</Grid>
+							<Button
+								type='submit'
+								className={button}
+								style={{ marginTop: '20px' }}
+							>
+								تسجيل التبرع
+							</Button>
 						</>
 					)}
 				</Grid>
 			</form>
-			<SnackbarComponent
-				open={reviewSnackbarOpen}
-				message='Please review your form data before submitting.'
-				handleClose={() => setReviewSnackbarOpen(false)}
-				offsetTop={0}
-			/>
+
 			<SnackbarComponent
 				open={showSnackbar}
-				message={`Based on your history, your last donation date is: ${defaultLastDonationDate}`}
 				handleClose={() => setShowSnackbar(false)}
-				autoHideDuration={5000}
-				offsetTop={reviewSnackbarOpen ? 100 : 0}
+				message={`آخر تبرع كان بتاريخ ${defaultDonationDate}`}
+			/>
+			<SnackbarComponent
+				open={reviewSnackbarOpen}
+				handleClose={() => setReviewSnackbarOpen(false)}
+				message='تم استعادة بيانات التبرع السابقة. يرجى مراجعتها قبل الإرسال.'
 			/>
 		</FormContainer>
 	);

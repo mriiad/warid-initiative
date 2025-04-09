@@ -52,6 +52,17 @@ const useStyles = makeStyles({
 		marginBottom: 10,
 		color: 'black',
 	},
+	qrCodeContainer: {
+		display: 'flex',
+		flexDirection: 'column',
+		alignItems: 'center',
+		margin: '20px 0',
+	},
+	qrCode: {
+		maxWidth: '200px',
+		maxHeight: '200px',
+		marginTop: '10px',
+	},
 	joinButton: {
 		padding: '10px 20px',
 		background: '#333',
@@ -106,6 +117,8 @@ const EventDetail: React.FC = () => {
 		eventContainer,
 		overlay,
 		date,
+		qrCodeContainer,
+		qrCode,
 		joinButton,
 		fallback,
 		title,
@@ -212,7 +225,7 @@ const EventDetail: React.FC = () => {
 												target='_blank'
 												rel='noopener noreferrer'
 											>
-												 فتح الخريطة
+												فتح الخريطة
 												<OpenInNewIcon />
 											</a>
 										</Box>
@@ -227,6 +240,22 @@ const EventDetail: React.FC = () => {
 												</Typography>
 											</CardComponent>
 										)}
+
+										{event?.qrCode && (
+											<CardComponent>
+												<div className={qrCodeContainer}>
+													<Typography variant='subtitle1'>
+														مسح رمز الاستجابة السريعة للتبرع
+													</Typography>
+													<img
+														src={event.qrCode}
+														alt='QR Code'
+														className={qrCode}
+													/>
+												</div>
+											</CardComponent>
+										)}
+
 										<Button
 											className={joinButton}
 											onClick={handleParticipateClick}

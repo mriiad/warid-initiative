@@ -38,13 +38,15 @@ const EventSchema = new Schema({
 		type: String,
 		required: true,
 	},
-	attendees: [
-		{
-			type: Schema.Types.ObjectId,
-			ref: 'User',
-			required: false,
-		},
-	],
+	isGeneric: {
+		type: Boolean,
+		required: true,
+		default: false,
+	},
+	qrCode: {
+		type: String,
+		required: true,
+	},
 });
 
 module.exports = mongoose.model('Event', EventSchema);

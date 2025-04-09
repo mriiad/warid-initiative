@@ -5,7 +5,7 @@ const Schema = mongoose.Schema;
  */
 
 const DonationSchema = new Schema({
-	lastDonationDate: {
+	donationDate: {
 		type: Date,
 		required: false,
 	},
@@ -17,13 +17,14 @@ const DonationSchema = new Schema({
 		type: Date,
 		required: false,
 	},
-	disease: {
-		type: String,
-		required: false,
-	},
 	userId: {
 		type: Schema.Types.ObjectId,
 		ref: 'User',
+		required: true,
+	},
+	eventId: {
+		type: Schema.Types.ObjectId,
+		ref: 'Event',
 		required: true,
 	},
 });

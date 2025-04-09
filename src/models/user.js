@@ -50,13 +50,6 @@ const userSchema = new Schema({
 		select: false,
 	},
 	profile: { type: Schema.Types.ObjectId, ref: 'Profile' },
-	events: [
-		{
-			type: Schema.Types.ObjectId,
-			ref: 'Event',
-			required: false,
-		},
-	],
 	donations: [
 		{
 			type: Schema.Types.ObjectId,
