@@ -3,17 +3,18 @@ const emergencyRouter = express.Router();
 const { isAuth } = require('../middleware/token-check');
 const checkIfAdmin = require('../utils/checks');
 const { 
-    getEmergencies, 
     getNotConfirmedEmergencies, 
     createEmergency, 
-    confirmEmergency 
+    confirmEmergency ,
+    confirmUserInEmergency
 } = require('../controllers/emergency');
 
 
-emergencyRouter.get('/api/allEmergencies', isAuth, checkIfAdmin, getEmergencies);
 emergencyRouter.get('/api/notConfirmedEmergencies', isAuth, checkIfAdmin, getNotConfirmedEmergencies);
-emergencyRouter.post('/api/emergency', isAuth, createEmergency);
+emergencyRouter.post('/api/emergency', createEmergency);
 emergencyRouter.patch('/api/emergencies/:id', isAuth, checkIfAdmin, confirmEmergency);
+emergencyRouter.patch('/api/emergencies/:emergencyId/matchedUsers/:userId', isAuth, checkIfAdmin, confirmUserInEmergency);
+
 
 
 module.exports = emergencyRouter;
