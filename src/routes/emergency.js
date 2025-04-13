@@ -10,7 +10,7 @@ const {
 } = require('../controllers/emergency');
 
 
-emergencyRouter.get('/api/notConfirmedEmergencies', isAuth, checkIfAdmin, getUnconfirmedEmergencies);
+emergencyRouter.get('/api/UnconfirmedEmergencies', isAuth, checkIfAdmin, getUnconfirmedEmergencies);
 emergencyRouter.post('/api/emergency', createEmergency);
 emergencyRouter.patch('/api/emergencies/:id', isAuth, checkIfAdmin, confirmEmergency);
 emergencyRouter.patch('/api/emergencies/:emergencyId/matchedUsers/:userId', isAuth, checkIfAdmin, confirmUserInEmergency);
