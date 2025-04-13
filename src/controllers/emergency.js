@@ -4,28 +4,42 @@ const User = require("../models/user");
 const ApiError = require("../utils/errors/ApiError");
 const { STATUS_CODE } = require("../utils/errors/httpStatusCode");
 
-// Get only the none confirmed emergencies
-exports.getNotConfirmedEmergencies = async (req, res, next) => {
-  try {
-    const emergencies = await Emergency.find({ isConfirmed: false }).populate({
-      path: "matchingUsers.user",
-      select: "phoneNumber profile",
-      populate: {
-        path: "profile",
-        select: "firstName lastName",
-      },
-    });
-    res.status(STATUS_CODE.OK).json({
-      message: "Fetched emergencies successfully.",
-      emergencies: emergencies,
-    });
-  } catch (err) {
-    if (!err.statusCode) {
-      err.statusCode = STATUS_CODE.INTERNAL_SERVER;
+// Get only the unconfirmed emergencies
+exports.getUnconfirmedEmergencies = async (req, res, next) => {
+    try {
+      const currentPage = Number(req.query.page) || 1;
+      const perPage = 5;
+  
+      
+      const emergencies = await Emergency.find({ isConfirmed: false })
+        .populate({
+          path: "matchingUsers.user",
+          select: "phoneNumber profile",
+          populate: {
+            path: "profile",
+            select: "firstName lastName",
+          },
+        })
+        .skip((currentPage - 1) * perPage)
+        .limit(perPage)
+        .lean();
+  
+      // Get the total count of unconfirmed emergencies
+      const totalItems = await Emergency.countDocuments({ isConfirmed: false });
+  
+      res.status(STATUS_CODE.OK).json({
+        message: "Fetched emergencies successfully.",
+        emergencies: emergencies,
+        totalItems: totalItems,
+      });
+    } catch (err) {
+     if (!err.statusCode) {
+        err.statusCode = STATUS_CODE.INTERNAL_SERVER;
+      }
+      next(err);
     }
-    next(err);
-  }
-};
+  };
+  
 
 // Create new emergency
 exports.createEmergency = async (req, res) => {
