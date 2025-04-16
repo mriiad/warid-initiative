@@ -109,8 +109,20 @@ exports.createEvent = async (req) => {
 			);
 		}
 
-		// Generate QR code for the event
-		const eventUrl = `${process.env.FRONTEND_URL}/events/${reference}`;
+		// Generate QR code for the event - all QR codes lead to /donate
+		// but with different parameters
+		let eventUrl;
+		if (isGeneric === 'true' || isGeneric === true) {
+			// For generic events, include only the event reference
+			eventUrl = `${
+				process.env.FRONTEND_URL || 'http://localhost:3001'
+			}/donate?eventRef=${reference}`;
+		} else {
+			// For non-generic events, include eventRef parameter and event date
+			eventUrl = `${
+				process.env.FRONTEND_URL || 'http://localhost:3001'
+			}/donate?eventRef=${reference}&eventDate=${date}`;
+		}
 		const qrCode = await generateQRCode(eventUrl);
 
 		const newEvent = new Event({

@@ -13,10 +13,6 @@ const DonationSchema = new Schema({
 		type: String,
 		required: false,
 	},
-	reelDonationDate: {
-		type: Date,
-		required: false,
-	},
 	userId: {
 		type: Schema.Types.ObjectId,
 		ref: 'User',

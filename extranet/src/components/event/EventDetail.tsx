@@ -27,6 +27,7 @@ import { useAuth } from '../../auth/AuthContext';
 import colors from '../../styles/colors';
 import { useEventStyles } from '../../styles/eventStyle';
 import { fetchEventByReference } from '../../utils/queries';
+import { formatDate } from '../../utils/utils';
 import CanDonate from '../CanDonate';
 import CardComponent from '../shared/CardComponent';
 import EventConfirmation from './EventConfirmation';
@@ -140,8 +141,17 @@ const EventDetail: React.FC = () => {
 
 	const handleParticipateClick = async () => {
 		if (token) {
-			navigate(`/events/${reference}/can-donate`);
+			if (event?.isGeneric) {
+				// For generic events, use event reference
+				navigate(`/donate?eventRef=${reference}`);
+			} else {
+				// For non-generic events, include both the event reference and date
+				navigate(
+					`/donate?eventRef=${reference}&eventDate=${formatDate(event?.date)}`
+				);
+			}
 		} else {
+			// Redirect to login, after login they'll return to the event page
 			navigate(`/login?redirect=/events/${reference}?participate`);
 		}
 	};

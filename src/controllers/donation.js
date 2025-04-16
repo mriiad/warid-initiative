@@ -35,14 +35,14 @@ const checkDonationEligibility = (userId) => {
 				};
 			}
 
-			const donationDate = donation.reelDonationDate
-				? donation.reelDonationDate
-				: donation.donationDate;
+			const donationDate = donation.donationDate;
 			const daysToAdd = user.gender === 'male' ? 60 : 90;
 			const nextDonationDate = addDays(donationDate, daysToAdd);
 
 			const timeDifference = currentDate - new Date(donationDate);
+			console.log('timeDifference', timeDifference);
 			const daysDifference = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+			console.log('daysDifference', daysDifference);
 
 			if (
 				(user.gender === 'male' && daysDifference >= 60) ||
@@ -80,6 +80,10 @@ exports.donate = async (req, res, next) => {
 		const { bloodGroup, donationDate, donationType, eventId } = req.body;
 		const { canDonate, lastDonationDate, nextDonationDate } =
 			await checkDonationEligibility(req.userId);
+
+		console.log('canDonate', canDonate);
+		console.log('lastDonationDate', lastDonationDate);
+		console.log('nextDonationDate', nextDonationDate);
 
 		if (!canDonate) {
 			throw new ApiError(
@@ -142,7 +146,6 @@ const checkExistingDonation = async (userId, userProvidedDate) => {
 		const existingDonation = await Donation.findOne({
 			userId: userId,
 			donationDate: { $ne: null },
-			reelDonationDate: null,
 		})
 			.sort({ donationDate: -1 })
 			.limit(1);
@@ -160,8 +163,7 @@ const checkExistingDonation = async (userId, userProvidedDate) => {
 			.exec(); // Using exec to ensure a Promise is returned
 
 		if (recentDonation) {
-			const recentDate =
-				recentDonation.reelDonationDate || recentDonation.donationDate;
+			const recentDate = recentDonation.donationDate;
 
 			if (userProvidedDate < new Date(recentDate)) {
 				throw new ApiError(
@@ -270,5 +272,5 @@ exports.getDonationsByUser = (req, res, next) => {
 };
 
 // TODO: markAsDonor
-// Add a method to mark user as donor by setting his reelDonationDate
+// Add a method to mark user as donor by setting his donationDate
 // This operation is limited to the admin

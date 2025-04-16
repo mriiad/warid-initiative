@@ -20,6 +20,11 @@ const userSchema = new Schema({
 		type: Number,
 		required: true,
 	},
+	gender: {
+		type: String,
+		enum: ['male', 'female'],
+		required: true,
+	},
 	refreshToken: {
 		type: String,
 		required: false,

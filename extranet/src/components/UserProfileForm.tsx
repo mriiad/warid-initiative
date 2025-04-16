@@ -1,13 +1,10 @@
 import {
 	Button,
 	FormControl,
-	FormControlLabel,
 	FormHelperText,
 	Grid,
 	InputLabel,
 	MenuItem,
-	Radio,
-	RadioGroup,
 	Select,
 	TextField,
 	Typography,
@@ -20,7 +17,6 @@ import { useQuery } from 'react-query';
 import { useNavigate } from 'react-router-dom';
 import {
 	BloodGroup,
-	Gender,
 	ProfileFormData,
 	fieldDisplayNames,
 } from '../data/ProfileFormData';
@@ -66,7 +62,6 @@ const UserProfileForm = () => {
 			firstname: '',
 			lastname: '',
 			birthdate: '',
-			gender: Gender.Male,
 			bloodGroup: BloodGroup.None,
 		}),
 		[]
@@ -88,7 +83,6 @@ const UserProfileForm = () => {
 				'firstname',
 				'lastname',
 				'birthdate',
-				'gender',
 				'bloodGroup',
 			];
 
@@ -158,37 +152,6 @@ const UserProfileForm = () => {
 							type='date'
 							error={errors.birthdate}
 							helperText={errors.birthdate ? 'Birthdate is required' : ''}
-						/>
-					</Grid>
-					<Grid item xs={12} className={formField}>
-						<Controller
-							name='gender'
-							control={control}
-							defaultValue={Gender.Male}
-							rules={{ required: 'Gender is required' }}
-							render={({ field }) => (
-								<FormControl component='fieldset' fullWidth>
-									<RadioGroup row {...field} className={radioGroup}>
-										<FormControlLabel
-											value='male'
-											control={<Radio />}
-											label='Male'
-											className={radioMargin}
-										/>
-										<FormControlLabel
-											value='female'
-											control={<Radio />}
-											label='Female'
-											className={radioMargin}
-										/>
-									</RadioGroup>
-									{errors.gender && (
-										<Typography color='error' variant='caption'>
-											{errors.gender.message}
-										</Typography>
-									)}
-								</FormControl>
-							)}
 						/>
 					</Grid>
 					<Grid item xs={12}>
