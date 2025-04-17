@@ -22,6 +22,7 @@ import EventDetail from './components/event/EventDetail';
 import EventForm from './components/event/EventForm';
 import EventsComponent from './components/event/EventsComponent';
 import LandingPage from './components/home/LandingPage';
+import EmergencyForm from './components/emergency/EmergencyForm';
 
 const AppContainer = styled.div`
 	position: relative;
@@ -101,6 +102,7 @@ const App = () => {
 								element={<ResetPasswordForm />}
 							/>
 							<Route path='*' element={<NotFoundPage />} />
+							<Route path='/emergency' element={<EmergencyForm />} />
 						</Routes>
 					</ContentContainer>
 					{isMobile && (

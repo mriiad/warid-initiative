@@ -2,6 +2,7 @@ import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import EmailIcon from '@mui/icons-material/Email';
 import EventIcon from '@mui/icons-material/Event';
 import FavoriteIcon from '@mui/icons-material/Favorite';
+import EmergencyIcon from '@mui/icons-material/HealthAndSafety';
 import HomeIcon from '@mui/icons-material/Home';
 import { makeStyles } from '@mui/styles';
 import { Link, useLocation } from 'react-router-dom';
@@ -57,6 +58,11 @@ const MobileNavbar = () => {
 			<Link to='/contact'>
 				<EmailIcon
 					className={currentRoute === '/contact' ? activeIcon : icon}
+				/>
+			</Link>
+			<Link to='/emergency'>
+				<EmergencyIcon
+					className={currentRoute === '/emergency' ? activeIcon : icon}
 				/>
 			</Link>
 			{token && isAdmin && (
