@@ -112,3 +112,77 @@ export const deleteUser = async (username: string, token: string) => {
 	}
 
 };
+
+
+// Get list of unconfirmed emergencies
+export const fetchUnconfirmedEmergencies = async (page: number = 1, token: string) => {
+	try {
+		const response = await axios.get(`/api/unconfirmedEmergencies?page=${page}`, {
+			headers: {
+				Authorization: `Bearer ${token}`,
+			},
+		});
+		return response.data;
+	} catch (error) {
+		throw new Error(error.message);
+	}
+};
+
+// Get matched users for a specific emergency
+export const fetchEmergencyMatchUsers = async (emergencyId: string, token: string) => {
+	try {
+		const response = await axios.get(`/api/emergencies/${emergencyId}/matchingUsers`, {
+			headers: {
+				Authorization: `Bearer ${token}`,
+			},
+		});
+		return response.data;
+	} catch (error) {
+		throw new Error(error.message);
+	}
+};
+
+// Create a new emergency
+export const createEmergency = async (data: {
+	bloodGroup: string;
+	placement: string;
+	phoneNumber: number;
+	sickPersonInfo: string;
+}): Promise<{ message: string; emergency: any }> => {
+	try {
+		const response = await axios.post('/api/emergency', data);
+		return response.data;
+	} catch (error) {
+		throw new Error(error.message);
+	}
+};
+
+// Confirm an emergency
+export const confirmEmergency = async (emergencyId: string, token: string): Promise<{ message: string }> => {
+	try {
+		const response = await axios.patch(`/api/emergencies/${emergencyId}/confirm`, {}, {
+			headers: {
+				Authorization: `Bearer ${token}`,
+			},
+		});
+		return response.data;
+	} catch (error) {
+		throw new Error(error.message);
+	}
+};
+
+// Confirm a user in an emergency
+export const confirmUserInEmergency = async (emergencyId: string, userId: string, token: string): Promise<{ message: string; emergency: any }> => {
+	try {
+		const response = await axios.patch(`/api/emergencies/${emergencyId}/matchedUsers/${userId}/confirm`, {}, {
+			headers: {
+				Authorization: `Bearer ${token}`,
+			},
+		});
+		return response.data;
+	} catch (error) {
+		throw new Error(error.message);
+	}
+};
+
+
