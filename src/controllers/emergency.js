@@ -12,14 +12,7 @@ exports.getUnconfirmedEmergencies = async (req, res, next) => {
   
       
       const emergencies = await Emergency.find({ isConfirmed: false })
-        .populate({
-          path: "matchingUsers.user",
-          select: "phoneNumber profile",
-          populate: {
-            path: "profile",
-            select: "firstName lastName",
-          },
-        })
+        .select("-matchingUsers") 
         .skip((currentPage - 1) * perPage)
         .limit(perPage)
         .lean();
@@ -40,9 +33,42 @@ exports.getUnconfirmedEmergencies = async (req, res, next) => {
     }
   };
   
+// Get emergency match users
+exports.getEmergencyMatchUsers = async (req, res, next) => {
+  try {
+    const emergencyId = req.params.id;
+
+    const emergency = await Emergency.findById(emergencyId)
+      .populate({
+        path: "matchingUsers.user",
+        select: "phoneNumber profile",
+        populate: {
+          path: "profile",
+          select: "firstName lastName",
+        },
+      })
+      .select("matchingUsers"); 
+
+    if (!emergency) {
+      const error = new Error("Emergency not found.");
+      error.statusCode = STATUS_CODE.NOT_FOUND;
+      throw error;
+    }
+
+    res.status(STATUS_CODE.OK).json({
+      message: "Fetched matched users successfully.",
+      matchingUsers: emergency.matchingUsers, 
+    });
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = STATUS_CODE.INTERNAL_SERVER;
+    }
+    next(err);
+  }
+};
 
 // Create new emergency
-exports.createEmergency = async (req, res) => {
+exports.createEmergency = async (req, res, next) => {
   try {
     const { bloodGroup, placement, phoneNumber, sickPersonInfo } = req.body;
     const emergency = new Emergency({
@@ -128,3 +154,10 @@ exports.confirmUserInEmergency = async (req, res, next) => {
     next(err);
   }
 };
+
+
+
+
+
+
+
