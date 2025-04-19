@@ -10,7 +10,7 @@ const EmergencySchema = new Schema({
     enum: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],
     required: true,
   },
-  placement: {
+  city: {
     type: String,
     required: false,
   },
@@ -18,7 +18,7 @@ const EmergencySchema = new Schema({
     type: Number,
     required: true,
   },
-  sickPersonInfo: {
+  details: {
     type: String,
     required: false,
   },
