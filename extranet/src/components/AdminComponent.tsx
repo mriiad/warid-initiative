@@ -3,7 +3,7 @@ import ActionButton from './shared/ActionButton';
 
 export default function AdminComponent() {
 	const navigate = useNavigate();
-
+	
 	return (
 		<div>
 		<ActionButton
@@ -14,6 +14,10 @@ export default function AdminComponent() {
 		<ActionButton
 			title='لائحة المستخدمين'
 			onClick={() => navigate('/users?page=1')}
+		/>
+		<ActionButton
+			title='Emergencies List'
+			onClick={() => navigate('/emergencies?page=1')}
 		/>
 		</div>
 	);

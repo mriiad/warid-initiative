@@ -16,5 +16,6 @@ export interface Emergency {
     bloodGroup: BloodGroup;                          
     placement: string;
     phoneNumber: number;
-    sickPersonInfo: string; 
+    sickPersonInfo: string;
+	isConfirmed: boolean; 
 }
