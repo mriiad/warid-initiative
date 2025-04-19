@@ -8,7 +8,7 @@ const { STATUS_CODE } = require("../utils/errors/httpStatusCode");
 exports.getUnconfirmedEmergencies = async (req, res, next) => {
     try {
       const currentPage = Number(req.query.page) || 1;
-      const perPage = 5;
+      const perPage = 8;
   
       
       const emergencies = await Emergency.find({ isConfirmed: false })
@@ -17,7 +17,6 @@ exports.getUnconfirmedEmergencies = async (req, res, next) => {
         .limit(perPage)
         .lean();
   
-      // Get the total count of unconfirmed emergencies
       const totalItems = await Emergency.countDocuments({ isConfirmed: false });
   
       res.status(STATUS_CODE.OK).json({
@@ -44,7 +43,7 @@ exports.getEmergencyMatchUsers = async (req, res, next) => {
         select: "phoneNumber profile",
         populate: {
           path: "profile",
-          select: "firstName lastName",
+          select: "firstname lastname",
         },
       })
       .select("matchingUsers"); 
@@ -70,24 +69,38 @@ exports.getEmergencyMatchUsers = async (req, res, next) => {
 // Create new emergency
 exports.createEmergency = async (req, res, next) => {
   try {
-    const { bloodGroup, placement, phoneNumber, sickPersonInfo } = req.body;
+    const { bloodGroup, city, phoneNumber, details } = req.body;
+
     const emergency = new Emergency({
       bloodGroup,
-      placement,
+      city,
       phoneNumber,
-      sickPersonInfo,
+      details,
     });
-    // find users that have the same blood group in the emergency
-    const users = await User.find({ bloodGroup });
-    emergency.matchingUsers = users.map((user) => ({
+
+    // Fetch only users who have profile
+    const users = await User.find({ profile: { $ne: null } })
+      .populate({
+        path: 'profile',
+        select: 'bloodGroup',
+      })
+      .exec();
+
+    const matchingUsers = users.filter(user => 
+      user.profile.bloodGroup === bloodGroup
+    );
+
+    emergency.matchingUsers = matchingUsers.map(user => ({
       user: user._id,
       isConfirmed: false,
     }));
 
     await emergency.save();
-    res
-      .status(STATUS_CODE.CREATED)
-      .json({ message: "Emergency successfully created", emergency });
+
+    res.status(STATUS_CODE.CREATED).json({
+      message: 'Emergency successfully created',
+      emergency,
+    });
   } catch (err) {
     if (!err.statusCode) {
       err.statusCode = STATUS_CODE.INTERNAL_SERVER;
