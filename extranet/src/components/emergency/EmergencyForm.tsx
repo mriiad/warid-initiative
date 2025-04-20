@@ -88,8 +88,6 @@ const EmergencyForm = () => {
                 ></span>
             </Typography>
 
-
-
             <form onSubmit={handleSubmit(onSubmit)} className={form} style={{ marginTop: '20px' }}>
                 <Grid container spacing={2} justifyContent="center"
                     alignItems="center">
@@ -137,17 +135,17 @@ const EmergencyForm = () => {
 
                             <Grid item xs={12}>
                                 <Controller
-                                    name="placement"
+                                    name="city"
                                     control={control}
                                     defaultValue=""
-                                    rules={{ required: 'Placement is required' }}
+                                    rules={{ required: 'City is required' }}
                                     render={({ field }) => (
                                         <TextField
                                             {...field}
-                                            label="Placement"
+                                            label="City"
                                             fullWidth
-                                            error={Boolean(errors.placement)}
-                                            helperText={errors.placement?.message}
+                                            error={Boolean(errors.city)}
+                                            helperText={errors.city?.message}
 
                                         />
                                     )}
@@ -181,19 +179,19 @@ const EmergencyForm = () => {
 
                             <Grid item xs={12}>
                                 <Controller
-                                    name="sickPersonInfo"
+                                    name="details"
                                     control={control}
                                     defaultValue=""
                                     rules={{ required: 'The details is required' }}
                                     render={({ field }) => (
                                         <TextField
                                             {...field}
-                                            label="Sick Person details"
+                                            label="Details"
                                             multiline
                                             rows={4}
                                             fullWidth
-                                            error={Boolean(errors.sickPersonInfo)}
-                                            helperText={errors.sickPersonInfo?.message}
+                                            error={Boolean(errors.details)}
+                                            helperText={errors.details?.message}
                                         />
                                     )}
                                 />

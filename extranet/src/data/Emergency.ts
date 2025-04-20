@@ -14,8 +14,8 @@ export enum BloodGroup {
 export interface Emergency {
     _id: string;      
     bloodGroup: BloodGroup;                          
-    placement: string;
+    city: string;
     phoneNumber: number;
-    sickPersonInfo: string;
+    details: string;
 	isConfirmed: boolean; 
 }

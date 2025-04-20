@@ -115,7 +115,7 @@ export const deleteUser = async (username: string, token: string) => {
 
 
 // Get list of unconfirmed emergencies
-export const fetchUnconfirmedEmergencies = async (page: number = 1, token: string) => {
+export const fetchUnconfirmedEmergencies = async (page: number , token: string) => {
 	try {
 		const response = await axios.get(`/api/unconfirmedEmergencies?page=${page}`, {
 			headers: {
@@ -145,9 +145,9 @@ export const fetchEmergencyMatchUsers = async (emergencyId: string, token: strin
 // Create a new emergency
 export const createEmergency = async (data: {
 	bloodGroup: string;
-	placement: string;
+	city: string;
 	phoneNumber: number;
-	sickPersonInfo: string;
+	details: string;
 }): Promise<{ message: string; emergency: any }> => {
 	try {
 		const response = await axios.post('/api/emergency', data);
