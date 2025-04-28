@@ -5,6 +5,7 @@ import { useQuery } from 'react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import colors from '../styles/colors';
 import { fetchCanDonate, fetchEventByReference } from '../utils/queries';
+import { formatDate } from '../utils/utils';
 import CardComponent from './shared/CardComponent';
 
 const useStyles = makeStyles({
@@ -43,7 +44,19 @@ const CanDonate: React.FC = () => {
 	} = useQuery(['event', reference], () => fetchEventByReference(reference));
 
 	const handleConfirmClick = () => {
-		navigate(`/events/${reference}/confirmation`);
+		if (canDonate) {
+			if (event && !event.isGeneric) {
+				// For non-generic events, include both the event reference and date
+				navigate(
+					`/donate?eventRef=${reference}&eventDate=${formatDate(event.date)}`
+				);
+			} else {
+				// For generic events, only include reference
+				navigate(`/donate?eventRef=${reference}`);
+			}
+		} else {
+			navigate(`/events/${reference}/confirmation`);
+		}
 	};
 
 	return (

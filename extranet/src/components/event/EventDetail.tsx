@@ -27,6 +27,7 @@ import { useAuth } from '../../auth/AuthContext';
 import colors from '../../styles/colors';
 import { useEventStyles } from '../../styles/eventStyle';
 import { fetchEventByReference } from '../../utils/queries';
+import { formatDate } from '../../utils/utils';
 import CanDonate from '../CanDonate';
 import CardComponent from '../shared/CardComponent';
 import EventConfirmation from './EventConfirmation';
@@ -51,6 +52,17 @@ const useStyles = makeStyles({
 	date: {
 		marginBottom: 10,
 		color: 'black',
+	},
+	qrCodeContainer: {
+		display: 'flex',
+		flexDirection: 'column',
+		alignItems: 'center',
+		margin: '20px 0',
+	},
+	qrCode: {
+		maxWidth: '200px',
+		maxHeight: '200px',
+		marginTop: '10px',
 	},
 	joinButton: {
 		padding: '10px 20px',
@@ -106,6 +118,8 @@ const EventDetail: React.FC = () => {
 		eventContainer,
 		overlay,
 		date,
+		qrCodeContainer,
+		qrCode,
 		joinButton,
 		fallback,
 		title,
@@ -127,8 +141,17 @@ const EventDetail: React.FC = () => {
 
 	const handleParticipateClick = async () => {
 		if (token) {
-			navigate(`/events/${reference}/can-donate`);
+			if (event?.isGeneric) {
+				// For generic events, use event reference
+				navigate(`/donate?eventRef=${reference}`);
+			} else {
+				// For non-generic events, include both the event reference and date
+				navigate(
+					`/donate?eventRef=${reference}&eventDate=${formatDate(event?.date)}`
+				);
+			}
 		} else {
+			// Redirect to login, after login they'll return to the event page
 			navigate(`/login?redirect=/events/${reference}?participate`);
 		}
 	};
@@ -212,7 +235,7 @@ const EventDetail: React.FC = () => {
 												target='_blank'
 												rel='noopener noreferrer'
 											>
-												 فتح الخريطة
+												فتح الخريطة
 												<OpenInNewIcon />
 											</a>
 										</Box>
@@ -227,6 +250,22 @@ const EventDetail: React.FC = () => {
 												</Typography>
 											</CardComponent>
 										)}
+
+										{event?.qrCode && (
+											<CardComponent>
+												<div className={qrCodeContainer}>
+													<Typography variant='subtitle1'>
+														مسح رمز الاستجابة السريعة للتبرع
+													</Typography>
+													<img
+														src={event.qrCode}
+														alt='QR Code'
+														className={qrCode}
+													/>
+												</div>
+											</CardComponent>
+										)}
+
 										<Button
 											className={joinButton}
 											onClick={handleParticipateClick}

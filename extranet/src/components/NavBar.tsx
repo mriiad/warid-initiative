@@ -93,7 +93,7 @@ const Navbar = () => {
 		loginIcon,
 	} = useStyles();
 
-	const { mainButton } = mainStyles();
+	const { mainButton, textButton } = mainStyles();
 
 	const navigate = useNavigate();
 	const location = useLocation();
@@ -127,7 +127,7 @@ const Navbar = () => {
 
 	return (
 		<div className={navbar}>
-			<div className={logo} onClick={() => navigate('/signup')}>
+			<div className={logo} onClick={() => navigate('/')}>
 				<div>
 					<img src='warid-logo.png' alt='Logo' />
 				</div>
@@ -138,8 +138,9 @@ const Navbar = () => {
 						<li className={routesListItem}>
 							<Link
 								to='/'
-								className={`${routesLink} ${selectedRoute === '/' ? activeLink : ''
-									}`}
+								className={`${routesLink} ${
+									selectedRoute === '/' ? activeLink : ''
+								}`}
 								onClick={() => handleRouteChange('/')}
 							>
 								الرئيسية
@@ -148,8 +149,9 @@ const Navbar = () => {
 						<li className={routesListItem}>
 							<Link
 								to='/about'
-								className={`${routesLink} ${selectedRoute === '/about' ? activeLink : ''
-									}`}
+								className={`${routesLink} ${
+									selectedRoute === '/about' ? activeLink : ''
+								}`}
 								onClick={() => handleRouteChange('/about')}
 							>
 								بخصوص
@@ -158,8 +160,9 @@ const Navbar = () => {
 						<li className={routesListItem}>
 							<Link
 								to='/events?page=1'
-								className={`${routesLink} ${selectedRoute === '/events' ? activeLink : ''
-									}`}
+								className={`${routesLink} ${
+									selectedRoute === '/events' ? activeLink : ''
+								}`}
 								onClick={() => handleRouteChange('/events?page=1')}
 							>
 								الفعاليات
@@ -178,25 +181,30 @@ const Navbar = () => {
 								</Link>
 							</li>
 						)}
-						
-						
 					</ul>
 				</nav>
 			</div>
-			<div className={mainButton}>
-				{token ? (
-					<ActionButton
-						title='تسجيل الخروج'
-						icon={<ArrowCircleLeftIcon className={loginIcon} />}
-						onClick={() => handleLogout()}
-					/>
-				) : (
-					<ActionButton
-						title='تسجيل الدخول'
-						icon={<ArrowCircleRightIcon className={loginIcon} />}
-						onClick={() => navigate('/login')}
-					/>
+			<div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+				{!token && (
+					<span className={textButton} onClick={() => navigate('/signup')}>
+						التسجيل
+					</span>
 				)}
+				<div className={mainButton}>
+					{token ? (
+						<ActionButton
+							title='تسجيل الخروج'
+							icon={<ArrowCircleLeftIcon className={loginIcon} />}
+							onClick={() => handleLogout()}
+						/>
+					) : (
+						<ActionButton
+							title='تسجيل الدخول'
+							icon={<ArrowCircleRightIcon className={loginIcon} />}
+							onClick={() => navigate('/login')}
+						/>
+					)}
+				</div>
 			</div>
 		</div>
 	);

@@ -7,6 +7,8 @@ const mongoose = require('mongoose');
 const fs = require('fs');
 const path = require('path');
 const ApiError = require('../utils/errors/ApiError');
+const QRCode = require('qrcode');
+const Donation = require('../models/donation');
 
 /**
  *
@@ -89,7 +91,8 @@ exports.createEvent = async (req) => {
 			);
 		}
 
-		const { title, subtitle, location, date, mapLink, description } = req.body;
+		const { title, subtitle, location, date, mapLink, description, isGeneric } =
+			req.body;
 		let eventImage = null;
 
 		if (req.file && req.file.path) {
@@ -106,6 +109,22 @@ exports.createEvent = async (req) => {
 			);
 		}
 
+		// Generate QR code for the event - all QR codes lead to /donate
+		// but with different parameters
+		let eventUrl;
+		if (isGeneric === 'true' || isGeneric === true) {
+			// For generic events, include only the event reference
+			eventUrl = `${
+				process.env.FRONTEND_URL || 'http://localhost:3001'
+			}/donate?eventRef=${reference}`;
+		} else {
+			// For non-generic events, include eventRef parameter and event date
+			eventUrl = `${
+				process.env.FRONTEND_URL || 'http://localhost:3001'
+			}/donate?eventRef=${reference}&eventDate=${date}`;
+		}
+		const qrCode = await generateQRCode(eventUrl);
+
 		const newEvent = new Event({
 			reference: reference,
 			title: title,
@@ -115,6 +134,8 @@ exports.createEvent = async (req) => {
 			date: date,
 			mapLink: mapLink,
 			description: description,
+			isGeneric: isGeneric === 'true' || isGeneric === true,
+			qrCode: qrCode,
 		});
 
 		const result = await newEvent.save();
@@ -145,28 +166,38 @@ exports.deleteEvent = (req, res, next) => {
 				});
 			}
 
-			// Collect all the promises in an array
-			const updatePromises = deletedEvent.attendees.map((userId) =>
-				User.updateOne(
-					{ _id: mongoose.Types.ObjectId(userId) },
-					{ $pull: { events: deletedEvent._id } }
-				)
-			);
+			// Find and update all donations linked to this event
+			return Donation.find({ eventId: deletedEvent._id }).then((donations) => {
+				if (donations.length === 0) {
+					return { deletedEvent };
+				}
 
-			// Promise.all to wait for all updates to complete
-			Promise.all(updatePromises)
-				.then(() => {
-					return res.status(STATUS_CODE.OK).json({
-						message: 'Event deleted successfully!',
-						deletedEvent: deletedEvent,
-					});
-				})
-				.catch((err) => {
-					if (!err.statusCode) {
-						err.statusCode = STATUS_CODE.INTERNAL_SERVER;
+				// Find a generic event to link donations to
+				return Event.findOne({ isGeneric: true }).then((genericEvent) => {
+					if (!genericEvent) {
+						throw new ApiError(
+							'Cannot delete event: No generic event found to link existing donations',
+							STATUS_CODE.CONFLICT
+						);
 					}
-					next(err);
+
+					// Update all donations to point to the generic event
+					const updatePromises = donations.map((donation) =>
+						Donation.updateOne(
+							{ _id: donation._id },
+							{ eventId: genericEvent._id }
+						)
+					);
+
+					return Promise.all(updatePromises).then(() => ({ deletedEvent }));
 				});
+			});
+		})
+		.then(({ deletedEvent }) => {
+			return res.status(STATUS_CODE.OK).json({
+				message: 'Event deleted successfully!',
+				deletedEvent: deletedEvent,
+			});
 		})
 		.catch((err) => {
 			if (!err.statusCode) {
@@ -191,35 +222,46 @@ exports.confirmPresence = (req, res, next) => {
 			}
 			fetchedEvent = event;
 
-			return User.findById(req.userId);
+			// Check if user already has a donation linked to this event
+			return Donation.findOne({
+				userId: req.userId,
+				eventId: fetchedEvent._id,
+			});
 		})
-		.then((user) => {
-			// Check if user is already part of the event
-			const isAlreadyParticipating = user.events.some(
-				(eventId) => eventId.toString() === fetchedEvent._id.toString()
-			);
-
-			if (isAlreadyParticipating) {
+		.then((existingDonation) => {
+			if (existingDonation) {
 				throw new ApiError("You're already participating in this event!", 403);
 			}
 
-			// Fetch all events the user is participating in
-			return Event.find({ _id: { $in: user.events } });
+			// Check if user is participating in a future event through any donations
+			return Donation.aggregate([
+				{
+					$lookup: {
+						from: 'events',
+						localField: 'eventId',
+						foreignField: '_id',
+						as: 'event',
+					},
+				},
+				{
+					$match: {
+						userId: mongoose.Types.ObjectId(req.userId),
+						'event.date': { $gt: new Date() },
+						'event.isGeneric': false,
+					},
+				},
+			]);
 		})
-		.then((events) => {
-			// Check if the user is participating in any future events
-			const futureEvent = events.find((event) => event.date > new Date());
-
-			if (futureEvent) {
-				const { title, reference, date } = futureEvent;
+		.then((futureDonations) => {
+			if (futureDonations.length > 0) {
+				const event = futureDonations[0].event[0];
 				throw new ApiError(
-					`You're already participating in another future event: ${reference}`,
+					`You're already participating in another future event: ${event.reference}`,
 					403
 				);
 			}
 
 			fetchedEvent.attendees.push(req.userId);
-
 			return fetchedEvent.save();
 		})
 		.then(() => {
@@ -229,7 +271,36 @@ exports.confirmPresence = (req, res, next) => {
 		})
 		.catch((err) => {
 			const statusCode = err.statusCode || STATUS_CODE.INTERNAL_SERVER;
-
 			res.status(statusCode).json(err.getErrorResponse());
 		});
+};
+
+const generateQRCode = async (url) => {
+	try {
+		return await QRCode.toDataURL(url);
+	} catch (error) {
+		console.error('Error generating QR code:', error);
+		throw new ApiError(
+			'Failed to generate QR code for event',
+			STATUS_CODE.INTERNAL_SERVER
+		);
+	}
+};
+
+exports.createEventHandler = async (req, res, next) => {
+	try {
+		const result = await exports.createEvent(req);
+		res.status(STATUS_CODE.CREATED).json({
+			message: 'Event created successfully!',
+			event: {
+				reference: result.reference,
+				_id: result._id,
+			},
+		});
+	} catch (err) {
+		if (!err.statusCode) {
+			err.statusCode = STATUS_CODE.INTERNAL_SERVER;
+		}
+		next(err);
+	}
 };

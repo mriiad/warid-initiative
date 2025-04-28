@@ -1,4 +1,14 @@
-import { Button, Grid, TextField, Typography } from '@mui/material';
+import {
+	Button,
+	FormControl,
+	FormControlLabel,
+	FormHelperText,
+	Grid,
+	Radio,
+	RadioGroup,
+	TextField,
+	Typography,
+} from '@mui/material';
 import axios from 'axios';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
@@ -26,17 +36,16 @@ const SignupForm = () => {
 	const [, setIsFormSubmitted] = useState<boolean>(false);
 	const onSubmit = (formData: SignupFormData) => {
 		signUpMutation.mutate(formData, {
-		  onSuccess: () => {
-			console.log('Form submitted successfully!');
-			setIsFormSubmitted(true);
-			navigate('/login?new-user');
-		  },
-		  onError: (error) => {
-			console.error('Error submitting form:', error);
-		  },
+			onSuccess: () => {
+				console.log('Form submitted successfully!');
+				setIsFormSubmitted(true);
+				navigate('/login?new-user');
+			},
+			onError: (error) => {
+				console.error('Error submitting form:', error);
+			},
 		});
-	  };
-	  
+	};
 
 	const [, setPhoneNumber] = useState('');
 	const onChange = (e) => {
@@ -54,13 +63,13 @@ const SignupForm = () => {
 	return (
 		<FormContainer>
 			<Typography variant='h2' align='center' gutterBottom className={signUp}>
-			    التسجيل 
+				التسجيل
 				<span className={bar}></span>
 			</Typography>
 			<Typography variant='h6' align='center' gutterBottom>
 				<span className={subTitle}>هل لديك حساب؟ </span>
 				<span className={textButton} onClick={() => navigate('/login')}>
-				    تسجيل الدخول      
+					تسجيل الدخول
 				</span>
 			</Typography>
 			<form onSubmit={handleSubmit(onSubmit)} className={form}>
@@ -139,9 +148,40 @@ const SignupForm = () => {
 							)}
 						/>
 					</Grid>
+					<Grid item xs={12} className={formField}>
+						<Controller
+							name='gender'
+							control={control}
+							defaultValue=''
+							rules={{ required: 'الجنس مطلوب' }}
+							render={({ field }) => (
+								<FormControl
+									component='fieldset'
+									fullWidth
+									error={Boolean(errors.gender)}
+								>
+									<RadioGroup row {...field}>
+										<FormControlLabel
+											value='male'
+											control={<Radio />}
+											label='ذكر'
+										/>
+										<FormControlLabel
+											value='female'
+											control={<Radio />}
+											label='أنثى'
+										/>
+									</RadioGroup>
+									{errors.gender && (
+										<FormHelperText>{errors.gender.message}</FormHelperText>
+									)}
+								</FormControl>
+							)}
+						/>
+					</Grid>
 					<Grid item xs={12}>
 						<Button type='submit' className={button}>
-						   إرسال 
+							إرسال
 						</Button>
 					</Grid>
 				</Grid>

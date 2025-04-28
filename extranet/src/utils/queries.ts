@@ -11,9 +11,9 @@ export const fetchEventByReference = async (reference: string) => {
 
 export const donate = async (data: {
 	bloodGroup: string;
-	lastDonationDate: string;
+	donationDate: string;
 	donationType: string;
-	disease: string;
+	eventId?: string;
 }): Promise<{ message: string }> => {
 	try {
 		const response = await axios.post('/api/donation', data);
@@ -96,21 +96,26 @@ export const fetchUserProfile = async () => {
 	}
 };
 
-
-export const deleteUser = async (username: string, token: string) => {
-    try {
-		const response = await axios.delete(`/api/deleteUser/${username}`,
-			{
-				headers: {
-					Authorization: `Bearer ${token}`,
-				},
-			}
-		);
+export const fetchEvents = async () => {
+	try {
+		const response = await axios.get('/api/event');
 		return response.data;
 	} catch (error) {
 		throw new Error(error.message);
 	}
+};
 
+export const deleteUser = async (username: string, token: string) => {
+	try {
+		const response = await axios.delete(`/api/deleteUser/${username}`, {
+			headers: {
+				Authorization: `Bearer ${token}`,
+			},
+		});
+		return response.data;
+	} catch (error) {
+		throw new Error(error.message);
+	}
 };
 
 

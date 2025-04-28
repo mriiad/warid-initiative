@@ -20,6 +20,11 @@ const userSchema = new Schema({
 		type: Number,
 		required: true,
 	},
+	gender: {
+		type: String,
+		enum: ['male', 'female'],
+		required: true,
+	},
 	refreshToken: {
 		type: String,
 		required: false,
@@ -50,13 +55,6 @@ const userSchema = new Schema({
 		select: false,
 	},
 	profile: { type: Schema.Types.ObjectId, ref: 'Profile' },
-	events: [
-		{
-			type: Schema.Types.ObjectId,
-			ref: 'Event',
-			required: false,
-		},
-	],
 	donations: [
 		{
 			type: Schema.Types.ObjectId,
