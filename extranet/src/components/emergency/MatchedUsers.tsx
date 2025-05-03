@@ -16,17 +16,14 @@ import { fetchEmergencyMatchUsers, confirmUserInEmergency } from '../../utils/qu
 import { useParams } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext'; 
 import SearchOffIcon from '@mui/icons-material/SearchOff'; 
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
 
 interface MatchedUser {
-    user: {
         _id: string;
         phoneNumber: string;
-        profile: {
-            firstname: string;
-            lastname: string;
-        };
-    };
-    isConfirmed: boolean;
+        firstname: string;
+        lastname: string;
 }
 
 const useStyles = makeStyles({    
@@ -69,6 +66,9 @@ const MatchedUsers = () => {
     const [matchedUsers, setMatchedUsers] = useState<MatchedUser[]>([]);
     const [loading, setLoading] = useState<boolean>(true); 
     const classes = useStyles();
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState('');
+    const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success');
 
     useEffect(() => {
         const fetchData = async () => {
@@ -89,13 +89,23 @@ const MatchedUsers = () => {
         try {
             await confirmUserInEmergency(emergencyId!, userId, token);
             setMatchedUsers(prevUsers =>
-                prevUsers.map(matched =>
-                    matched.user._id === userId ? { ...matched, isConfirmed: true } : matched
+                prevUsers.filter(matched =>
+                    matched._id !== userId 
                 )
             );
+            setSnackbarMessage("User confirmed successfully!");
+            setSnackbarOpen(true);
+            setSnackbarSeverity('success');
         } catch (error) {
             console.error(error);
+            setSnackbarMessage("Failed to confirm user.");
+            setSnackbarOpen(true);
+            setSnackbarSeverity('error');
+
         }
+    };
+    const handleCloseSnackbar = () => {
+        setSnackbarOpen(false);
     };
 
     return (
@@ -127,28 +137,20 @@ const MatchedUsers = () => {
                         </TableHead>
                         <TableBody>
                             {matchedUsers.map((matched) => (
-                                <TableRow key={matched.user._id}>
-                                    <TableCell>{matched.user.profile.firstname}</TableCell>
-                                    <TableCell>{matched.user.profile.lastname}</TableCell>
-                                    <TableCell>{matched.user.phoneNumber}</TableCell>
+                                <TableRow key={matched._id}>
+                                    <TableCell>{matched.firstname}</TableCell>
+                                    <TableCell>{matched.lastname}</TableCell>
+                                    <TableCell>{matched.phoneNumber}</TableCell>
                                     <TableCell>
-                                        {matched.isConfirmed ? (
-                                            <Chip 
-                                                label="Contacted" 
-                                                color="success" 
-                                                variant="outlined"
-                                                size="small"
-                                            />
-                                        ) : (
                                             <Button
                                                 variant="contained"
                                                 color="primary"
                                                 size="small"
-                                                onClick={() => handleConfirmUser(matched.user._id)}
+                                                onClick={() => handleConfirmUser(matched._id)}
                                             >
                                                 Confirm
                                             </Button>
-                                        )}
+                                    
                                     </TableCell>
                                 </TableRow>
                             ))}
@@ -156,7 +158,19 @@ const MatchedUsers = () => {
                     </Table>
                 </>
             )}
+            <Snackbar
+                            open={snackbarOpen}
+                            autoHideDuration={4000}
+                            onClose={handleCloseSnackbar}
+                            anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+                        >
+                            <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: '100%' }}>
+                                {snackbarMessage}
+                            </Alert>
+            </Snackbar>
+
         </div>
+        
     );
 };
 
