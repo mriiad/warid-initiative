@@ -26,16 +26,10 @@ const EmergencySchema = new Schema({
     type: Boolean,
     default: false,
   },
-  matchingUsers: [
+  contactedUsers: [
     {
-      user: {
         type: Schema.Types.ObjectId,
         ref: "User",
-      },
-      isConfirmed: {
-        type: Boolean,
-        default: false,
-      },
     },
   ],
 });

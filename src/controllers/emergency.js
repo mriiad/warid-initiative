@@ -1,10 +1,9 @@
 const Emergency = require("../models/emergency");
-const user = require("../models/user");
 const User = require("../models/user");
 const ApiError = require("../utils/errors/ApiError");
 const { STATUS_CODE } = require("../utils/errors/httpStatusCode");
 
-// Get only the unconfirmed emergencies
+// Get only unconfirmed emergencies
 exports.getUnconfirmedEmergencies = async (req, res, next) => {
     try {
       const currentPage = Number(req.query.page) || 1;
@@ -12,7 +11,7 @@ exports.getUnconfirmedEmergencies = async (req, res, next) => {
   
       
       const emergencies = await Emergency.find({ isConfirmed: false })
-        .select("-matchingUsers") 
+        .select("-contactedUsers") 
         .skip((currentPage - 1) * perPage)
         .limit(perPage)
         .lean();
@@ -37,31 +36,39 @@ exports.getEmergencyMatchUsers = async (req, res, next) => {
   try {
     const emergencyId = req.params.id;
 
-    const emergency = await Emergency.findById(emergencyId)
-      .populate({
-        path: "matchingUsers.user",
-        select: "phoneNumber profile",
-        populate: {
-          path: "profile",
-          select: "firstname lastname",
-        },
-      })
-      .select("matchingUsers"); 
-
+    const emergency = await Emergency.findById(emergencyId);
     if (!emergency) {
-      const error = new Error("Emergency not found.");
-      error.statusCode = STATUS_CODE.NOT_FOUND;
-      throw error;
+      throw new ApiError("Emergency not found.", STATUS_CODE.NOT_FOUND);
     }
+
+    // Get all users with non-null profile
+    const users = await User.find({ profile: { $ne: null } })
+      .select("phoneNumber profile") 
+      .populate({
+        path: "profile",
+        select: "bloodGroup firstname lastname",
+      });
+
+    // Filter users who match bloodGroup and are NOT contacted yet (doesn't exist in contactedUsers)
+    const matchingUsers = users
+      .filter(
+        (user) =>
+          user.profile.bloodGroup === emergency.bloodGroup &&
+          !emergency.contactedUsers.includes(user._id)
+      )
+      .map((user) => ({
+        _id: user._id,
+        phoneNumber: user.phoneNumber,
+        firstname: user.profile.firstname,
+        lastname: user.profile.lastname,
+      }));
 
     res.status(STATUS_CODE.OK).json({
       message: "Fetched matched users successfully.",
-      matchingUsers: emergency.matchingUsers, 
+      matchingUsers,
     });
   } catch (err) {
-    if (!err.statusCode) {
-      err.statusCode = STATUS_CODE.INTERNAL_SERVER;
-    }
+    if (!err.statusCode) err.statusCode = STATUS_CODE.INTERNAL_SERVER;
     next(err);
   }
 };
@@ -77,24 +84,7 @@ exports.createEmergency = async (req, res, next) => {
       phoneNumber,
       details,
     });
-
-    // Fetch only users who have profile
-    const users = await User.find({ profile: { $ne: null } })
-      .populate({
-        path: 'profile',
-        select: 'bloodGroup',
-      })
-      .exec();
-
-    const matchingUsers = users.filter(user => 
-      user.profile.bloodGroup === bloodGroup
-    );
-
-    emergency.matchingUsers = matchingUsers.map(user => ({
-      user: user._id,
-      isConfirmed: false,
-    }));
-
+ 
     await emergency.save();
 
     res.status(STATUS_CODE.CREATED).json({
@@ -133,7 +123,9 @@ exports.confirmEmergency = async (req, res, next) => {
   }
 };
 
-// Confirm a user from the list of the matched users of an emergency
+// Confirm users by adding them to the contactedUsers of an emergency
+// The confirmed users are the users that have been contacted by the admin 
+// Only the confirmed users are saved in the contactedUsers array
 exports.confirmUserInEmergency = async (req, res, next) => {
   try {
     const { emergencyId, userId } = req.params;
@@ -143,22 +135,22 @@ exports.confirmUserInEmergency = async (req, res, next) => {
       return next(new ApiError("Emergency not found", STATUS_CODE.NOT_FOUND));
     }
 
-    const matchedUser = emergency.matchingUsers.find(
-      (mu) => mu.user.toString() === userId
-    );
-
-    if (!matchedUser) {
-      return next(
-        new ApiError("User not found in emergency list", STATUS_CODE.NOT_FOUND)
-      );
+    const user = await User.findById(userId);
+    if (!user) {
+      return next(new ApiError("User not found", STATUS_CODE.NOT_FOUND));
     }
 
-    matchedUser.isConfirmed = true;
+    const alreadyContacted = emergency.contactedUsers.some(
+      id => id.toString() === userId
+    );
+    if (!alreadyContacted) {
+      emergency.contactedUsers.push(userId);
+    }
+
     await emergency.save();
 
     res.status(STATUS_CODE.OK).json({
-      message: "User confirmed successfully in the emergency",
-      emergency,
+      message: "The contacted user was added successfully",
     });
   } catch (err) {
     if (!err.statusCode) {
@@ -167,7 +159,6 @@ exports.confirmUserInEmergency = async (req, res, next) => {
     next(err);
   }
 };
-
 
 
 
