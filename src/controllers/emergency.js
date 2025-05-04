@@ -1,5 +1,6 @@
 const Emergency = require("../models/emergency");
 const User = require("../models/user");
+const { checkDonationEligibility } = require("./donation");
 const ApiError = require("../utils/errors/ApiError");
 const { STATUS_CODE } = require("../utils/errors/httpStatusCode");
 
@@ -43,30 +44,43 @@ exports.getEmergencyMatchUsers = async (req, res, next) => {
 
     // Get all users with non-null profile
     const users = await User.find({ profile: { $ne: null } })
-      .select("phoneNumber profile") 
+      .select("phoneNumber profile")
       .populate({
         path: "profile",
         select: "bloodGroup firstname lastname city",
       });
 
-    // Filter users who match bloodGroup and are NOT contacted yet (doesn't exist in contactedUsers)
-    const matchingUsers = users
-      .filter(
-        (user) =>
-          user.profile.bloodGroup === emergency.bloodGroup &&
-          user.profile.city === emergency.city &&
-          !emergency.contactedUsers.includes(user._id)
-      )
-      .map((user) => ({
-        _id: user._id,
-        phoneNumber: user.phoneNumber,
-        firstname: user.profile.firstname,
-        lastname: user.profile.lastname,
-      }));
+    // Filter users based on blood group , city and contactedUsers
+    const filteredUsers = users.filter(user => {
+      return (
+        user.profile.bloodGroup === emergency.bloodGroup &&
+        user.profile.city === emergency.city &&
+        !emergency.contactedUsers.includes(user._id)
+      );
+    });
+
+    // Check donation eligibility
+    const eligibilityPromises = filteredUsers.map(async (user) => {
+      const eligibility = await checkDonationEligibility(user._id);
+      if (eligibility.canDonate) {
+        return {
+          _id: user._id,
+          phoneNumber: user.phoneNumber,
+          firstname: user.profile.firstname,
+          lastname: user.profile.lastname,
+        };
+      }
+    });
+
+    // Wait for all eligibility checks to complete
+    const result = await Promise.all(eligibilityPromises);
+
+    // Filter out undefined results (users who didn't match the eligibility criteria)
+    const finalMatchingUsers = result.filter(user => user !== undefined);
 
     res.status(STATUS_CODE.OK).json({
       message: "Fetched matched users successfully.",
-      matchingUsers,
+      matchingUsers: finalMatchingUsers,
     });
   } catch (err) {
     if (!err.statusCode) err.statusCode = STATUS_CODE.INTERNAL_SERVER;
