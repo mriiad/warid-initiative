@@ -32,15 +32,18 @@ exports.getUnconfirmedEmergencies = async (req, res, next) => {
     }
   };
   
-// Get emergency match users
+// Get emergency match users 
 exports.getEmergencyMatchUsers = async (req, res, next) => {
   try {
     const emergencyId = req.params.id;
+    const currentPage = Number(req.query.page) || 1 ;
+    const perPage = 1; 
 
     const emergency = await Emergency.findById(emergencyId);
     if (!emergency) {
       throw new ApiError("Emergency not found.", STATUS_CODE.NOT_FOUND);
     }
+
 
     // Get all users with non-null profile
     const users = await User.find({ profile: { $ne: null } })
@@ -78,15 +81,22 @@ exports.getEmergencyMatchUsers = async (req, res, next) => {
     // Filter out undefined results (users who didn't match the eligibility criteria)
     const finalMatchingUsers = result.filter(user => user !== undefined);
 
+    // Paginate the filtered users
+    const totalUsers = finalMatchingUsers.length ;
+    const startIndex = (currentPage - 1) * perPage;
+    const paginatedUsers = finalMatchingUsers.slice(startIndex, startIndex + perPage);
+
     res.status(STATUS_CODE.OK).json({
       message: "Fetched matched users successfully.",
-      matchingUsers: finalMatchingUsers,
+      matchingUsers: paginatedUsers,
+      totalItems: totalUsers,
     });
   } catch (err) {
     if (!err.statusCode) err.statusCode = STATUS_CODE.INTERNAL_SERVER;
     next(err);
   }
 };
+
 
 // Create new emergency
 exports.createEmergency = async (req, res, next) => {

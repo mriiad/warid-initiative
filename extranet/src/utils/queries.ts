@@ -134,9 +134,9 @@ export const fetchUnconfirmedEmergencies = async (page: number , token: string) 
 };
 
 // Get matched users for a specific emergency
-export const fetchEmergencyMatchUsers = async (emergencyId: string, token: string) => {
+export const fetchEmergencyMatchUsers = async (emergencyId: string, token: string, currentPage: number) => {
 	try {
-		const response = await axios.get(`/api/emergencies/${emergencyId}/matchingUsers`, {
+		const response = await axios.get(`/api/emergencies/${emergencyId}/matchingUsers?page=${currentPage}`, {
 			headers: {
 				Authorization: `Bearer ${token}`,
 			},

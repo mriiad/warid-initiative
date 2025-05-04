@@ -1,34 +1,37 @@
 import { useEffect, useState } from 'react';
-import { 
-    Table, 
-    TableHead, 
-    TableRow, 
-    TableCell, 
-    TableBody, 
-    Button, 
-    Chip, 
-    Typography, 
-    CircularProgress, 
-    Box 
+import {
+    Table,
+    TableHead,
+    TableRow,
+    TableCell,
+    TableBody,
+    Button,
+    Chip,
+    Typography,
+    CircularProgress,
+    Box
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { fetchEmergencyMatchUsers, confirmUserInEmergency } from '../../utils/queries'; 
-import { useParams } from 'react-router-dom';
-import { useAuth } from '../../auth/AuthContext'; 
-import SearchOffIcon from '@mui/icons-material/SearchOff'; 
+import { fetchEmergencyMatchUsers, confirmUserInEmergency } from '../../utils/queries';
+import { useParams, useSearchParams } from 'react-router-dom';
+import { useAuth } from '../../auth/AuthContext';
+import SearchOffIcon from '@mui/icons-material/SearchOff';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 
 interface MatchedUser {
-        _id: string;
-        phoneNumber: string;
-        firstname: string;
-        lastname: string;
+    _id: string;
+    phoneNumber: string;
+    firstname: string;
+    lastname: string;
 }
 
-const useStyles = makeStyles({    
+const useStyles = makeStyles({
     root: {
         padding: '24px',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
     },
     fallBack: {
         display: 'flex',
@@ -57,40 +60,51 @@ const useStyles = makeStyles({
     },
     actionCell: {
         width: '120px'
-    }
+    },
+    pagination: {
+        marginBottom: '64px',
+        marginTop: '32px',
+        display: 'flex',
+        gap: '10px',
+    },
 });
 
 const MatchedUsers = () => {
     const { emergencyId } = useParams<{ emergencyId: string }>();
     const { token } = useAuth();
     const [matchedUsers, setMatchedUsers] = useState<MatchedUser[]>([]);
-    const [loading, setLoading] = useState<boolean>(true); 
+    const [loading, setLoading] = useState<boolean>(true);
     const classes = useStyles();
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success');
+    const [totalPages, setTotalPages] = useState(0);
+    const [searchParams, setSearchParams] = useSearchParams();
+    const page = parseInt(searchParams.get('page') || '1', 10);
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const data = await fetchEmergencyMatchUsers(emergencyId, token);
+                setLoading(true);
+                const data = await fetchEmergencyMatchUsers(emergencyId, token, page);
                 setMatchedUsers(data.matchingUsers);
+                setTotalPages(Math.ceil(data.totalItems / 1));
             } catch (error) {
                 console.error(error);
             } finally {
-                setLoading(false); 
+                setLoading(false);
             }
         };
 
         fetchData();
-    }, [emergencyId, token]);
+    }, [emergencyId, token, page]);
 
     const handleConfirmUser = async (userId: string) => {
         try {
             await confirmUserInEmergency(emergencyId!, userId, token);
             setMatchedUsers(prevUsers =>
                 prevUsers.filter(matched =>
-                    matched._id !== userId 
+                    matched._id !== userId
                 )
             );
             setSnackbarMessage("User confirmed successfully!");
@@ -106,6 +120,18 @@ const MatchedUsers = () => {
     };
     const handleCloseSnackbar = () => {
         setSnackbarOpen(false);
+    };
+
+    const handleNextPage = () => {
+        if (page < totalPages) {
+            setSearchParams({ page: String(page + 1) });
+        }
+    };
+
+    const handlePrevPage = () => {
+        if (page > 1) {
+            setSearchParams({ page: String(page - 1) });
+        }
     };
 
     return (
@@ -142,15 +168,15 @@ const MatchedUsers = () => {
                                     <TableCell>{matched.lastname}</TableCell>
                                     <TableCell>{matched.phoneNumber}</TableCell>
                                     <TableCell>
-                                            <Button
-                                                variant="contained"
-                                                color="primary"
-                                                size="small"
-                                                onClick={() => handleConfirmUser(matched._id)}
-                                            >
-                                                Confirm
-                                            </Button>
-                                    
+                                        <Button
+                                            variant="contained"
+                                            color="primary"
+                                            size="small"
+                                            onClick={() => handleConfirmUser(matched._id)}
+                                        >
+                                            Confirm
+                                        </Button>
+
                                     </TableCell>
                                 </TableRow>
                             ))}
@@ -158,19 +184,27 @@ const MatchedUsers = () => {
                     </Table>
                 </>
             )}
+            <div className={classes.pagination}>
+                <Button disabled={page === 1 || loading} onClick={handlePrevPage}>
+                    Previous
+                </Button>
+                <Button disabled={page >= totalPages || loading} onClick={handleNextPage}>
+                    Next
+                </Button>
+            </div>
             <Snackbar
-                            open={snackbarOpen}
-                            autoHideDuration={4000}
-                            onClose={handleCloseSnackbar}
-                            anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-                        >
-                            <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: '100%' }}>
-                                {snackbarMessage}
-                            </Alert>
+                open={snackbarOpen}
+                autoHideDuration={4000}
+                onClose={handleCloseSnackbar}
+                anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+            >
+                <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: '100%' }}>
+                    {snackbarMessage}
+                </Alert>
             </Snackbar>
 
         </div>
-        
+
     );
 };
 
