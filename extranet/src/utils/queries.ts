@@ -191,3 +191,12 @@ export const confirmUserInEmergency = async (emergencyId: string, userId: string
 };
 
 
+
+export const getCities = async () => {
+	try {
+		const response = await axios.get('/cities');
+		return response.data;
+	} catch (error) {
+		throw new Error(error.message);
+	}
+};

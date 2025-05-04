@@ -46,7 +46,7 @@ exports.getEmergencyMatchUsers = async (req, res, next) => {
       .select("phoneNumber profile") 
       .populate({
         path: "profile",
-        select: "bloodGroup firstname lastname",
+        select: "bloodGroup firstname lastname city",
       });
 
     // Filter users who match bloodGroup and are NOT contacted yet (doesn't exist in contactedUsers)
@@ -54,6 +54,7 @@ exports.getEmergencyMatchUsers = async (req, res, next) => {
       .filter(
         (user) =>
           user.profile.bloodGroup === emergency.bloodGroup &&
+          user.profile.city === emergency.city &&
           !emergency.contactedUsers.includes(user._id)
       )
       .map((user) => ({

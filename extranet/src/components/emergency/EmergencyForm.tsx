@@ -9,9 +9,9 @@ import {
     MenuItem,
     Select,
 } from '@mui/material';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { createEmergency } from '../../utils/queries';
+import { createEmergency, getCities } from '../../utils/queries';
 import FormContainer from '../shared/FormContainer';
 import ResponseAnimation from '../shared/ResponseAnimation';
 import { authStyles } from '../../styles/mainStyles';
@@ -35,6 +35,7 @@ const EmergencyForm = () => {
     const [isSuccessResponse, setIsSuccessResponse] = useState(false);
     const [isErrorResponse, setIsErrorResponse] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [cities, setCities] = useState<string[]>([]);
 
     const [loading, setLoading] = useState(false);
 
@@ -56,7 +57,7 @@ const EmergencyForm = () => {
             reset();
         } catch (error: any) {
             console.error('Error creating emergency:', error);
-         
+
             if (error?.data?.errorKeys) {
                 error.data.errorKeys.forEach((errorKey: keyof Emergency) => {
                     setError(errorKey, {
@@ -78,13 +79,25 @@ const EmergencyForm = () => {
 
         }
     };
+    useEffect(() => {
+        const fetchCities = async () => {
+            try {
+                const citiesData = await getCities();
+                setCities(citiesData.cities);
+            } catch (error) {
+                console.error('Failed to fetch cities:', error);
+            }
+        };
+        fetchCities();
+    }, []);
+
 
     return (
         <FormContainer>
             <Typography variant="h4" align="center" gutterBottom className={signUp}>
                 Create Emergency
                 <span className={bar}
-                style={{ width: '150px', height: '5px'}}
+                    style={{ width: '150px', height: '5px' }}
                 ></span>
             </Typography>
 
@@ -135,19 +148,26 @@ const EmergencyForm = () => {
 
                             <Grid item xs={12}>
                                 <Controller
-                                    name="city"
-                                    control={control}
-                                    defaultValue=""
+                                    name='city'
                                     rules={{ required: 'City is required' }}
+                                    control={control}
                                     render={({ field }) => (
-                                        <TextField
-                                            {...field}
-                                            label="City"
-                                            fullWidth
-                                            error={Boolean(errors.city)}
-                                            helperText={errors.city?.message}
-
-                                        />
+                                        <FormControl fullWidth error={Boolean(errors.city)}>
+                                            <InputLabel>City</InputLabel>
+                                            <Select {...field}>
+                                                <MenuItem value="">
+                                                    <em>None</em>
+                                                </MenuItem>
+                                                {cities.map((city) => (
+                                                    <MenuItem key={city} value={city}>
+                                                        {city}
+                                                    </MenuItem>
+                                                ))}
+                                            </Select>
+                                            <FormHelperText>
+                                                {errors.city?.message}
+                                            </FormHelperText>
+                                        </FormControl>
                                     )}
                                 />
                             </Grid>
