@@ -25,7 +25,6 @@ import LandingPage from './components/home/LandingPage';
 import EmergencyForm from './components/emergency/EmergencyForm';
 import EmergencyComponent from './components/emergency/EmergencyComponent';
 import MatchedUsers from './components/emergency/MatchedUsers';
-import ProfileComponent from './components/profile/ProfileComponent';
 
 
 const AppContainer = styled.div`
@@ -113,7 +112,7 @@ const App = () => {
 							{ isAdmin && (
 								<Route path='/emergencies/:emergencyId/matched-users/' element={<MatchedUsers />} />	
 							)}
-							<Route path='/profile' element={<ProfileComponent />} />
+							
 
 						</Routes>
 					</ContentContainer>
