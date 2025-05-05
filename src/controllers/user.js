@@ -167,6 +167,8 @@ exports.getProfile = (req, res, next) => {
 				gender: user.gender, // Gender from User model
 				bloodGroup: user.profile.bloodGroup,
 				city: user.profile.city,
+				phoneNumber: user.phoneNumber,
+				email: user.email,
 			});
 		})
 		.catch((err) => {

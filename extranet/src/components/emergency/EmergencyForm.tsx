@@ -118,7 +118,6 @@ const EmergencyForm = () => {
                                 <Controller
                                     name="bloodGroup"
                                     control={control}
-                                    defaultValue={undefined}
                                     rules={{ required: 'Blood group is required' }}
                                     render={({ field }) => (
                                         <FormControl fullWidth error={Boolean(errors.bloodGroup)} >
