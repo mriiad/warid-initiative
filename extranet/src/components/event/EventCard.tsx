@@ -57,6 +57,23 @@ const useStyles = makeStyles({
 		'@media (max-width:600px)': {
 			fontSize: '0.9rem',
 		},
+		'&.generic': {
+			backgroundColor: `${colors.purple}20`,
+			borderBottom: `4px solid ${colors.purple}`,
+			color: colors.purple,
+			position: 'relative',
+			'&::after': {
+				content: '""',
+				position: 'absolute',
+				top: '0',
+				right: '10px',
+				width: '30px',
+				height: '30px',
+				backgroundColor: colors.rose,
+				transform: 'rotate(45deg)',
+				zIndex: 1,
+			},
+		},
 	},
 	imageContainer: {
 		padding: '0 24px',
@@ -166,13 +183,15 @@ const EventCard: React.FC<EventCardProps> = ({ event, animationDelay }) => {
 		navigate(`/events/${event.reference}`);
 	};
 
+	const isGenericEvent = event.isGeneric === true;
+
 	return (
 		<Card
 			className={cardContainer}
 			style={{ animationDelay: animationDelay }}
 			onClick={handleClick}
 		>
-			<div className={titleContainer}>
+			<div className={`${titleContainer} ${isGenericEvent ? 'generic' : ''}`}>
 				<Typography>{event.title}</Typography>
 			</div>
 			<div className={imageContainer}>

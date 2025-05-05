@@ -8,4 +8,5 @@ export interface Event {
 	date: string;
 	mapLink: string;
 	description: string;
+	isGeneric: boolean;
 }

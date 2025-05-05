@@ -3,6 +3,7 @@ import { makeStyles } from '@mui/styles';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
+import { useAuth } from '../../auth/AuthContext';
 import { Event } from '../../data/Event';
 import EventCard from './EventCard';
 
@@ -34,11 +35,14 @@ const useStyles = makeStyles({
 const EventsComponent = () => {
 	const { eventsList, fallBack, pagination } = useStyles();
 	const [events, setEvents] = useState<Event[] | null>([]);
+	const [filteredEvents, setFilteredEvents] = useState<Event[] | null>([]);
 
 	const [page, setPage] = useState(1);
 	const [totalPages, setTotalPages] = useState(0);
 
 	const [isLoading, setIsLoading] = useState(false);
+
+	const { isAdmin } = useAuth();
 
 	useEffect(() => {
 		const fetchEvents = async () => {
@@ -59,6 +63,18 @@ const EventsComponent = () => {
 		fetchEvents();
 	}, [page]);
 
+	// Filter events - only show generic events to admins
+	useEffect(() => {
+		if (events) {
+			// If admin, show all events, otherwise filter out generic events
+			const filtered = isAdmin
+				? events
+				: events.filter((event) => !event.isGeneric);
+
+			setFilteredEvents(filtered);
+		}
+	}, [events, isAdmin]);
+
 	return (
 		<EventsContainer>
 			{isLoading ? (
@@ -67,21 +83,22 @@ const EventsComponent = () => {
 				</div>
 			) : (
 				<div className={eventsList}>
-					{events.map((event, index) => (
-						<EventCard
-							key={event._id}
-							event={event}
-							animationDelay={`${index * 0.2}s`}
-						/>
-					))}
+					{filteredEvents &&
+						filteredEvents.map((event, index) => (
+							<EventCard
+								key={event._id}
+								event={event}
+								animationDelay={`${index * 0.2}s`}
+							/>
+						))}
 				</div>
 			)}
 			<div className={pagination}>
 				<Button disabled={page === 1} onClick={() => setPage(page - 1)}>
-				    السابق
+					السابق
 				</Button>
 				<Button disabled={page >= totalPages} onClick={() => setPage(page + 1)}>
-				    التالي
+					التالي
 				</Button>
 			</div>
 			<div></div>
