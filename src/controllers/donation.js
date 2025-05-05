@@ -155,19 +155,6 @@ const checkExistingDonation = async (userId, userProvidedDate) => {
 			);
 		}
 
-		// Check if the user already has a donation with no date (incomplete donation)
-		const incompleteDonation = await Donation.findOne({
-			userId: userId,
-			donationDate: { $eq: null },
-		});
-
-		if (incompleteDonation) {
-			throw new ApiError(
-				'You have a previous donation that has not been completed yet.',
-				STATUS_CODE.FORBIDDEN
-			);
-		}
-
 		const [recentDonation] = await Donation.find({ userId: userId })
 			.sort({ donationDate: -1 })
 			.limit(1)
