@@ -21,7 +21,7 @@ import {
 	fieldDisplayNames,
 } from '../data/ProfileFormData';
 import { authStyles } from '../styles/mainStyles';
-import { fetchUserProfile } from '../utils/queries';
+import { fetchUserProfile, getCities } from '../utils/queries';
 import { formatDate } from '../utils/utils';
 import FormContainer from './shared/FormContainer';
 import SnackbarComponent from './shared/SnackbarComponent';
@@ -46,6 +46,7 @@ const UserProfileForm = () => {
 	const { formField, button, signUp, form, bar } = authStyles();
 	const [showSnackbar, setShowSnackbar] = useState(false);
 	const [incompleteFieldsMessage, setIncompleteFieldsMessage] = useState('');
+	const [cities, setCities] = useState<string[]>([]);
 
 	const { data: userProfile } = useQuery<ProfileFormData>(
 		'userProfile',
@@ -63,6 +64,7 @@ const UserProfileForm = () => {
 			lastname: '',
 			birthdate: '',
 			bloodGroup: BloodGroup.None,
+			city: '',
 		}),
 		[]
 	);
@@ -84,6 +86,7 @@ const UserProfileForm = () => {
 				'lastname',
 				'birthdate',
 				'bloodGroup',
+				'city',
 			];
 
 			fields.forEach((field) => {
@@ -103,6 +106,7 @@ const UserProfileForm = () => {
 				setShowSnackbar(true);
 			}
 		}
+		fetchCities();
 	}, [userProfile, setValue]);
 
 	const updateProfile = async (data: ProfileFormData) => {
@@ -116,6 +120,15 @@ const UserProfileForm = () => {
 
 	const onSubmit = (formData: ProfileFormData) => {
 		updateProfile(formData);
+	};
+
+	const fetchCities = async () => {
+		try {
+			const citiesData = await getCities();
+			setCities(citiesData.cities);
+		} catch (error) {
+			console.error('Failed to fetch cities:', error);
+		}
 	};
 
 	return (
@@ -176,6 +189,31 @@ const UserProfileForm = () => {
 									</Select>
 									<FormHelperText>
 										{errors.bloodGroup ? 'Blood Group is required' : ''}
+									</FormHelperText>
+								</FormControl>
+							)}
+						/>
+					</Grid>
+					<Grid item xs={12}>
+						<Controller
+							name='city'
+							rules={{ required: 'City is required' }}
+							control={control}
+							render={({ field }) => (
+								<FormControl fullWidth error={Boolean(errors.city)}>
+									<InputLabel>City</InputLabel>
+									<Select {...field}>
+										<MenuItem value=''>
+											<em>None</em>
+										</MenuItem>
+										{cities && cities.map((city) => (
+											<MenuItem key={city} value={city}>
+												{city}
+											</MenuItem>
+										))}
+									</Select>
+									<FormHelperText>
+										{errors.city?.message}
 									</FormHelperText>
 								</FormControl>
 							)}

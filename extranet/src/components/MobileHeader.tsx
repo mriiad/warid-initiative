@@ -12,6 +12,7 @@ import { IconButton } from '@mui/material';
 import { icon } from 'leaflet';
 import colors from '../styles/colors';
 
+
 interface HeaderContainerProps {
 	isEventPage: boolean;
 }
@@ -75,6 +76,7 @@ const MobileHeader = () => {
 	const currentRoute = location.pathname;
 
 
+
 	const handleLogout = () => {
 		axios
 			.post('http://localhost:3000/api/auth/logout')
@@ -94,6 +96,8 @@ const MobileHeader = () => {
 				console.error('Logout error', error);
 			});
 	};
+
+
 
 	return (
 		<HeaderContainer isEventPage={isEventPage}>
