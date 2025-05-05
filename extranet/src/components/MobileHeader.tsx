@@ -2,25 +2,15 @@ import ArrowCircleLeftIcon from '@mui/icons-material/ArrowCircleLeft';
 import ArrowCircleRightIcon from '@mui/icons-material/ArrowCircleRight';
 import { makeStyles } from '@mui/styles';
 import axios from 'axios';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { useAuth } from '../auth/AuthContext';
 import ActionButton from './shared/ActionButton';
-import AccountCircleIcon from '@mui/icons-material/AccountCircleOutlined';
-import LogOutIcon from '@mui/icons-material/LogoutOutlined';
-import { IconButton } from '@mui/material';
-import { icon } from 'leaflet';
-import colors from '../styles/colors';
+
 
 interface HeaderContainerProps {
 	isEventPage: boolean;
 }
-const IconsContainer = styled.div`
-	display: flex;
-	align-items: center;
-	background-color: transparent;
-	padding: 2px;
-`;
 
 const HeaderContainer = styled.div<HeaderContainerProps>`
 	display: flex;
@@ -53,24 +43,14 @@ const useStyles = makeStyles({
 		height: '40px',
 		width: '36px',
 	},
-	icon: {
-		color: '#3B2A82',
-		'&:hover': {
-			color: colors.rose,
-		},
-	},
-	activeIcon: {
-		color: colors.rose,
-	},
 });
 
 const MobileHeader = () => {
-	const { logoImage, icon, activeIcon } = useStyles();
+	const { logoImage } = useStyles();
 	const { token, setToken, setIsAdmin, setUserId } = useAuth();
 	const location = useLocation();
 	const isEventPage = location.pathname.includes('events/WEVENT');
 	const navigate = useNavigate();
-	const currentRoute = location.pathname;
 
 
 	const handleLogout = () => {
@@ -101,22 +81,11 @@ const MobileHeader = () => {
 				<img src='/warid-logo.png' alt='Logo' className={logoImage} />
 			</LogoContainer>
 			{token ? (
-				<IconsContainer>
-					<Link to='/profile'>
-						<AccountCircleIcon
-							className={currentRoute === '/profile' ? activeIcon : icon}
-							fontSize='large'
-						/>
-					</Link>
-
-					<IconButton
-						onClick={handleLogout}
-						size='large'
-						color='inherit'
-					>
-						<LogOutIcon fontSize='large' className={icon} />
-					</IconButton>
-				</IconsContainer>
+				<ActionButton
+					title='تسجيل الخروج'
+					icon={<ArrowCircleLeftIcon />}
+					onClick={handleLogout}
+				/>
 			) : (
 				<ActionButton
 					title='تسجيل الدخول'
