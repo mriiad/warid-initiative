@@ -21,10 +21,11 @@ import {
 	fieldDisplayNames,
 } from '../data/ProfileFormData';
 import { authStyles } from '../styles/mainStyles';
-import { fetchUserProfile, getCities } from '../utils/queries';
+import { fetchUserProfile} from '../utils/queries';
 import { formatDate } from '../utils/utils';
 import FormContainer from './shared/FormContainer';
 import SnackbarComponent from './shared/SnackbarComponent';
+import { cities } from '../utils/utils';
 
 const useStyles = makeStyles({
 	align: {
@@ -106,7 +107,6 @@ const UserProfileForm = () => {
 				setShowSnackbar(true);
 			}
 		}
-		fetchCities();
 	}, [userProfile, setValue]);
 
 	const updateProfile = async (data: ProfileFormData) => {
@@ -122,14 +122,6 @@ const UserProfileForm = () => {
 		updateProfile(formData);
 	};
 
-	const fetchCities = async () => {
-		try {
-			const citiesData = await getCities();
-			setCities(citiesData.cities);
-		} catch (error) {
-			console.error('Failed to fetch cities:', error);
-		}
-	};
 
 	return (
 		<FormContainer className={align}>
@@ -198,6 +190,7 @@ const UserProfileForm = () => {
 						<Controller
 							name='city'
 							rules={{ required: 'City is required' }}
+							defaultValue=""
 							control={control}
 							render={({ field }) => (
 								<FormControl fullWidth error={Boolean(errors.city)}>
