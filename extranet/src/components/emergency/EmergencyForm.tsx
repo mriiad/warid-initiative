@@ -9,15 +9,15 @@ import {
     MenuItem,
     Select,
 } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { createEmergency, getCities } from '../../utils/queries';
+import { createEmergency } from '../../utils/queries';
 import FormContainer from '../shared/FormContainer';
 import ResponseAnimation from '../shared/ResponseAnimation';
 import { authStyles } from '../../styles/mainStyles';
 import { Emergency } from '../../data/Emergency';
-
-
+import { useMutation } from 'react-query';
+import { cities } from '../../utils/utils';
 
 const EmergencyForm = () => {
     const { bar, button, signUp, form } = authStyles();
@@ -28,34 +28,29 @@ const EmergencyForm = () => {
         control,
         setError,
         reset,
-
     } = useForm<Emergency>();
 
     const [isFormSubmitted, setIsFormSubmitted] = useState(false);
     const [isSuccessResponse, setIsSuccessResponse] = useState(false);
     const [isErrorResponse, setIsErrorResponse] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
-    const [cities, setCities] = useState<string[]>([]);
-
     const [loading, setLoading] = useState(false);
 
-    const onSubmit = async (formData: Emergency) => {
-        setLoading(true);
-        setIsFormSubmitted(false);
-        setErrorMessage(null);
-
-        try {
+    const mutation = useMutation({
+        mutationFn: (formData: Emergency) => {
             const payload = {
                 ...formData,
                 phoneNumber: Number(formData.phoneNumber),
             };
-            const response = await createEmergency(payload);
-
+            return createEmergency(payload);
+        },
+        onSuccess: () => {
             setIsFormSubmitted(true);
             setIsSuccessResponse(true);
             setIsErrorResponse(false);
             reset();
-        } catch (error: any) {
+        },
+        onError: (error: any) => {
             console.error('Error creating emergency:', error);
 
             if (error?.data?.errorKeys) {
@@ -70,40 +65,31 @@ const EmergencyForm = () => {
             setIsFormSubmitted(true);
             setIsErrorResponse(true);
             setIsSuccessResponse(false);
-
-        } finally {
+        },
+        onSettled: () => {
             setLoading(false);
             setTimeout(() => {
                 setIsFormSubmitted(false);
             }, 8000);
+        },
+    });
 
-        }
+    const onSubmit = (formData: Emergency) => {
+        setLoading(true);
+        setIsFormSubmitted(false);
+        setErrorMessage(null);
+        mutation.mutate(formData);
     };
-    useEffect(() => {
-        const fetchCities = async () => {
-            try {
-                const citiesData = await getCities();
-                setCities(citiesData.cities);
-            } catch (error) {
-                console.error('Failed to fetch cities:', error);
-            }
-        };
-        fetchCities();
-    }, []);
-
 
     return (
         <FormContainer>
             <Typography variant="h4" align="center" gutterBottom className={signUp}>
                 Create Emergency
-                <span className={bar}
-                    style={{ width: '150px', height: '5px' }}
-                ></span>
+                <span className={bar} style={{ width: '150px', height: '5px' }}></span>
             </Typography>
 
             <form onSubmit={handleSubmit(onSubmit)} className={form} style={{ marginTop: '20px' }}>
-                <Grid container spacing={2} justifyContent="center"
-                    alignItems="center">
+                <Grid container spacing={2} justifyContent="center" alignItems="center">
                     {isFormSubmitted ? (
                         <ResponseAnimation
                             responseMessage="Emergency created successfully!"
@@ -120,7 +106,7 @@ const EmergencyForm = () => {
                                     control={control}
                                     rules={{ required: 'Blood group is required' }}
                                     render={({ field }) => (
-                                        <FormControl fullWidth error={Boolean(errors.bloodGroup)} >
+                                        <FormControl fullWidth error={Boolean(errors.bloodGroup)}>
                                             <InputLabel>Blood Group</InputLabel>
                                             <Select {...field} label="Blood Group">
                                                 <MenuItem value="">
@@ -135,19 +121,15 @@ const EmergencyForm = () => {
                                                 <MenuItem value="O+">O+</MenuItem>
                                                 <MenuItem value="O-">O-</MenuItem>
                                             </Select>
-                                            <FormHelperText>
-                                                {errors.bloodGroup?.message}
-                                            </FormHelperText>
+                                            <FormHelperText>{errors.bloodGroup?.message}</FormHelperText>
                                         </FormControl>
                                     )}
-
                                 />
-
                             </Grid>
 
                             <Grid item xs={12}>
                                 <Controller
-                                    name='city'
+                                    name="city"
                                     rules={{ required: 'City is required' }}
                                     control={control}
                                     render={({ field }) => (
@@ -163,9 +145,7 @@ const EmergencyForm = () => {
                                                     </MenuItem>
                                                 ))}
                                             </Select>
-                                            <FormHelperText>
-                                                {errors.city?.message}
-                                            </FormHelperText>
+                                            <FormHelperText>{errors.city?.message}</FormHelperText>
                                         </FormControl>
                                     )}
                                 />
@@ -180,9 +160,10 @@ const EmergencyForm = () => {
                                         required: 'Phone number is required',
                                         pattern: {
                                             value: /^[0-9]+$/,
-                                            message: 'Phone number must contain only numbers'
+                                            message: 'Phone number must contain only numbers',
                                         },
-                                        validate: (value) => value.toString().length === 10 || 'Phone number must be exactly 10 numbers'
+                                        validate: (value) =>
+                                            value.toString().length === 10 || 'Phone number must be exactly 10 numbers',
                                     }}
                                     render={({ field }) => (
                                         <TextField
@@ -219,7 +200,6 @@ const EmergencyForm = () => {
                             <Grid item xs={12}>
                                 <Button
                                     type="submit"
-
                                     variant="contained"
                                     className={button}
                                     disabled={loading}
@@ -232,8 +212,6 @@ const EmergencyForm = () => {
                     )}
                 </Grid>
             </form>
-
-
         </FormContainer>
     );
 };
