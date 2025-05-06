@@ -2,7 +2,6 @@ const express = require('express');
 const userRouter = express.Router();
 const { isAuth } = require('../middleware/token-check');
 const checkIfAdmin = require('../utils/checks');
-const cities = require('../utils/cities');
 const {
 	getUsers,
 	updateUserInfo,
@@ -23,8 +22,6 @@ userRouter.get('/api/user/profile', isAuth, getProfile);
 userRouter.post('/api/searchUsers', isAuth, checkIfAdmin, searchUsers);
 
 userRouter.delete('/api/deleteUser/:username', isAuth , checkIfAdmin , deleteUser);
-
-userRouter.get('/cities', (req, res) => {  res.json({ cities });});
 
 
 module.exports = userRouter;
