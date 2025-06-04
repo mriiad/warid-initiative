@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { UserFormData } from '../data/ProfileFormData';
 
 export const fetchEventByReference = async (reference: string) => {
 	try {
@@ -96,6 +97,7 @@ export const fetchUserProfile = async () => {
 	}
 };
 
+
 export const fetchEvents = async () => {
 	try {
 		const response = await axios.get('/api/event');
@@ -192,11 +194,34 @@ export const confirmUserInEmergency = async (emergencyId: string, userId: string
 
 
 
-export const getCities = async () => {
-	try {
-		const response = await axios.get('/cities');
-		return response.data;
-	} catch (error) {
-		throw new Error(error.message);
-	}
+// Get user profile informations
+export const getUserProfile = async (token: string) => {
+    const response = await axios.get('/api/user/profile', {
+        headers: { Authorization: `Bearer ${token}` },
+    });
+    return response.data;
 };
+
+
+// Update user profile information
+export const updateProfileInfo = async (token: string, editedUserInfo: UserFormData) => {
+  return axios.patch('/api/user/profile', editedUserInfo, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+};
+
+
+// Update user password
+export const updatePassword = async (token: string, currentPassword: string, newPassword: string) => {
+  return axios.patch(
+    '/api/auth/update-password',
+    { currentPassword, newPassword },
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+};
+
+
+export const logout = async () => {
+  return axios.post('http://localhost:3000/api/auth/logout');
+};
+

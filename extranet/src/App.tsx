@@ -22,14 +22,11 @@ import EventDetail from './components/event/EventDetail';
 import EventForm from './components/event/EventForm';
 import EventsComponent from './components/event/EventsComponent';
 import LandingPage from './components/home/LandingPage';
-<<<<<<< HEAD
 import ProfileComponent from './components/profile/ProfileComponent';
-=======
 import EmergencyForm from './components/emergency/EmergencyForm';
 import EmergencyComponent from './components/emergency/EmergencyComponent';
 import MatchedUsers from './components/emergency/MatchedUsers';
 
->>>>>>> 119-emergency-module-implementation
 
 const AppContainer = styled.div`
 	position: relative;
@@ -109,9 +106,7 @@ const App = () => {
 								element={<ResetPasswordForm />}
 							/>
 							<Route path='*' element={<NotFoundPage />} />
-<<<<<<< HEAD
 							<Route path='/profile' element={<ProfileComponent />} />
-=======
 							<Route path='/emergency' element={<EmergencyForm />} />
 							{isAdmin && (  
 								<Route path='/emergencies' element={<EmergencyComponent />} />
@@ -119,9 +114,11 @@ const App = () => {
 							{ isAdmin && (
 								<Route path='/emergencies/:emergencyId/matched-users/' element={<MatchedUsers />} />	
 							)}
+
 							
 
->>>>>>> 119-emergency-module-implementation
+							
+
 						</Routes>
 					</ContentContainer>
 					{isMobile && (

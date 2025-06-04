@@ -1,9 +1,467 @@
-import React from 'react'
+import { useState, useEffect } from 'react';
+import { makeStyles } from '@mui/styles';
+import { Button, TextField, MenuItem, Snackbar, Alert, CircularProgress } from '@mui/material';
+import { cities } from '../../utils/utils';
+import { useAuth } from '../../auth/AuthContext';
+import { BloodGroup, userFieldDisplayNames, UserFormData } from '../../data/ProfileFormData';
+import { useNavigate } from 'react-router';
+import {
+    getUserProfile,
+    updateProfileInfo,
+    updatePassword,
+    logout,
+} from '../../utils/queries';
+
+import { useQuery, useMutation, useQueryClient } from 'react-query';
+
+const useStyles = makeStyles({
+    container: {
+        width: 400,
+        margin: '0 auto',
+        padding: 10,
+    },
+    section: {
+        marginBottom: 30,
+        padding: 20,
+        borderRadius: 12,
+        border: '1px solid #e0e0e0',
+        backgroundColor: '#ffffff',
+        boxShadow: '0 2px 5px rgba(0, 0, 0, 0.05)',
+    },
+    sectionTitle: {
+        marginBottom: 15,
+        color: '#3B2A82',
+        fontWeight: 600,
+        borderBottom: '1px solid #ccc',
+        paddingBottom: 8,
+    },
+    title: {
+        marginTop: 0,
+        marginBottom: 10,
+        color: '#3B2A82',
+        textAlign: 'center',  
+        fontSize: '2.3rem',   
+        fontWeight: 'bold',   
+    },
+    infoRow: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 10,
+    },
+    label: {
+        fontWeight: 'bold',
+        marginRight: 8,
+        minWidth: 140,
+    },
+    value: {
+        color: '#555',
+        flex: 1,
+    },
+    fullWidthField: {
+        flex: 1,
+    },
+    snackbar: {
+        marginTop: 20,
+    },
+    alert: {
+        width: '100%',
+    },
+});
 
 const ProfileComponent = () => {
-  return (
-    <div>ProfileComponent</div>
-  )
-}
+    const classes = useStyles();
+    const { token, setToken, setIsAdmin, setUserId } = useAuth();
+    const navigate = useNavigate();
+    const queryClient = useQueryClient();
+    const formatDate = (isoDate: string) => isoDate?.split('T')[0];
 
-export default ProfileComponent
+    const [isEditingInfo, setIsEditingInfo] = useState(false);
+    const [isEditingPassword, setIsEditingPassword] = useState(false);
+
+    const [currentPassword, setCurrentPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [error, setError] = useState('');
+
+    const [editedUserInfo, setEditedUserInfo] = useState<UserFormData>({
+        firstname: '',
+        lastname: '',
+        city: '',
+        birthdate: '',
+        bloodGroup: BloodGroup.None,
+        phoneNumber: '',
+        email: '',
+    });
+
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState('');
+    const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success');
+
+    const showSnackbar = (message: string, severity: 'success' | 'error') => {
+        setSnackbarMessage(message);
+        setSnackbarSeverity(severity);
+        setSnackbarOpen(true);
+    };
+
+    // fetch user profile
+    const { data: userInfo, isLoading, isError, refetch } = useQuery(
+        ['userProfile', token],
+        () => getUserProfile(token),
+        {
+            enabled: !!token,
+            onSuccess: (data) => {
+                setEditedUserInfo({
+                    firstname: data.firstname,
+                    lastname: data.lastname,
+                    birthdate: formatDate(data.birthdate),
+                    bloodGroup: data.bloodGroup,
+                    city: data.city,
+                    phoneNumber: data.phoneNumber,
+                    email: data.email,
+                });
+
+            },
+            onError: () => {
+                showSnackbar('Failed to load profile.', 'error');
+            },
+        }
+    );
+
+    // update profile mutation
+    const updateProfileMutation = useMutation(
+        (updatedInfo: UserFormData) => updateProfileInfo(token, updatedInfo),
+        {
+            onSuccess: () => {
+                showSnackbar('Profile updated successfully!', 'success');
+                setIsEditingInfo(false);
+                queryClient.invalidateQueries(['userProfile', token]); // refetch profile
+            },
+            onError: () => {
+                showSnackbar('Failed to update profile.', 'error');
+            },
+        }
+    );
+
+    // update password mutation
+    const updatePasswordMutation = useMutation(
+        ({ currentPassword, newPassword }: { currentPassword: string; newPassword: string }) =>
+            updatePassword(token, currentPassword, newPassword),
+        {
+            onSuccess: () => {
+                showSnackbar('Password updated successfully! For security, you will be logged out shortly.', 'success');
+                setIsEditingPassword(false);
+                setCurrentPassword('');
+                setNewPassword('');
+                setConfirmPassword('');
+                setError('');
+                setTimeout(() => {
+                    handleLogout();
+                }, 5000);
+            },
+            onError: (error: any) => {
+                const message = error.response?.data?.message || 'Failed to update password.';
+                showSnackbar(message, 'error');
+                console.error('Error updating password:', error);
+            },
+        }
+    );
+
+    // logout
+    const logoutMutation = useMutation(logout, {
+        onSuccess: () => {
+            localStorage.clear();
+            setToken(null);
+            setUserId(null);
+            setIsAdmin(null);
+            navigate('/login');
+        },
+        onError: (error) => {
+            console.error('Logout error', error);
+        },
+    });
+
+    const handleLogout = () => {
+        logoutMutation.mutate();
+    };
+
+    const handleInfoSave = () => {
+        // Validate phone and email as before...
+        const phoneValidationResult = validatePhoneNumber(editedUserInfo.phoneNumber);
+        const emailValidationResult = validateEmail(editedUserInfo.email);
+
+        if (phoneValidationResult !== true) {
+            showSnackbar(phoneValidationResult, 'error');
+            return;
+        }
+
+        if (emailValidationResult !== true) {
+            showSnackbar(emailValidationResult, 'error');
+            return;
+        }
+
+        updateProfileMutation.mutate(editedUserInfo);
+    };
+
+    const handlePasswordSave = () => {
+        if (newPassword !== confirmPassword) {
+            showSnackbar('New password and confirmation do not match.', 'error');
+            return;
+        }
+        if (!currentPassword || !newPassword || !confirmPassword) {
+            showSnackbar('All password fields must be filled.', 'error');
+            return;
+        }
+        updatePasswordMutation.mutate({ currentPassword, newPassword });
+    };
+
+    // Email & phone number validation functions 
+    const phoneValidationRules = {
+        required: 'Phone number is required',
+        pattern: {
+            value: /^[0-9]+$/,
+            message: 'Phone number must contain only numbers',
+        },
+        validate: (value: string) =>
+            value.length === 10 || 'Phone number must be exactly 10 digits',
+    };
+
+    const emailValidationRules = {
+        required: 'Email is required',
+        pattern: {
+            value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+            message: 'Please enter a valid email address',
+        },
+    };
+
+    const validatePhoneNumber = (value: string) => {
+        if (!value) return phoneValidationRules.required;
+        if (!phoneValidationRules.pattern.value.test(value))
+            return phoneValidationRules.pattern.message;
+        if (value.length !== 10) return phoneValidationRules.validate(value);
+        return true;
+    };
+
+    const validateEmail = (value: string) => {
+        if (!value) return emailValidationRules.required;
+        if (!emailValidationRules.pattern.value.test(value))
+            return emailValidationRules.pattern.message;
+        return true;
+    };
+
+    if (isLoading) return <CircularProgress />;
+    if (isError) return <Alert severity="error">Failed to load profile.</Alert>;
+
+    return (
+        <div className={classes.container}>
+            <h1 className={classes.title}>Profile</h1>
+
+            {/* User Info Section */}
+            <div className={classes.section}>
+                <h3 className={classes.sectionTitle}>User Information</h3>
+                {Object.entries(userFieldDisplayNames).map(([field, label]) => (
+                    <div className={classes.infoRow} key={field}>
+                        <span className={classes.label}>{label}:</span>
+                        {isEditingInfo ? (
+                            field === 'bloodGroup' ? (
+                                <TextField
+                                    select
+                                    size="small"
+                                    value={editedUserInfo[field as keyof typeof editedUserInfo]}
+                                    onChange={(e) =>
+                                        setEditedUserInfo({
+                                            ...editedUserInfo,
+                                            [field]: e.target.value as BloodGroup,
+                                        })
+                                    }
+                                    className={classes.fullWidthField}
+                                >
+                                    {Object.values(BloodGroup)
+                                        .filter((bg) => bg !== '')
+                                        .map((group) => (
+                                            <MenuItem key={group} value={group}>
+                                                {group}
+                                            </MenuItem>
+                                        ))}
+                                </TextField>
+                            ) : field === 'city' ? (
+                                <TextField
+                                    select
+                                    size="small"
+                                    value={editedUserInfo[field as keyof typeof editedUserInfo]}
+                                    onChange={(e) =>
+                                        setEditedUserInfo({
+                                            ...editedUserInfo,
+                                            [field]: e.target.value,
+                                        })
+                                    }
+                                    className={classes.fullWidthField}
+                                >
+                                    {cities.map((city) => (
+                                        <MenuItem key={city} value={city}>
+                                            {city}
+                                        </MenuItem>
+                                    ))}
+                                </TextField>
+                            ) : field === 'birthdate' ? (
+                                <TextField
+                                    type="date"
+                                    size="small"
+                                    value={editedUserInfo[field as keyof typeof editedUserInfo]}
+                                    onChange={(e) =>
+                                        setEditedUserInfo({
+                                            ...editedUserInfo,
+                                            [field]: e.target.value,
+                                        })
+                                    }
+                                    className={classes.fullWidthField}
+                                />
+                            ) : (
+                                <TextField
+                                    type="text"
+                                    size="small"
+                                    value={editedUserInfo[field as keyof typeof editedUserInfo]}
+                                    onChange={(e) =>
+                                        setEditedUserInfo({
+                                            ...editedUserInfo,
+                                            [field]: e.target.value,
+                                        })
+                                    }
+                                    className={classes.fullWidthField}
+                                />
+                            )
+                        ) : (
+                            <span className={classes.value}>
+                                {field === 'birthdate'
+                                    ? userInfo && formatDate(userInfo[field as keyof typeof userInfo])
+                                    : userInfo && userInfo[field as keyof typeof userInfo]}
+                            </span>
+                        )}
+                    </div>
+                ))}
+
+                {isEditingInfo ? (
+                    <>
+                        <Button variant="contained" color="primary" onClick={handleInfoSave} sx={{ mr: 1 }}>
+                            Save
+                        </Button>
+                        <Button
+                            variant="outlined"
+                            color="secondary"
+                            onClick={() => {
+                                if (userInfo) setEditedUserInfo({
+                                    firstname: userInfo.firstname,
+                                    lastname: userInfo.lastname,
+                                    birthdate: new Date(userInfo.birthdate).toISOString().split('T')[0],
+                                    bloodGroup: userInfo.bloodGroup,
+                                    city: userInfo.city,
+                                    phoneNumber: userInfo.phoneNumber,
+                                    email: userInfo.email,
+                                });
+                                setIsEditingInfo(false);
+                            }}
+                        >
+                            Cancel
+                        </Button>
+                    </>
+                ) : (
+                    <Button variant="contained" color="primary" onClick={() => setIsEditingInfo(true)}>
+                        Edit Info
+                    </Button>
+                )}
+            </div>
+
+            {/* Password Section */}
+            <div className={classes.section}>
+                <h3 className={classes.sectionTitle}>Password</h3>
+
+                {isEditingPassword ? (
+                    <>
+                        <div className={classes.infoRow}>
+                            <span className={classes.label}>Current Password:</span>
+                            <TextField
+                                type="password"
+                                size="small"
+                                value={currentPassword}
+                                onChange={(e) => setCurrentPassword(e.target.value)}
+                                className={classes.fullWidthField}
+                            />
+                        </div>
+                        <div className={classes.infoRow}>
+                            <span className={classes.label}>New Password:</span>
+                            <TextField
+                                type="password"
+                                size="small"
+                                value={newPassword}
+                                onChange={(e) => setNewPassword(e.target.value)}
+                                className={classes.fullWidthField}
+                            />
+                        </div>
+                        <div className={classes.infoRow}>
+                            <span className={classes.label}>Confirm New Password:</span>
+                            <TextField
+                                type="password"
+                                size="small"
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                className={classes.fullWidthField}
+                            />
+                        </div>
+                        {error && <p style={{ color: 'red' }}>{error}</p>}
+                        <Button variant="contained" color="primary" onClick={handlePasswordSave} sx={{ mr: 1 }}>
+                            Save
+                        </Button>
+                        <Button
+                            variant="outlined"
+                            color="secondary"
+                            onClick={() => {
+                                setCurrentPassword('');
+                                setNewPassword('');
+                                setConfirmPassword('');
+                                setIsEditingPassword(false);
+                                setError('');
+                            }}
+                        >
+                            Cancel
+                        </Button>
+                    </>
+                ) : (
+                    <>
+                        <div className={classes.infoRow}>
+                            <span className={classes.label}>Current Password:</span>
+                            <TextField
+                                type="password"
+                                size="small"
+                                value="passwordplaceholder"
+                                disabled
+                                className={classes.fullWidthField}
+                            />
+                        </div>
+                        <Button variant="contained" color="primary" onClick={() => setIsEditingPassword(true)}>
+                            Change Password
+                        </Button>
+                    </>
+                )}
+            </div>
+
+            {/* Snackbar */}
+            <Snackbar
+                open={snackbarOpen}
+                autoHideDuration={6000}
+                onClose={() => setSnackbarOpen(false)}
+                anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+                className={classes.snackbar}
+            >
+                <Alert
+                    onClose={() => setSnackbarOpen(false)}
+                    severity={snackbarSeverity}
+                    className={classes.alert}>
+                    {snackbarMessage}
+                </Alert>
+            </Snackbar>
+
+        </div>
+    );
+};
+
+export default ProfileComponent;
