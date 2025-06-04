@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
+const cities = require('../utils/cities');
 /** 
   An Emergency can be created by users and confirmed by admins
  */
@@ -11,9 +12,10 @@ const EmergencySchema = new Schema({
     required: true,
   },
   city: {
-    type: String,
-    required: false,
-  },
+		type: String,
+		enum: cities,
+		required: true,
+	  },
   phoneNumber: {
     type: Number,
     required: true,

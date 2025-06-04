@@ -11,7 +11,8 @@ import {
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { createEmergency, getCities } from '../../utils/queries';
+import { cities } from '../../utils/utils';
+import { createEmergency } from '../../utils/queries';
 import FormContainer from '../shared/FormContainer';
 import ResponseAnimation from '../shared/ResponseAnimation';
 import { authStyles } from '../../styles/mainStyles';
@@ -35,7 +36,6 @@ const EmergencyForm = () => {
     const [isSuccessResponse, setIsSuccessResponse] = useState(false);
     const [isErrorResponse, setIsErrorResponse] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
-    const [cities, setCities] = useState<string[]>([]);
 
     const [loading, setLoading] = useState(false);
 
@@ -79,17 +79,7 @@ const EmergencyForm = () => {
 
         }
     };
-    useEffect(() => {
-        const fetchCities = async () => {
-            try {
-                const citiesData = await getCities();
-                setCities(citiesData.cities);
-            } catch (error) {
-                console.error('Failed to fetch cities:', error);
-            }
-        };
-        fetchCities();
-    }, []);
+   
 
 
     return (
