@@ -2,6 +2,7 @@ import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import EmailIcon from '@mui/icons-material/Email';
 import EventIcon from '@mui/icons-material/Event';
 import FavoriteIcon from '@mui/icons-material/Favorite';
+import FAQIcon from '@mui/icons-material/Help';
 import HomeIcon from '@mui/icons-material/Home';
 import { makeStyles } from '@mui/styles';
 import { Link, useLocation } from 'react-router-dom';
@@ -68,6 +69,11 @@ const MobileNavbar = () => {
 					</Link>
 				</>
 			)}
+			<Link to='/FAQ'>
+				<FAQIcon
+					className={currentRoute === '/FAQ' ? activeIcon : icon}
+				/>
+			</Link>
 		</div>
 	);
 };
