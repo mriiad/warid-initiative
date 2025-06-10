@@ -39,9 +39,9 @@ const useStyles = makeStyles({
         marginTop: 0,
         marginBottom: 10,
         color: '#3B2A82',
-        textAlign: 'center',  
-        fontSize: '2.3rem',   
-        fontWeight: 'bold',   
+        textAlign: 'center',
+        fontSize: '2.3rem',
+        fontWeight: 'bold',
     },
     infoRow: {
         display: 'flex',
@@ -66,6 +66,17 @@ const useStyles = makeStyles({
     },
     alert: {
         width: '100%',
+    },
+    alertActionsContainer: {
+        marginTop: 8,
+        display: 'flex',
+        justifyContent: 'center',
+        gap: 8,
+    },
+    alertMessageWrapper: {
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
     },
 });
 
@@ -97,6 +108,8 @@ const ProfileComponent = () => {
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success');
+    const [lastAction, setLastAction] = useState<'infoUpdate' | 'passwordUpdate' | null>(null);
+
 
     const showSnackbar = (message: string, severity: 'success' | 'error') => {
         setSnackbarMessage(message);
@@ -135,6 +148,7 @@ const ProfileComponent = () => {
             onSuccess: () => {
                 showSnackbar('Profile updated successfully!', 'success');
                 setIsEditingInfo(false);
+                setLastAction('infoUpdate');
                 queryClient.invalidateQueries(['userProfile', token]); // refetch profile
             },
             onError: () => {
@@ -142,22 +156,18 @@ const ProfileComponent = () => {
             },
         }
     );
-
-    // update password mutation
     const updatePasswordMutation = useMutation(
         ({ currentPassword, newPassword }: { currentPassword: string; newPassword: string }) =>
             updatePassword(token, currentPassword, newPassword),
         {
             onSuccess: () => {
-                showSnackbar('Password updated successfully! For security, you will be logged out shortly.', 'success');
+                showSnackbar('Password updated successfully! You can choose to logout for security.', 'success');
                 setIsEditingPassword(false);
+                setLastAction('passwordUpdate');
                 setCurrentPassword('');
                 setNewPassword('');
                 setConfirmPassword('');
                 setError('');
-                setTimeout(() => {
-                    handleLogout();
-                }, 5000);
             },
             onError: (error: any) => {
                 const message = error.response?.data?.message || 'Failed to update password.';
@@ -445,6 +455,7 @@ const ProfileComponent = () => {
             </div>
 
             {/* Snackbar */}
+
             <Snackbar
                 open={snackbarOpen}
                 autoHideDuration={6000}
@@ -455,11 +466,25 @@ const ProfileComponent = () => {
                 <Alert
                     onClose={() => setSnackbarOpen(false)}
                     severity={snackbarSeverity}
-                    className={classes.alert}>
-                    {snackbarMessage}
+                    className={classes.alert}
+                >
+                    {lastAction === 'passwordUpdate' ? (
+                        <div className={classes.alertMessageWrapper}>
+                            <div>{ snackbarMessage }</div>
+                            <div className={classes.alertActionsContainer}>
+                                <Button variant="contained" color="secondary" size="small" onClick={handleLogout}>
+                                    Logout
+                                </Button>
+                                <Button variant="contained" color="inherit" size="small" onClick={() => setSnackbarOpen(false)}>
+                                    Stay Logged In
+                                </Button>
+                            </div>
+                        </div>
+                    ) : (
+                        snackbarMessage
+                    )}
                 </Alert>
             </Snackbar>
-
         </div>
     );
 };
