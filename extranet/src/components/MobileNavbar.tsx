@@ -49,11 +49,6 @@ const MobileNavbar = () => {
 					className={currentRoute.startsWith('/events') ? activeIcon : icon}
 				/>
 			</Link>
-			<Link to='/donate'>
-				<FavoriteIcon
-					className={currentRoute === '/donate' ? activeIcon : icon}
-				/>
-			</Link>
 			<Link to='/contact'>
 				<EmailIcon
 					className={currentRoute === '/contact' ? activeIcon : icon}
