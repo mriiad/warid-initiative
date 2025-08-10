@@ -22,6 +22,7 @@ import EventDetail from './components/event/EventDetail';
 import EventForm from './components/event/EventForm';
 import EventsComponent from './components/event/EventsComponent';
 import LandingPage from './components/home/LandingPage';
+import ProfileComponent from './components/profile/ProfileComponent';
 import EmergencyForm from './components/emergency/EmergencyForm';
 import EmergencyComponent from './components/emergency/EmergencyComponent';
 import MatchedUsers from './components/emergency/MatchedUsers';
@@ -105,6 +106,7 @@ const App = () => {
 								element={<ResetPasswordForm />}
 							/>
 							<Route path='*' element={<NotFoundPage />} />
+							<Route path='/profile' element={<ProfileComponent />} />
 							<Route path='/emergency' element={<EmergencyForm />} />
 							{isAdmin && (  
 								<Route path='/emergencies' element={<EmergencyComponent />} />
@@ -112,6 +114,9 @@ const App = () => {
 							{ isAdmin && (
 								<Route path='/emergencies/:emergencyId/matched-users/' element={<MatchedUsers />} />	
 							)}
+
+							
+
 							
 
 						</Routes>

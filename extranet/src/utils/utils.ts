@@ -21,7 +21,6 @@ export const formatDate = (dateString) => {
 	return format(new Date(dateString), 'yyyy-MM-dd');
 };
 
-
 export const cities: string[] = [
 	'Casablanca',
 	'Rabat',
@@ -31,7 +30,5 @@ export const cities: string[] = [
 	'Agadir',
 	'Meknès',
 	'Oujda',
-	'El Jadida'
+	'El Jadida',
 ];
-  
-

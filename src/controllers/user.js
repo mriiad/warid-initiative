@@ -101,6 +101,45 @@ exports.updateUserInfo = (req, res, next) => {
 		});
 };
 
+exports.updateUserProfile = async (req, res, next) => {
+	try {
+		const userId = req.userId;
+		const { firstname, lastname, city, birthdate, bloodGroup, phoneNumber, email } = req.body;
+
+		const user = await User.findById(userId).populate('profile');
+		if (!user) {
+			const error = new Error('User not found.');
+			error.statusCode = 404;
+			throw error;
+		}
+
+		const profile = user.profile;
+		if (!profile) {
+			const error = new Error('User profile not found.');
+			error.statusCode = 404;
+			throw error;
+		}
+
+		// Update profile fields if provided
+		if (firstname !== undefined) profile.firstname = firstname;
+		if (lastname !== undefined) profile.lastname = lastname;
+		if (city !== undefined) profile.city = city;
+		if (birthdate !== undefined) profile.birthdate = birthdate;
+		if (bloodGroup !== undefined) profile.bloodGroup = bloodGroup;
+		if (phoneNumber !== undefined) user.phoneNumber = phoneNumber;
+		if (email !== undefined) user.email = email;
+
+		await profile.save();
+		await user.save();
+
+		res.status(200).json({ message: 'Profile updated successfully!' });
+	} catch (err) {
+		if (!err.statusCode) err.statusCode = 500;
+		next(err);
+	}
+};
+
+
 exports.checkUserProfile = async (req, res, next) => {
 	try {
 		const userId = req.userId;

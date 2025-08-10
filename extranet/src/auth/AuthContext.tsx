@@ -54,7 +54,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 				setToken(newToken);
 				localStorage.setItem('token', newToken);
 				localStorage.setItem('refreshToken', newRefreshToken);
-				console.log('New token set:', newToken); // Debug log
 				axios.defaults.headers['Authorization'] = `Bearer ${newToken}`;
 			} catch (error) {
 				console.error('Failed to refresh token:', error);
