@@ -8,6 +8,7 @@ const userRouter = require('./routes/user');
 const donationRouter = require('./routes/donation');
 const eventRouter = require('./routes/event');
 const contactRouter = require('./routes/contact');
+const emergencyRouter = require('./routes/emergency');
 const path = require('path');
 
 const config = require('../config.json');
@@ -23,7 +24,7 @@ app.use(bodyParser.json());
 app.use(authRouter);
 app.use(userRouter);
 app.use(donationRouter);
-
+app.use(emergencyRouter);
 app.use(eventRouter);
 app.use(contactRouter);
 

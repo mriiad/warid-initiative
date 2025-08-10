@@ -5,6 +5,7 @@ import NumbersContainer from './NumbersContainer';
 import PartnersList from './PartnersList';
 import PhotoGallery from './PhotoGallery';
 
+
 const LandingPage = () => {
 	const {
 		landingContainer,
@@ -163,7 +164,17 @@ const LandingPage = () => {
 					>
 						<img src='/landing-page/ig-logo.png' alt='Instagram' />
 					</a>
+
+					<a
+						href='/files/Warid_Policies.pdf'
+						target='_blank'
+						rel='noopener noreferrer'
+					>
+						Privacy Policy
+					</a>
+
 					<p>© 2024 WARID</p>
+
 				</div>
 			</div>
 		</Box>

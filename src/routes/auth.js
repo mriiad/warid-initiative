@@ -9,8 +9,11 @@ const {
 	requestPasswordReset,
 	resetPassword,
 	checkResetTokenValidity,
+	updatePassword,
+
 } = require('../controllers/auth');
 const User = require('../models/user');
+const { isAuth } = require('../middleware/token-check');
 
 /**
  * Could contain news & other data from different resources (Event)
@@ -61,5 +64,9 @@ authRouter.post('/api/auth/request-reset', requestPasswordReset);
 authRouter.post('/api/auth/reset-password/:token', resetPassword);
 
 authRouter.get('/api/auth/check-reset-token/:token', checkResetTokenValidity);
+
+authRouter.patch('/api/auth/update-password', isAuth, updatePassword);
+
+
 
 module.exports = authRouter;

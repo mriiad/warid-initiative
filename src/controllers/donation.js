@@ -10,53 +10,44 @@ const { addDays, formatDate } = require('../utils/utils');
 /**
  * Utility function to check donation eligibility
  */
-const checkDonationEligibility = (userId) => {
+exports.checkDonationEligibility = async (userId) => {
 	let user;
-	return User.findById(userId)
-		.then((foundUser) => {
-			if (!foundUser) {
-				throw new ApiError('User not found.', STATUS_CODE.NOT_FOUND);
-			}
-			user = foundUser;
-			return Donation.find({ userId: userId })
-				.sort({ donationDate: -1 })
-				.limit(1);
-		})
-		.then((donations) => {
-			const currentDate = new Date();
-			let donationAvailability = false;
-			const donation = donations[0];
-
-			if (!donation) {
-				return {
-					canDonate: true,
-					lastDonationDate: null,
-					nextDonationDate: null,
-				};
-			}
-
-			const donationDate = donation.donationDate;
-			const daysToAdd = user.gender === 'male' ? 60 : 90;
-			const nextDonationDate = addDays(donationDate, daysToAdd);
-
-			const timeDifference = currentDate - new Date(donationDate);
-			console.log('timeDifference', timeDifference);
-			const daysDifference = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
-			console.log('daysDifference', daysDifference);
-
-			if (
-				(user.gender === 'male' && daysDifference >= 60) ||
-				(user.gender === 'female' && daysDifference >= 90)
-			) {
-				donationAvailability = true;
-			}
-
-			return {
-				canDonate: donationAvailability,
-				lastDonationDate: formatDate(donationDate),
-				nextDonationDate: formatDate(nextDonationDate),
-			};
-		});
+	const foundUser = await User.findById(userId);
+	if (!foundUser) {
+		throw new ApiError('User not found.', STATUS_CODE.NOT_FOUND);
+	}
+	user = foundUser;
+	const donations = await Donation.find({ userId: userId })
+		.sort({ donationDate: -1 })
+		.limit(1);
+	const currentDate = new Date();
+	let donationAvailability = false;
+	const donation = donations[0];
+	if (!donation) {
+		return {
+			canDonate: true,
+			lastDonationDate: null,
+			nextDonationDate: null,
+		};
+	}
+	const donationDate = donation.donationDate;
+	const daysToAdd = user.gender === 'male' ? 60 : 90;
+	const nextDonationDate = addDays(donationDate, daysToAdd);
+	const timeDifference = currentDate - new Date(donationDate);
+	console.log('timeDifference', timeDifference);
+	const daysDifference = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+	console.log('daysDifference', daysDifference);
+	if (
+		(user.gender === 'male' && daysDifference >= 60) ||
+		(user.gender === 'female' && daysDifference >= 90)
+	) {
+		donationAvailability = true;
+	}
+	return {
+		canDonate: donationAvailability,
+		lastDonationDate: formatDate(donationDate),
+		nextDonationDate: formatDate(nextDonationDate),
+	};
 };
 
 exports.canDonate = (req, res, next) => {

@@ -2,6 +2,7 @@ import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import EmailIcon from '@mui/icons-material/Email';
 import EventIcon from '@mui/icons-material/Event';
 import FavoriteIcon from '@mui/icons-material/Favorite';
+import EmergencyIcon from '@mui/icons-material/HealthAndSafety';
 import FAQIcon from '@mui/icons-material/Help';
 import HomeIcon from '@mui/icons-material/Home';
 import { makeStyles } from '@mui/styles';
@@ -60,6 +61,11 @@ const MobileNavbar = () => {
 					className={currentRoute === '/contact' ? activeIcon : icon}
 				/>
 			</Link>
+			<Link to='/emergency'>
+				<EmergencyIcon
+					className={currentRoute === '/emergency' ? activeIcon : icon}
+				/>
+			</Link>
 			{token && isAdmin && (
 				<>
 					<Link to='/admin'>
@@ -70,9 +76,7 @@ const MobileNavbar = () => {
 				</>
 			)}
 			<Link to='/FAQ'>
-				<FAQIcon
-					className={currentRoute === '/FAQ' ? activeIcon : icon}
-				/>
+				<FAQIcon className={currentRoute === '/FAQ' ? activeIcon : icon} />
 			</Link>
 		</div>
 	);

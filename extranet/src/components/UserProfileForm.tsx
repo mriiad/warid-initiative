@@ -46,6 +46,7 @@ const UserProfileForm = () => {
 	const { formField, button, signUp, form, bar } = authStyles();
 	const [showSnackbar, setShowSnackbar] = useState(false);
 	const [incompleteFieldsMessage, setIncompleteFieldsMessage] = useState('');
+	const [cities, setCities] = useState<string[]>([]);
 
 	const { data: userProfile } = useQuery<ProfileFormData>(
 		'userProfile',
@@ -63,6 +64,7 @@ const UserProfileForm = () => {
 			lastname: '',
 			birthdate: '',
 			bloodGroup: BloodGroup.None,
+			city: '',
 		}),
 		[]
 	);
@@ -84,6 +86,7 @@ const UserProfileForm = () => {
 				'lastname',
 				'birthdate',
 				'bloodGroup',
+				'city',
 			];
 
 			fields.forEach((field) => {
@@ -177,6 +180,31 @@ const UserProfileForm = () => {
 									<FormHelperText>
 										{errors.bloodGroup ? 'Blood Group is required' : ''}
 									</FormHelperText>
+								</FormControl>
+							)}
+						/>
+					</Grid>
+					<Grid item xs={12}>
+						<Controller
+							name='city'
+							rules={{ required: 'City is required' }}
+							defaultValue=''
+							control={control}
+							render={({ field }) => (
+								<FormControl fullWidth error={Boolean(errors.city)}>
+									<InputLabel>City</InputLabel>
+									<Select {...field}>
+										<MenuItem value=''>
+											<em>None</em>
+										</MenuItem>
+										{cities &&
+											cities.map((city) => (
+												<MenuItem key={city} value={city}>
+													{city}
+												</MenuItem>
+											))}
+									</Select>
+									<FormHelperText>{errors.city?.message}</FormHelperText>
 								</FormControl>
 							)}
 						/>
