@@ -1,9 +1,19 @@
-export interface User  {
-    _id: string;
-    username: string;
-    email: string;
-    phoneNumber: number;
-    gender: 'male' | 'female';
-    isAdmin: boolean;
-   
-  }
+export type Gender = 'male' | 'female';
+
+export interface UserProfile {
+	firstname?: string;
+	lastname?: string;
+	birthdate?: string;
+	gender?: Gender;
+	bloodGroup?: string;
+}
+
+export interface User {
+	_id: string;
+	username: string;
+	email: string;
+	phoneNumber: number;
+	gender?: Gender;
+	isAdmin: boolean;
+	profile?: UserProfile;
+}

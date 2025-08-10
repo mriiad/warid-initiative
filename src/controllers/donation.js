@@ -37,8 +37,10 @@ exports.checkDonationEligibility = async (userId) => {
 	console.log('timeDifference', timeDifference);
 	const daysDifference = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
 	console.log('daysDifference', daysDifference);
-	if ((user.gender === 'male' && daysDifference >= 60) ||
-		(user.gender === 'female' && daysDifference >= 90)) {
+	if (
+		(user.gender === 'male' && daysDifference >= 60) ||
+		(user.gender === 'female' && daysDifference >= 90)
+	) {
 		donationAvailability = true;
 	}
 	return {

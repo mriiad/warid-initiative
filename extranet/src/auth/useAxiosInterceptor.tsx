@@ -32,11 +32,11 @@ export const useAxiosInterceptor = (refreshToken) => {
 						originalRequest._retry = true;
 						try {
 							await refreshToken();
-							originalRequest.headers[
-								'Authorization'
-							] = `Bearer ${localStorage.getItem('token')}`;
+							const newToken = localStorage.getItem('token');
+							originalRequest.headers['Authorization'] = `Bearer ${newToken}`;
 							return axios(originalRequest);
 						} catch (refreshError) {
+							console.error('Token refresh failed:', refreshError); // Debug log
 							return Promise.reject(refreshError);
 						}
 					}

@@ -3,6 +3,8 @@ const ApiError = require('../utils/errors/ApiError');
 const { STATUS_CODE } = require('../utils/errors/httpStatusCode');
 const Profile = require('../models/profile');
 const { calculateAge } = require('../utils/utils');
+const { checkDonationEligibility } = require('./donation');
+const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 // Get all users
 exports.getUsers = async (req, res, next) => {
@@ -14,43 +16,28 @@ exports.getUsers = async (req, res, next) => {
 
 		const users = await User.find(
 			{},
-			'username email phoneNumber gender isAdmin'
+			'username email phoneNumber isAdmin profile gender'
 		)
-			.skip((currentPage - 1) * perPage)
-			.limit(perPage)
-			.lean();
-
-		res.status(STATUS_CODE.OK).json({
-			message: 'Fetched users successfully.',
-			users: users,
-			totalItems: totalItems,
-		});
-	} catch (err) {
-		if (!err.statusCode) {
-			err.statusCode = STATUS_CODE.INTERNAL_SERVER;
-		}
-		next(err);
-	}
-};
-
-// Get all users
-exports.getUsers = async (req, res, next) => {
-	try {
-		const currentPage = Number(req.query.page) || 1;
-		const perPage = 10;
-
-		const totalItems = await User.countDocuments();
-
-		const users = await User.find(
-			{},
-			'username email phoneNumber gender isAdmin'
-		)
+			.populate('profile')
 			.skip((currentPage - 1) * perPage)
 			.limit(perPage);
 
+		const projected = users.map((u) => {
+			const obj = u.toObject();
+			return {
+				...obj,
+				gender:
+					obj.gender != null
+						? obj.gender
+						: u.profile
+						? u.profile.gender
+						: undefined,
+			};
+		});
+
 		res.status(STATUS_CODE.OK).json({
 			message: 'Fetched users successfully.',
-			users: users,
+			users: projected,
 			totalItems: totalItems,
 		});
 	} catch (err) {
@@ -182,48 +169,155 @@ exports.getProfile = (req, res, next) => {
 
 exports.searchUsers = async (req, res, next) => {
 	try {
-		const { username, firstname, lastname, ageRange, availableForDonation } =
-			req.body;
-		const query = {};
+		const {
+			username,
+			firstname,
+			lastname,
+			age: ageRange,
+			availableForDonation: availableForDonationRaw,
+			minAge: minAgeRaw,
+			maxAge: maxAgeRaw,
+			page: pageRaw,
+			perPage: perPageRaw,
+			email,
+			phoneNumber: phoneNumberRaw,
+			gender: genderRaw,
+			isAdmin: isAdminRaw,
+		} = req.body;
 
+		// Coerce pagination
+		const currentPage = Math.max(1, parseInt(pageRaw, 10) || 1);
+		const perPage = Math.max(1, parseInt(perPageRaw, 10) || 10);
+
+		// Coerce donation filter which may arrive as string
+		let availableForDonation = undefined;
+		if (availableForDonationRaw !== undefined) {
+			if (typeof availableForDonationRaw === 'string') {
+				availableForDonation = availableForDonationRaw === 'true';
+			} else {
+				availableForDonation = Boolean(availableForDonationRaw);
+			}
+		}
+
+		// Coerce admin filter
+		let isAdmin = undefined;
+		if (isAdminRaw !== undefined) {
+			if (typeof isAdminRaw === 'string') {
+				isAdmin = isAdminRaw === 'true';
+			} else {
+				isAdmin = Boolean(isAdminRaw);
+			}
+		}
+
+		// Coerce age range coming either as array ageRange or minAge/maxAge
+		let minAge = undefined;
+		let maxAge = undefined;
+		if (Array.isArray(ageRange) && ageRange.length === 2) {
+			minAge = parseInt(ageRange[0], 10);
+			maxAge = parseInt(ageRange[1], 10);
+		} else {
+			minAge = minAgeRaw !== undefined ? parseInt(minAgeRaw, 10) : undefined;
+			maxAge = maxAgeRaw !== undefined ? parseInt(maxAgeRaw, 10) : undefined;
+		}
+
+		// Build base query for User
+		const query = {};
 		if (username) {
 			query.username = { $regex: new RegExp(username, 'i') };
 		}
+		if (email) {
+			query.email = { $regex: new RegExp(email, 'i') };
+		}
+		if (isAdmin !== undefined) {
+			query.isAdmin = isAdmin;
+		}
+		// phoneNumber stored as Number; use $expr with $toString to allow partial string match
+		if (phoneNumberRaw) {
+			query.$expr = {
+				$regexMatch: {
+					input: { $toString: '$phoneNumber' },
+					regex: phoneNumberRaw,
+					options: 'i',
+				},
+			};
+		}
 
-		if (firstname || lastname) {
-			query.$and = [];
-			if (firstname) {
-				query.$and.push({
-					'profile.firstname': { $regex: new RegExp(firstname, 'i') },
-				});
+		// If filtering on firstname/lastname, first fetch matching profiles and constrain user ids
+		const profileQuery = {};
+		if (firstname) {
+			profileQuery.firstname = { $regex: new RegExp(firstname, 'i') };
+		}
+		if (lastname) {
+			profileQuery.lastname = { $regex: new RegExp(lastname, 'i') };
+		}
+		if (Object.keys(profileQuery).length > 0) {
+			const matchingProfiles = await Profile.find(profileQuery).select('user');
+			const matchingUserIds = matchingProfiles.map((p) => p.user);
+			if (matchingUserIds.length === 0) {
+				return res
+					.status(STATUS_CODE.NOT_FOUND)
+					.json({ message: 'No users found.' });
 			}
-			if (lastname) {
-				query.$and.push({
-					'profile.lastname': { $regex: new RegExp(lastname, 'i') },
-				});
+			query._id = { $in: matchingUserIds };
+		}
+
+		// Gender filter: match either on user.gender or profile.gender
+		if (
+			genderRaw !== undefined &&
+			genderRaw !== null &&
+			String(genderRaw).trim() !== ''
+		) {
+			const genderValue = String(genderRaw).trim();
+			const genderRegex = new RegExp(
+				`^\\s*${escapeRegex(genderValue)}\\s*$`,
+				'i'
+			);
+			const genderProfiles = await Profile.find({
+				gender: { $regex: genderRegex },
+			}).select('user');
+			const genderUserIds = genderProfiles.map((p) => p.user);
+			const orConditions = [{ gender: { $regex: genderRegex } }];
+			if (genderUserIds.length > 0) {
+				orConditions.push({ _id: { $in: genderUserIds } });
 			}
+			query.$or = orConditions;
 		}
 
 		let users = await User.find(query)
 			.populate('profile')
 			.select('-password -confirmationCode');
 
-		if (ageRange || availableForDonation !== undefined) {
+		// Post-filtering on age and donation eligibility
+		if (
+			minAge !== undefined ||
+			maxAge !== undefined ||
+			availableForDonation !== undefined
+		) {
 			users = await Promise.all(
 				users.map(async (user) => {
 					const userAge =
 						user.profile && user.profile.birthdate
 							? calculateAge(user.profile.birthdate)
 							: null;
-					const donationEligibility = await checkDonationEligibility(user._id);
 
 					let isAgeMatch = true;
-					if (ageRange && ageRange.length === 2) {
-						isAgeMatch = userAge >= ageRange[0] && userAge <= ageRange[1];
+					if (userAge !== null) {
+						if (minAge !== undefined) {
+							isAgeMatch = isAgeMatch && userAge >= minAge;
+						}
+						if (maxAge !== undefined) {
+							isAgeMatch = isAgeMatch && userAge <= maxAge;
+						}
+					} else if (minAge !== undefined || maxAge !== undefined) {
+						// If age filter provided but user has no birthdate, exclude user
+						isAgeMatch = false;
 					}
 
 					let isDonationEligible = true;
 					if (availableForDonation !== undefined) {
+						const donationEligibility = await checkDonationEligibility(
+							user._id
+						);
 						isDonationEligible = availableForDonation
 							? donationEligibility.canDonate
 							: !donationEligibility.canDonate;
@@ -234,6 +328,7 @@ exports.searchUsers = async (req, res, next) => {
 			);
 		}
 
+		// Remove nulls after post-filtering
 		users = users.filter((user) => user !== null);
 
 		if (users.length === 0) {
@@ -242,7 +337,28 @@ exports.searchUsers = async (req, res, next) => {
 				.json({ message: 'No users found.' });
 		}
 
-		res.status(STATUS_CODE.OK).json({ users });
+		// Pagination on the filtered list
+		const totalItems = users.length;
+		const startIndex = (currentPage - 1) * perPage;
+		const paginatedUsers = users.slice(startIndex, startIndex + perPage);
+
+		return res.status(STATUS_CODE.OK).json({
+			users: paginatedUsers.map((u) => {
+				const obj = u.toObject();
+				return {
+					...obj,
+					gender:
+						obj.gender != null
+							? obj.gender
+							: u.profile
+							? u.profile.gender
+							: undefined,
+				};
+			}),
+			totalItems,
+			page: currentPage,
+			perPage,
+		});
 	} catch (err) {
 		next(err);
 	}
