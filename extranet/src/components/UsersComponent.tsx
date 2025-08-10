@@ -12,14 +12,20 @@ const UsersContainer = styled.div`
 	display: flex;
 	flex-direction: column;
 	align-items: center;
+	padding-top: 96px; /* avoid navbar overlap */
+	padding-bottom: 128px; /* avoid fixed filter button overlap */
 `;
 
 interface Filters {
 	username?: string;
 	firstname?: string;
 	lastname?: string;
+	email?: string;
+	phoneNumber?: string;
+	gender?: string;
 	age?: [number, number];
 	availableForDonation?: boolean;
+	isAdmin?: boolean;
 }
 
 const UsersComponent: React.FC = () => {
@@ -102,15 +108,21 @@ const UsersComponent: React.FC = () => {
 		if (newFilters.username) params.set('username', newFilters.username);
 		if (newFilters.firstname) params.set('firstname', newFilters.firstname);
 		if (newFilters.lastname) params.set('lastname', newFilters.lastname);
+		if (newFilters.email) params.set('email', newFilters.email);
+		if (newFilters.phoneNumber)
+			params.set('phoneNumber', newFilters.phoneNumber);
+		if (newFilters.gender) params.set('gender', newFilters.gender);
 		if (newFilters.age && newFilters.age.length === 2) {
 			params.set('minAge', newFilters.age[0].toString());
 			params.set('maxAge', newFilters.age[1].toString());
 		}
-		if (newFilters.availableForDonation !== undefined) {
-			params.set(
-				'availableForDonation',
-				newFilters.availableForDonation.toString()
-			);
+		// Only include donation filter when explicitly enabled
+		if (newFilters.availableForDonation === true) {
+			params.set('availableForDonation', 'true');
+		}
+		// Only include isAdmin when explicitly enabled
+		if (newFilters.isAdmin === true) {
+			params.set('isAdmin', 'true');
 		}
 		setSearchParams(params);
 		handleFilterApply(params, 1);
@@ -152,6 +164,8 @@ const UsersComponent: React.FC = () => {
 							justifyContent: 'center',
 							alignItems: 'center',
 							minHeight: '100vh',
+							paddingTop: '96px',
+							paddingBottom: '128px',
 						}}
 					>
 						<CircularProgress />

@@ -11,12 +11,17 @@ const { addDays, formatDate } = require('../utils/utils');
  */
 exports.checkDonationEligibility = (userId) => {
 	let user;
+	let gender;
 	return User.findById(userId)
 		.then((foundUser) => {
 			if (!foundUser) {
 				throw new ApiError('User not found.', STATUS_CODE.NOT_FOUND);
 			}
 			user = foundUser;
+			return Profile.findOne({ user: userId }).select('gender');
+		})
+		.then((profile) => {
+			gender = profile && profile.gender ? profile.gender : undefined;
 			return Donation.find({ userId: userId })
 				.sort({ lastDonationDate: -1 })
 				.limit(1);
@@ -37,15 +42,15 @@ exports.checkDonationEligibility = (userId) => {
 			const donationDate = donation.reelDonationDate
 				? donation.reelDonationDate
 				: donation.lastDonationDate;
-			const daysToAdd = user.gender === 'male' ? 60 : 90;
+			const daysToAdd = gender === 'male' ? 60 : 90;
 			const nextDonationDate = addDays(donationDate, daysToAdd);
 
 			const timeDifference = currentDate - new Date(donationDate);
 			const daysDifference = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
 
 			if (
-				(user.gender === 'male' && daysDifference >= 60) ||
-				(user.gender === 'female' && daysDifference >= 90)
+				(gender === 'male' && daysDifference >= 60) ||
+				(gender === 'female' && daysDifference >= 90)
 			) {
 				donationAvailability = true;
 			}

@@ -4,44 +4,41 @@ import {
 	Drawer,
 	FormControlLabel,
 	Grid,
+	MenuItem,
 	Slider,
 	TextField,
 	Typography,
 } from '@mui/material';
 import { useState } from 'react';
-import { authStyles, mainStyles } from '../styles/mainStyles';
+import { authStyles } from '../styles/mainStyles';
 import FormContainer from './shared/FormContainer';
+
+const defaultFilters = {
+	username: '',
+	firstname: '',
+	lastname: '',
+	email: '',
+	phoneNumber: '',
+	gender: '',
+	age: [18, 65],
+	availableForDonation: false,
+	isAdmin: false,
+};
 
 const UserFilter = ({ open, onClose, onApply }) => {
 	const { formField, bar, button, form } = authStyles();
-	const { subTitle, textButton } = mainStyles();
-	const [filters, setFilters] = useState({
-		username: '',
-		firstname: '',
-		lastname: '',
-		age: [18, 65],
-		availableForDonation: false,
-	});
+	const [filters, setFilters] = useState(defaultFilters);
 
 	const handleChange = (e) => {
-		setFilters({
-			...filters,
-			[e.target.name]: e.target.value,
-		});
+		setFilters({ ...filters, [e.target.name]: e.target.value });
 	};
 
-	const handleSliderChange = (e, newValue) => {
-		setFilters({
-			...filters,
-			age: newValue,
-		});
+	const handleSliderChange = (_, newValue) => {
+		setFilters({ ...filters, age: newValue });
 	};
 
 	const handleCheckboxChange = (e) => {
-		setFilters({
-			...filters,
-			availableForDonation: e.target.checked,
-		});
+		setFilters({ ...filters, [e.target.name]: e.target.checked });
 	};
 
 	const handleApply = (e) => {
@@ -51,13 +48,7 @@ const UserFilter = ({ open, onClose, onApply }) => {
 	};
 
 	const handleReset = () => {
-		setFilters({
-			username: '',
-			firstname: '',
-			lastname: '',
-			age: [18, 65],
-			availableForDonation: false,
-		});
+		setFilters(defaultFilters);
 		onApply({});
 		onClose();
 	};
@@ -76,36 +67,20 @@ const UserFilter = ({ open, onClose, onApply }) => {
 				</Typography>
 				<form onSubmit={handleApply} className={form}>
 					<Grid container spacing={2}>
-						<Grid item xs={12}>
-							<TextField
-								label='Username'
-								name='username'
-								value={filters.username}
-								onChange={handleChange}
-								fullWidth
-								className={formField}
-							/>
-						</Grid>
-						<Grid item xs={12}>
-							<TextField
-								label='First Name'
-								name='firstname'
-								value={filters.firstname}
-								onChange={handleChange}
-								fullWidth
-								className={formField}
-							/>
-						</Grid>
-						<Grid item xs={12}>
-							<TextField
-								label='Last Name'
-								name='lastname'
-								value={filters.lastname}
-								onChange={handleChange}
-								fullWidth
-								className={formField}
-							/>
-						</Grid>
+						{['username', 'firstname', 'lastname', 'email', 'phoneNumber'].map(
+							(field) => (
+								<Grid item xs={12} key={field}>
+									<TextField
+										label={field[0].toUpperCase() + field.slice(1)}
+										name={field}
+										value={filters[field]}
+										onChange={handleChange}
+										fullWidth
+										className={formField}
+									/>
+								</Grid>
+							)
+						)}
 						<Grid item xs={12}>
 							<Typography gutterBottom>
 								Age: {filters.age[0]} - {filters.age[1]}
@@ -129,6 +104,33 @@ const UserFilter = ({ open, onClose, onApply }) => {
 									/>
 								}
 								label='Available for Donation'
+								className={formField}
+							/>
+						</Grid>
+						<Grid item xs={12}>
+							<TextField
+								select
+								label='Gender'
+								name='gender'
+								value={filters.gender}
+								onChange={handleChange}
+								fullWidth
+								className={formField}
+							>
+								<MenuItem value='male'>Male</MenuItem>
+								<MenuItem value='female'>Female</MenuItem>
+							</TextField>
+						</Grid>
+						<Grid item xs={12}>
+							<FormControlLabel
+								control={
+									<Checkbox
+										checked={filters.isAdmin}
+										onChange={handleCheckboxChange}
+										name='isAdmin'
+									/>
+								}
+								label='Is Admin'
 								className={formField}
 							/>
 						</Grid>
