@@ -10,14 +10,19 @@ const { addDays, formatDate } = require('../utils/utils');
 /**
  * Utility function to check donation eligibility
  */
-const checkDonationEligibility = (userId) => {
+exports.checkDonationEligibility = (userId) => {
 	let user;
+	let gender;
 	return User.findById(userId)
 		.then((foundUser) => {
 			if (!foundUser) {
 				throw new ApiError('User not found.', STATUS_CODE.NOT_FOUND);
 			}
 			user = foundUser;
+			return Profile.findOne({ user: userId }).select('gender');
+		})
+		.then((profile) => {
+			gender = profile && profile.gender ? profile.gender : undefined;
 			return Donation.find({ userId: userId })
 				.sort({ donationDate: -1 })
 				.limit(1);
@@ -35,8 +40,10 @@ const checkDonationEligibility = (userId) => {
 				};
 			}
 
-			const donationDate = donation.donationDate;
-			const daysToAdd = user.gender === 'male' ? 60 : 90;
+			const donationDate = donation.reelDonationDate
+				? donation.reelDonationDate
+				: donation.lastDonationDate;
+			const daysToAdd = gender === 'male' ? 60 : 90;
 			const nextDonationDate = addDays(donationDate, daysToAdd);
 
 			const timeDifference = currentDate - new Date(donationDate);
@@ -45,8 +52,8 @@ const checkDonationEligibility = (userId) => {
 			console.log('daysDifference', daysDifference);
 
 			if (
-				(user.gender === 'male' && daysDifference >= 60) ||
-				(user.gender === 'female' && daysDifference >= 90)
+				(gender === 'male' && daysDifference >= 60) ||
+				(gender === 'female' && daysDifference >= 90)
 			) {
 				donationAvailability = true;
 			}
