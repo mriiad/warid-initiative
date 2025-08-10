@@ -23,4 +23,5 @@ userRouter.post('/api/searchUsers', isAuth, checkIfAdmin, searchUsers);
 
 userRouter.delete('/api/deleteUser/:username', isAuth , checkIfAdmin , deleteUser);
 
+
 module.exports = userRouter;

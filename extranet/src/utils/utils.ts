@@ -20,3 +20,18 @@ export const formatDate = (dateString) => {
 	if (!dateString) return '';
 	return format(new Date(dateString), 'yyyy-MM-dd');
 };
+
+
+export const cities: string[] = [
+	'Casablanca',
+	'Rabat',
+	'Marrakech',
+	'Tangier',
+	'Fès',
+	'Agadir',
+	'Meknès',
+	'Oujda',
+	'El Jadida'
+];
+  
+

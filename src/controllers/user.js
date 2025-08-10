@@ -50,7 +50,7 @@ exports.getUsers = async (req, res, next) => {
 
 exports.updateUserInfo = (req, res, next) => {
 	const userId = req.userId;
-	const { firstname, lastname, birthdate, bloodGroup } = req.body;
+	const { firstname, lastname, birthdate, bloodGroup, city } = req.body;
 
 	let userFound;
 
@@ -72,6 +72,7 @@ exports.updateUserInfo = (req, res, next) => {
 				profile.lastname = lastname;
 				profile.birthdate = birthdate;
 				profile.bloodGroup = bloodGroup;
+				profile.city = city;
 				return profile.save();
 			} else {
 				// Create a new profile and update the User model
@@ -81,6 +82,7 @@ exports.updateUserInfo = (req, res, next) => {
 					lastname,
 					birthdate,
 					bloodGroup,
+					city,
 				});
 				return newProfile.save().then((savedProfile) => {
 					userFound.profile = savedProfile._id; // Update the User model with the new profile reference
@@ -113,8 +115,8 @@ exports.checkUserProfile = async (req, res, next) => {
 			return res.status(200).json({ isProfileComplete: false });
 		}
 
-		const { firstname, lastname, birthdate, bloodGroup } = user.profile;
-		const isProfileComplete = firstname && lastname && birthdate && bloodGroup;
+		const { firstname, lastname, birthdate, bloodGroup, city } = user.profile;
+		const isProfileComplete = firstname && lastname && birthdate && bloodGroup && city;
 
 		res.status(200).json({ isProfileComplete });
 	} catch (err) {
@@ -151,6 +153,9 @@ exports.getProfile = (req, res, next) => {
 				birthdate: user.profile.birthdate,
 				gender: user.gender, // Gender from User model
 				bloodGroup: user.profile.bloodGroup,
+				city: user.profile.city,
+				phoneNumber: user.phoneNumber,
+				email: user.email,
 			});
 		})
 		.catch((err) => {

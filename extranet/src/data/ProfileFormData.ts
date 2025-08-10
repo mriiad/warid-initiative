@@ -20,6 +20,7 @@ export interface ProfileFormData {
 	lastname: string;
 	birthdate: string;
 	bloodGroup: BloodGroup;
+	city: string;
 }
 
 export const fieldDisplayNames: { [K in keyof ProfileFormData]: string } = {
@@ -27,4 +28,5 @@ export const fieldDisplayNames: { [K in keyof ProfileFormData]: string } = {
 	lastname: 'Last Name',
 	birthdate: 'Birthdate',
 	bloodGroup: 'Blood Group',
+	city: 'City',
 };

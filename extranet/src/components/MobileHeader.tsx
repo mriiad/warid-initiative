@@ -7,6 +7,7 @@ import styled from 'styled-components';
 import { useAuth } from '../auth/AuthContext';
 import ActionButton from './shared/ActionButton';
 
+
 interface HeaderContainerProps {
 	isEventPage: boolean;
 }
@@ -51,6 +52,7 @@ const MobileHeader = () => {
 	const isEventPage = location.pathname.includes('events/WEVENT');
 	const navigate = useNavigate();
 
+
 	const handleLogout = () => {
 		axios
 			.post('http://localhost:3000/api/auth/logout')
@@ -70,6 +72,8 @@ const MobileHeader = () => {
 				console.error('Logout error', error);
 			});
 	};
+
+
 
 	return (
 		<HeaderContainer isEventPage={isEventPage}>
