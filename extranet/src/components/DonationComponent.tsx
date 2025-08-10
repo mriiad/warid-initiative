@@ -24,6 +24,7 @@ import {
 	fetchDonation,
 	fetchEventByReference,
 	fetchEvents,
+	fetchUserProfile,
 } from '../utils/queries';
 import { formatDate } from '../utils/utils';
 import FormContainer from './shared/FormContainer';
@@ -97,6 +98,12 @@ const DonationComponent = () => {
 		retry: 5,
 	});
 
+	const { data: profileData } = useQuery('userProfile', fetchUserProfile, {
+		enabled: !!token,
+		refetchOnWindowFocus: false,
+		refetchOnMount: true,
+	});
+
 	const { data: events } = useQuery('events', fetchEvents, {
 		enabled: !!token,
 		refetchOnWindowFocus: false,
@@ -132,6 +139,7 @@ const DonationComponent = () => {
 		if (eventReference && eventData && eventData.event) {
 			// This is a non-generic event with reference
 			const eventDate = eventDateFromURL || formatDate(eventData.event.date);
+			console.log('eventDate: ', eventDate);
 			setValue('eventId', eventData.event._id);
 			setValue('donationDate', eventDate);
 			setIsDateDisabled(true);
@@ -154,12 +162,15 @@ const DonationComponent = () => {
 		if (donation) {
 			setValue('bloodGroup', donation.bloodGroup);
 			setIsBloodGroupEditable(!donation.bloodGroup);
+		} else if (profileData && profileData.bloodGroup) {
+			setValue('bloodGroup', profileData.bloodGroup);
+			setIsBloodGroupEditable(!profileData.bloodGroup);
 		}
 
 		if (defaultDonationDate && !eventReference) {
 			setShowSnackbar(true);
 		}
-	}, [defaultDonationDate, donation, setValue, eventReference]);
+	}, [defaultDonationDate, donation, setValue, eventReference, profileData]);
 
 	useEffect(() => {
 		if (token) {
@@ -379,6 +390,7 @@ const DonationComponent = () => {
 															events.map((event) => (
 																<MenuItem key={event._id} value={event._id}>
 																	{event.title} ({formatDate(event.date)})
+																	{event.isGeneric && ' - حدث عام'}
 																</MenuItem>
 															))}
 													</Select>
