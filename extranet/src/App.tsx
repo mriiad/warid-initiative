@@ -7,6 +7,7 @@ import AdminComponent from './components/AdminComponent';
 import CanDonate from './components/CanDonate';
 import ContactForm from './components/ContactForm';
 import DonationComponent from './components/DonationComponent';
+import FAQComponent from './components/FAQComponent';
 import LoginForm from './components/LoginForm';
 import MobileHeader from './components/MobileHeader';
 import MobileNavbar from './components/MobileNavbar';
@@ -17,16 +18,15 @@ import ResetPasswordForm from './components/ResetPasswordForm';
 import SignupForm from './components/SignupForm';
 import UserProfileForm from './components/UserProfileForm';
 import UsersComponent from './components/UsersComponent';
+import EmergencyComponent from './components/emergency/EmergencyComponent';
+import EmergencyForm from './components/emergency/EmergencyForm';
+import MatchedUsers from './components/emergency/MatchedUsers';
 import EventConfirmation from './components/event/EventConfirmation';
 import EventDetail from './components/event/EventDetail';
 import EventForm from './components/event/EventForm';
 import EventsComponent from './components/event/EventsComponent';
 import LandingPage from './components/home/LandingPage';
 import ProfileComponent from './components/profile/ProfileComponent';
-import EmergencyForm from './components/emergency/EmergencyForm';
-import EmergencyComponent from './components/emergency/EmergencyComponent';
-import MatchedUsers from './components/emergency/MatchedUsers';
-
 
 const AppContainer = styled.div`
 	position: relative;
@@ -106,19 +106,19 @@ const App = () => {
 								element={<ResetPasswordForm />}
 							/>
 							<Route path='*' element={<NotFoundPage />} />
+
+							<Route path='/FAQ' element={<FAQComponent />} />
 							<Route path='/profile' element={<ProfileComponent />} />
 							<Route path='/emergency' element={<EmergencyForm />} />
-							{isAdmin && (  
+							{isAdmin && (
 								<Route path='/emergencies' element={<EmergencyComponent />} />
 							)}
-							{ isAdmin && (
-								<Route path='/emergencies/:emergencyId/matched-users/' element={<MatchedUsers />} />	
+							{isAdmin && (
+								<Route
+									path='/emergencies/:emergencyId/matched-users/'
+									element={<MatchedUsers />}
+								/>
 							)}
-
-							
-
-							
-
 						</Routes>
 					</ContentContainer>
 					{isMobile && (
