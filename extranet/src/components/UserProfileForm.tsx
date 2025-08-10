@@ -22,7 +22,6 @@ import {
 } from '../data/ProfileFormData';
 import { authStyles } from '../styles/mainStyles';
 import { fetchUserProfile } from '../utils/queries';
-import { cities } from '../utils/utils';
 import { formatDate } from '../utils/utils';
 import FormContainer from './shared/FormContainer';
 import SnackbarComponent from './shared/SnackbarComponent';
@@ -122,8 +121,6 @@ const UserProfileForm = () => {
 		updateProfile(formData);
 	};
 
-	
-
 	return (
 		<FormContainer className={align}>
 			<Typography variant='h2' align='center' gutterBottom className={signUp}>
@@ -191,6 +188,7 @@ const UserProfileForm = () => {
 						<Controller
 							name='city'
 							rules={{ required: 'City is required' }}
+							defaultValue=''
 							control={control}
 							render={({ field }) => (
 								<FormControl fullWidth error={Boolean(errors.city)}>
@@ -199,15 +197,14 @@ const UserProfileForm = () => {
 										<MenuItem value=''>
 											<em>None</em>
 										</MenuItem>
-										{cities && cities.map((city) => (
-											<MenuItem key={city} value={city}>
-												{city}
-											</MenuItem>
-										))}
+										{cities &&
+											cities.map((city) => (
+												<MenuItem key={city} value={city}>
+													{city}
+												</MenuItem>
+											))}
 									</Select>
-									<FormHelperText>
-										{errors.city?.message}
-									</FormHelperText>
+									<FormHelperText>{errors.city?.message}</FormHelperText>
 								</FormControl>
 							)}
 						/>

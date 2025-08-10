@@ -6,34 +6,34 @@ const cities = require('../utils/cities');
  */
 
 const EmergencySchema = new Schema({
-  bloodGroup: {
-    type: String,
-    enum: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],
-    required: true,
-  },
-  city: {
+	bloodGroup: {
+		type: String,
+		enum: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
+		required: [true, 'Blood group is required'],
+	},
+	city: {
 		type: String,
 		enum: cities,
-		required: true,
-	  },
-  phoneNumber: {
-    type: Number,
-    required: true,
-  },
-  details: {
-    type: String,
-    required: false,
-  },
-  isConfirmed: {
-    type: Boolean,
-    default: false,
-  },
-  contactedUsers: [
-    {
-        type: Schema.Types.ObjectId,
-        ref: "User",
-    },
-  ],
+		required: [true, 'City is required'],
+	},
+	phoneNumber: {
+		type: Number,
+		required: [true, 'Phone Number is required'],
+	},
+	details: {
+		type: String,
+		required: false,
+	},
+	isConfirmed: {
+		type: Boolean,
+		default: false,
+	},
+	contactedUsers: [
+		{
+			type: Schema.Types.ObjectId,
+			ref: 'User',
+		},
+	],
 });
 
-module.exports = mongoose.model("Emergency", EmergencySchema);
+module.exports = mongoose.model('Emergency', EmergencySchema);

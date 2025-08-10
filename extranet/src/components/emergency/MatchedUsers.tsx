@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import {
     Table,
     TableHead,
@@ -6,18 +5,23 @@ import {
     TableCell,
     TableBody,
     Button,
-    Chip,
     Typography,
     CircularProgress,
-    Box
+    Box,
+    Snackbar,
+    Alert
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { fetchEmergencyMatchUsers, confirmUserInEmergency } from '../../utils/queries';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
 import SearchOffIcon from '@mui/icons-material/SearchOff';
-import Snackbar from '@mui/material/Snackbar';
-import Alert from '@mui/material/Alert';
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from 'react-query';
+import IconButton from '@mui/material/IconButton';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+
+
 
 interface MatchedUser {
     _id: string;
@@ -28,7 +32,7 @@ interface MatchedUser {
 
 const useStyles = makeStyles({
     root: {
-        padding: '24px',
+        width: '100%',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -67,63 +71,76 @@ const useStyles = makeStyles({
         display: 'flex',
         gap: '10px',
     },
+    arrowBackIcon: {
+        color: '#3B2A82', 
+        fontSize: '100px', 
+    }
 });
 
 const MatchedUsers = () => {
     const { emergencyId } = useParams<{ emergencyId: string }>();
     const { token } = useAuth();
-    const [matchedUsers, setMatchedUsers] = useState<MatchedUser[]>([]);
-    const [loading, setLoading] = useState<boolean>(true);
     const classes = useStyles();
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success');
-    const [totalPages, setTotalPages] = useState(0);
     const [searchParams, setSearchParams] = useSearchParams();
     const page = parseInt(searchParams.get('page') || '1', 10);
+    const queryClient = useQueryClient();
+    const navigate = useNavigate();
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                setLoading(true);
-                const data = await fetchEmergencyMatchUsers(emergencyId, token, page);
-                setMatchedUsers(data.matchingUsers);
-                setTotalPages(Math.ceil(data.totalItems / 1));
-            } catch (error) {
-                console.error(error);
-            } finally {
-                setLoading(false);
-            }
-        };
+    // Track the loading state for each user
+    const [loadingUsers, setLoadingUsers] = useState<{ [key: string]: boolean }>({});
 
-        fetchData();
-    }, [emergencyId, token, page]);
+    const {
+        data,
+        isLoading,
+        isError,
+    } = useQuery({
+        queryKey: ['matchedUsers', emergencyId, page],
+        queryFn: () => fetchEmergencyMatchUsers(emergencyId, token, page),
+        keepPreviousData: true,
+    });
 
-    const handleConfirmUser = async (userId: string) => {
-        try {
-            await confirmUserInEmergency(emergencyId!, userId, token);
-            setMatchedUsers(prevUsers =>
-                prevUsers.filter(matched =>
-                    matched._id !== userId
-                )
-            );
+    const mutation = useMutation({
+        mutationFn: (userId: string) => confirmUserInEmergency(emergencyId!, userId, token),
+        onMutate: (userId: string) => {
+            // Set loading state for the user being confirmed
+            setLoadingUsers(prev => ({ ...prev, [userId]: true }));
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['matchedUsers', emergencyId, page] });
             setSnackbarMessage("User confirmed successfully!");
-            setSnackbarOpen(true);
             setSnackbarSeverity('success');
-        } catch (error) {
-            console.error(error);
-            setSnackbarMessage("Failed to confirm user.");
             setSnackbarOpen(true);
+        },
+        onError: () => {
+            setSnackbarMessage("Failed to confirm user.");
             setSnackbarSeverity('error');
+            setSnackbarOpen(true);
+        },
+        onSettled: () => {
+            // Reset loading state after the mutation is completed
+            setLoadingUsers(prev => {
+                const newState = { ...prev };
+                Object.keys(newState).forEach(userId => {
+                    newState[userId] = false;
+                });
+                return newState;
+            });
+        },
+    });
 
-        }
+    const handleConfirmUser = (userId: string) => {
+        mutation.mutate(userId);
     };
+
     const handleCloseSnackbar = () => {
         setSnackbarOpen(false);
     };
 
     const handleNextPage = () => {
-        if (page < totalPages) {
+        if (page < Math.ceil((data?.totalItems || 0) / 1)) {
             setSearchParams({ page: String(page + 1) });
         }
     };
@@ -134,13 +151,34 @@ const MatchedUsers = () => {
         }
     };
 
+    if (isLoading) {
+        return (
+            <Box className={classes.fallBack}>
+                <CircularProgress />
+            </Box>
+        );
+    }
+
+    if (isError || !data) {
+        return (
+            <Box className={classes.noResultsContainer}>
+                <Typography variant="h6" color="error">
+                    Failed to load matched users.
+                </Typography>
+            </Box>
+        );
+    }
+    const matchedUsers: MatchedUser[] = data.matchingUsers;
+    const totalPages = Math.ceil(data.totalItems / 10);
+
     return (
         <div className={classes.root}>
-            {loading ? (
-                <Box className={classes.fallBack}>
-                    <CircularProgress />
-                </Box>
-            ) : matchedUsers.length === 0 ? (
+            <Box sx={{ alignSelf: 'flex-start' }}>
+                <IconButton onClick={() => navigate('/emergencies')}>
+                    <ArrowBackIcon className={classes.arrowBackIcon} />
+                </IconButton>
+            </Box>
+            {matchedUsers.length === 0 ? (
                 <Box className={classes.noResultsContainer}>
                     <SearchOffIcon className={classes.noResultsIcon} color="action" />
                     <Typography variant="h6" color="textSecondary">
@@ -173,25 +211,27 @@ const MatchedUsers = () => {
                                             color="primary"
                                             size="small"
                                             onClick={() => handleConfirmUser(matched._id)}
+                                            disabled={loadingUsers[matched._id]}
                                         >
-                                            Confirm
+                                            {loadingUsers[matched._id] ? 'Confirming...' : 'Confirm'}
                                         </Button>
-
                                     </TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>
                     </Table>
+
+                    <div className={classes.pagination}>
+                        <Button disabled={page === 1 || isLoading} onClick={handlePrevPage}>
+                            Previous
+                        </Button>
+                        <Button disabled={page >= totalPages || isLoading} onClick={handleNextPage}>
+                            Next
+                        </Button>
+                    </div>
                 </>
             )}
-            <div className={classes.pagination}>
-                <Button disabled={page === 1 || loading} onClick={handlePrevPage}>
-                    Previous
-                </Button>
-                <Button disabled={page >= totalPages || loading} onClick={handleNextPage}>
-                    Next
-                </Button>
-            </div>
+
             <Snackbar
                 open={snackbarOpen}
                 autoHideDuration={4000}
@@ -202,9 +242,7 @@ const MatchedUsers = () => {
                     {snackbarMessage}
                 </Alert>
             </Snackbar>
-
         </div>
-
     );
 };
 

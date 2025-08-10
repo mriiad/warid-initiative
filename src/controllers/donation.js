@@ -37,8 +37,10 @@ exports.checkDonationEligibility = async (userId) => {
 	console.log('timeDifference', timeDifference);
 	const daysDifference = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
 	console.log('daysDifference', daysDifference);
-	if ((user.gender === 'male' && daysDifference >= 60) ||
-		(user.gender === 'female' && daysDifference >= 90)) {
+	if (
+		(user.gender === 'male' && daysDifference >= 60) ||
+		(user.gender === 'female' && daysDifference >= 90)
+	) {
 		donationAvailability = true;
 	}
 	return {
@@ -132,16 +134,14 @@ exports.donate = async (req, res, next) => {
 
 const checkExistingDonation = async (userId, userProvidedDate) => {
 	try {
-		const existingDonation = await Donation.findOne({
-			userId: userId,
-			donationDate: { $ne: null },
-		})
-			.sort({ donationDate: -1 })
-			.limit(1);
+		// Use checkDonationEligibility to verify if the user is able to donate
+		const { canDonate, nextDonationDate } = await checkDonationEligibility(
+			userId
+		);
 
-		if (existingDonation) {
+		if (!canDonate) {
 			throw new ApiError(
-				'You have a previous donation that has not been completed yet.',
+				`You are not eligible to donate at this time. You can register for a new donation starting ${nextDonationDate}`,
 				STATUS_CODE.FORBIDDEN
 			);
 		}
@@ -149,7 +149,7 @@ const checkExistingDonation = async (userId, userProvidedDate) => {
 		const [recentDonation] = await Donation.find({ userId: userId })
 			.sort({ donationDate: -1 })
 			.limit(1)
-			.exec(); // Using exec to ensure a Promise is returned
+			.exec();
 
 		if (recentDonation) {
 			const recentDate = recentDonation.donationDate;
@@ -259,7 +259,3 @@ exports.getDonationsByUser = (req, res, next) => {
 				);
 		});
 };
-
-// TODO: markAsDonor
-// Add a method to mark user as donor by setting his donationDate
-// This operation is limited to the admin

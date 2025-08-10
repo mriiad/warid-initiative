@@ -38,11 +38,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 	}, []);
 
 	const refreshToken = useCallback(async () => {
-		// Check if there is a current token and refreshToken available
 		const currentToken = localStorage.getItem('token');
 		const currentRefreshToken = localStorage.getItem('refreshToken');
 
-		// Only proceed if both token and refreshToken are present
 		if (currentToken && currentRefreshToken) {
 			try {
 				const response = await axios.post(
@@ -59,6 +57,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 				axios.defaults.headers['Authorization'] = `Bearer ${newToken}`;
 			} catch (error) {
 				console.error('Failed to refresh token:', error);
+				// Handle token refresh failure
+				// Optionally, redirect to login or logout the user
 			}
 		}
 	}, []);

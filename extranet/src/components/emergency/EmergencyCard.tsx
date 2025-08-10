@@ -17,6 +17,7 @@ interface EmergencyCardProps {
     emergency: Emergency;
     animationDelay?: string;
     onConfirm: () => void;
+    isConfirming: boolean;
 }
 
 const useStyles = makeStyles({
@@ -50,7 +51,7 @@ const useStyles = makeStyles({
     },
 });
 
-const EmergencyCard = ({ emergency, animationDelay, onConfirm }: EmergencyCardProps) => {
+const EmergencyCard = ({ emergency, animationDelay, onConfirm, isConfirming }: EmergencyCardProps) => {
     const navigate = useNavigate();
     const classes = useStyles();
 
@@ -92,8 +93,9 @@ const EmergencyCard = ({ emergency, animationDelay, onConfirm }: EmergencyCardPr
                         variant="contained"
                         color="success"
                         onClick={onConfirm}
+                        disabled={isConfirming}
                     >
-                        Confirm Emergency
+                        {isConfirming ? "Confirming..." : "Confirm Emergency"}
                     </Button>
                     <Button
                         variant="outlined"

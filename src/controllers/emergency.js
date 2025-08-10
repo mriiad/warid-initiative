@@ -37,7 +37,7 @@ exports.getEmergencyMatchUsers = async (req, res, next) => {
   try {
     const emergencyId = req.params.id;
     const currentPage = Number(req.query.page) || 1 ;
-    const perPage = 1; 
+    const perPage = 10; 
 
     const emergency = await Emergency.findById(emergencyId);
     if (!emergency) {

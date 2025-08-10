@@ -11,7 +11,7 @@ const {
 	getProfile,
 	searchUsers,
 	deleteUser,
-	updateUserProfile
+	updateUserProfile,
 } = require('../controllers/user');
 
 userRouter.get('/api/users', getUsers);
@@ -24,11 +24,17 @@ userRouter.get('/api/user/profile', isAuth, getProfile);
 
 userRouter.post('/api/searchUsers', isAuth, checkIfAdmin, searchUsers);
 
-userRouter.delete('/api/deleteUser/:username', isAuth , checkIfAdmin , deleteUser);
+userRouter.delete(
+	'/api/deleteUser/:username',
+	isAuth,
+	checkIfAdmin,
+	deleteUser
+);
 
-userRouter.get('/cities', (req, res) => {  res.json({ cities });});
+userRouter.get('/cities', (req, res) => {
+	res.json({ cities });
+});
 
 userRouter.patch('/api/user/profile', isAuth, updateUserProfile);
-
 
 module.exports = userRouter;
