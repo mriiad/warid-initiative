@@ -3,6 +3,7 @@ const {
 	getEvents,
 	getEvent,
 	createEvent,
+	createEventHandler,
 	confirmPresence,
 	deleteEvent,
 } = require('../controllers/event');
@@ -58,18 +59,9 @@ eventRouter.post('/api/event', isAuth, checkIfAdmin, (req, res, next) => {
 			// Additional checks
 			if (req.fileValidationError) {
 				throw new ApiError(req.fileValidationError, STATUS_CODE.BAD_REQUEST);
-			} else if (!req.file) {
-				throw new ApiError('No file provided', STATUS_CODE.BAD_REQUEST);
 			}
 
-			// Create the event
-			const eventData = await createEvent(req);
-
-			// Send response here
-			res.status(STATUS_CODE.CREATED).json({
-				message: 'Event created successfully!',
-				event: eventData,
-			});
+			createEventHandler(req, res, next);
 		} catch (error) {
 			next(error);
 		}

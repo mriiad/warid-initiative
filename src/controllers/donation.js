@@ -1,6 +1,7 @@
 const Donation = require('../models/donation');
 const User = require('../models/user');
 const Profile = require('../models/profile');
+const Event = require('../models/event');
 const { STATUS_CODE } = require('../utils/errors/httpStatusCode');
 const ApiError = require('../utils/errors/ApiError');
 const mongoose = require('mongoose');
@@ -23,7 +24,7 @@ exports.checkDonationEligibility = (userId) => {
 		.then((profile) => {
 			gender = profile && profile.gender ? profile.gender : undefined;
 			return Donation.find({ userId: userId })
-				.sort({ lastDonationDate: -1 })
+				.sort({ donationDate: -1 })
 				.limit(1);
 		})
 		.then((donations) => {
@@ -46,7 +47,9 @@ exports.checkDonationEligibility = (userId) => {
 			const nextDonationDate = addDays(donationDate, daysToAdd);
 
 			const timeDifference = currentDate - new Date(donationDate);
+			console.log('timeDifference', timeDifference);
 			const daysDifference = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+			console.log('daysDifference', daysDifference);
 
 			if (
 				(gender === 'male' && daysDifference >= 60) ||
@@ -81,29 +84,48 @@ exports.canDonate = (req, res, next) => {
 
 exports.donate = async (req, res, next) => {
 	try {
-		const { bloodGroup, lastDonationDate, donationType, disease } = req.body;
-		const {
-			canDonate,
-			lastDonationDate: lastDD,
-			nextDonationDate,
-		} = await checkDonationEligibility(req.userId);
+		const { bloodGroup, donationDate, donationType, eventId } = req.body;
+		const { canDonate, lastDonationDate, nextDonationDate } =
+			await checkDonationEligibility(req.userId);
+
+		console.log('canDonate', canDonate);
+		console.log('lastDonationDate', lastDonationDate);
+		console.log('nextDonationDate', nextDonationDate);
 
 		if (!canDonate) {
 			throw new ApiError(
 				`Based on your last donation date, you are not eligible to donate at this time. You can register for a new donation starting ${nextDonationDate}`,
 				STATUS_CODE.FORBIDDEN,
-				['lastDonationDate']
+				['donationDate']
 			);
 		}
 
-		await checkExistingDonation(req.userId, new Date(lastDonationDate));
+		await checkExistingDonation(req.userId, new Date(donationDate));
+
+		// Get event or find a generic event if not provided
+		let event;
+		if (eventId) {
+			event = await Event.findById(eventId);
+			if (!event) {
+				throw new ApiError('Event not found', STATUS_CODE.NOT_FOUND);
+			}
+		} else {
+			// If no event provided, find a generic event
+			event = await Event.findOne({ isGeneric: true });
+			if (!event) {
+				throw new ApiError(
+					'No generic event found for free donation',
+					STATUS_CODE.NOT_FOUND
+				);
+			}
+		}
 
 		const donation = new Donation({
 			bloodGroup,
-			lastDonationDate,
+			donationDate,
 			donationType,
-			disease,
 			userId: req.userId,
+			eventId: event._id,
 		});
 
 		await donation.save();
@@ -128,35 +150,31 @@ exports.donate = async (req, res, next) => {
 
 const checkExistingDonation = async (userId, userProvidedDate) => {
 	try {
-		const existingDonation = await Donation.findOne({
-			userId: userId,
-			lastDonationDate: { $ne: null },
-			reelDonationDate: null,
-		})
-			.sort({ lastDonationDate: -1 })
-			.limit(1);
+		// Use checkDonationEligibility to verify if the user is able to donate
+		const { canDonate, nextDonationDate } = await checkDonationEligibility(
+			userId
+		);
 
-		if (existingDonation) {
+		if (!canDonate) {
 			throw new ApiError(
-				'You have a previous donation that has not been completed yet.',
+				`You are not eligible to donate at this time. You can register for a new donation starting ${nextDonationDate}`,
 				STATUS_CODE.FORBIDDEN
 			);
 		}
 
 		const [recentDonation] = await Donation.find({ userId: userId })
-			.sort({ lastDonationDate: -1 })
+			.sort({ donationDate: -1 })
 			.limit(1)
-			.exec(); // Using exec to ensure a Promise is returned
+			.exec();
 
 		if (recentDonation) {
-			const recentDate =
-				recentDonation.reelDonationDate || recentDonation.lastDonationDate;
+			const recentDate = recentDonation.donationDate;
 
 			if (userProvidedDate < new Date(recentDate)) {
 				throw new ApiError(
-					'The provided last donation date is older than your most recent donation.',
+					'The provided donation date is older than your most recent donation.',
 					STATUS_CODE.BAD_REQUEST,
-					['lastDonationDate']
+					['donationDate']
 				);
 			}
 		}
@@ -173,7 +191,7 @@ exports.getDonation = (req, res, next) => {
 	const { userId } = req;
 
 	Donation.find({ userId: new mongoose.Types.ObjectId(userId) })
-		.sort({ lastDonationDate: -1 })
+		.sort({ donationDate: -1 })
 		.limit(1)
 		.exec()
 		.then((donations) => {
@@ -196,13 +214,22 @@ exports.getDonation = (req, res, next) => {
 						);
 					}
 
-					// Add bloodGroup to the recentDonation object
-					const donationWithBloodGroup = {
-						...recentDonation.toObject(),
-						bloodGroup: profile.bloodGroup,
-					};
+					return Event.findById(recentDonation.eventId).then((event) => {
+						// Add bloodGroup and event to the recentDonation object
+						const donationWithDetails = {
+							...recentDonation.toObject(),
+							bloodGroup: profile.bloodGroup,
+							event: event
+								? {
+										title: event.title,
+										reference: event.reference,
+										isGeneric: event.isGeneric,
+								  }
+								: null,
+						};
 
-					res.status(STATUS_CODE.OK).json(donationWithBloodGroup);
+						res.status(STATUS_CODE.OK).json(donationWithDetails);
+					});
 				});
 		})
 		.catch((err) => {
@@ -225,7 +252,7 @@ exports.getDonationsByUser = (req, res, next) => {
 				throw new ApiError('User not found.', STATUS_CODE.NOT_FOUND);
 			}
 
-			return Donation.find({ userId: user._id }).sort({ lastDonationDate: -1 });
+			return Donation.find({ userId: user._id }).sort({ donationDate: -1 });
 		})
 		.then((donations) => {
 			if (donations.length === 0) {
@@ -248,7 +275,3 @@ exports.getDonationsByUser = (req, res, next) => {
 				);
 		});
 };
-
-// TODO: markAsDonor
-// Add a method to mark user as donor by setting his reelDonationDate
-// This operation is limited to the admin

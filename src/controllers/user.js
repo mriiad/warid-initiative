@@ -50,7 +50,7 @@ exports.getUsers = async (req, res, next) => {
 
 exports.updateUserInfo = (req, res, next) => {
 	const userId = req.userId;
-	const { firstname, lastname, birthdate, gender, bloodGroup } = req.body;
+	const { firstname, lastname, birthdate, bloodGroup } = req.body;
 
 	let userFound;
 
@@ -71,7 +71,6 @@ exports.updateUserInfo = (req, res, next) => {
 				profile.firstname = firstname;
 				profile.lastname = lastname;
 				profile.birthdate = birthdate;
-				profile.gender = gender;
 				profile.bloodGroup = bloodGroup;
 				return profile.save();
 			} else {
@@ -81,7 +80,6 @@ exports.updateUserInfo = (req, res, next) => {
 					firstname,
 					lastname,
 					birthdate,
-					gender,
 					bloodGroup,
 				});
 				return newProfile.save().then((savedProfile) => {
@@ -115,9 +113,8 @@ exports.checkUserProfile = async (req, res, next) => {
 			return res.status(200).json({ isProfileComplete: false });
 		}
 
-		const { firstname, lastname, birthdate, gender, bloodGroup } = user.profile;
-		const isProfileComplete =
-			firstname && lastname && birthdate && gender && bloodGroup;
+		const { firstname, lastname, birthdate, bloodGroup } = user.profile;
+		const isProfileComplete = firstname && lastname && birthdate && bloodGroup;
 
 		res.status(200).json({ isProfileComplete });
 	} catch (err) {
@@ -141,16 +138,18 @@ exports.getProfile = (req, res, next) => {
 			}
 
 			if (!user.profile) {
-				// If the user has no profile, return an empty object
-				return res.status(200).json({});
+				// If the user has no profile, return an empty object with just gender
+				return res.status(200).json({
+					gender: user.gender,
+				});
 			}
 
-			// If the user has a profile, return it
+			// If the user has a profile, return it with gender from user model
 			res.status(200).json({
 				firstname: user.profile.firstname,
 				lastname: user.profile.lastname,
 				birthdate: user.profile.birthdate,
-				gender: user.profile.gender,
+				gender: user.gender, // Gender from User model
 				bloodGroup: user.profile.bloodGroup,
 			});
 		})
@@ -356,6 +355,31 @@ exports.searchUsers = async (req, res, next) => {
 			perPage,
 		});
 	} catch (err) {
+		next(err);
+	}
+};
+
+exports.deleteUser = async (req, res, next) => {
+	try {
+		const { username } = req.params;
+		if (!username) {
+			return res
+				.status(STATUS_CODE.BAD_REQUEST)
+				.json({ message: 'Username is required' });
+		}
+
+		const user = await User.findOneAndDelete({ username: username });
+		if (!user) {
+			return res
+				.status(STATUS_CODE.NOT_FOUND)
+				.json({ message: 'User not found' });
+		}
+
+		res.status(STATUS_CODE.OK).json({ message: 'User deleted successfully' });
+	} catch (err) {
+		if (!err.statusCode) {
+			err.statusCode = STATUS_CODE.INTERNAL_SERVER;
+		}
 		next(err);
 	}
 };

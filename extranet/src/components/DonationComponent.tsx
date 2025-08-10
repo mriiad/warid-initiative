@@ -14,12 +14,18 @@ import clsx from 'clsx';
 import { useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useMutation, useQuery } from 'react-query';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { ApiErrorResponse } from '../data/ApiErrorResponse';
 import colors from '../styles/colors';
 import { authStyles, mainStyles } from '../styles/mainStyles';
-import { donate, fetchDonation } from '../utils/queries';
+import {
+	donate,
+	fetchDonation,
+	fetchEventByReference,
+	fetchEvents,
+	fetchUserProfile,
+} from '../utils/queries';
 import { formatDate } from '../utils/utils';
 import FormContainer from './shared/FormContainer';
 import ResponseAnimation from './shared/ResponseAnimation';
@@ -65,6 +71,11 @@ const DonationComponent = () => {
 	const { subTitle } = mainStyles();
 
 	const navigate = useNavigate();
+	const location = useLocation();
+	const params = useParams();
+	const queryParams = new URLSearchParams(location.search);
+	const eventReference = queryParams.get('eventRef');
+	const eventDateFromURL = queryParams.get('eventDate');
 
 	const {
 		handleSubmit,
@@ -72,6 +83,7 @@ const DonationComponent = () => {
 		control,
 		setValue,
 		setError,
+		watch,
 	} = useForm();
 
 	const {
@@ -86,49 +98,96 @@ const DonationComponent = () => {
 		retry: 5,
 	});
 
+	const { data: profileData } = useQuery('userProfile', fetchUserProfile, {
+		enabled: !!token,
+		refetchOnWindowFocus: false,
+		refetchOnMount: true,
+	});
+
+	const { data: events } = useQuery('events', fetchEvents, {
+		enabled: !!token,
+		refetchOnWindowFocus: false,
+		refetchOnMount: true,
+		retry: 3,
+	});
+
+	const { data: eventData } = useQuery(
+		['event', eventReference],
+		() => fetchEventByReference(eventReference),
+		{
+			enabled: !!eventReference,
+			refetchOnWindowFocus: false,
+			refetchOnMount: true,
+		}
+	);
+
 	const [showSnackbar, setShowSnackbar] = useState(false);
 	const [reviewSnackbarOpen, setReviewSnackbarOpen] = useState(false);
 	const [isBloodGroupEditable, setIsBloodGroupEditable] = useState(true);
+	const [isDateDisabled, setIsDateDisabled] = useState(false);
+	const donationType = watch('donationType');
 
-	const defaultLastDonationDate = useMemo(() => {
+	const defaultDonationDate = useMemo(() => {
 		if (isLoading) return '';
 		if (error || !donation || !token) return '';
 		return donation.reelDonationDate
 			? formatDate(donation.reelDonationDate)
-			: formatDate(donation.lastDonationDate);
+			: formatDate(donation.donationDate);
 	}, [donation, error, isLoading, token]);
+
+	useEffect(() => {
+		if (eventReference && eventData && eventData.event) {
+			// This is a non-generic event with reference
+			const eventDate = eventDateFromURL || formatDate(eventData.event.date);
+			console.log('eventDate: ', eventDate);
+			setValue('eventId', eventData.event._id);
+			setValue('donationDate', eventDate);
+			setIsDateDisabled(true);
+		} else if (eventReference && events) {
+			// This is a generic event with reference
+			const genericEvent = events.find(
+				(e) => e.isGeneric && e.reference === eventReference
+			);
+			if (genericEvent) {
+				setValue('eventId', genericEvent._id);
+				setValue('donationDate', formatDate(new Date()));
+			}
+		} else {
+			// Regular donation - no event reference
+			setValue('donationDate', formatDate(new Date()));
+		}
+	}, [eventReference, eventData, events, setValue, eventDateFromURL]);
 
 	useEffect(() => {
 		if (donation) {
 			setValue('bloodGroup', donation.bloodGroup);
 			setIsBloodGroupEditable(!donation.bloodGroup);
+		} else if (profileData && profileData.bloodGroup) {
+			setValue('bloodGroup', profileData.bloodGroup);
+			setIsBloodGroupEditable(!profileData.bloodGroup);
 		}
 
-		if (defaultLastDonationDate) {
+		if (defaultDonationDate && !eventReference) {
 			setShowSnackbar(true);
 		}
-	}, [defaultLastDonationDate, donation, setValue]);
+	}, [defaultDonationDate, donation, setValue, eventReference, profileData]);
 
 	useEffect(() => {
-		// If the user is logged in and there is pending form data, load it
 		if (token) {
 			const storedFormData = sessionStorage.getItem('pendingDonationFormData');
 			if (storedFormData) {
 				const formData = JSON.parse(storedFormData);
-				// Overwrite the `lastDonationDate` by the initially fetched value
-				if (defaultLastDonationDate) {
-					formData['lastDonationDate'] = defaultLastDonationDate;
+				if (defaultDonationDate && !eventReference) {
+					formData['donationDate'] = defaultDonationDate;
 				}
-				// Use form methods to set the data
 				Object.keys(formData).forEach((key) => {
 					setValue(key, formData[key]);
 				});
-				// Clear the stored data since it's now being used
 				sessionStorage.removeItem('pendingDonationFormData');
 				setReviewSnackbarOpen(true);
 			}
 		}
-	}, [token, setValue, defaultLastDonationDate]);
+	}, [token, setValue, defaultDonationDate, eventReference]);
 
 	const donateMutation = useMutation(donate);
 
@@ -141,15 +200,30 @@ const DonationComponent = () => {
 
 	const onSubmit = (formData: any) => {
 		if (!token) {
-			// Store formData in localStorage or sessionStorage
 			sessionStorage.setItem(
 				'pendingDonationFormData',
 				JSON.stringify(formData)
 			);
-			// Redirect user to /login with a redirect parameter
-			navigate('/login?redirect=/donate');
-			return; // Prevent further execution of onSubmit
+
+			// For login redirect, maintain the same URL structure
+			const redirectUrl = eventReference
+				? `/donate?eventRef=${eventReference}${
+						eventDateFromURL ? `&eventDate=${eventDateFromURL}` : ''
+				  }`
+				: '/donate';
+
+			navigate(`/login?redirect=${encodeURIComponent(redirectUrl)}`);
+			return;
 		}
+
+		// If no event ID is set but we have an event reference, find the matching event
+		if (!formData.eventId && eventReference && events) {
+			const event = events.find((e) => e.reference === eventReference);
+			if (event) {
+				formData.eventId = event._id;
+			}
+		}
+
 		donateMutation.mutate(formData, {
 			onSuccess: () => {
 				console.log('Form submitted successfully!');
@@ -163,7 +237,6 @@ const DonationComponent = () => {
 				const errorResponseData: ApiErrorResponse = error.data;
 				if (errorResponseData.errorKeys) {
 					errorResponseData.errorKeys.forEach((errorKey) => {
-						// Set error on each field based on the server response
 						setError(errorKey, {
 							message: `${errorKey} is invalid`,
 						});
@@ -186,16 +259,16 @@ const DonationComponent = () => {
 	return (
 		<FormContainer>
 			<Typography variant='h2' align='center' gutterBottom className={signUp}>
-			    تبرع
+				تبرع
 				<span className={bar}></span>
 			</Typography>
 			<Typography variant='h6' align='center' gutterBottom>
 				<span className={subTitle}>
-				    كن أنت 
+					كن أنت
 					<section className={wrapper}>
 						<div className={`${topBottom} ${top}`}>!البطل</div>
 						<div className={`${topBottom} ${bottom}`} aria-hidden='true'>
-						   !البطل
+							!البطل
 						</div>
 					</section>
 				</span>
@@ -247,22 +320,26 @@ const DonationComponent = () => {
 								</Grid>
 								<Grid item xs={12}>
 									<Controller
-										name='lastDonationDate'
+										name='donationDate'
 										control={control}
-										defaultValue={defaultLastDonationDate}
+										defaultValue=''
+										rules={{
+											required: 'تاريخ التبرع مطلوب',
+										}}
 										render={({ field }) => (
 											<TextField
-												fullWidth
-												label='تاريخ آخر تبرع'
+												{...field}
+												label='تاريخ التبرع'
+												error={Boolean(errors.donationDate)}
+												helperText={
+													errors.donationDate ? 'تاريخ التبرع مطلوب' : ''
+												}
 												type='date'
+												fullWidth
 												InputLabelProps={{
 													shrink: true,
 												}}
-												{...field}
-												error={Boolean(errors.lastDonationDate)}
-												helperText={
-													errors.lastDonationDate ? 'تاريخ غير صالح' : ''
-												}
+												disabled={isDateDisabled}
 											/>
 										)}
 									/>
@@ -272,6 +349,9 @@ const DonationComponent = () => {
 										name='donationType'
 										control={control}
 										defaultValue=''
+										rules={{
+											required: 'نوع التبرع مطلوب',
+										}}
 										render={({ field }) => (
 											<FormControl
 												fullWidth
@@ -286,53 +366,64 @@ const DonationComponent = () => {
 													<MenuItem value='Plates'>الصفائح</MenuItem>
 												</Select>
 												<FormHelperText>
-													{errors.donationType
-														? 'نوع التبرع مطلوب'
-														: ''}
+													{errors.donationType ? 'نوع التبرع مطلوب' : ''}
 												</FormHelperText>
 											</FormControl>
 										)}
 									/>
 								</Grid>
 
-								<Grid item xs={12}>
-									<Controller
-										name='disease'
-										control={control}
-										defaultValue=''
-										render={({ field }) => (
-											<TextField
-												fullWidth
-												label='المرض'
-												{...field}
-												error={Boolean(errors.disease)}
-												helperText={errors.disease ? 'المرض مطلوب' : ''}
-											/>
-										)}
-									/>
-								</Grid>
-								<Grid item xs={12}>
-									<Button type='submit' className={button}>
-									   تبرع 
-									</Button>
-								</Grid>
+								{eventReference === null && (
+									<Grid item xs={12}>
+										<Controller
+											name='eventId'
+											control={control}
+											defaultValue=''
+											render={({ field }) => (
+												<FormControl fullWidth error={Boolean(errors.eventId)}>
+													<InputLabel>الحدث</InputLabel>
+													<Select {...field}>
+														<MenuItem value=''>
+															<em>None</em>
+														</MenuItem>
+														{events &&
+															events.map((event) => (
+																<MenuItem key={event._id} value={event._id}>
+																	{event.title} ({formatDate(event.date)})
+																	{event.isGeneric && ' - حدث عام'}
+																</MenuItem>
+															))}
+													</Select>
+													<FormHelperText>
+														{errors.eventId ? 'الحدث مطلوب' : ''}
+													</FormHelperText>
+												</FormControl>
+											)}
+										/>
+									</Grid>
+								)}
 							</Grid>
+							<Button
+								type='submit'
+								className={button}
+								style={{ marginTop: '20px' }}
+							>
+								تسجيل التبرع
+							</Button>
 						</>
 					)}
 				</Grid>
 			</form>
-			<SnackbarComponent
-				open={reviewSnackbarOpen}
-				message='Please review your form data before submitting.'
-				handleClose={() => setReviewSnackbarOpen(false)}
-				offsetTop={0}
-			/>
+
 			<SnackbarComponent
 				open={showSnackbar}
-				message={`Based on your history, your last donation date is: ${defaultLastDonationDate}`}
 				handleClose={() => setShowSnackbar(false)}
-				autoHideDuration={5000}
-				offsetTop={reviewSnackbarOpen ? 100 : 0}
+				message={`آخر تبرع كان بتاريخ ${defaultDonationDate}`}
+			/>
+			<SnackbarComponent
+				open={reviewSnackbarOpen}
+				handleClose={() => setReviewSnackbarOpen(false)}
+				message='تم استعادة بيانات التبرع السابقة. يرجى مراجعتها قبل الإرسال.'
 			/>
 		</FormContainer>
 	);

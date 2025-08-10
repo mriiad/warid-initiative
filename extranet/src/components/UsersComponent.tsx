@@ -3,7 +3,9 @@ import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
+import { useAuth } from '../auth/AuthContext';
 import { authStyles, mainStyles } from '../styles/mainStyles';
+import { deleteUser } from '../utils/queries';
 import NoUserFound from './NoUserFound';
 import UserCard from './UserCard';
 import UserFilter from './UserFilter';
@@ -47,6 +49,10 @@ const UsersComponent: React.FC = () => {
 	const maxAge = parseInt(searchParams.get('maxAge') || '', 10);
 	const availableForDonation =
 		searchParams.get('availableForDonation') === 'true';
+
+	const [message, setMessage] = useState<string | null>(null);
+
+	const { token } = useAuth();
 
 	useEffect(() => {
 		const fetchUsers = async () => {
@@ -132,8 +138,29 @@ const UsersComponent: React.FC = () => {
 		console.log(`Updating user with ID ${userId}`);
 	};
 
-	const handleDelete = (userId: string) => {
-		console.log(`Deleting user with ID ${userId}`);
+	const handleDelete = async (username: string) => {
+		console.log(`Deleting user with name ${username}`);
+		const confirmDelete = window.confirm(
+			`Are you sure you want to delete the user ${username}?`
+		);
+		if (!confirmDelete) return;
+
+		try {
+			setIsLoading(true);
+			await deleteUser(username, token);
+			setUsers(
+				(prevUsers) =>
+					prevUsers?.filter((user) => user.username !== username) || []
+			);
+			setMessage('User deleted successfully');
+		} catch (error) {
+			setMessage(`Error deleting user: ${error.message}`);
+		} finally {
+			setIsLoading(false);
+		}
+	};
+	const handleCloseSnackbar = () => {
+		setMessage(null);
 	};
 
 	const handleMakeAdmin = (userId: string) => {
@@ -202,7 +229,7 @@ const UsersComponent: React.FC = () => {
 							})
 						}
 					>
-						Previous
+						السابق
 					</Button>
 					<Button
 						disabled={page >= totalPages}
@@ -213,7 +240,7 @@ const UsersComponent: React.FC = () => {
 							})
 						}
 					>
-						Next
+						التالي
 					</Button>
 				</div>
 			)}
