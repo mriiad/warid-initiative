@@ -201,6 +201,10 @@ export const useLandingPageStyles = makeStyles({
 			'& > a': {
 				position: 'relative',
 				zIndex: 1,
+				color: 'white',
+				fontWeight: 'bold',
+				textDecoration: 'underlined',
+				margin: '2px',
 				'& > img': {
 					display: 'block',
 					width: '68px',
