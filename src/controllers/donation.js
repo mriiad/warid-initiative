@@ -70,7 +70,7 @@ exports.donate = async (req, res, next) => {
 	try {
 		const { bloodGroup, donationDate, donationType, eventId } = req.body;
 		const { canDonate, lastDonationDate, nextDonationDate } =
-			await checkDonationEligibility(req.userId);
+			this.checkDonationEligibility(req.userId);
 
 		console.log('canDonate', canDonate);
 		console.log('lastDonationDate', lastDonationDate);
