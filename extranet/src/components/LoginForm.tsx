@@ -5,17 +5,16 @@ import {
 	TextField,
 	Typography,
 } from '@mui/material';
+import { useMutation } from '@tanstack/react-query';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { useMutation } from 'react-query';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
-import { LoginFormData, SignupFormData } from '../data/authData';
+import { LoginFormData } from '../data/authData';
 import { authStyles, mainStyles } from '../styles/mainStyles';
 import FormContainer from './shared/FormContainer';
 import SnackbarComponent from './shared/SnackbarComponent';
-
 
 const LoginForm = () => {
 	const { setToken, setUserId, setIsAdmin } = useAuth();
@@ -26,7 +25,12 @@ const LoginForm = () => {
 		handleSubmit,
 		formState: { errors },
 		control,
-	} = useForm<LoginFormData>();
+	} = useForm<LoginFormData>({
+		defaultValues: {
+			username: '',
+			password: '',
+		},
+	});
 
 	const navigate = useNavigate();
 	const location = useLocation();
@@ -59,41 +63,42 @@ const LoginForm = () => {
 		}
 	}, [location]);
 
-	const loginMutation = useMutation((data: SignupFormData) => {
-		return axios.post('http://localhost:3000/api/auth/login', data);
+	const loginMutation = useMutation({
+		mutationFn: (data: LoginFormData) => {
+			return axios.post('/api/auth/login', data);
+		},
+		onSuccess: async (data) => {
+			setToken(data.data.token);
+			setUserId(data.data.userId);
+			setIsAdmin(data.data.isAdmin);
+			localStorage.setItem('token', data.data.token);
+			localStorage.setItem('userId', data.data.userId);
+			localStorage.setItem('isAdmin', String(data.data.isAdmin));
+			localStorage.setItem('refreshToken', data.data.refreshToken);
+			setIsFormSubmitted(true);
+			const params = new URLSearchParams(window.location.search);
+			const redirectURL = params.get('redirect');
+
+			if (redirectURL) {
+				navigate(redirectURL);
+			}
+
+			const isProfileComplete = await checkProfileCompleteness();
+			console.log('isProfileComplete', isProfileComplete);
+			if (!isProfileComplete) {
+				navigate('/update-profile');
+			} else {
+				navigate('/events');
+			}
+		},
+		onError: (error) => {
+			console.error('Error logging in:', error);
+		},
 	});
 
 	const [, setIsFormSubmitted] = useState<boolean>(false);
-	const onSubmit = (formData: SignupFormData) => {
-		loginMutation.mutate(formData, {
-			onSuccess: async (data) => {
-				setToken(data.data.token);
-				setUserId(data.data.userId);
-				setIsAdmin(data.data.isAdmin);
-				localStorage.setItem('token', data.data.token);
-				localStorage.setItem('userId', data.data.userId);
-				localStorage.setItem('isAdmin', String(data.data.isAdmin));
-				localStorage.setItem('refreshToken', data.data.refreshToken);
-				setIsFormSubmitted(true);
-				const params = new URLSearchParams(window.location.search);
-				const redirectURL = params.get('redirect');
-
-				if (redirectURL) {
-					navigate(redirectURL);
-				}
-
-				const isProfileComplete = await checkProfileCompleteness();
-				console.log('isProfileComplete', isProfileComplete);
-				if (!isProfileComplete) {
-					navigate('/update-profile');
-				} else {
-					navigate('/events');
-				}
-			},
-			onError: (error) => {
-				console.error('Error logging in:', error);
-			},
-		});
+	const onSubmit = (formData: LoginFormData) => {
+		loginMutation.mutate(formData);
 	};
 
 	return (

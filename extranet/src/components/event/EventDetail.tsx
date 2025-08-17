@@ -13,9 +13,9 @@ import {
 import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
 import { makeStyles } from '@mui/styles';
+import { useQuery } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import React, { useState } from 'react';
-import { useQuery } from 'react-query';
 import {
 	Route,
 	Routes,

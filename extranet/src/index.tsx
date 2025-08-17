@@ -1,6 +1,6 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
-import ReactDOM from 'react-dom';
-import { QueryClient, QueryClientProvider } from 'react-query';
+import { createRoot } from 'react-dom/client';
 import { ThemeProvider } from 'styled-components';
 import App from './App';
 import { AuthProvider } from './auth/AuthContext';
@@ -9,7 +9,11 @@ import theme from './theme';
 
 const queryClient = new QueryClient();
 
-ReactDOM.render(
+const container = document.getElementById('root');
+if (!container) throw new Error('Failed to find the root element');
+const root = createRoot(container);
+
+root.render(
 	<React.StrictMode>
 		<QueryClientProvider client={queryClient}>
 			<ThemeProvider theme={theme}>
@@ -18,6 +22,5 @@ ReactDOM.render(
 				</AuthProvider>
 			</ThemeProvider>
 		</QueryClientProvider>
-	</React.StrictMode>,
-	document.getElementById('root')
+	</React.StrictMode>
 );

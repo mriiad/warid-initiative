@@ -1,7 +1,7 @@
 import { Button, CircularProgress, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
+import { useQuery } from '@tanstack/react-query';
 import React from 'react';
-import { useQuery } from 'react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import colors from '../styles/colors';
 import { fetchCanDonate, fetchEventByReference } from '../utils/queries';

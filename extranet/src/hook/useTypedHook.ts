@@ -1,4 +1,8 @@
-import { MutationFunction, UseMutationOptions, useMutation } from 'react-query';
+import {
+	MutationFunction,
+	UseMutationOptions,
+	useMutation,
+} from '@tanstack/react-query';
 
 export interface MutationErrorWithData extends Error {
 	data?: any;

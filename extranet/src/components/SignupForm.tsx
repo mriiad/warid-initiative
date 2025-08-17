@@ -9,10 +9,10 @@ import {
 	TextField,
 	Typography,
 } from '@mui/material';
+import { useMutation } from '@tanstack/react-query';
 import axios from 'axios';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { useMutation } from 'react-query';
 import { useNavigate } from 'react-router-dom';
 import { SignupFormData } from '../data/authData';
 import { authStyles, mainStyles } from '../styles/mainStyles';

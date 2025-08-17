@@ -10,10 +10,10 @@ import {
 	Typography,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
+import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { useQuery } from 'react-query';
 import { useNavigate } from 'react-router-dom';
 import {
 	BloodGroup,
