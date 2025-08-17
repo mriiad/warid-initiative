@@ -91,35 +91,39 @@ const DonationComponent = () => {
 		error,
 		isLoading,
 		isError,
-	} = useQuery('donation', fetchDonation, {
+	} = useQuery({
+		queryKey: ['donation'],
+		queryFn: fetchDonation,
 		enabled: !!token,
 		refetchOnWindowFocus: false,
 		refetchOnMount: true,
 		retry: 5,
 	});
 
-	const { data: profileData } = useQuery('userProfile', fetchUserProfile, {
+	const { data: profileData } = useQuery({
+		queryKey: ['userProfile'],
+		queryFn: fetchUserProfile,
 		enabled: !!token,
 		refetchOnWindowFocus: false,
 		refetchOnMount: true,
 	});
 
-	const { data: events } = useQuery('events', fetchEvents, {
+	const { data: events } = useQuery({
+		queryKey: ['events'],
+		queryFn: fetchEvents,
 		enabled: !!token,
 		refetchOnWindowFocus: false,
 		refetchOnMount: true,
 		retry: 3,
 	});
 
-	const { data: eventData } = useQuery(
-		['event', eventReference],
-		() => fetchEventByReference(eventReference),
-		{
-			enabled: !!eventReference,
-			refetchOnWindowFocus: false,
-			refetchOnMount: true,
-		}
-	);
+	const { data: eventData } = useQuery({
+		queryKey: ['event', eventReference],
+		queryFn: () => fetchEventByReference(eventReference),
+		enabled: !!eventReference,
+		refetchOnWindowFocus: false,
+		refetchOnMount: true,
+	});
 
 	const [showSnackbar, setShowSnackbar] = useState(false);
 	const [reviewSnackbarOpen, setReviewSnackbarOpen] = useState(false);
@@ -189,7 +193,9 @@ const DonationComponent = () => {
 		}
 	}, [token, setValue, defaultDonationDate, eventReference]);
 
-	const donateMutation = useMutation(donate);
+	const donateMutation = useMutation({
+		mutationFn: donate,
+	});
 
 	const [isFormSubmitted, setIsFormSubmitted] = useState<boolean>(false);
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);

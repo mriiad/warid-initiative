@@ -135,7 +135,10 @@ const EventDetail: React.FC = () => {
 		data: event,
 		isLoading,
 		isError,
-	} = useQuery(['event', reference], () => fetchEventByReference(reference));
+	} = useQuery({
+		queryKey: ['event', reference],
+		queryFn: () => fetchEventByReference(reference),
+	});
 
 	const [isFolded, setIsFolded] = useState(false);
 

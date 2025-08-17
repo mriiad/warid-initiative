@@ -59,14 +59,11 @@ const EmergencyComponent = () => {
 		data: emergenciesResponse,
 		isLoading,
 		error,
-	} = useQuery(
-		['unconfirmedEmergencies', page],
-		() => fetchUnconfirmedEmergencies(page, token),
-		{
-			enabled: !!token,
-			keepPreviousData: true,
-		}
-	);
+	} = useQuery({
+		queryKey: ['unconfirmedEmergencies', page],
+		queryFn: () => fetchUnconfirmedEmergencies(page, token),
+		enabled: !!token,
+	});
 
 	// Update emergencies and totalPages when data arrives
 	useEffect(() => {
@@ -77,34 +74,32 @@ const EmergencyComponent = () => {
 
 	const emergencies: Emergency[] = emergenciesResponse?.emergencies || [];
 
-	const mutation = useMutation(
-		(emergencyId: string) => confirmEmergency(emergencyId, token),
-		{
-			onSuccess: (_, emergencyId) => {
-				// Remove confirmed emergency from local cache
-				queryClient.setQueryData<EmergenciesResponse>(
-					['unconfirmedEmergencies', page],
-					(oldData) => {
-						if (!oldData) return oldData;
-						return {
-							...oldData,
-							emergencies: oldData.emergencies.filter(
-								(e) => e._id !== emergencyId
-							),
-							totalItems: oldData.totalItems - 1,
-						};
-					}
-				);
-				setSnackbarMessage('Emergency confirmed successfully!');
-				setSnackbarOpen(true);
-			},
-			onError: (error) => {
-				console.error('Error confirming emergency:', error);
-				setSnackbarMessage('Error confirming emergency. Please try again.');
-				setSnackbarOpen(true);
-			},
-		}
-	);
+	const mutation = useMutation({
+		mutationFn: (emergencyId: string) => confirmEmergency(emergencyId, token),
+		onSuccess: (_, emergencyId) => {
+			// Remove confirmed emergency from local cache
+			queryClient.setQueryData<EmergenciesResponse>(
+				['unconfirmedEmergencies', page],
+				(oldData) => {
+					if (!oldData) return oldData;
+					return {
+						...oldData,
+						emergencies: oldData.emergencies.filter(
+							(e) => e._id !== emergencyId
+						),
+						totalItems: oldData.totalItems - 1,
+					};
+				}
+			);
+			setSnackbarMessage('Emergency confirmed successfully!');
+			setSnackbarOpen(true);
+		},
+		onError: (error) => {
+			console.error('Error confirming emergency:', error);
+			setSnackbarMessage('Error confirming emergency. Please try again.');
+			setSnackbarOpen(true);
+		},
+	});
 
 	const handleConfirmEmergency = (emergencyId: string) => {
 		mutation.mutate(emergencyId);
@@ -128,7 +123,7 @@ const EmergencyComponent = () => {
 
 	return (
 		<EmergenciesContainer>
-			{isLoading || mutation.isLoading ? (
+			{isLoading || mutation.isPending ? (
 				<div className={classes.fallBack}>
 					<CircularProgress />
 				</div>
@@ -140,7 +135,7 @@ const EmergencyComponent = () => {
 							emergency={emergency}
 							animationDelay={`${index * 0.2}s`}
 							onConfirm={() => handleConfirmEmergency(emergency._id)}
-							isConfirming={mutation.isLoading}
+							isConfirming={mutation.isPending}
 						/>
 					))}
 				</div>
