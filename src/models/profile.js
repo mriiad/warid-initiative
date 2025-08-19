@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-const { cities }  = require('../utils/utils');
+const { cities }  = require('../utils/cities');
 
 
 const profileSchema = new Schema({
