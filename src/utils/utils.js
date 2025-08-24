@@ -28,15 +28,3 @@ exports.calculateAge = (birthdate) => {
 	return age;
 };
 
-exports.cities = [
-	'Casablanca',
-	'Rabat',
-	'Marrakech',
-	'Tangier',
-	'Fès',
-	'Agadir',
-	'Meknès',
-	'Oujda',
-	'El Jadida'
-  ];
-  

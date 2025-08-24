@@ -29,8 +29,10 @@ const SignupForm = () => {
 
 	const navigate = useNavigate();
 
-	const signUpMutation = useMutation((data: SignupFormData) => {
-		return axios.put('http://localhost:3000/api/auth/signup', data);
+	const signUpMutation = useMutation({
+		mutationFn: (data: SignupFormData) => {
+			return axios.put('http://localhost:3000/api/auth/signup', data);
+		},
 	});
 
 	const [, setIsFormSubmitted] = useState<boolean>(false);

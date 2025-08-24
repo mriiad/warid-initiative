@@ -25,6 +25,7 @@ import { fetchUserProfile } from '../utils/queries';
 import { formatDate } from '../utils/utils';
 import FormContainer from './shared/FormContainer';
 import SnackbarComponent from './shared/SnackbarComponent';
+import { cities } from '../utils/utils';
 
 const useStyles = makeStyles({
 	align: {
@@ -46,17 +47,15 @@ const UserProfileForm = () => {
 	const { formField, button, signUp, form, bar } = authStyles();
 	const [showSnackbar, setShowSnackbar] = useState(false);
 	const [incompleteFieldsMessage, setIncompleteFieldsMessage] = useState('');
-	const [cities, setCities] = useState<string[]>([]);
 
-	const { data: userProfile } = useQuery<ProfileFormData>(
-		'userProfile',
-		fetchUserProfile,
-		{
-			refetchOnWindowFocus: false,
-			refetchOnMount: true,
-			retry: 5,
-		}
-	);
+	const { data: userProfile } = useQuery<ProfileFormData>({
+		queryKey: ['userProfile'],
+		queryFn: fetchUserProfile,
+		refetchOnWindowFocus: false,
+		refetchOnMount: true,
+		retry: 5,
+	});
+
 
 	const defaultProfileValues = useMemo(
 		() => ({

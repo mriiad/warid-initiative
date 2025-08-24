@@ -7,7 +7,7 @@ import {
 	TextField,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../../auth/AuthContext';
 import {
@@ -137,71 +137,79 @@ const ProfileComponent = () => {
 		isLoading,
 		isError,
 		refetch,
-	} = useQuery(['userProfile', token], () => getUserProfile(token), {
+	} = useQuery({
+		queryKey: ['userProfile', token],
+		queryFn: () => getUserProfile(token),
 		enabled: !!token,
-		onSuccess: (data) => {
-			setEditedUserInfo({
-				firstname: data.firstname,
-				lastname: data.lastname,
-				birthdate: formatDate(data.birthdate),
-				bloodGroup: data.bloodGroup,
-				city: data.city,
-				phoneNumber: data.phoneNumber,
-				email: data.email,
-			});
-		},
-		onError: () => {
-			showSnackbar('Failed to load profile.', 'error');
-		},
 	});
 
-	// update profile mutation
-	const updateProfileMutation = useMutation(
-		(updatedInfo: UserFormData) => updateProfileInfo(token, updatedInfo),
-		{
-			onSuccess: () => {
-				showSnackbar('Profile updated successfully!', 'success');
-				setIsEditingInfo(false);
-				setLastAction('infoUpdate');
-				queryClient.invalidateQueries(['userProfile', token]); // refetch profile
-			},
-			onError: () => {
-				showSnackbar('Failed to update profile.', 'error');
-			},
+	// Handle userInfo data changes
+	useEffect(() => {
+		if (userInfo) {
+			setEditedUserInfo({
+				firstname: userInfo.firstname,
+				lastname: userInfo.lastname,
+				birthdate: formatDate(userInfo.birthdate),
+				bloodGroup: userInfo.bloodGroup,
+				city: userInfo.city,
+				phoneNumber: userInfo.phoneNumber,
+				email: userInfo.email,
+			});
 		}
-	);
-	const updatePasswordMutation = useMutation(
-		({
+	}, [userInfo]);
+
+	// Handle query error
+	useEffect(() => {
+		if (isError) {
+			showSnackbar('Failed to load profile.', 'error');
+		}
+	}, [isError]);
+
+	// update profile mutation
+	const updateProfileMutation = useMutation({
+		mutationFn: (updatedInfo: UserFormData) =>
+			updateProfileInfo(token, updatedInfo),
+		onSuccess: () => {
+			showSnackbar('Profile updated successfully!', 'success');
+			setIsEditingInfo(false);
+			setLastAction('infoUpdate');
+			queryClient.invalidateQueries({ queryKey: ['userProfile', token] }); // refetch profile
+		},
+		onError: () => {
+			showSnackbar('Failed to update profile.', 'error');
+		},
+	});
+	const updatePasswordMutation = useMutation({
+		mutationFn: ({
 			currentPassword,
 			newPassword,
 		}: {
 			currentPassword: string;
 			newPassword: string;
 		}) => updatePassword(token, currentPassword, newPassword),
-		{
-			onSuccess: () => {
-				showSnackbar(
-					'Password updated successfully! You can choose to logout for security.',
-					'success'
-				);
-				setIsEditingPassword(false);
-				setLastAction('passwordUpdate');
-				setCurrentPassword('');
-				setNewPassword('');
-				setConfirmPassword('');
-				setError('');
-			},
-			onError: (error: any) => {
-				const message =
-					error.response?.data?.message || 'Failed to update password.';
-				showSnackbar(message, 'error');
-				console.error('Error updating password:', error);
-			},
-		}
-	);
+		onSuccess: () => {
+			showSnackbar(
+				'Password updated successfully! You can choose to logout for security.',
+				'success'
+			);
+			setIsEditingPassword(false);
+			setLastAction('passwordUpdate');
+			setCurrentPassword('');
+			setNewPassword('');
+			setConfirmPassword('');
+			setError('');
+		},
+		onError: (error: any) => {
+			const message =
+				error.response?.data?.message || 'Failed to update password.';
+			showSnackbar(message, 'error');
+			console.error('Error updating password:', error);
+		},
+	});
 
 	// logout
-	const logoutMutation = useMutation(logout, {
+	const logoutMutation = useMutation({
+		mutationFn: logout,
 		onSuccess: () => {
 			localStorage.clear();
 			setToken(null);

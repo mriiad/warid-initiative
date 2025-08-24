@@ -35,13 +35,19 @@ const CanDonate: React.FC = () => {
 		data: canDonate,
 		isLoading: isLoadingCanDonate,
 		isError: hasDonationCheckError,
-	} = useQuery('canDonate', fetchCanDonate);
+	} = useQuery({
+		queryKey: ['canDonate'],
+		queryFn: fetchCanDonate,
+	});
 
 	const {
 		data: event,
 		isLoading: isLoadingEvent,
 		isError,
-	} = useQuery(['event', reference], () => fetchEventByReference(reference));
+	} = useQuery({
+		queryKey: ['event', reference],
+		queryFn: () => fetchEventByReference(reference),
+	});
 
 	const handleConfirmClick = () => {
 		if (canDonate) {
