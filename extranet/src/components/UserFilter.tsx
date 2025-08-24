@@ -48,17 +48,13 @@ const UserFilter = ({ open, onClose, onApply }) => {
 
 	const handleApply = (e) => {
 		e.preventDefault();
-		console.log('🔄 Apply button clicked, current filters:', filters);
 		onApply(filters);
-		// Close the drawer after a short delay to allow the API call to start
 		setTimeout(() => {
-			console.log('🔒 Closing drawer after delay');
 			onClose();
 		}, 100);
 	};
 
 	const handleReset = () => {
-		console.log('🔄 Reset button clicked');
 		setFilters(defaultFilters);
 		onApply({});
 		onClose();

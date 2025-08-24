@@ -210,44 +210,36 @@ const UsersComponent: React.FC = () => {
 		try {
 			setIsLoading(true);
 			setNoUsersFound(false);
-			console.log('📡 Making API call to /api/searchUsers...');
 			const response = await axios.post(
 				'http://localhost:3000/api/searchUsers',
 				{ ...Object.fromEntries(filters), page: currentPage, perPage: 10 }
 			);
-			console.log('✅ API response received:', response.data);
 			setUsers(response.data.users || []);
 			setTotalPages(Math.ceil(response.data.totalItems / 10));
 			filters.set('page', currentPage.toString());
 			setSearchParams(filters);
-			console.log('📊 State updated with filtered results');
 		} catch (error) {
 			console.error('❌ Error applying filters:', error);
 			if (error.response && error.response.status === 404) {
 				setNoUsersFound(true);
-				console.log('📭 No users found (404)');
 			} else {
-				console.error('🔥 Unexpected error:', error);
+				console.error('Unexpected error:', error);
 			}
 		} finally {
 			setIsLoading(false);
-			console.log('🔄 Loading state set to false');
 		}
 	};
 
 	const handleFilterChange = (newFilters: Filters) => {
-		console.log('🎯 handleFilterChange called with filters:', newFilters);
 		const params = new URLSearchParams();
 
 		// Handle empty filters (reset case)
 		if (Object.keys(newFilters).length === 0) {
-			console.log('🔄 Empty filters detected (reset case)');
 			handleFilterApply(params, 1);
 			return;
 		}
 
 		// Handle actual filters
-		console.log('🔧 Processing actual filters...');
 		if (newFilters.username) params.set('username', newFilters.username);
 		if (newFilters.firstname) params.set('firstname', newFilters.firstname);
 		if (newFilters.lastname) params.set('lastname', newFilters.lastname);
@@ -269,7 +261,6 @@ const UsersComponent: React.FC = () => {
 			params.set('isAdmin', 'true');
 		}
 
-		console.log('📤 Final params for API call:', Object.fromEntries(params));
 		handleFilterApply(params, 1);
 	};
 

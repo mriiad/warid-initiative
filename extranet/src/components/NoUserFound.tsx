@@ -78,7 +78,6 @@ const NoUserFound = () => {
 			<div
 				className={homeButton}
 				onClick={() => {
-					console.log('RESET!!');
 					navigate('/users?page=1');
 				}}
 				role='button'
