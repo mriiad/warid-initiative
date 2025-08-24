@@ -15,17 +15,13 @@ import axios from 'axios';
 import { useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
-import {
-	BloodGroup,
-	ProfileFormData,
-	fieldDisplayNames,
-} from '../data/ProfileFormData';
+import { ProfileFormData, fieldDisplayNames } from '../data/ProfileFormData';
+import { BLOOD_GROUP_OPTIONS, BloodGroup } from '../data/constants';
 import { authStyles } from '../styles/mainStyles';
 import { fetchUserProfile } from '../utils/queries';
-import { formatDate } from '../utils/utils';
+import { cities, formatDate } from '../utils/utils';
 import FormContainer from './shared/FormContainer';
 import SnackbarComponent from './shared/SnackbarComponent';
-import { cities } from '../utils/utils';
 
 const useStyles = makeStyles({
 	align: {
@@ -55,7 +51,6 @@ const UserProfileForm = () => {
 		refetchOnMount: true,
 		retry: 5,
 	});
-
 
 	const defaultProfileValues = useMemo(
 		() => ({
@@ -167,14 +162,11 @@ const UserProfileForm = () => {
 										<MenuItem value=''>
 											<em>None</em>
 										</MenuItem>
-										<MenuItem value='A+'>A+</MenuItem>
-										<MenuItem value='A-'>A-</MenuItem>
-										<MenuItem value='B+'>B+</MenuItem>
-										<MenuItem value='B-'>B-</MenuItem>
-										<MenuItem value='AB+'>AB+</MenuItem>
-										<MenuItem value='AB-'>AB-</MenuItem>
-										<MenuItem value='O+'>O+</MenuItem>
-										<MenuItem value='O-'>O-</MenuItem>
+										{BLOOD_GROUP_OPTIONS.map((option) => (
+											<MenuItem key={option.value} value={option.value}>
+												{option.label}
+											</MenuItem>
+										))}
 									</Select>
 									<FormHelperText>
 										{errors.bloodGroup ? 'Blood Group is required' : ''}

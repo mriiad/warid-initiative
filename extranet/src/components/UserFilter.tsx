@@ -10,8 +10,9 @@ import {
 	Typography,
 } from '@mui/material';
 import { useState } from 'react';
-import colors from '../styles/colors';
+import { BLOOD_GROUP_OPTIONS } from '../data/constants';
 import { authStyles } from '../styles/mainStyles';
+import FormContainer from './shared/FormContainer';
 
 const defaultFilters = {
 	username: '',
@@ -20,6 +21,7 @@ const defaultFilters = {
 	email: '',
 	phoneNumber: '',
 	gender: '',
+	bloodGroup: '',
 	age: [18, 65],
 	availableForDonation: false,
 	isAdmin: false,
@@ -54,54 +56,21 @@ const UserFilter = ({ open, onClose, onApply }) => {
 	};
 
 	return (
-		<Drawer
-			anchor='bottom'
-			open={open}
-			onClose={onClose}
-			PaperProps={{
-				sx: {
-					backgroundColor: colors.formWhite,
-					borderRadius: '30px 30px 0 0',
-					border: '1px solid white',
-					boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.1)',
-					maxHeight: '80vh',
-				},
-			}}
-		>
-			<div
-				style={{
-					padding: '20px',
-					backgroundColor: colors.formWhite,
-					borderRadius: '30px',
-					border: '1px solid white',
-				}}
-			>
-				<div
-					style={{
-						display: 'flex',
-						flexDirection: 'column',
-						justifyContent: 'center',
-						alignItems: 'center',
-					}}
+		<Drawer anchor='bottom' open={open} onClose={onClose}>
+			<FormContainer>
+				<Typography
+					variant='h2'
+					align='center'
+					gutterBottom
+					className={formField}
 				>
-					<Typography
-						variant='h2'
-						align='center'
-						gutterBottom
-						className={formField}
-					>
-						Filter Users
-						<span className={bar}></span>
-					</Typography>
-					<form onSubmit={handleApply} className={form}>
-						<Grid container spacing={2}>
-							{[
-								'username',
-								'firstname',
-								'lastname',
-								'email',
-								'phoneNumber',
-							].map((field) => (
+					Filter Users
+					<span className={bar}></span>
+				</Typography>
+				<form onSubmit={handleApply} className={form}>
+					<Grid container spacing={2}>
+						{['username', 'firstname', 'lastname', 'email', 'phoneNumber'].map(
+							(field) => (
 								<Grid item xs={12} key={field}>
 									<TextField
 										label={field[0].toUpperCase() + field.slice(1)}
@@ -112,84 +81,101 @@ const UserFilter = ({ open, onClose, onApply }) => {
 										className={formField}
 									/>
 								</Grid>
-							))}
-							<Grid item xs={12}>
-								<Typography gutterBottom>
-									Age: {filters.age[0]} - {filters.age[1]}
-								</Typography>
-								<Slider
-									value={filters.age}
-									onChange={handleSliderChange}
-									valueLabelDisplay='auto'
-									min={18}
-									max={65}
-									className={formField}
-								/>
-							</Grid>
-							<Grid item xs={12}>
-								<FormControlLabel
-									control={
-										<Checkbox
-											checked={filters.availableForDonation}
-											onChange={handleCheckboxChange}
-											name='availableForDonation'
-										/>
-									}
-									label='Available for Donation'
-									className={formField}
-								/>
-							</Grid>
-							<Grid item xs={12}>
-								<TextField
-									select
-									label='Gender'
-									name='gender'
-									value={filters.gender}
-									onChange={handleChange}
-									fullWidth
-									className={formField}
-								>
-									<MenuItem value='male'>Male</MenuItem>
-									<MenuItem value='female'>Female</MenuItem>
-								</TextField>
-							</Grid>
-							<Grid item xs={12}>
-								<FormControlLabel
-									control={
-										<Checkbox
-											checked={filters.isAdmin}
-											onChange={handleCheckboxChange}
-											name='isAdmin'
-										/>
-									}
-									label='Is Admin'
-									className={formField}
-								/>
-							</Grid>
-							<Grid item xs={6}>
-								<Button
-									onClick={handleReset}
-									variant='outlined'
-									color='secondary'
-									className={button}
-								>
-									Reset
-								</Button>
-							</Grid>
-							<Grid item xs={6}>
-								<Button
-									type='submit'
-									variant='contained'
-									color='primary'
-									className={button}
-								>
-									Apply
-								</Button>
-							</Grid>
+							)
+						)}
+						<Grid item xs={12}>
+							<Typography gutterBottom>
+								Age: {filters.age[0]} - {filters.age[1]}
+							</Typography>
+							<Slider
+								value={filters.age}
+								onChange={handleSliderChange}
+								valueLabelDisplay='auto'
+								min={18}
+								max={65}
+								className={formField}
+							/>
 						</Grid>
-					</form>
-				</div>
-			</div>
+						<Grid item xs={12}>
+							<FormControlLabel
+								control={
+									<Checkbox
+										checked={filters.availableForDonation}
+										onChange={handleCheckboxChange}
+										name='availableForDonation'
+									/>
+								}
+								label='Available for Donation'
+								className={formField}
+							/>
+						</Grid>
+						<Grid item xs={12}>
+							<TextField
+								select
+								label='Gender'
+								name='gender'
+								value={filters.gender}
+								onChange={handleChange}
+								fullWidth
+								className={formField}
+							>
+								<MenuItem value='male'>Male</MenuItem>
+								<MenuItem value='female'>Female</MenuItem>
+							</TextField>
+						</Grid>
+						<Grid item xs={12}>
+							<TextField
+								select
+								label='Blood Group'
+								name='bloodGroup'
+								value={filters.bloodGroup}
+								onChange={handleChange}
+								fullWidth
+								className={formField}
+							>
+								{BLOOD_GROUP_OPTIONS.map((option) => (
+									<MenuItem key={option.value} value={option.value}>
+										{option.label}
+									</MenuItem>
+								))}
+							</TextField>
+						</Grid>
+						<Grid item xs={12}>
+							<FormControlLabel
+								control={
+									<Checkbox
+										checked={filters.isAdmin}
+										onChange={handleCheckboxChange}
+										name='isAdmin'
+									/>
+								}
+								label='Is Admin'
+								className={formField}
+							/>
+						</Grid>
+						<Grid item xs={6}>
+							<Button
+								onClick={handleReset}
+								variant='outlined'
+								color='secondary'
+								className={button}
+							>
+								Reset
+							</Button>
+						</Grid>
+						<Grid item xs={6}>
+							<Button
+								type='submit'
+								variant='contained'
+								color='primary'
+								className={button}
+							>
+								Apply
+							</Button>
+						</Grid>
+					</Grid>
+				</form>
+			</FormContainer>
 		</Drawer>
 	);
 };

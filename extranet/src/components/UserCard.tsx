@@ -1,4 +1,5 @@
 import BadgeIcon from '@mui/icons-material/Badge';
+import BloodtypeIcon from '@mui/icons-material/Bloodtype';
 import CakeIcon from '@mui/icons-material/Cake';
 import EmailIcon from '@mui/icons-material/Email';
 import PhoneIcon from '@mui/icons-material/Phone';
@@ -85,6 +86,8 @@ const UserCard: React.FC<UserCardProps> = ({
 		| 'female'
 		| undefined;
 
+	const bloodGroup = (user as any).profile?.bloodGroup;
+
 	return (
 		<div className={classes.userCard}>
 			<div>
@@ -121,6 +124,12 @@ const UserCard: React.FC<UserCardProps> = ({
 					<Typography variant='subtitle1'>
 						{' '}
 						<CakeIcon /> {age}
+					</Typography>
+				)}
+				{bloodGroup && (
+					<Typography variant='subtitle1'>
+						{' '}
+						<BloodtypeIcon /> {bloodGroup}
 					</Typography>
 				)}
 			</div>

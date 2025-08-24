@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-const { cities }  = require('../utils/cities');
-
+const { cities } = require('../utils/cities');
+const { BLOOD_GROUP_VALUES } = require('../utils/constants');
 
 const profileSchema = new Schema({
 	user: {
@@ -15,14 +15,14 @@ const profileSchema = new Schema({
 	birthdate: Date,
 	bloodGroup: {
 		type: String,
-		enum: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
+		enum: BLOOD_GROUP_VALUES,
 		required: false,
 	},
 	city: {
 		type: String,
 		enum: cities,
 		required: true,
-	  },
+	},
 });
 
 module.exports = mongoose.model('Profile', profileSchema);

@@ -11,10 +11,10 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../../auth/AuthContext';
 import {
-	BloodGroup,
 	userFieldDisplayNames,
 	UserFormData,
 } from '../../data/ProfileFormData';
+
 import {
 	getUserProfile,
 	logout,
@@ -23,6 +23,7 @@ import {
 } from '../../utils/queries';
 import { cities } from '../../utils/utils';
 
+import { BloodGroup } from '@/data/constants';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 const useStyles = makeStyles({

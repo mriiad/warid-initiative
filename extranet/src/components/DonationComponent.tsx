@@ -17,6 +17,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { ApiErrorResponse } from '../data/ApiErrorResponse';
+import { BLOOD_GROUP_OPTIONS } from '../data/constants';
 import colors from '../styles/colors';
 import { authStyles, mainStyles } from '../styles/mainStyles';
 import {
@@ -308,14 +309,11 @@ const DonationComponent = () => {
 													<MenuItem value=''>
 														<em>None</em>
 													</MenuItem>
-													<MenuItem value='A+'>A+</MenuItem>
-													<MenuItem value='A-'>A-</MenuItem>
-													<MenuItem value='B+'>B+</MenuItem>
-													<MenuItem value='B-'>B-</MenuItem>
-													<MenuItem value='AB+'>AB+</MenuItem>
-													<MenuItem value='AB-'>AB-</MenuItem>
-													<MenuItem value='O+'>O+</MenuItem>
-													<MenuItem value='O-'>O-</MenuItem>
+													{BLOOD_GROUP_OPTIONS.map((option) => (
+														<MenuItem key={option.value} value={option.value}>
+															{option.label}
+														</MenuItem>
+													))}
 												</Select>
 												<FormHelperText>
 													{errors.bloodGroup ? 'فصيلة الدم مطلوبة' : ''}

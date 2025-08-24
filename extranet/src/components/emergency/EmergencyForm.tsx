@@ -13,6 +13,7 @@ import { useMutation } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Emergency } from '../../data/Emergency';
+import { BLOOD_GROUP_OPTIONS } from '../../data/constants';
 import { authStyles } from '../../styles/mainStyles';
 import { createEmergency } from '../../utils/queries';
 import { cities } from '../../utils/utils';
@@ -116,14 +117,11 @@ const EmergencyForm = () => {
 												<MenuItem value=''>
 													<em>None</em>
 												</MenuItem>
-												<MenuItem value='A+'>A+</MenuItem>
-												<MenuItem value='A-'>A-</MenuItem>
-												<MenuItem value='B+'>B+</MenuItem>
-												<MenuItem value='B-'>B-</MenuItem>
-												<MenuItem value='AB+'>AB+</MenuItem>
-												<MenuItem value='AB-'>AB-</MenuItem>
-												<MenuItem value='O+'>O+</MenuItem>
-												<MenuItem value='O-'>O-</MenuItem>
+												{BLOOD_GROUP_OPTIONS.map((option) => (
+													<MenuItem key={option.value} value={option.value}>
+														{option.label}
+													</MenuItem>
+												))}
 											</Select>
 											<FormHelperText>
 												{errors.bloodGroup?.message}
