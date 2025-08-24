@@ -1,10 +1,10 @@
 import { Box } from '@mui/material';
 import { useEffect, useRef, useState } from 'react';
+import BloodDropsAnimation from './BloodDropsAnimation';
 import { useLandingPageStyles } from './LandingPageStyles';
 import NumbersContainer from './NumbersContainer';
 import PartnersList from './PartnersList';
 import PhotoGallery from './PhotoGallery';
-
 
 const LandingPage = () => {
 	const {
@@ -73,6 +73,7 @@ const LandingPage = () => {
 
 	return (
 		<Box className={landingContainer}>
+			<BloodDropsAnimation />
 			<div className={imageContainer}>
 				<img src='/landing-page/title1.png' alt='Title 1' />
 				<img src='/landing-page/title2.png' alt='Title 2' />
@@ -174,7 +175,6 @@ const LandingPage = () => {
 					</a>
 
 					<p>© 2024 WARID</p>
-
 				</div>
 			</div>
 		</Box>

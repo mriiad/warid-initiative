@@ -1,9 +1,11 @@
 import ApartmentIcon from '@mui/icons-material/Apartment';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+import FavoriteIcon from '@mui/icons-material/Favorite';
 import MapIcon from '@mui/icons-material/Map';
-import { Card, CardContent, Typography } from '@mui/material';
+import ShareIcon from '@mui/icons-material/Share';
+import { Card, CardContent, Chip, IconButton, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Event } from '../../data/Event';
 import colors from '../../styles/colors';
@@ -15,152 +17,193 @@ interface EventCardProps {
 
 const useStyles = makeStyles({
 	cardContainer: {
-		backgroundColor: 'rgba(0,0,0,0.7)',
-		color: 'white',
-		width: '370px',
-		height: '550px',
+		background: `linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.9) 100%)`,
+		backdropFilter: 'blur(20px)',
+		color: colors.darkPurple,
+		width: '100%',
+		maxWidth: '400px',
+		minHeight: '500px',
+		borderRadius: '24px',
 		overflow: 'hidden',
-		transform: 'translateX(100%)',
+		transform: 'translateY(50px)',
 		opacity: 0,
-		animation: '$slideIn 0.5s forwards ease-out',
-		marginBottom: '20px',
+		animation: '$slideUp 0.8s forwards cubic-bezier(0.25, 0.46, 0.45, 0.94)',
 		cursor: 'pointer',
-		'&.MuiCard-root': {
-			borderRadius: '32px',
-			boxShadow: '1px 1px 20px -2px rgb(135 108 108 / 24%)',
+		transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+		border: `1px solid rgba(59, 42, 130, 0.1)`,
+		boxShadow: '0 8px 32px rgba(59, 42, 130, 0.1)',
+		position: 'relative',
+		'&:hover': {
+			transform: 'translateY(-8px) scale(1.02)',
+			boxShadow: '0 20px 40px rgba(59, 42, 130, 0.2)',
+			border: `1px solid ${colors.purple}30`,
+			'& .cardImage': {
+				transform: 'scale(1.1)',
+			},
+			'& .cardActions': {
+				opacity: 1,
+				transform: 'translateY(0)',
+			},
 		},
-		'@media (max-width:600px)': {
-			width: '280px',
-			height: '450px',
+		'&.MuiCard-root': {
+			borderRadius: '24px',
 		},
 	},
-	'@keyframes slideIn': {
+	'@keyframes slideUp': {
 		'0%': {
-			transform: 'translateX(100%)',
+			transform: 'translateY(50px)',
 			opacity: 0,
 		},
 		'100%': {
-			transform: 'translateX(0)',
+			transform: 'translateY(0)',
 			opacity: 1,
 		},
 	},
 	titleContainer: {
-		padding: '10px',
-		backgroundColor: '#ff306714',
-		borderBottom: `4px solid ${colors.rose}`,
+		padding: '20px 24px 16px',
+		background: `linear-gradient(135deg, ${colors.purple} 0%, ${colors.darkPurple} 100%)`,
 		textAlign: 'center',
-		color: colors.darkPurple,
-		fontSize: '1rem',
+		color: 'white',
+		position: 'relative',
 		'& > p': {
-			fontWeight: 500,
+			fontSize: '1.2rem',
+			fontWeight: 600,
+			margin: 0,
+			textShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
+		},
+		'&::before': {
+			content: '""',
+			position: 'absolute',
+			bottom: '-10px',
+			left: '50%',
+			transform: 'translateX(-50%)',
+			width: 0,
+			height: 0,
+			borderLeft: '10px solid transparent',
+			borderRight: '10px solid transparent',
+			borderTop: `10px solid ${colors.darkPurple}`,
 		},
 		'@media (max-width:600px)': {
-			fontSize: '0.9rem',
+			padding: '16px 20px 12px',
+			'& > p': {
+				fontSize: '1rem',
+			},
 		},
 		'&.generic': {
-			backgroundColor: `${colors.purple}20`,
-			borderBottom: `4px solid ${colors.purple}`,
-			color: colors.purple,
-			position: 'relative',
-			'&::after': {
-				content: '""',
-				position: 'absolute',
-				top: '0',
-				right: '10px',
-				width: '30px',
-				height: '30px',
-				backgroundColor: colors.rose,
-				transform: 'rotate(45deg)',
-				zIndex: 1,
+			background: `linear-gradient(135deg, ${colors.rose} 0%, ${colors.purple} 100%)`,
+			'&::before': {
+				borderTop: `10px solid ${colors.purple}`,
 			},
 		},
 	},
 	imageContainer: {
-		padding: '0 24px',
-		backgroundColor: colors.darkPurple,
+		padding: '0 20px',
+		position: 'relative',
+		background: `linear-gradient(135deg, rgba(59, 42, 130, 0.1) 0%, rgba(255, 48, 103, 0.1) 100%)`,
 	},
 	image: {
-		border: `3px solid ${colors.darkPurple}`,
 		width: '100%',
-		height: '300px',
+		height: '280px',
 		objectFit: 'cover',
-		position: 'relative',
-		top: '24px',
-		zIndex: 99,
+		borderRadius: '16px',
+		transition: 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+		boxShadow: '0 8px 24px rgba(59, 42, 130, 0.15)',
 		'@media (max-width:600px)': {
-			height: '220px',
+			height: '200px',
 		},
 	},
 	contentContainer: {
-		display: 'flex',
-		justifyContent: 'center',
-		alignItems: 'center',
-		padding: '10px',
-		backgroundColor: '#ff306714',
-		height: '210px',
+		padding: '32px 24px 24px',
+		background: 'white',
 		position: 'relative',
 		'&.MuiCardContent-root': {
-			padding: '32px 16px 16px',
-		},
-		'&::before, &::after': {
-			content: '""',
-			position: 'absolute',
-			left: 0,
-			bottom: '56px',
-			height: '90px',
-			width: '10px',
-			backgroundColor: colors.darkPurple,
-		},
-		'&::before': {
-			borderRightWidth: '0',
-		},
-		'&::after': {
-			right: 0,
-			left: 'auto',
-			borderLeftWidth: '0',
+			padding: '32px 24px 24px',
 		},
 		'@media (max-width:600px)': {
+			padding: '24px 16px 20px',
 			'&.MuiCardContent-root': {
-				padding: '24px 12px 12px',
+				padding: '24px 16px 20px',
 			},
-			'&::before, &::after': {
-				bottom: '46px',
-			},
-			height: '180px',
 		},
 	},
-	link: {
-		color: 'white',
+	eventInfo: {
+		width: '100%',
+		'& > .subtitle': {
+			fontSize: '1.1rem',
+			fontWeight: 500,
+			color: colors.purple,
+			marginBottom: '16px',
+			lineHeight: '1.4',
+		},
 	},
-	contentData: {
-		height: '134px',
-		width: '300px',
+	infoRow: {
 		display: 'flex',
-		flexDirection: 'column',
 		alignItems: 'center',
-		backgroundColor: colors.darkPurple,
-		padding: '16px',
-		color: 'white',
-		'& > p:first-child': {
-			fontSize: '1rem',
-			fontWeight: 600,
-			marginBottom: '10px',
+		marginBottom: '12px',
+		padding: '12px 16px',
+		background: 'rgba(59, 42, 130, 0.05)',
+		borderRadius: '12px',
+		border: '1px solid rgba(59, 42, 130, 0.1)',
+		transition: 'all 0.3s ease',
+		'&:hover': {
+			background: 'rgba(59, 42, 130, 0.1)',
+			transform: 'translateX(4px)',
 		},
-		'& > div': {
-			display: 'flex',
-			justifyContent: 'center',
-			alignItems: 'center',
-			'& > svg': {
-				marginRight: '8px',
+		'& > svg': {
+			color: colors.purple,
+			marginLeft: '12px',
+			fontSize: '1.3rem',
+		},
+		'& > span': {
+			fontSize: '0.95rem',
+			color: colors.darkPurple,
+			fontWeight: 500,
+		},
+		'& > a': {
+			fontSize: '0.95rem',
+			color: colors.rose,
+			fontWeight: 500,
+			textDecoration: 'none',
+			transition: 'color 0.3s ease',
+			'&:hover': {
+				color: colors.purple,
 			},
 		},
-		'@media (max-width:600px)': {
-			height: '105px',
-			width: '230px',
-			padding: '6px',
-			'& > p:first-child': {
-				fontSize: '0.8rem',
-				marginBottom: '4px',
+	},
+	chipContainer: {
+		marginTop: '20px',
+		'& > .MuiChip-root': {
+			background: `linear-gradient(135deg, ${colors.purple} 0%, ${colors.darkPurple} 100%)`,
+			color: 'white',
+			fontWeight: 600,
+			borderRadius: '20px',
+			'& .MuiChip-icon': {
+				color: colors.rose,
+			},
+		},
+	},
+	actions: {
+		position: 'absolute',
+		top: '16px',
+		right: '16px',
+		display: 'flex',
+		gap: '8px',
+		opacity: 0,
+		transform: 'translateY(-10px)',
+		transition: 'all 0.3s ease',
+		'& .MuiIconButton-root': {
+			backgroundColor: 'rgba(255, 255, 255, 0.9)',
+			backdropFilter: 'blur(10px)',
+			border: '1px solid rgba(59, 42, 130, 0.2)',
+			'&:hover': {
+				backgroundColor: colors.rose,
+				'& svg': {
+					color: 'white',
+				},
+			},
+			'& svg': {
+				color: colors.purple,
+				fontSize: '1.2rem',
 			},
 		},
 	},
@@ -173,14 +216,35 @@ const EventCard: React.FC<EventCardProps> = ({ event, animationDelay }) => {
 		imageContainer,
 		image,
 		contentContainer,
-		link,
-		contentData,
+		eventInfo,
+		infoRow,
+		chipContainer,
+		actions,
 	} = useStyles();
 
 	const navigate = useNavigate();
+	const [isFavorited, setIsFavorited] = useState(false);
 
 	const handleClick = () => {
 		navigate(`/events/${event.reference}`);
+	};
+
+	const handleFavorite = (e: React.MouseEvent) => {
+		e.stopPropagation();
+		setIsFavorited(!isFavorited);
+	};
+
+	const handleShare = (e: React.MouseEvent) => {
+		e.stopPropagation();
+		if (navigator.share) {
+			navigator.share({
+				title: event.title,
+				text: event.subtitle,
+				url: window.location.href,
+			});
+		} else {
+			navigator.clipboard.writeText(`${event.title} - ${event.subtitle}`);
+		}
 	};
 
 	const isGenericEvent = event.isGeneric === true;
@@ -191,9 +255,21 @@ const EventCard: React.FC<EventCardProps> = ({ event, animationDelay }) => {
 			style={{ animationDelay: animationDelay }}
 			onClick={handleClick}
 		>
+			<div className={actions}>
+				<IconButton size='small' onClick={handleFavorite}>
+					<FavoriteIcon
+						style={{ color: isFavorited ? colors.rose : 'inherit' }}
+					/>
+				</IconButton>
+				<IconButton size='small' onClick={handleShare}>
+					<ShareIcon />
+				</IconButton>
+			</div>
+
 			<div className={`${titleContainer} ${isGenericEvent ? 'generic' : ''}`}>
 				<Typography>{event.title}</Typography>
 			</div>
+
 			<div className={imageContainer}>
 				<img
 					src={
@@ -202,34 +278,42 @@ const EventCard: React.FC<EventCardProps> = ({ event, animationDelay }) => {
 							: 'event-default.png'
 					}
 					alt={event.title}
-					className={image}
+					className={`${image} cardImage`}
 				/>
 			</div>
+
 			<CardContent className={contentContainer}>
-				<div className={contentData}>
-					<Typography variant='body2'>{event.subtitle}</Typography>
-					<div>
+				<div className={eventInfo}>
+					<Typography className='subtitle'>{event.subtitle}</Typography>
+
+					<div className={infoRow}>
 						<CalendarMonthIcon />
-						<Typography variant='body2'>
-							{new Date(event.date).toLocaleDateString()}
-						</Typography>
+						<span>{new Date(event.date).toLocaleDateString('ar-MA')}</span>
 					</div>
-					<div>
+
+					<div className={infoRow}>
 						<ApartmentIcon />
-						<Typography variant='body2'>{event.location}</Typography>
+						<span>{event.location}</span>
 					</div>
-					<div>
+
+					<div className={infoRow}>
 						<MapIcon />
-						<Typography variant='body2'>
-							<a
-								href={event.mapLink}
-								target='_blank'
-								rel='noopener noreferrer'
-								className={link}
-							>
-								خريطة الطريق
-							</a>
-						</Typography>
+						<a
+							href={event.mapLink}
+							target='_blank'
+							rel='noopener noreferrer'
+							onClick={(e) => e.stopPropagation()}
+						>
+							خريطة الطريق
+						</a>
+					</div>
+
+					<div className={chipContainer}>
+						<Chip
+							label={isGenericEvent ? 'فعالية خاصة' : 'فعالية عامة'}
+							size='small'
+							icon={<FavoriteIcon />}
+						/>
 					</div>
 				</div>
 			</CardContent>
