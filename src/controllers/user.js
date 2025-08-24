@@ -438,3 +438,140 @@ exports.deleteUser = async (req, res, next) => {
 		next(err);
 	}
 };
+
+exports.getUserById = async (req, res, next) => {
+	try {
+		const { userId } = req.params;
+		if (!userId) {
+			return res
+				.status(STATUS_CODE.BAD_REQUEST)
+				.json({ message: 'User ID is required' });
+		}
+
+		const user = await User.findById(userId).populate('profile');
+		if (!user) {
+			return res
+				.status(STATUS_CODE.NOT_FOUND)
+				.json({ message: 'User not found' });
+		}
+
+		// Return user data with profile information
+		const userData = {
+			_id: user._id,
+			username: user.username,
+			email: user.email,
+			phoneNumber: user.phoneNumber,
+			isAdmin: user.isAdmin,
+			gender: user.gender,
+			...(user.profile && {
+				firstname: user.profile.firstname,
+				lastname: user.profile.lastname,
+				birthdate: user.profile.birthdate,
+				bloodGroup: user.profile.bloodGroup,
+				city: user.profile.city,
+			}),
+		};
+
+		res.status(STATUS_CODE.OK).json(userData);
+	} catch (err) {
+		if (!err.statusCode) {
+			err.statusCode = STATUS_CODE.INTERNAL_SERVER;
+		}
+		next(err);
+	}
+};
+
+exports.updateUserById = async (req, res, next) => {
+	try {
+		const { userId } = req.params;
+		const {
+			firstname,
+			lastname,
+			birthdate,
+			bloodGroup,
+			city,
+			phoneNumber,
+			email,
+		} = req.body;
+
+		if (!userId) {
+			return res
+				.status(STATUS_CODE.BAD_REQUEST)
+				.json({ message: 'User ID is required' });
+		}
+
+		const user = await User.findById(userId);
+		if (!user) {
+			return res
+				.status(STATUS_CODE.NOT_FOUND)
+				.json({ message: 'User not found' });
+		}
+
+		// Update user fields
+		if (phoneNumber !== undefined) user.phoneNumber = phoneNumber;
+		if (email !== undefined) user.email = email;
+
+		// Update or create profile
+		let profile = await Profile.findOne({ user: userId });
+		if (profile) {
+			if (firstname !== undefined) profile.firstname = firstname;
+			if (lastname !== undefined) profile.lastname = lastname;
+			if (birthdate !== undefined) profile.birthdate = birthdate;
+			if (bloodGroup !== undefined) profile.bloodGroup = bloodGroup;
+			if (city !== undefined) profile.city = city;
+		} else if (firstname || lastname || birthdate || bloodGroup || city) {
+			profile = new Profile({
+				user: userId,
+				firstname,
+				lastname,
+				birthdate,
+				bloodGroup,
+				city,
+			});
+		}
+
+		await user.save();
+		if (profile) await profile.save();
+
+		res.status(STATUS_CODE.OK).json({ message: 'User updated successfully' });
+	} catch (err) {
+		if (!err.statusCode) {
+			err.statusCode = STATUS_CODE.INTERNAL_SERVER;
+		}
+		next(err);
+	}
+};
+
+exports.makeUserAdmin = async (req, res, next) => {
+	try {
+		const { userId } = req.params;
+		if (!userId) {
+			return res
+				.status(STATUS_CODE.BAD_REQUEST)
+				.json({ message: 'User ID is required' });
+		}
+
+		const user = await User.findById(userId);
+		if (!user) {
+			return res
+				.status(STATUS_CODE.NOT_FOUND)
+				.json({ message: 'User not found' });
+		}
+
+		if (user.isAdmin) {
+			return res
+				.status(STATUS_CODE.BAD_REQUEST)
+				.json({ message: 'User is already an admin' });
+		}
+
+		user.isAdmin = true;
+		await user.save();
+
+		res.status(STATUS_CODE.OK).json({ message: 'User is now an admin' });
+	} catch (err) {
+		if (!err.statusCode) {
+			err.statusCode = STATUS_CODE.INTERNAL_SERVER;
+		}
+		next(err);
+	}
+};

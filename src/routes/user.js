@@ -12,6 +12,9 @@ const {
 	searchUsers,
 	deleteUser,
 	updateUserProfile,
+	getUserById,
+	updateUserById,
+	makeUserAdmin,
 } = require('../controllers/user');
 
 userRouter.get('/api/users', getUsers);
@@ -36,5 +39,15 @@ userRouter.get('/cities', (req, res) => {
 });
 
 userRouter.patch('/api/user/profile', isAuth, updateUserProfile);
+
+// Admin only routes
+userRouter.get('/api/users/profile/:userId', isAuth, checkIfAdmin, getUserById);
+userRouter.put('/api/users/:userId', isAuth, checkIfAdmin, updateUserById);
+userRouter.patch(
+	'/api/users/:userId/admin',
+	isAuth,
+	checkIfAdmin,
+	makeUserAdmin
+);
 
 module.exports = userRouter;

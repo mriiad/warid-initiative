@@ -1,5 +1,7 @@
 import { BloodGroup } from './constants';
 
+export { BloodGroup } from './constants';
+
 export interface ProfileFormData {
 	firstname: string;
 	lastname: string;

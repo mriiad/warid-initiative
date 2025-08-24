@@ -15,6 +15,7 @@ import NotFoundPage from './components/NotFoundPage';
 import PasswordResetForm from './components/PasswordResetForm';
 import ResetPasswordForm from './components/ResetPasswordForm';
 import SignupForm from './components/SignupForm';
+import UpdateUser from './components/UpdateUser';
 import UserProfileForm from './components/UserProfileForm';
 import UsersComponent from './components/UsersComponent';
 import EmergencyComponent from './components/emergency/EmergencyComponent';
@@ -89,6 +90,9 @@ const App = () => {
 						</Route>
 						<Route path='/donate' element={<DonationComponent />} />
 						{isAdmin && <Route path='/users' element={<UsersComponent />} />}
+						{isAdmin && (
+							<Route path='/users/update/:userId' element={<UpdateUser />} />
+						)}
 						<Route path='/contact' element={<ContactForm />} />
 						<Route path='/admin' element={<AdminComponent />} />
 						<Route
