@@ -14,8 +14,8 @@ const UsersContainer = styled.div`
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	padding-top: 96px; /* avoid navbar overlap */
-	padding-bottom: 128px; /* avoid fixed filter button overlap */
+	padding-top: 96px;
+	padding-bottom: 128px;
 `;
 
 interface Filters {
@@ -25,6 +25,7 @@ interface Filters {
 	email?: string;
 	phoneNumber?: string;
 	gender?: string;
+	bloodGroup?: string;
 	age?: [number, number];
 	availableForDonation?: boolean;
 	isAdmin?: boolean;
@@ -49,6 +50,7 @@ const UsersComponent: React.FC = () => {
 	const maxAge = parseInt(searchParams.get('maxAge') || '', 10);
 	const availableForDonation =
 		searchParams.get('availableForDonation') === 'true';
+	const bloodGroup = searchParams.get('bloodGroup') || '';
 
 	const [message, setMessage] = useState<string | null>(null);
 
@@ -118,6 +120,7 @@ const UsersComponent: React.FC = () => {
 		if (newFilters.phoneNumber)
 			params.set('phoneNumber', newFilters.phoneNumber);
 		if (newFilters.gender) params.set('gender', newFilters.gender);
+		if (newFilters.bloodGroup) params.set('bloodGroup', newFilters.bloodGroup);
 		if (newFilters.age && newFilters.age.length === 2) {
 			params.set('minAge', newFilters.age[0].toString());
 			params.set('maxAge', newFilters.age[1].toString());

@@ -104,7 +104,15 @@ exports.updateUserInfo = (req, res, next) => {
 exports.updateUserProfile = async (req, res, next) => {
 	try {
 		const userId = req.userId;
-		const { firstname, lastname, city, birthdate, bloodGroup, phoneNumber, email } = req.body;
+		const {
+			firstname,
+			lastname,
+			city,
+			birthdate,
+			bloodGroup,
+			phoneNumber,
+			email,
+		} = req.body;
 
 		const user = await User.findById(userId).populate('profile');
 		if (!user) {
@@ -139,7 +147,6 @@ exports.updateUserProfile = async (req, res, next) => {
 	}
 };
 
-
 exports.checkUserProfile = async (req, res, next) => {
 	try {
 		const userId = req.userId;
@@ -155,7 +162,8 @@ exports.checkUserProfile = async (req, res, next) => {
 		}
 
 		const { firstname, lastname, birthdate, bloodGroup, city } = user.profile;
-		const isProfileComplete = firstname && lastname && birthdate && bloodGroup && city;
+		const isProfileComplete =
+			firstname && lastname && birthdate && bloodGroup && city;
 
 		res.status(200).json({ isProfileComplete });
 	} catch (err) {
@@ -222,6 +230,7 @@ exports.searchUsers = async (req, res, next) => {
 			phoneNumber: phoneNumberRaw,
 			gender: genderRaw,
 			isAdmin: isAdminRaw,
+			bloodGroup,
 		} = req.body;
 
 		// Coerce pagination
@@ -281,13 +290,15 @@ exports.searchUsers = async (req, res, next) => {
 			};
 		}
 
-		// If filtering on firstname/lastname, first fetch matching profiles and constrain user ids
 		const profileQuery = {};
 		if (firstname) {
 			profileQuery.firstname = { $regex: new RegExp(firstname, 'i') };
 		}
 		if (lastname) {
 			profileQuery.lastname = { $regex: new RegExp(lastname, 'i') };
+		}
+		if (bloodGroup) {
+			profileQuery.bloodGroup = bloodGroup;
 		}
 		if (Object.keys(profileQuery).length > 0) {
 			const matchingProfiles = await Profile.find(profileQuery).select('user');

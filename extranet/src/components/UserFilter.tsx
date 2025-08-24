@@ -10,6 +10,7 @@ import {
 	Typography,
 } from '@mui/material';
 import { useState } from 'react';
+import { BLOOD_GROUP_OPTIONS } from '../data/constants';
 import { authStyles } from '../styles/mainStyles';
 import FormContainer from './shared/FormContainer';
 
@@ -20,6 +21,7 @@ const defaultFilters = {
 	email: '',
 	phoneNumber: '',
 	gender: '',
+	bloodGroup: '',
 	age: [18, 65],
 	availableForDonation: false,
 	isAdmin: false,
@@ -119,6 +121,23 @@ const UserFilter = ({ open, onClose, onApply }) => {
 							>
 								<MenuItem value='male'>Male</MenuItem>
 								<MenuItem value='female'>Female</MenuItem>
+							</TextField>
+						</Grid>
+						<Grid item xs={12}>
+							<TextField
+								select
+								label='Blood Group'
+								name='bloodGroup'
+								value={filters.bloodGroup}
+								onChange={handleChange}
+								fullWidth
+								className={formField}
+							>
+								{BLOOD_GROUP_OPTIONS.map((option) => (
+									<MenuItem key={option.value} value={option.value}>
+										{option.label}
+									</MenuItem>
+								))}
 							</TextField>
 						</Grid>
 						<Grid item xs={12}>

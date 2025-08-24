@@ -1,19 +1,4 @@
-export enum BloodGroup {
-	None = '',
-	APositive = 'A+',
-	ANegative = 'A-',
-	BPositive = 'B+',
-	BNegative = 'B-',
-	ABPositive = 'AB+',
-	ABNegative = 'AB-',
-	OPositive = 'O+',
-	ONegative = 'O-',
-}
-
-export enum Gender {
-	Male = 'male',
-	Female = 'female',
-}
+import { BloodGroup } from './constants';
 
 export interface ProfileFormData {
 	firstname: string;
@@ -32,21 +17,21 @@ export const fieldDisplayNames: { [K in keyof ProfileFormData]: string } = {
 };
 
 export interface UserFormData {
-    firstname: string;
+	firstname: string;
 	lastname: string;
 	birthdate: string;
 	bloodGroup: BloodGroup;
 	city: string;
-    phoneNumber: string;
+	phoneNumber: string;
 	email: string;
 }
 
 export const userFieldDisplayNames: { [key in keyof UserFormData]: string } = {
-    firstname: 'First Name',
+	firstname: 'First Name',
 	lastname: 'Last Name',
 	birthdate: 'Birthdate',
 	bloodGroup: 'Blood Group',
 	city: 'City',
-    phoneNumber: 'Phone Number',
+	phoneNumber: 'Phone Number',
 	email: 'Email',
 };

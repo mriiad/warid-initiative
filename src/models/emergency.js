@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const cities = require('../utils/cities');
+const { BLOOD_GROUP_VALUES } = require('../utils/constants');
 /** 
   An Emergency can be created by users and confirmed by admins
  */
@@ -8,7 +9,7 @@ const cities = require('../utils/cities');
 const EmergencySchema = new Schema({
 	bloodGroup: {
 		type: String,
-		enum: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
+		enum: BLOOD_GROUP_VALUES,
 		required: [true, 'Blood group is required'],
 	},
 	city: {
