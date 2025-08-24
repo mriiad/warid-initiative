@@ -17,6 +17,7 @@ interface UserCardProps {
 	onDelete: (userId: string) => void;
 	onMakeAdmin: (userId: string) => void;
 	animationDelay: string;
+	isAdmin?: boolean;
 }
 
 const useStyles = makeStyles({
@@ -63,6 +64,7 @@ const UserCard: React.FC<UserCardProps> = ({
 	onDelete,
 	onMakeAdmin,
 	animationDelay,
+	isAdmin = false,
 }) => {
 	const classes = useStyles({ animationDelay, isAdmin: user.isAdmin });
 
@@ -134,17 +136,19 @@ const UserCard: React.FC<UserCardProps> = ({
 				)}
 			</div>
 
-			<div className={classes.buttons}>
-				<ActionButton title='تحديث' onClick={() => onUpdate(user._id)} />
-				<ActionButton title='حذف' onClick={() => onDelete(user._id)} />
+			{isAdmin && (
+				<div className={classes.buttons}>
+					<ActionButton title='تحديث' onClick={() => onUpdate(user._id)} />
+					<ActionButton title='حذف' onClick={() => onDelete(user._id)} />
 
-				{!user.isAdmin && (
-					<ActionButton
-						title='تعيين مشرف'
-						onClick={() => onMakeAdmin(user._id)}
-					/>
-				)}
-			</div>
+					{!user.isAdmin && (
+						<ActionButton
+							title='تعيين مشرف'
+							onClick={() => onMakeAdmin(user._id)}
+						/>
+					)}
+				</div>
+			)}
 		</div>
 	);
 };

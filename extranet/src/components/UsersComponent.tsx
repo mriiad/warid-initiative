@@ -5,8 +5,9 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
 import { useAuth } from '../auth/AuthContext';
 import { authStyles, mainStyles } from '../styles/mainStyles';
-import { deleteUser } from '../utils/queries';
 import NoUserFound from './NoUserFound';
+import ConfirmationDialog from './shared/ConfirmationDialog';
+import SnackbarComponent from './shared/SnackbarComponent';
 import UserCard from './UserCard';
 import UserFilter from './UserFilter';
 
@@ -42,6 +43,17 @@ const UsersComponent: React.FC = () => {
 	const [noUsersFound, setNoUsersFound] = useState(false);
 	const [searchParams, setSearchParams] = useSearchParams();
 
+	// Confirmation dialog state
+	const [confirmationDialog, setConfirmationDialog] = useState({
+		open: false,
+		title: '',
+		message: '',
+		confirmText: 'Confirm',
+		cancelText: 'Cancel',
+		onConfirm: () => {},
+		warning: false,
+	});
+
 	const page = parseInt(searchParams.get('page') || '1', 10);
 	const username = searchParams.get('username') || '';
 	const firstname = searchParams.get('firstname') || '';
@@ -54,7 +66,7 @@ const UsersComponent: React.FC = () => {
 
 	const [message, setMessage] = useState<string | null>(null);
 
-	const { token } = useAuth();
+	const { token, isAdmin } = useAuth();
 
 	useEffect(() => {
 		const fetchUsers = async () => {
@@ -139,53 +151,128 @@ const UsersComponent: React.FC = () => {
 
 	const handleUpdate = (userId: string) => {
 		console.log(`Updating user with ID ${userId}`);
+		navigate(`/users/update/${userId}`);
 	};
 
-	const handleDelete = async (username: string) => {
+	const handleDelete = async (userId: string, username: string) => {
 		console.log(`Deleting user with name ${username}`);
-		const confirmDelete = window.confirm(
-			`Are you sure you want to delete the user ${username}?`
-		);
-		if (!confirmDelete) return;
+		setConfirmationDialog({
+			open: true,
+			title: 'Delete User',
+			message: `Are you sure you want to delete the user "${username}"? This action cannot be undone.`,
+			confirmText: 'Delete',
+			cancelText: 'Cancel',
+			onConfirm: async () => {
+				try {
+					setIsLoading(true);
+					setConfirmationDialog({ ...confirmationDialog, open: false });
 
-		try {
-			setIsLoading(true);
-			await deleteUser(username, token);
-			setUsers(
-				(prevUsers) =>
-					prevUsers?.filter((user) => user.username !== username) || []
-			);
-			setMessage('User deleted successfully');
-		} catch (error) {
-			setMessage(`Error deleting user: ${error.message}`);
-		} finally {
-			setIsLoading(false);
-		}
+					const response = await axios.delete(
+						`http://localhost:3000/api/deleteUser/${username}`,
+						{
+							headers: {
+								Authorization: `Bearer ${token}`,
+							},
+						}
+					);
+
+					if (response.status === 200) {
+						setUsers(
+							(prevUsers) =>
+								prevUsers?.filter((user) => user._id !== userId) || []
+						);
+						setMessage('User deleted successfully');
+					}
+				} catch (error) {
+					console.error('Error deleting user:', error);
+					setMessage(
+						`Error deleting user: ${
+							error.response?.data?.message || error.message
+						}`
+					);
+				} finally {
+					setIsLoading(false);
+				}
+			},
+			warning: true,
+		});
 	};
 	const handleCloseSnackbar = () => {
 		setMessage(null);
 	};
 
-	const handleMakeAdmin = (userId: string) => {
+	const handleCloseConfirmationDialog = () => {
+		setConfirmationDialog({ ...confirmationDialog, open: false });
+	};
+
+	const handleMakeAdmin = async (userId: string, username: string) => {
 		console.log(`Making user with ID ${userId} as admin`);
+		setConfirmationDialog({
+			open: true,
+			title: 'Make User Admin',
+			message: `Are you sure you want to make "${username}" an admin? This will give them full administrative privileges.`,
+			confirmText: 'Make Admin',
+			cancelText: 'Cancel',
+			onConfirm: async () => {
+				try {
+					setIsLoading(true);
+					setConfirmationDialog({ ...confirmationDialog, open: false });
+
+					const response = await axios.patch(
+						`http://localhost:3000/api/users/${userId}/admin`,
+						{},
+						{
+							headers: {
+								Authorization: `Bearer ${token}`,
+							},
+						}
+					);
+
+					if (response.status === 200) {
+						// Update the user in the list to reflect admin status
+						setUsers(
+							(prevUsers) =>
+								prevUsers?.map((user) =>
+									user._id === userId ? { ...user, isAdmin: true } : user
+								) || []
+						);
+						setMessage(`${username} is now an admin`);
+					}
+				} catch (error) {
+					console.error('Error making user admin:', error);
+					setMessage(
+						`Error making user admin: ${
+							error.response?.data?.message || error.message
+						}`
+					);
+				} finally {
+					setIsLoading(false);
+				}
+			},
+			warning: false,
+		});
 	};
 
 	return (
 		<>
-			<Button
-				variant='contained'
-				color='primary'
-				className={button}
-				onClick={() => setIsFilterOpen(true)}
-				style={{ position: 'fixed', bottom: 100, right: 20, zIndex: 1000 }}
-			>
-				Filter
-			</Button>
-			<UserFilter
-				open={isFilterOpen}
-				onClose={() => setIsFilterOpen(false)}
-				onApply={handleFilterChange}
-			/>
+			{isAdmin && (
+				<Button
+					variant='contained'
+					color='primary'
+					className={button}
+					onClick={() => setIsFilterOpen(true)}
+					style={{ position: 'fixed', bottom: 100, right: 20, zIndex: 1000 }}
+				>
+					Filter
+				</Button>
+			)}
+			{isAdmin && (
+				<UserFilter
+					open={isFilterOpen}
+					onClose={() => setIsFilterOpen(false)}
+					onApply={handleFilterChange}
+				/>
+			)}
 			<UsersContainer>
 				{isLoading ? (
 					<div
@@ -208,9 +295,10 @@ const UsersComponent: React.FC = () => {
 							key={user._id}
 							user={user}
 							onUpdate={handleUpdate}
-							onDelete={handleDelete}
-							onMakeAdmin={handleMakeAdmin}
+							onDelete={(userId) => handleDelete(userId, user.username)}
+							onMakeAdmin={(userId) => handleMakeAdmin(userId, user.username)}
 							animationDelay={`${index * 0.2}s`}
+							isAdmin={isAdmin}
 						/>
 					))
 				)}
@@ -247,6 +335,23 @@ const UsersComponent: React.FC = () => {
 					</Button>
 				</div>
 			)}
+			{message && (
+				<SnackbarComponent
+					open={!!message}
+					message={message}
+					handleClose={handleCloseSnackbar}
+				/>
+			)}
+			<ConfirmationDialog
+				open={confirmationDialog.open}
+				title={confirmationDialog.title}
+				message={confirmationDialog.message}
+				confirmText={confirmationDialog.confirmText}
+				cancelText={confirmationDialog.cancelText}
+				onConfirm={confirmationDialog.onConfirm}
+				onCancel={handleCloseConfirmationDialog}
+				warning={confirmationDialog.warning}
+			/>
 		</>
 	);
 };
