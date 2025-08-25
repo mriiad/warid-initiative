@@ -208,23 +208,16 @@ exports.updateEvent = async (req) => {
 		);
 	}
 
-	// Check if another event exists on the new date (if date is being changed)
+	// Prevent date changes to maintain reference consistency
 	const existingDateStr = existingEvent.date.toISOString().split('T')[0];
 	const newDateStr = updateEventDate.toISOString().split('T')[0];
 
 	if (newDateStr !== existingDateStr) {
-		const dateStr = newDateStr.replace(/-/g, '');
-		const newReference = `WEVENT${dateStr}`;
-
-		// Check if another event exists with the new reference
-		const conflictingEvent = await Event.findOne({ reference: newReference });
-		if (conflictingEvent) {
-			throw new ApiError(
-				'An event already exists for this date. Please choose a different date.',
-				STATUS_CODE.CONFLICT,
-				['date']
-			);
-		}
+		throw new ApiError(
+			'Cannot change event date as it would create inconsistency with the event reference. The date is fixed when the event is created.',
+			STATUS_CODE.BAD_REQUEST,
+			['date']
+		);
 	}
 
 	let eventImage = existingEvent.image;
