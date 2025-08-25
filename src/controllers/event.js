@@ -78,19 +78,29 @@ exports.createEvent = async (req) => {
 	}
 
 	const dateIso = new Date(date).toISOString().slice(0, 10);
+	const eventDate = new Date(dateIso);
+	const today = new Date();
+	today.setHours(0, 0, 0, 0);
+
+	// Prevent creating events in the past
+	if (eventDate < today) {
+		throw new ApiError(
+			'Cannot create events in the past. Please select a future date.',
+			STATUS_CODE.BAD_REQUEST,
+			['date']
+		);
+	}
+
 	const dateStr = dateIso.replace(/-/g, '');
-	const baseReference = `WEVENT${dateStr}`;
-	let reference = baseReference;
-	let suffix = 1;
-	while (await Event.exists({ reference })) {
-		reference = `${baseReference}-${String(suffix).padStart(2, '0')}`;
-		suffix += 1;
-		if (suffix > 99) {
-			throw new ApiError(
-				'Too many events for this date. Please choose another date.',
-				STATUS_CODE.CONFLICT
-			);
-		}
+	const reference = `WEVENT${dateStr}`;
+
+	// Check if an event already exists for this date
+	if (await Event.exists({ reference })) {
+		throw new ApiError(
+			'An event already exists for this date. Please choose a different date.',
+			STATUS_CODE.CONFLICT,
+			['date']
+		);
 	}
 
 	const frontend = process.env.FRONTEND_URL || 'http://localhost:3001';
