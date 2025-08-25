@@ -7,12 +7,16 @@ import { Card, CardContent, Chip, IconButton, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../auth/AuthContext';
 import { Event } from '../../data/Event';
 import colors from '../../styles/colors';
+import ActionButton from '../shared/ActionButton';
 
 interface EventCardProps {
 	event: Event;
 	animationDelay: string;
+	onUpdate?: (reference: string) => void;
+	onDelete?: (reference: string, title: string) => void;
 }
 
 const useStyles = makeStyles({
@@ -209,7 +213,12 @@ const useStyles = makeStyles({
 	},
 });
 
-const EventCard: React.FC<EventCardProps> = ({ event, animationDelay }) => {
+const EventCard: React.FC<EventCardProps> = ({
+	event,
+	animationDelay,
+	onUpdate,
+	onDelete,
+}) => {
 	const {
 		cardContainer,
 		titleContainer,
@@ -224,6 +233,7 @@ const EventCard: React.FC<EventCardProps> = ({ event, animationDelay }) => {
 
 	const navigate = useNavigate();
 	const [isFavorited, setIsFavorited] = useState(false);
+	const { isAdmin } = useAuth();
 
 	const handleClick = () => {
 		navigate(`/events/${event.reference}`);
@@ -317,6 +327,35 @@ const EventCard: React.FC<EventCardProps> = ({ event, animationDelay }) => {
 					</div>
 				</div>
 			</CardContent>
+
+			{isAdmin && onUpdate && onDelete && (
+				<div
+					style={{
+						padding: '16px 24px',
+						display: 'flex',
+						justifyContent: 'space-around',
+						alignItems: 'center',
+						gap: '12px',
+						borderTop: '1px solid rgba(59, 42, 130, 0.1)',
+						background: 'rgba(59, 42, 130, 0.02)',
+					}}
+				>
+					<ActionButton
+						title='تحديث'
+						onClick={(e) => {
+							e.stopPropagation();
+							onUpdate(event.reference);
+						}}
+					/>
+					<ActionButton
+						title='حذف'
+						onClick={(e) => {
+							e.stopPropagation();
+							onDelete(event.reference, event.title);
+						}}
+					/>
+				</div>
+			)}
 		</Card>
 	);
 };

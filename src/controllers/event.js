@@ -77,8 +77,17 @@ exports.createEvent = async (req) => {
 		eventImage = fs.readFileSync(req.file.path);
 	}
 
-	const dateIso = new Date(date).toISOString().slice(0, 10);
-	const eventDate = new Date(dateIso);
+	// Parse and validate date
+	let eventDate = date instanceof Date ? date : new Date(date);
+
+	if (isNaN(eventDate.getTime())) {
+		throw new ApiError(
+			`Invalid date format provided. Received: "${date}"`,
+			STATUS_CODE.BAD_REQUEST,
+			['date']
+		);
+	}
+
 	const today = new Date();
 	today.setHours(0, 0, 0, 0);
 
@@ -91,7 +100,7 @@ exports.createEvent = async (req) => {
 		);
 	}
 
-	const dateStr = dateIso.replace(/-/g, '');
+	const dateStr = eventDate.toISOString().slice(0, 10).replace(/-/g, '');
 	const reference = `WEVENT${dateStr}`;
 
 	// Check if an event already exists for this date
@@ -108,7 +117,7 @@ exports.createEvent = async (req) => {
 	const eventUrl = generic
 		? `${frontend}/donate?eventRef=${reference}`
 		: `${frontend}/donate?eventRef=${reference}&eventDate=${encodeURIComponent(
-				dateIso
+				eventDate.toISOString().slice(0, 10)
 		  )}`;
 
 	const qrCode = await QRCode.toDataURL(eventUrl);
@@ -119,7 +128,7 @@ exports.createEvent = async (req) => {
 		subtitle,
 		image: eventImage,
 		location,
-		date: new Date(dateIso),
+		date: eventDate,
 		mapLink,
 		description,
 		isGeneric: generic,
@@ -144,6 +153,145 @@ exports.createEventHandler = async (req, res, next) => {
 		res.status(STATUS_CODE.CREATED).json({
 			message: 'Event created successfully!',
 			event: { reference: result.reference, _id: result._id },
+		});
+	} catch (err) {
+		if (!err.statusCode) err.statusCode = STATUS_CODE.INTERNAL_SERVER;
+		next(err);
+	}
+};
+
+exports.updateEvent = async (req) => {
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		throw new ApiError(
+			'Validation failed, entered data is incorrect.',
+			STATUS_CODE.UNPROCESSABLE_ENTITY,
+			errors.array().map((e) => e.param)
+		);
+	}
+
+	const { reference } = req.params;
+	const { title, subtitle, location, date, mapLink, description, isGeneric } =
+		req.body;
+
+	console.log('Request body:', req.body);
+	console.log('Date field:', date, typeof date);
+
+	let updateEventDate = date instanceof Date ? date : new Date(date);
+
+	if (isNaN(updateEventDate.getTime())) {
+		throw new ApiError(
+			`Invalid date format provided. Received: "${date}", Parsed: ${updateEventDate}`,
+			STATUS_CODE.BAD_REQUEST,
+			['date']
+		);
+	}
+
+	// Validate date is not in the past
+	const today = new Date();
+	today.setHours(0, 0, 0, 0);
+
+	if (updateEventDate < today) {
+		throw new ApiError(
+			'Cannot update event to a past date. Please select a future date.',
+			STATUS_CODE.BAD_REQUEST,
+			['date']
+		);
+	}
+
+	// Check if event exists
+	const existingEvent = await Event.findOne({ reference });
+	if (!existingEvent) {
+		throw new ApiError(
+			`Event with reference ${reference} not found.`,
+			STATUS_CODE.NOT_FOUND
+		);
+	}
+
+	// Prevent date changes to maintain reference consistency
+	const existingDateStr = existingEvent.date.toISOString().split('T')[0];
+	const newDateStr = updateEventDate.toISOString().split('T')[0];
+
+	if (newDateStr !== existingDateStr) {
+		throw new ApiError(
+			'Cannot change event date as it would create inconsistency with the event reference. The date is fixed when the event is created.',
+			STATUS_CODE.BAD_REQUEST,
+			['date']
+		);
+	}
+
+	let eventImage = existingEvent.image;
+	if (req.file && req.file.path) {
+		eventImage = fs.readFileSync(req.file.path);
+	}
+
+	const generic = isGeneric === 'true' || isGeneric === true;
+	const eventUrl = generic
+		? `${
+				process.env.FRONTEND_URL || 'http://localhost:3001'
+		  }/donate?eventRef=${reference}`
+		: `${
+				process.env.FRONTEND_URL || 'http://localhost:3001'
+		  }/donate?eventRef=${reference}&eventDate=${encodeURIComponent(
+				updateEventDate.toISOString().slice(0, 10)
+		  )}`;
+
+	const qrCode = await QRCode.toDataURL(eventUrl);
+
+	// Update the event
+	console.log(
+		'About to save date to DB:',
+		updateEventDate,
+		typeof updateEventDate
+	);
+	const updatedEvent = await Event.findOneAndUpdate(
+		{ reference },
+		{
+			title,
+			subtitle,
+			image: eventImage,
+			location,
+			date: updateEventDate,
+			mapLink,
+			description,
+			isGeneric: generic,
+			qrCode,
+		},
+		{ new: true }
+	);
+	console.log(
+		'Saved event date:',
+		updatedEvent?.date,
+		typeof updatedEvent?.date
+	);
+
+	// Clean up uploaded file if it was processed
+	if (req.file && req.file.path) {
+		const filePath = path.join(__dirname, '../..', req.file.path);
+		fs.unlink(filePath, (err) => {
+			if (err) console.error('Failed to delete file:', err);
+		});
+	}
+
+	return updatedEvent;
+};
+
+exports.updateEventHandler = async (req, res, next) => {
+	try {
+		const result = await exports.updateEvent(req);
+		res.status(STATUS_CODE.OK).json({
+			message: 'Event updated successfully!',
+			event: {
+				reference: result.reference,
+				_id: result._id,
+				title: result.title,
+				subtitle: result.subtitle,
+				location: result.location,
+				date: result.date,
+				mapLink: result.mapLink,
+				description: result.description,
+				isGeneric: result.isGeneric,
+			},
 		});
 	} catch (err) {
 		if (!err.statusCode) err.statusCode = STATUS_CODE.INTERNAL_SERVER;

@@ -9,10 +9,13 @@ import {
 import { makeStyles } from '@mui/styles';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { useAuth } from '../../auth/AuthContext';
 import { Event } from '../../data/Event';
 import colors from '../../styles/colors';
+import ConfirmationDialog from '../shared/ConfirmationDialog';
+import SnackbarComponent from '../shared/SnackbarComponent';
 import EventCard from './EventCard';
 
 const EventsContainer = styled.div`
@@ -187,7 +190,21 @@ const EventsComponent = () => {
 
 	const [isLoading, setIsLoading] = useState(false);
 
-	const { isAdmin } = useAuth();
+	const navigate = useNavigate();
+	const { isAdmin, token } = useAuth();
+
+	// Confirmation dialog state
+	const [confirmationDialog, setConfirmationDialog] = useState({
+		open: false,
+		title: '',
+		message: '',
+		confirmText: 'Confirm',
+		cancelText: 'Cancel',
+		onConfirm: () => {},
+		warning: false,
+	});
+
+	const [message, setMessage] = useState<string | null>(null);
 
 	useEffect(() => {
 		const fetchEvents = async () => {
@@ -230,6 +247,65 @@ const EventsComponent = () => {
 		}
 	}, [events, isAdmin, searchTerm]);
 
+	const handleUpdate = (reference: string) => {
+		console.log(`Updating event with reference ${reference}`);
+		navigate(`/events/update/${reference}`);
+	};
+
+	const handleDelete = async (reference: string, title: string) => {
+		console.log(`Deleting event with title ${title}`);
+		setConfirmationDialog({
+			open: true,
+			title: 'Delete Event',
+			message: `Are you sure you want to delete the event "${title}"? This action cannot be undone.`,
+			confirmText: 'Delete',
+			cancelText: 'Cancel',
+			onConfirm: async () => {
+				try {
+					setIsLoading(true);
+					setConfirmationDialog({ ...confirmationDialog, open: false });
+
+					const response = await axios.delete(
+						`http://localhost:3000/api/event`,
+						{
+							headers: {
+								Authorization: `Bearer ${token}`,
+							},
+							data: { reference },
+						}
+					);
+
+					if (response.status === 200) {
+						setEvents(
+							(prevEvents) =>
+								prevEvents?.filter((event) => event.reference !== reference) ||
+								[]
+						);
+						setMessage('Event deleted successfully');
+					}
+				} catch (error) {
+					console.error('Error deleting event:', error);
+					setMessage(
+						`Error deleting event: ${
+							error.response?.data?.message || error.message
+						}`
+					);
+				} finally {
+					setIsLoading(false);
+				}
+			},
+			warning: true,
+		});
+	};
+
+	const handleCloseSnackbar = () => {
+		setMessage(null);
+	};
+
+	const handleCloseConfirmationDialog = () => {
+		setConfirmationDialog({ ...confirmationDialog, open: false });
+	};
+
 	return (
 		<EventsContainer>
 			<PageHeader>
@@ -268,6 +344,8 @@ const EventsComponent = () => {
 								key={event._id}
 								event={event}
 								animationDelay={`${index * 0.15}s`}
+								onUpdate={handleUpdate}
+								onDelete={handleDelete}
 							/>
 						))}
 					</div>
@@ -313,6 +391,23 @@ const EventsComponent = () => {
 					)}
 				</div>
 			)}
+			{message && (
+				<SnackbarComponent
+					open={!!message}
+					message={message}
+					handleClose={handleCloseSnackbar}
+				/>
+			)}
+			<ConfirmationDialog
+				open={confirmationDialog.open}
+				title={confirmationDialog.title}
+				message={confirmationDialog.message}
+				confirmText={confirmationDialog.confirmText}
+				cancelText={confirmationDialog.cancelText}
+				onConfirm={confirmationDialog.onConfirm}
+				onCancel={handleCloseConfirmationDialog}
+				warning={confirmationDialog.warning}
+			/>
 		</EventsContainer>
 	);
 };

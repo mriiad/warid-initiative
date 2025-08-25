@@ -21,6 +21,8 @@ import colors from '../../styles/colors';
 import { fetchEventByReference } from '../../utils/queries';
 import { formatDate } from '../../utils/utils';
 import CanDonate from '../CanDonate';
+import ConfirmationDialog from '../shared/ConfirmationDialog';
+import SnackbarComponent from '../shared/SnackbarComponent';
 import EventConfirmation from './EventConfirmation';
 const EventContainer = styled.div`
 	position: relative;
@@ -68,20 +70,42 @@ const Header = styled.div`
 	& > .actionButtons {
 		display: flex;
 		gap: 12px;
+		justify-content: center;
 
-		& .MuiIconButton-root {
-			background: rgba(255, 255, 255, 0.9);
-			backdrop-filter: blur(10px);
-			border: 1px solid rgba(59, 42, 130, 0.2);
-			color: ${colors.purple};
+		& .MuiButton-root {
+			background: linear-gradient(
+				135deg,
+				${colors.purple} 0%,
+				${colors.darkPurple} 100%
+			);
+			color: white;
+			border-radius: 25px;
+			padding: 12px 32px;
+			font-size: 1rem;
+			font-weight: 600;
+			text-transform: none;
 			transition: all 0.3s ease;
-			box-shadow: 0 4px 12px rgba(59, 42, 130, 0.1);
+			box-shadow: 0 4px 15px rgba(59, 42, 130, 0.3);
+			border: 2px solid ${colors.purple};
 
 			&:hover {
-				background: ${colors.rose};
-				color: white;
-				transform: scale(1.1);
-				box-shadow: 0 6px 16px rgba(255, 48, 103, 0.2);
+				background: linear-gradient(
+					135deg,
+					${colors.darkPurple} 0%,
+					${colors.purple} 100%
+				);
+				transform: translateY(-2px);
+				box-shadow: 0 8px 25px rgba(59, 42, 130, 0.4);
+			}
+
+			&.deleteButton {
+				background: linear-gradient(135deg, #dc3545 0%, #b02a37 100%);
+				border: 2px solid #dc3545;
+
+				&:hover {
+					background: linear-gradient(135deg, #b02a37 0%, #dc3545 100%);
+					box-shadow: 0 8px 25px rgba(220, 53, 69, 0.4);
+				}
 			}
 		}
 	}
@@ -451,6 +475,19 @@ const EventDetail: React.FC = () => {
 
 	const [isFavorited, setIsFavorited] = useState(false);
 
+	// Confirmation dialog state
+	const [confirmationDialog, setConfirmationDialog] = useState({
+		open: false,
+		title: '',
+		message: '',
+		confirmText: 'Confirm',
+		cancelText: 'Cancel',
+		onConfirm: () => {},
+		warning: false,
+	});
+
+	const [message, setMessage] = useState<string | null>(null);
+
 	const handleBackClick = () => {
 		navigate('/events');
 	};
@@ -490,6 +527,56 @@ const EventDetail: React.FC = () => {
 		}
 	};
 
+	const handleUpdate = () => {
+		navigate(`/events/update/${reference}`);
+	};
+
+	const handleDelete = () => {
+		setConfirmationDialog({
+			open: true,
+			title: 'Delete Event',
+			message: `Are you sure you want to delete the event "${event?.title}"? This action cannot be undone.`,
+			confirmText: 'Delete',
+			cancelText: 'Cancel',
+			onConfirm: async () => {
+				try {
+					setConfirmationDialog({ ...confirmationDialog, open: false });
+
+					const response = await fetch('http://localhost:3000/api/event', {
+						method: 'DELETE',
+						headers: {
+							Authorization: `Bearer ${token}`,
+							'Content-Type': 'application/json',
+						},
+						body: JSON.stringify({ reference }),
+					});
+
+					if (response.ok) {
+						setMessage('Event deleted successfully!');
+						setTimeout(() => {
+							navigate('/events');
+						}, 2000);
+					} else {
+						const errorData = await response.json();
+						throw new Error(errorData.message || 'Error deleting event');
+					}
+				} catch (error: any) {
+					console.error('Error deleting event:', error);
+					setMessage(`Error deleting event: ${error.message}`);
+				}
+			},
+			warning: true,
+		});
+	};
+
+	const handleCloseSnackbar = () => {
+		setMessage(null);
+	};
+
+	const handleCloseConfirmationDialog = () => {
+		setConfirmationDialog({ ...confirmationDialog, open: false });
+	};
+
 	return (
 		<>
 			{isLoading ? (
@@ -501,6 +588,17 @@ const EventDetail: React.FC = () => {
 				</LoadingContainer>
 			) : (
 				<EventContainer>
+					{isAdmin && (
+						<Header>
+							<div className='actionButtons'>
+								<Button onClick={handleUpdate}>Update Event</Button>
+								<Button className='deleteButton' onClick={handleDelete}>
+									Delete Event
+								</Button>
+							</div>
+						</Header>
+					)}
+
 					<EventHero>
 						<img
 							src={
@@ -601,6 +699,23 @@ const EventDetail: React.FC = () => {
 					</Routes>
 				</EventContainer>
 			)}
+			{message && (
+				<SnackbarComponent
+					open={!!message}
+					message={message}
+					handleClose={handleCloseSnackbar}
+				/>
+			)}
+			<ConfirmationDialog
+				open={confirmationDialog.open}
+				title={confirmationDialog.title}
+				message={confirmationDialog.message}
+				confirmText={confirmationDialog.confirmText}
+				cancelText={confirmationDialog.cancelText}
+				onConfirm={confirmationDialog.onConfirm}
+				onCancel={handleCloseConfirmationDialog}
+				warning={confirmationDialog.warning}
+			/>
 		</>
 	);
 };

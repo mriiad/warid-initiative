@@ -25,6 +25,7 @@ import EventConfirmation from './components/event/EventConfirmation';
 import EventDetail from './components/event/EventDetail';
 import EventForm from './components/event/EventForm';
 import EventsComponent from './components/event/EventsComponent';
+import UpdateEvent from './components/event/UpdateEvent';
 import LandingPage from './components/home/LandingPage';
 import ProfileComponent from './components/profile/ProfileComponent';
 
@@ -84,6 +85,12 @@ const App = () => {
 						<Route path='/update-profile' element={<UserProfileForm />} />
 						<Route path='/events' element={<EventsComponent />} />
 						{isAdmin && <Route path='/events/create' element={<EventForm />} />}
+						{isAdmin && (
+							<Route
+								path='/events/update/:reference'
+								element={<UpdateEvent />}
+							/>
+						)}
 						<Route path='/events/:reference/*' element={<EventDetail />}>
 							<Route path='can-donate' element={<CanDonate />} />
 							<Route path='confirmation' element={<EventConfirmation />} />
