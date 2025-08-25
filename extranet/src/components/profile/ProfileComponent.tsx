@@ -21,7 +21,7 @@ import {
 	updatePassword,
 	updateProfileInfo,
 } from '../../utils/queries';
-import { cities } from '../../utils/utils';
+import { cities, formatDate, formatDateForDisplay } from '../../utils/utils';
 
 import { BloodGroup } from '@/data/constants';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -97,7 +97,6 @@ const ProfileComponent = () => {
 	const { token, setToken, setIsAdmin, setUserId } = useAuth();
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
-	const formatDate = (isoDate: string) => isoDate?.split('T')[0];
 
 	const [isEditingInfo, setIsEditingInfo] = useState(false);
 	const [isEditingPassword, setIsEditingPassword] = useState(false);
@@ -378,7 +377,9 @@ const ProfileComponent = () => {
 							<span className={classes.value}>
 								{field === 'birthdate'
 									? userInfo &&
-									  formatDate(userInfo[field as keyof typeof userInfo])
+									  formatDateForDisplay(
+											userInfo[field as keyof typeof userInfo]
+									  )
 									: userInfo && userInfo[field as keyof typeof userInfo]}
 							</span>
 						)}

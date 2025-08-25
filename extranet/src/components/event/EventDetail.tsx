@@ -6,7 +6,7 @@ import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { Button, Chip, CircularProgress, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { useQuery } from '@tanstack/react-query';
-import dayjs from 'dayjs';
+
 import React, { useState } from 'react';
 import {
 	Route,
@@ -19,7 +19,7 @@ import styled from 'styled-components';
 import { useAuth } from '../../auth/AuthContext';
 import colors from '../../styles/colors';
 import { fetchEventByReference } from '../../utils/queries';
-import { formatDate } from '../../utils/utils';
+import { formatDate, formatDateForDisplay } from '../../utils/utils';
 import CanDonate from '../CanDonate';
 import ConfirmationDialog from '../shared/ConfirmationDialog';
 import SnackbarComponent from '../shared/SnackbarComponent';
@@ -635,7 +635,7 @@ const EventDetail: React.FC = () => {
 									</div>
 								</div>
 								<div className='cardContent'>
-									{dayjs(event?.date).format('DD-MM-YYYY')}
+									{formatDateForDisplay(event?.date)}
 								</div>
 							</InfoCard>
 

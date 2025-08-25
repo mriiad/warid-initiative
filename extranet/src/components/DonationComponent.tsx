@@ -27,7 +27,7 @@ import {
 	fetchEvents,
 	fetchUserProfile,
 } from '../utils/queries';
-import { formatDate } from '../utils/utils';
+import { formatDate, formatDateForDisplay } from '../utils/utils';
 import FormContainer from './shared/FormContainer';
 import ResponseAnimation from './shared/ResponseAnimation';
 import SnackbarComponent from './shared/SnackbarComponent';
@@ -138,6 +138,14 @@ const DonationComponent = () => {
 		return donation.reelDonationDate
 			? formatDate(donation.reelDonationDate)
 			: formatDate(donation.donationDate);
+	}, [donation, error, isLoading, token]);
+
+	const defaultDonationDateDisplay = useMemo(() => {
+		if (isLoading) return '';
+		if (error || !donation || !token) return '';
+		return donation.reelDonationDate
+			? formatDateForDisplay(donation.reelDonationDate)
+			: formatDateForDisplay(donation.donationDate);
 	}, [donation, error, isLoading, token]);
 
 	useEffect(() => {
@@ -393,7 +401,8 @@ const DonationComponent = () => {
 														{events &&
 															events.map((event) => (
 																<MenuItem key={event._id} value={event._id}>
-																	{event.title} ({formatDate(event.date)})
+																	{event.title} (
+																	{formatDateForDisplay(event.date)})
 																	{event.isGeneric && ' - حدث عام'}
 																</MenuItem>
 															))}
@@ -422,7 +431,7 @@ const DonationComponent = () => {
 			<SnackbarComponent
 				open={showSnackbar}
 				handleClose={() => setShowSnackbar(false)}
-				message={`آخر تبرع كان بتاريخ ${defaultDonationDate}`}
+				message={`آخر تبرع كان بتاريخ ${defaultDonationDateDisplay}`}
 			/>
 			<SnackbarComponent
 				open={reviewSnackbarOpen}

@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
 import { Event } from '../../data/Event';
 import colors from '../../styles/colors';
+import { formatDateForDisplay } from '../../utils/utils';
 import ActionButton from '../shared/ActionButton';
 
 interface EventCardProps {
@@ -298,7 +299,7 @@ const EventCard: React.FC<EventCardProps> = ({
 
 					<div className={infoRow}>
 						<CalendarMonthIcon />
-						<span>{new Date(event.date).toLocaleDateString('ar-MA')}</span>
+						<span>{formatDateForDisplay(event.date)}</span>
 					</div>
 
 					<div className={infoRow}>

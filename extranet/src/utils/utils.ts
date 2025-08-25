@@ -21,6 +21,11 @@ export const formatDate = (dateString) => {
 	return format(new Date(dateString), 'yyyy-MM-dd');
 };
 
+export const formatDateForDisplay = (dateString) => {
+	if (!dateString) return '';
+	return format(new Date(dateString), 'dd/MM/yyyy');
+};
+
 export const cities: string[] = [
 	'Casablanca',
 	'Rabat',
