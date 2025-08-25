@@ -184,6 +184,9 @@ const EventForm: React.FC = () => {
 									label='التاريخ'
 									type='date'
 									InputLabelProps={{ shrink: true }}
+									inputProps={{
+										min: new Date().toISOString().split('T')[0],
+									}}
 									error={Boolean(errors.date)}
 									helperText={errors.date?.message}
 								/>
