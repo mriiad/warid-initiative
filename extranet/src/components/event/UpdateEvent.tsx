@@ -11,9 +11,8 @@ import React, { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
-import { Event } from '../../data/Event';
+import { useEvent } from '../../hooks';
 import { authStyles, mainStyles } from '../../styles/mainStyles';
-import { fetchEventByReference } from '../../utils/queries';
 import FormContainer from '../shared/FormContainer';
 import ResponseAnimation from '../shared/ResponseAnimation';
 import SnackbarComponent from '../shared/SnackbarComponent';
@@ -57,42 +56,34 @@ const UpdateEvent: React.FC = () => {
 		},
 	});
 
-	const [event, setEvent] = useState<Event | null>(null);
 	const [image, setImage] = useState<File | null>(null);
 	const [isFormSubmitted, setIsFormSubmitted] = useState<boolean>(false);
 	const [isSuccessResponse, setIsSuccessResponse] = useState<boolean>(false);
 	const [isErrorResponse, setIsErrorResponse] = useState<boolean>(false);
 	const [errorMessage, setErrorMessage] = useState<string>('');
-	const [isLoading, setIsLoading] = useState<boolean>(true);
 	const [message, setMessage] = useState<string | null>(null);
 
+	const { data: eventData, isLoading, isError } = useEvent(reference || '');
+
 	useEffect(() => {
-		const loadEvent = async () => {
-			if (!reference) return;
+		if (eventData) {
+			reset({
+				title: eventData.title,
+				subtitle: eventData.subtitle || '',
+				location: eventData.location,
+				date: new Date(eventData.date).toISOString().split('T')[0],
+				mapLink: eventData.mapLink || '',
+				description: eventData.description || '',
+				isGeneric: eventData.isGeneric || false,
+			});
+		}
+	}, [eventData, reset]);
 
-			try {
-				setIsLoading(true);
-				const eventData = await fetchEventByReference(reference);
-				setEvent(eventData);
-				reset({
-					title: eventData.title,
-					subtitle: eventData.subtitle || '',
-					location: eventData.location,
-					date: new Date(eventData.date).toISOString().split('T')[0],
-					mapLink: eventData.mapLink || '',
-					description: eventData.description || '',
-					isGeneric: eventData.isGeneric || false,
-				});
-			} catch (error) {
-				console.error('Error loading event:', error);
-				setMessage('Error loading event data');
-			} finally {
-				setIsLoading(false);
-			}
-		};
-
-		loadEvent();
-	}, [reference, reset]);
+	useEffect(() => {
+		if (isError) {
+			setMessage('Error loading event data');
+		}
+	}, [isError]);
 
 	const onSubmit = async (data: IFormInput) => {
 		try {
@@ -165,7 +156,7 @@ const UpdateEvent: React.FC = () => {
 		);
 	}
 
-	if (!event) {
+	if (!eventData) {
 		return (
 			<FormContainer className={formWrapper}>
 				<Typography>Event not found</Typography>

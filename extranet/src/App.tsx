@@ -73,7 +73,12 @@ const App = () => {
 	const { isAdmin } = useAuth();
 
 	return (
-		<BrowserRouter>
+		<BrowserRouter
+			future={{
+				v7_startTransition: true,
+				v7_relativeSplatPath: true,
+			}}
+		>
 			<AppContainer>
 				{!isMobile ? <NavBar /> : <MobileHeader />}
 				<ContentContainer>

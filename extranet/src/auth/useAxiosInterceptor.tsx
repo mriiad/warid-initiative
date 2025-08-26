@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { useEffect } from 'react';
+import API_CONFIG, { buildApiUrl } from '../utils/apiConfig';
 
 export const useAxiosInterceptor = (refreshToken) => {
 	useEffect(() => {
@@ -24,8 +25,8 @@ export const useAxiosInterceptor = (refreshToken) => {
 				) {
 					const requestUrl = originalRequest.url;
 					const excludedEndpoints = [
-						'http://localhost:3000/api/auth/login',
-						'http://localhost:3000/api/auth/refresh-token',
+						buildApiUrl(API_CONFIG.endpoints.auth.login),
+						buildApiUrl(API_CONFIG.endpoints.auth.refreshToken),
 					];
 
 					if (!excludedEndpoints.includes(requestUrl)) {

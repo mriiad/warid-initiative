@@ -9,12 +9,12 @@ import {
 	TextField,
 	Typography,
 } from '@mui/material';
-import { useMutation } from '@tanstack/react-query';
-import axios from 'axios';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { SignupFormData } from '../data/authData';
+import { useAuth } from '../hooks';
+import colors from '../styles/colors';
 import { authStyles, mainStyles } from '../styles/mainStyles';
 import FormContainer from './shared/FormContainer';
 
@@ -29,18 +29,11 @@ const SignupForm = () => {
 
 	const navigate = useNavigate();
 
-	const signUpMutation = useMutation({
-		mutationFn: (data: SignupFormData) => {
-			return axios.put('http://localhost:3000/api/auth/signup', data);
-		},
-	});
+	const { signup } = useAuth();
 
-	const [, setIsFormSubmitted] = useState<boolean>(false);
 	const onSubmit = (formData: SignupFormData) => {
-		signUpMutation.mutate(formData, {
+		signup.mutate(formData as any, {
 			onSuccess: () => {
-				console.log('Form submitted successfully!');
-				setIsFormSubmitted(true);
 				navigate('/login?new-user');
 			},
 			onError: (error) => {
@@ -70,9 +63,27 @@ const SignupForm = () => {
 			</Typography>
 			<Typography variant='h6' align='center' gutterBottom>
 				<span className={subTitle}>هل لديك حساب؟ </span>
-				<span className={textButton} onClick={() => navigate('/login')}>
+				<button
+					type='button'
+					className={textButton}
+					onClick={() => navigate('/login')}
+					style={{
+						background: 'none',
+						border: 'none',
+						padding: '8px 12px',
+						font: 'inherit',
+						cursor: 'pointer',
+						textDecoration: 'underline',
+						color: colors.rose,
+						fontSize: 'inherit',
+						lineHeight: 'inherit',
+						display: 'inline-block',
+						position: 'relative',
+						zIndex: 10,
+					}}
+				>
 					تسجيل الدخول
-				</span>
+				</button>
 			</Typography>
 			<form onSubmit={handleSubmit(onSubmit)} className={form}>
 				<Grid container spacing={2}>
@@ -80,7 +91,7 @@ const SignupForm = () => {
 						<Controller
 							name='username'
 							control={control}
-							defaultValue=''
+							rules={{ required: 'اسم المستخدم مطلوب' }}
 							render={({ field }) => (
 								<TextField
 									fullWidth
@@ -88,7 +99,7 @@ const SignupForm = () => {
 									required
 									{...field}
 									error={Boolean(errors.username)}
-									helperText={errors.username ? 'اسم المستخدم مطلوب' : ''}
+									helperText={errors.username?.message || ''}
 								/>
 							)}
 						/>
@@ -97,7 +108,10 @@ const SignupForm = () => {
 						<Controller
 							name='email'
 							control={control}
-							defaultValue=''
+							rules={{
+								required: 'البريد الإلكتروني مطلوب',
+								validate: validateEmail,
+							}}
 							render={({ field }) => (
 								<TextField
 									fullWidth
@@ -108,17 +122,19 @@ const SignupForm = () => {
 									helperText={errors.email?.message || ''}
 								/>
 							)}
-							rules={{
-								required: 'البريد الإلكتروني مطلوب',
-								validate: validateEmail,
-							}}
 						/>
 					</Grid>
 					<Grid item xs={12}>
 						<Controller
 							name='password'
 							control={control}
-							defaultValue=''
+							rules={{
+								required: 'كلمة المرور مطلوبة',
+								minLength: {
+									value: 6,
+									message: 'كلمة المرور يجب أن تكون 6 أحرف على الأقل',
+								},
+							}}
 							render={({ field }) => (
 								<TextField
 									fullWidth
@@ -127,7 +143,7 @@ const SignupForm = () => {
 									label='كلمة المرور'
 									{...field}
 									error={Boolean(errors.password)}
-									helperText={errors.password ? 'كلمة المرور مطلوبة' : ''}
+									helperText={errors.password?.message || ''}
 								/>
 							)}
 						/>
@@ -136,7 +152,7 @@ const SignupForm = () => {
 						<Controller
 							name='phoneNumber'
 							control={control}
-							defaultValue=''
+							rules={{ required: 'رقم الهاتف مطلوب' }}
 							render={({ field }) => (
 								<TextField
 									fullWidth
@@ -144,8 +160,8 @@ const SignupForm = () => {
 									type='tel'
 									required
 									{...field}
-									error={Boolean(errors.username)}
-									helperText={errors.username ? 'اسم المستخدم مطلوب' : ''}
+									error={Boolean(errors.phoneNumber)}
+									helperText={errors.phoneNumber?.message || ''}
 								/>
 							)}
 						/>

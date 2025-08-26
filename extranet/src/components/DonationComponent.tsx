@@ -10,7 +10,6 @@ import {
 	Typography,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { useMutation, useQuery } from '@tanstack/react-query';
 import clsx from 'clsx';
 import { useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
@@ -18,15 +17,15 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { ApiErrorResponse } from '../data/ApiErrorResponse';
 import { BLOOD_GROUP_OPTIONS } from '../data/constants';
+import {
+	useDonate,
+	useDonationHistory,
+	useEvent,
+	useEvents,
+	useUserProfile,
+} from '../hooks';
 import colors from '../styles/colors';
 import { authStyles, mainStyles } from '../styles/mainStyles';
-import {
-	donate,
-	fetchDonation,
-	fetchEventByReference,
-	fetchEvents,
-	fetchUserProfile,
-} from '../utils/queries';
 import { formatDate, formatDateForDisplay } from '../utils/utils';
 import FormContainer from './shared/FormContainer';
 import ResponseAnimation from './shared/ResponseAnimation';
@@ -87,44 +86,13 @@ const DonationComponent = () => {
 		watch,
 	} = useForm();
 
-	const {
-		data: donation,
-		error,
-		isLoading,
-		isError,
-	} = useQuery({
-		queryKey: ['donation'],
-		queryFn: fetchDonation,
-		enabled: !!token,
-		refetchOnWindowFocus: false,
-		refetchOnMount: true,
-		retry: 5,
-	});
+	const { data: donation, error, isLoading, isError } = useDonationHistory();
 
-	const { data: profileData } = useQuery({
-		queryKey: ['userProfile'],
-		queryFn: fetchUserProfile,
-		enabled: !!token,
-		refetchOnWindowFocus: false,
-		refetchOnMount: true,
-	});
+	const { data: profileData } = useUserProfile();
 
-	const { data: events } = useQuery({
-		queryKey: ['events'],
-		queryFn: fetchEvents,
-		enabled: !!token,
-		refetchOnWindowFocus: false,
-		refetchOnMount: true,
-		retry: 3,
-	});
+	const { data: events } = useEvents();
 
-	const { data: eventData } = useQuery({
-		queryKey: ['event', eventReference],
-		queryFn: () => fetchEventByReference(eventReference),
-		enabled: !!eventReference,
-		refetchOnWindowFocus: false,
-		refetchOnMount: true,
-	});
+	const { data: eventData } = useEvent(eventReference || '');
 
 	const [showSnackbar, setShowSnackbar] = useState(false);
 	const [reviewSnackbarOpen, setReviewSnackbarOpen] = useState(false);
@@ -134,32 +102,31 @@ const DonationComponent = () => {
 
 	const defaultDonationDate = useMemo(() => {
 		if (isLoading) return '';
-		if (error || !donation || !token) return '';
-		return donation.reelDonationDate
-			? formatDate(donation.reelDonationDate)
-			: formatDate(donation.donationDate);
+		if (error || !donation?.data || !token) return '';
+		return donation.data.reelDonationDate
+			? formatDate(donation.data.reelDonationDate)
+			: formatDate(donation.data.donationDate);
 	}, [donation, error, isLoading, token]);
 
 	const defaultDonationDateDisplay = useMemo(() => {
 		if (isLoading) return '';
-		if (error || !donation || !token) return '';
-		return donation.reelDonationDate
-			? formatDateForDisplay(donation.reelDonationDate)
-			: formatDateForDisplay(donation.donationDate);
+		if (error || !donation?.data || !token) return '';
+		return donation.data.reelDonationDate
+			? formatDateForDisplay(donation.data.reelDonationDate)
+			: formatDateForDisplay(donation.data.donationDate);
 	}, [donation, error, isLoading, token]);
 
 	useEffect(() => {
-		if (eventReference && eventData && eventData.event) {
+		if (eventReference && eventData?.data) {
 			// This is a non-generic event with reference
-			const eventDate = eventDateFromURL || formatDate(eventData.event.date);
-			console.log('eventDate: ', eventDate);
-			setValue('eventId', eventData.event._id);
+			const eventDate = eventDateFromURL || formatDate(eventData.data.date);
+			setValue('eventId', eventData.data._id);
 			setValue('donationDate', eventDate);
 			setIsDateDisabled(true);
-		} else if (eventReference && events) {
+		} else if (eventReference && events?.data) {
 			// This is a generic event with reference
-			const genericEvent = events.find(
-				(e) => e.isGeneric && e.reference === eventReference
+			const genericEvent = events.data.find(
+				(e: any) => e.isGeneric && e.reference === eventReference
 			);
 			if (genericEvent) {
 				setValue('eventId', genericEvent._id);
@@ -172,12 +139,12 @@ const DonationComponent = () => {
 	}, [eventReference, eventData, events, setValue, eventDateFromURL]);
 
 	useEffect(() => {
-		if (donation) {
-			setValue('bloodGroup', donation.bloodGroup);
-			setIsBloodGroupEditable(!donation.bloodGroup);
-		} else if (profileData && profileData.bloodGroup) {
-			setValue('bloodGroup', profileData.bloodGroup);
-			setIsBloodGroupEditable(!profileData.bloodGroup);
+		if (donation?.data) {
+			setValue('bloodGroup', donation.data.bloodGroup);
+			setIsBloodGroupEditable(!donation.data.bloodGroup);
+		} else if (profileData?.data && profileData.data.bloodGroup) {
+			setValue('bloodGroup', profileData.data.bloodGroup);
+			setIsBloodGroupEditable(!profileData.data.bloodGroup);
 		}
 
 		if (defaultDonationDate && !eventReference) {
@@ -202,9 +169,7 @@ const DonationComponent = () => {
 		}
 	}, [token, setValue, defaultDonationDate, eventReference]);
 
-	const donateMutation = useMutation({
-		mutationFn: donate,
-	});
+	const donateMutation = useDonate();
 
 	const [isFormSubmitted, setIsFormSubmitted] = useState<boolean>(false);
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -232,8 +197,10 @@ const DonationComponent = () => {
 		}
 
 		// If no event ID is set but we have an event reference, find the matching event
-		if (!formData.eventId && eventReference && events) {
-			const event = events.find((e) => e.reference === eventReference);
+		if (!formData.eventId && eventReference && events?.data) {
+			const event = events.data.find(
+				(e: any) => e.reference === eventReference
+			);
 			if (event) {
 				formData.eventId = event._id;
 			}
@@ -241,25 +208,23 @@ const DonationComponent = () => {
 
 		donateMutation.mutate(formData, {
 			onSuccess: () => {
-				console.log('Form submitted successfully!');
 				setIsFormSubmitted(true);
 				setIsSuccessAnimationVisible(true);
 				setIsErrorAnimationVisible(false);
 			},
 			onError: (error: any) => {
-				console.error('Error submitting form:', error);
 				setIsSuccessAnimationVisible(false);
-				const errorResponseData: ApiErrorResponse = error.data;
-				if (errorResponseData.errorKeys) {
+				const errorResponseData: ApiErrorResponse = error.response?.data;
+				if (errorResponseData?.errorKeys) {
 					errorResponseData.errorKeys.forEach((errorKey) => {
 						setError(errorKey, {
 							message: `${errorKey} is invalid`,
 						});
 					});
 				}
-				if (error.data) {
-					const errorResponseData: ApiErrorResponse = error.data;
-					if (error.status !== 404 && error.status !== 400) {
+				if (error.response?.data) {
+					const errorResponseData: ApiErrorResponse = error.response.data;
+					if (error.response.status !== 404 && error.response.status !== 400) {
 						setErrorMessage(
 							errorResponseData.errorMessage || 'An error occurred.'
 						);
@@ -398,8 +363,8 @@ const DonationComponent = () => {
 														<MenuItem value=''>
 															<em>None</em>
 														</MenuItem>
-														{events &&
-															events.map((event) => (
+														{events?.data &&
+															events.data.map((event: any) => (
 																<MenuItem key={event._id} value={event._id}>
 																	{event.title} (
 																	{formatDateForDisplay(event.date)})

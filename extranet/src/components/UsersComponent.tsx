@@ -201,12 +201,6 @@ const UsersComponent: React.FC = () => {
 		filters: URLSearchParams,
 		currentPage: number = 1
 	) => {
-		console.log(
-			'🚀 handleFilterApply called with filters:',
-			Object.fromEntries(filters),
-			'page:',
-			currentPage
-		);
 		try {
 			setIsLoading(true);
 			setNoUsersFound(false);

@@ -7,6 +7,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import colors from '../styles/colors';
 import { mainStyles } from '../styles/mainStyles';
+import API_CONFIG, { buildApiUrl } from '../utils/apiConfig';
 import ActionButton from './shared/ActionButton';
 
 const useStyles = makeStyles({
@@ -101,18 +102,16 @@ const Navbar = () => {
 
 	const handleLogout = () => {
 		axios
-			.post('http://localhost:3000/api/auth/logout')
+			.post(buildApiUrl(API_CONFIG.endpoints.auth.logout))
 			.then((response) => {
-				// Removing user data from local storage
 				localStorage.removeItem('token');
 				localStorage.removeItem('refreshToken');
 				localStorage.removeItem('userId');
 				localStorage.removeItem('isAdmin');
 
-				// Resetting user state
 				setToken(null);
 				setUserId(null);
-				setIsAdmin(null);
+				setIsAdmin(false);
 
 				navigate('/login');
 			})
@@ -186,9 +185,27 @@ const Navbar = () => {
 			</div>
 			<div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
 				{!token && (
-					<span className={textButton} onClick={() => navigate('/signup')}>
+					<button
+						type='button'
+						className={textButton}
+						onClick={() => navigate('/signup')}
+						style={{
+							background: 'none',
+							border: 'none',
+							padding: '8px 12px',
+							font: 'inherit',
+							cursor: 'pointer',
+							textDecoration: 'underline',
+							color: colors.rose,
+							fontSize: 'inherit',
+							lineHeight: 'inherit',
+							display: 'inline-block',
+							position: 'relative',
+							zIndex: 10,
+						}}
+					>
 						التسجيل
-					</span>
+					</button>
 				)}
 				<div className={mainButton}>
 					{token ? (

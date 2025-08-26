@@ -1,5 +1,6 @@
 import { Box } from '@mui/material';
 import { useEffect, useRef, useState } from 'react';
+import API_CONFIG from '../../utils/apiConfig';
 import BloodDropsAnimation from './BloodDropsAnimation';
 import { useLandingPageStyles } from './LandingPageStyles';
 import NumbersContainer from './NumbersContainer';
@@ -52,7 +53,7 @@ const LandingPage = () => {
 	useEffect(() => {
 		if (startAnimation) {
 			const targetNumber = 84750;
-			const duration = 3000;
+			const duration = API_CONFIG.ui.snackbarDuration;
 			const start = performance.now();
 
 			const animateCount = (now) => {

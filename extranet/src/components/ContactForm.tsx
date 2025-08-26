@@ -7,6 +7,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { useAuth } from '../auth/AuthContext';
 import { ProfileFormData } from '../data/ProfileFormData';
 import { authStyles } from '../styles/mainStyles';
+import API_CONFIG, { buildApiUrl } from '../utils/apiConfig';
 import FormContainer from './shared/FormContainer';
 import ResponseAnimation from './shared/ResponseAnimation';
 
@@ -89,7 +90,7 @@ const ContactForm = () => {
 	const onSubmit = async (formData: ContactFormData) => {
 		try {
 			setIsFormSubmitted(true);
-			await axios.post('http://localhost:3000/api/contact-us', formData);
+			await axios.post(buildApiUrl(API_CONFIG.endpoints.contact), formData);
 			console.log('Contact form submitted successfully!');
 			setIsSuccessResponse(true);
 			setIsErrorResponse(false);
@@ -147,9 +148,7 @@ const ContactForm = () => {
 										required
 										{...field}
 										error={Boolean(errors.firstname)}
-										helperText={
-											errors.firstname ? 'الاسم الشخصي مطلوب' : ''
-										}
+										helperText={errors.firstname ? 'الاسم الشخصي مطلوب' : ''}
 									/>
 								)}
 							/>
@@ -203,9 +202,7 @@ const ContactForm = () => {
 										required
 										{...field}
 										error={Boolean(errors.phoneNumber)}
-										helperText={
-											errors.phoneNumber ? 'رقم الهاتف مطلوب' : ''
-										}
+										helperText={errors.phoneNumber ? 'رقم الهاتف مطلوب' : ''}
 									/>
 								)}
 							/>

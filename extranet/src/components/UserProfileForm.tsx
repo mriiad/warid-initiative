@@ -10,15 +10,15 @@ import {
 	Typography,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { useQuery } from '@tanstack/react-query';
+
 import axios from 'axios';
 import { useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { ProfileFormData, fieldDisplayNames } from '../data/ProfileFormData';
 import { BLOOD_GROUP_OPTIONS, BloodGroup } from '../data/constants';
+import { useUserProfile } from '../hooks';
 import { authStyles } from '../styles/mainStyles';
-import { fetchUserProfile } from '../utils/queries';
 import { cities, formatDate } from '../utils/utils';
 import FormContainer from './shared/FormContainer';
 import SnackbarComponent from './shared/SnackbarComponent';
@@ -44,13 +44,7 @@ const UserProfileForm = () => {
 	const [showSnackbar, setShowSnackbar] = useState(false);
 	const [incompleteFieldsMessage, setIncompleteFieldsMessage] = useState('');
 
-	const { data: userProfile } = useQuery<ProfileFormData>({
-		queryKey: ['userProfile'],
-		queryFn: fetchUserProfile,
-		refetchOnWindowFocus: false,
-		refetchOnMount: true,
-		retry: 5,
-	});
+	const { data: userProfile } = useUserProfile();
 
 	const defaultProfileValues = useMemo(
 		() => ({
@@ -84,12 +78,13 @@ const UserProfileForm = () => {
 			];
 
 			fields.forEach((field) => {
-				let value = userProfile[field] || '';
-				if (field === 'birthdate' && userProfile.birthdate) {
-					value = formatDate(userProfile.birthdate);
+				let value = userProfile.data[field] || '';
+				if (field === 'birthdate' && userProfile.data.birthdate) {
+					value = formatDate(userProfile.data.birthdate);
 				}
 				setValue(field, value);
-				if (!userProfile[field]) missingFields.push(fieldDisplayNames[field]);
+				if (!userProfile.data[field])
+					missingFields.push(fieldDisplayNames[field]);
 			});
 
 			if (missingFields.length > 0) {

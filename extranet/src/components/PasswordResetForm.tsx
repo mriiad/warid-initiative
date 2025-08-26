@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Controller, useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { authStyles } from '../styles/mainStyles';
+import API_CONFIG, { buildApiUrl } from '../utils/apiConfig';
 import FormContainer from './shared/FormContainer';
 
 const PasswordResetForm = () => {
@@ -18,7 +19,7 @@ const PasswordResetForm = () => {
 
 	const onSubmit = (formData) => {
 		axios
-			.post('http://localhost:3000/api/auth/request-reset', formData)
+			.post(buildApiUrl(API_CONFIG.endpoints.auth.requestReset), formData)
 			.then((response) => {
 				console.log('Reset password request sent successfully!');
 				navigate('/login', {

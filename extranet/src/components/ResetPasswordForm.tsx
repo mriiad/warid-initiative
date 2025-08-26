@@ -4,7 +4,9 @@ import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router-dom';
+import colors from '../styles/colors';
 import { authStyles, mainStyles } from '../styles/mainStyles';
+import API_CONFIG, { buildApiUrl } from '../utils/apiConfig';
 import FormContainer from './shared/FormContainer';
 
 type FormData = {
@@ -60,7 +62,7 @@ const ResetPasswordForm = () => {
 
 		try {
 			await axios.post(
-				`http://localhost:3000/api/auth/reset-password/${resetToken}`,
+				buildApiUrl(API_CONFIG.endpoints.auth.resetPassword(resetToken)),
 				{
 					password: formData.password,
 				}
@@ -73,7 +75,7 @@ const ResetPasswordForm = () => {
 
 	useEffect(() => {
 		axios
-			.get(`http://localhost:3000/api/auth/check-reset-token/${resetToken}`)
+			.get(buildApiUrl(API_CONFIG.endpoints.auth.checkResetToken(resetToken)))
 			.then((response) => {
 				setIsTokenValid(true);
 				console.log(response.data.message);
@@ -105,13 +107,27 @@ const ResetPasswordForm = () => {
 				</Typography>
 				<Grid container justifyContent='center'>
 					<Grid item className={forgotPasswordText}>
-						<Typography
-							variant='body2'
+						<button
+							type='button'
 							className={textButton}
 							onClick={() => navigate('/request-reset-password')}
+							style={{
+								background: 'none',
+								border: 'none',
+								padding: '8px 12px',
+								font: 'inherit',
+								cursor: 'pointer',
+								textDecoration: 'underline',
+								color: colors.rose,
+								fontSize: 'inherit',
+								lineHeight: 'inherit',
+								display: 'inline-block',
+								position: 'relative',
+								zIndex: 10,
+							}}
 						>
 							Reset again?
-						</Typography>
+						</button>
 					</Grid>
 				</Grid>
 			</FormContainer>

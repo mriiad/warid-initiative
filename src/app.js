@@ -2,18 +2,20 @@ const bodyParser = require('body-parser');
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
+const path = require('path');
+
+// Load environment configuration
+require('dotenv').config();
+
+// Import custom modules
 const errorHandler = require('./middleware/error-handler');
+const config = require('./utils/config');
 const authRouter = require('./routes/auth');
 const userRouter = require('./routes/user');
 const donationRouter = require('./routes/donation');
 const eventRouter = require('./routes/event');
 const contactRouter = require('./routes/contact');
 const emergencyRouter = require('./routes/emergency');
-const path = require('path');
-
-const config = require('../config.json');
-
-const dbConfig = config.dbConfig;
 
 const app = express();
 
@@ -37,14 +39,17 @@ app.get('*', (req, res) => {
 // Use the error-handling middleware
 app.use(errorHandler);
 
+// Database connection with configuration
 mongoose
 	.connect(
-		`${dbConfig.host}://${dbConfig.user}:${dbConfig.password}@${dbConfig.name}.${dbConfig.sample}.mongodb.net/${dbConfig.name}?retryWrites=true&w=majority`
+		`${config.database.host}://${config.database.user}:${config.database.password}@${config.database.name}.${config.database.sample}.mongodb.net/${config.database.name}?retryWrites=true&w=majority`
 	)
 	.then((result) => {
 		console.log('Connected successfully to MongoDB server');
-		app.listen(config.port);
+		app.listen(config.server.port, () => {
+			console.log(`Server running on port ${config.server.port}`);
+		});
 	})
 	.catch((err) => {
-		console.log(err);
+		console.log('MongoDB connection error:', err);
 	});
