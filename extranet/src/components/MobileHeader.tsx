@@ -12,7 +12,7 @@ import API_CONFIG, { buildApiUrl } from '../utils/apiConfig';
 import ActionButton from './shared/ActionButton';
 
 interface HeaderContainerProps {
-	isEventPage: boolean;
+	$isEventPage: boolean;
 }
 
 const HeaderContainer = styled.div<HeaderContainerProps>`
@@ -25,7 +25,7 @@ const HeaderContainer = styled.div<HeaderContainerProps>`
 	left: 0;
 	right: 0;
 	z-index: 102;
-	position: ${(props) => (props.isEventPage ? 'absolute' : 'static')};
+	position: ${(props) => (props.$isEventPage ? 'absolute' : 'static')};
 `;
 
 const LogoContainer = styled.div`
@@ -92,7 +92,7 @@ const MobileHeader = () => {
 	};
 
 	return (
-		<HeaderContainer isEventPage={isEventPage}>
+		<HeaderContainer $isEventPage={isEventPage}>
 			<LogoContainer onClick={() => navigate('/home')}>
 				<img src='/warid-logo.png' alt='Logo' className={logoImage} />
 			</LogoContainer>

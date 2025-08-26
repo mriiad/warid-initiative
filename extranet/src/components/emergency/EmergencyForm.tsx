@@ -150,6 +150,7 @@ const EmergencyForm = () => {
 									name='city'
 									rules={{ required: 'City is required' }}
 									control={control}
+									defaultValue=''
 									render={({ field }) => (
 										<FormControl fullWidth error={Boolean(errors.city)}>
 											<InputLabel>City</InputLabel>

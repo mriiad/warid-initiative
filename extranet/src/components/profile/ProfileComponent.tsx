@@ -137,13 +137,13 @@ const ProfileComponent = () => {
 	useEffect(() => {
 		if (userInfo) {
 			setEditedUserInfo({
-				firstname: userInfo.firstname,
-				lastname: userInfo.lastname,
-				birthdate: formatDate(userInfo.birthdate),
-				bloodGroup: userInfo.bloodGroup,
-				city: userInfo.city,
-				phoneNumber: userInfo.phoneNumber,
-				email: userInfo.email,
+				firstname: userInfo.firstname || '',
+				lastname: userInfo.lastname || '',
+				birthdate: formatDate(userInfo.birthdate) || '',
+				bloodGroup: userInfo.bloodGroup || BloodGroup.None,
+				city: userInfo.city || '',
+				phoneNumber: userInfo.phoneNumber || '',
+				email: userInfo.email || '',
 			});
 		}
 	}, [userInfo]);
