@@ -9,16 +9,23 @@ import {
 	TextField,
 	Typography,
 } from '@mui/material';
-import { useMutation } from '@tanstack/react-query';
+
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Emergency } from '../../data/Emergency';
 import { BLOOD_GROUP_OPTIONS } from '../../data/constants';
+import { useCreateEmergency } from '../../hooks';
 import { authStyles } from '../../styles/mainStyles';
-import { createEmergency } from '../../utils/queries';
 import { cities } from '../../utils/utils';
 import FormContainer from '../shared/FormContainer';
 import ResponseAnimation from '../shared/ResponseAnimation';
+
+// Form data interface for the form (with string phoneNumber for validation)
+interface EmergencyFormData {
+	bloodGroup: string;
+	city: string;
+	phoneNumber: string;
+	details: string;
+}
 
 const EmergencyForm = () => {
 	const { bar, button, signUp, form } = authStyles();
@@ -29,7 +36,7 @@ const EmergencyForm = () => {
 		control,
 		setError,
 		reset,
-	} = useForm<Emergency>();
+	} = useForm<EmergencyFormData>();
 
 	const [isFormSubmitted, setIsFormSubmitted] = useState(false);
 	const [isSuccessResponse, setIsSuccessResponse] = useState(false);
@@ -37,49 +44,55 @@ const EmergencyForm = () => {
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
 	const [loading, setLoading] = useState(false);
 
-	const mutation = useMutation({
-		mutationFn: (formData: Emergency) => {
-			const payload = {
-				...formData,
-				phoneNumber: Number(formData.phoneNumber),
-			};
-			return createEmergency(payload);
-		},
-		onSuccess: () => {
-			setIsFormSubmitted(true);
-			setIsSuccessResponse(true);
-			setIsErrorResponse(false);
-			reset();
-		},
-		onError: (error: any) => {
-			console.error('Error creating emergency:', error);
+	const mutation = useCreateEmergency();
 
-			if (error?.data?.errorKeys) {
-				error.data.errorKeys.forEach((errorKey: keyof Emergency) => {
-					setError(errorKey, {
-						message: `${errorKey} is invalid`,
-					});
-				});
-			}
+	const handleFormSubmit = (formData: EmergencyFormData) => {
+		const payload = {
+			bloodGroup: formData.bloodGroup as any,
+			city: formData.city,
+			phoneNumber: formData.phoneNumber,
+			details: formData.details,
+		};
 
-			setErrorMessage(error?.data?.message || 'An unexpected error occurred.');
-			setIsFormSubmitted(true);
-			setIsErrorResponse(true);
-			setIsSuccessResponse(false);
-		},
-		onSettled: () => {
-			setLoading(false);
-			setTimeout(() => {
-				setIsFormSubmitted(false);
-			}, 8000);
-		},
-	});
+		mutation.mutate(payload, {
+			onSuccess: () => {
+				setIsFormSubmitted(true);
+				setIsSuccessResponse(true);
+				setIsErrorResponse(false);
+				reset();
+			},
+			onError: (error: any) => {
+				if (error?.response?.data?.errorKeys) {
+					error.response.data.errorKeys.forEach(
+						(errorKey: keyof EmergencyFormData) => {
+							setError(errorKey, {
+								message: `${errorKey} is invalid`,
+							});
+						}
+					);
+				}
 
-	const onSubmit = (formData: Emergency) => {
+				setErrorMessage(
+					error?.data?.message || 'An unexpected error occurred.'
+				);
+				setIsFormSubmitted(true);
+				setIsErrorResponse(true);
+				setIsSuccessResponse(false);
+			},
+			onSettled: () => {
+				setLoading(false);
+				setTimeout(() => {
+					setIsFormSubmitted(false);
+				}, 8000);
+			},
+		});
+	};
+
+	const onSubmit = (formData: EmergencyFormData) => {
 		setLoading(true);
 		setIsFormSubmitted(false);
 		setErrorMessage(null);
-		mutation.mutate(formData);
+		handleFormSubmit(formData);
 	};
 
 	return (
@@ -109,6 +122,7 @@ const EmergencyForm = () => {
 								<Controller
 									name='bloodGroup'
 									control={control}
+									defaultValue=''
 									rules={{ required: 'Blood group is required' }}
 									render={({ field }) => (
 										<FormControl fullWidth error={Boolean(errors.bloodGroup)}>
@@ -159,7 +173,7 @@ const EmergencyForm = () => {
 								<Controller
 									name='phoneNumber'
 									control={control}
-									defaultValue={undefined}
+									defaultValue=''
 									rules={{
 										required: 'Phone number is required',
 										pattern: {
@@ -167,7 +181,7 @@ const EmergencyForm = () => {
 											message: 'Phone number must contain only numbers',
 										},
 										validate: (value) =>
-											value.toString().length === 10 ||
+											value.length === 10 ||
 											'Phone number must be exactly 10 numbers',
 									}}
 									render={({ field }) => (

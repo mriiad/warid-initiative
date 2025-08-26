@@ -5,7 +5,6 @@ import MapIcon from '@mui/icons-material/Map';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { Button, Chip, CircularProgress, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { useQuery } from '@tanstack/react-query';
 
 import React, { useState } from 'react';
 import {
@@ -17,8 +16,8 @@ import {
 } from 'react-router-dom';
 import styled from 'styled-components';
 import { useAuth } from '../../auth/AuthContext';
+import { useEvent } from '../../hooks';
 import colors from '../../styles/colors';
-import { fetchEventByReference } from '../../utils/queries';
 import { formatDate, formatDateForDisplay } from '../../utils/utils';
 import CanDonate from '../CanDonate';
 import ConfirmationDialog from '../shared/ConfirmationDialog';
@@ -464,14 +463,7 @@ const EventDetail: React.FC = () => {
 
 	const { fallback } = useStyles();
 
-	const {
-		data: event,
-		isLoading,
-		isError,
-	} = useQuery({
-		queryKey: ['event', reference],
-		queryFn: () => fetchEventByReference(reference),
-	});
+	const { data: event, isLoading, isError } = useEvent(reference || '');
 
 	const [isFavorited, setIsFavorited] = useState(false);
 
@@ -499,26 +491,28 @@ const EventDetail: React.FC = () => {
 	const handleShare = () => {
 		if (navigator.share) {
 			navigator.share({
-				title: event?.title || 'Event',
-				text: event?.subtitle || 'Check out this event',
+				title: event?.data?.title || 'Event',
+				text: event?.data?.subtitle || 'Check out this event',
 				url: window.location.href,
 			});
 		} else {
 			navigator.clipboard.writeText(
-				`${event?.title} - ${event?.subtitle}\n${window.location.href}`
+				`${event?.data?.title} - ${event?.data?.subtitle}\n${window.location.href}`
 			);
 		}
 	};
 
 	const handleParticipateClick = async () => {
 		if (token) {
-			if (event?.isGeneric) {
+			if (event?.data?.isGeneric) {
 				// For generic events, use event reference
 				navigate(`/donate?eventRef=${reference}`);
 			} else {
 				// For non-generic events, include both the event reference and date
 				navigate(
-					`/donate?eventRef=${reference}&eventDate=${formatDate(event?.date)}`
+					`/donate?eventRef=${reference}&eventDate=${formatDate(
+						event?.data?.date
+					)}`
 				);
 			}
 		} else {
@@ -535,7 +529,7 @@ const EventDetail: React.FC = () => {
 		setConfirmationDialog({
 			open: true,
 			title: 'Delete Event',
-			message: `Are you sure you want to delete the event "${event?.title}"? This action cannot be undone.`,
+			message: `Are you sure you want to delete the event "${event?.data?.title}"? This action cannot be undone.`,
 			confirmText: 'Delete',
 			cancelText: 'Cancel',
 			onConfirm: async () => {
@@ -602,24 +596,24 @@ const EventDetail: React.FC = () => {
 					<EventHero>
 						<img
 							src={
-								event?.image
-									? `data:image/jpeg;base64,${event.image}`
+								event?.data?.image
+									? `data:image/jpeg;base64,${event.data.image}`
 									: '/event-default.png'
 							}
-							alt={event?.title}
+							alt={event?.data?.title}
 							className='eventImage'
 						/>
 
 						<Typography variant='h1' className='eventTitle'>
-							{event?.title}
+							{event?.data?.title}
 						</Typography>
 
 						<Typography variant='h5' className='eventSubtitle'>
-							{event?.subtitle}
+							{event?.data?.subtitle}
 						</Typography>
 
 						<Chip
-							label={event?.isGeneric ? 'فعالية خاصة' : 'فعالية عامة'}
+							label={event?.data?.isGeneric ? 'فعالية خاصة' : 'فعالية عامة'}
 							className='eventChip'
 							icon={<EventIcon />}
 						/>
@@ -635,7 +629,7 @@ const EventDetail: React.FC = () => {
 									</div>
 								</div>
 								<div className='cardContent'>
-									{formatDateForDisplay(event?.date)}
+									{formatDateForDisplay(event?.data?.date)}
 								</div>
 							</InfoCard>
 
@@ -646,7 +640,7 @@ const EventDetail: React.FC = () => {
 										<LocationOnIcon />
 									</div>
 								</div>
-								<div className='cardContent'>{event?.location}</div>
+								<div className='cardContent'>{event?.data?.location}</div>
 							</InfoCard>
 
 							<InfoCard>
@@ -658,7 +652,7 @@ const EventDetail: React.FC = () => {
 								</div>
 								<div className='cardContent'>
 									<a
-										href={event?.mapLink}
+										href={event?.data?.mapLink}
 										target='_blank'
 										rel='noopener noreferrer'
 									>
@@ -668,20 +662,24 @@ const EventDetail: React.FC = () => {
 								</div>
 							</InfoCard>
 
-							{event?.description && (
+							{event?.data?.description && (
 								<DescriptionCard>
 									<Typography className='descriptionText'>
-										{event.description}
+										{event.data.description}
 									</Typography>
 								</DescriptionCard>
 							)}
 
-							{event?.qrCode && (
+							{event?.data?.qrCode && (
 								<QRCodeCard>
 									<Typography variant='h6' className='qrTitle'>
 										مسح رمز الاستجابة السريعة للتبرع
 									</Typography>
-									<img src={event.qrCode} alt='QR Code' className='qrImage' />
+									<img
+										src={event.data.qrCode}
+										alt='QR Code'
+										className='qrImage'
+									/>
 								</QRCodeCard>
 							)}
 						</ContentGrid>

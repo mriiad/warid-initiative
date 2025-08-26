@@ -2,15 +2,9 @@ import { OpenInNew } from '@mui/icons-material';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
-import {
-	MutationErrorWithData,
-	useTypedMutation,
-} from '../../hook/useTypedHook';
-import { confirmEventPresence } from '../../utils/queries';
 
-interface SuccessfulResponse {
-	message: string;
-}
+import { useConfirmPresence, useEvent } from '../../hooks';
+import API_CONFIG from '../../utils/apiConfig';
 
 const EventConfirmation: React.FC = () => {
 	const { reference } = useParams<{ reference: string }>();
@@ -20,35 +14,51 @@ const EventConfirmation: React.FC = () => {
 
 	const handleNavigate = (ref: string) => () => navigate(`/events/${ref}`);
 
-	const { mutate, isLoading, isError, error, data } = useTypedMutation<
-		SuccessfulResponse,
-		MutationErrorWithData
-	>(() => confirmEventPresence(reference, token), {
-		onSuccess: ({ message }) => {
-			setIsConfirmed(true);
-			setTimeout(() => navigate('/events'), 3000);
-		},
-		onError: (error) => {
-			console.error('Error:', error);
-		},
-		retry: false,
-	});
+	const {
+		data: eventData,
+		isLoading: isEventLoading,
+		isError: isEventError,
+	} = useEvent(reference || '');
+	const confirmPresenceMutation = useConfirmPresence();
+
+	const handleConfirmPresence = (eventId: string) => {
+		confirmPresenceMutation.mutate(
+			{ eventId, token },
+			{
+				onSuccess: (response) => {
+					setIsConfirmed(true);
+					setTimeout(() => navigate('/events'), API_CONFIG.ui.redirectDelay);
+				},
+				onError: (error) => {
+					console.error('Error:', error);
+				},
+			}
+		);
+	};
 
 	useEffect(() => {
-		mutate();
-	}, [reference, token, mutate]);
+		if (eventData?.data && token) {
+			handleConfirmPresence(eventData.data._id);
+		}
+	}, [eventData, token]);
 
-	if (isLoading) return <div>يتم تأكيد حضورك ...</div>;
-	if (isConfirmed) return <div>{data?.message}</div>;
+	if (isEventLoading || confirmPresenceMutation.isPending)
+		return <div>يتم تأكيد حضورك ...</div>;
+	if (isConfirmed) return <div>تم تأكيد حضورك بنجاح!</div>;
 
-	if (isError && error?.data) {
-		const { errorMessage, details } = error.data;
-		const reference = details?.reference;
+	if (isEventError || confirmPresenceMutation.isError) {
+		const error = confirmPresenceMutation.error as any;
+		const errorMessage =
+			error?.response?.data?.errorMessage || 'حدث خطأ غير متوقع';
+		const details = error?.response?.data?.details;
+		const errorReference = details?.reference;
 
 		return (
 			<div>
 				{errorMessage}
-				{reference && <OpenInNew onClick={handleNavigate(reference)} />}
+				{errorReference && (
+					<OpenInNew onClick={handleNavigate(errorReference)} />
+				)}
 			</div>
 		);
 	}

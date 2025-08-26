@@ -1,17 +1,15 @@
-import ArrowCircleLeftIcon from '@mui/icons-material/ArrowCircleLeft';
-import ArrowCircleRightIcon from '@mui/icons-material/ArrowCircleRight';
-import { makeStyles } from '@mui/styles';
-import axios from 'axios';
-import { useLocation, useNavigate, Link } from 'react-router-dom';
-import styled from 'styled-components';
-import { useAuth } from '../auth/AuthContext';
-import ActionButton from './shared/ActionButton';
 import AccountCircleIcon from '@mui/icons-material/AccountCircleOutlined';
+import ArrowCircleRightIcon from '@mui/icons-material/ArrowCircleRight';
 import LogOutIcon from '@mui/icons-material/LogoutOutlined';
 import { IconButton } from '@mui/material';
-import { icon } from 'leaflet';
+import { makeStyles } from '@mui/styles';
+import axios from 'axios';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
+import { useAuth } from '../auth/AuthContext';
 import colors from '../styles/colors';
-
+import API_CONFIG, { buildApiUrl } from '../utils/apiConfig';
+import ActionButton from './shared/ActionButton';
 
 interface HeaderContainerProps {
 	isEventPage: boolean;
@@ -49,7 +47,6 @@ const IconsContainer = styled.div`
 	padding: 2px;
 `;
 
-
 const useStyles = makeStyles({
 	logoImage: {
 		height: '40px',
@@ -64,7 +61,6 @@ const useStyles = makeStyles({
 	activeIcon: {
 		color: colors.rose,
 	},
-
 });
 
 const MobileHeader = () => {
@@ -75,11 +71,9 @@ const MobileHeader = () => {
 	const navigate = useNavigate();
 	const currentRoute = location.pathname;
 
-
-
 	const handleLogout = () => {
 		axios
-			.post('http://localhost:3000/api/auth/logout')
+			.post(buildApiUrl(API_CONFIG.endpoints.auth.logout))
 			.then((response) => {
 				localStorage.removeItem('token');
 				localStorage.removeItem('refreshToken');
@@ -88,7 +82,7 @@ const MobileHeader = () => {
 
 				setToken(null);
 				setUserId(null);
-				setIsAdmin(null);
+				setIsAdmin(false);
 
 				navigate('/login');
 			})
@@ -96,8 +90,6 @@ const MobileHeader = () => {
 				console.error('Logout error', error);
 			});
 	};
-
-
 
 	return (
 		<HeaderContainer isEventPage={isEventPage}>
@@ -113,15 +105,10 @@ const MobileHeader = () => {
 						/>
 					</Link>
 
-					<IconButton
-						onClick={handleLogout}
-						size='large'
-						color='inherit'
-					>
+					<IconButton onClick={handleLogout} size='large' color='inherit'>
 						<LogOutIcon fontSize='large' className={icon} />
 					</IconButton>
 				</IconsContainer>
-
 			) : (
 				<ActionButton
 					title='تسجيل الدخول'

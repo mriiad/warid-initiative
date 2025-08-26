@@ -15,14 +15,11 @@ import {
 } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
 import { makeStyles } from '@mui/styles';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
-import {
-	confirmUserInEmergency,
-	fetchEmergencyMatchUsers,
-} from '../../utils/queries';
+import { useConfirmUserInEmergency, useEmergencyMatchUsers } from '../../hooks';
 
 interface MatchedUser {
 	_id: string;
@@ -97,46 +94,43 @@ const MatchedUsers = () => {
 		{}
 	);
 
-	const { data, isLoading, isError } = useQuery({
-		queryKey: ['matchedUsers', emergencyId, page],
-		queryFn: () => fetchEmergencyMatchUsers(emergencyId, token, page),
-		keepPreviousData: true,
-	});
+	const {
+		data: response,
+		isLoading,
+		isError,
+	} = useEmergencyMatchUsers(emergencyId!, page);
 
-	const mutation = useMutation({
-		mutationFn: (userId: string) =>
-			confirmUserInEmergency(emergencyId!, userId, token),
-		onMutate: (userId: string) => {
-			// Set loading state for the user being confirmed
-			setLoadingUsers((prev) => ({ ...prev, [userId]: true }));
-		},
-		onSuccess: () => {
-			queryClient.invalidateQueries({
-				queryKey: ['matchedUsers', emergencyId, page],
-			});
-			setSnackbarMessage('User confirmed successfully!');
-			setSnackbarSeverity('success');
-			setSnackbarOpen(true);
-		},
-		onError: () => {
-			setSnackbarMessage('Failed to confirm user.');
-			setSnackbarSeverity('error');
-			setSnackbarOpen(true);
-		},
-		onSettled: () => {
-			// Reset loading state after the mutation is completed
-			setLoadingUsers((prev) => {
-				const newState = { ...prev };
-				Object.keys(newState).forEach((userId) => {
-					newState[userId] = false;
-				});
-				return newState;
-			});
-		},
-	});
+	const mutation = useConfirmUserInEmergency();
 
 	const handleConfirmUser = (userId: string) => {
-		mutation.mutate(userId);
+		// Set loading state for the user being confirmed
+		setLoadingUsers((prev) => ({ ...prev, [userId]: true }));
+
+		mutation.mutate(
+			{ emergencyId: emergencyId!, userId },
+			{
+				onSuccess: () => {
+					setSnackbarMessage('User confirmed successfully!');
+					setSnackbarSeverity('success');
+					setSnackbarOpen(true);
+				},
+				onError: () => {
+					setSnackbarMessage('Failed to confirm user.');
+					setSnackbarSeverity('error');
+					setSnackbarOpen(true);
+				},
+				onSettled: () => {
+					// Reset loading state after the mutation is completed
+					setLoadingUsers((prev) => {
+						const newState = { ...prev };
+						Object.keys(newState).forEach((userId) => {
+							newState[userId] = false;
+						});
+						return newState;
+					});
+				},
+			}
+		);
 	};
 
 	const handleCloseSnackbar = () => {
@@ -144,7 +138,7 @@ const MatchedUsers = () => {
 	};
 
 	const handleNextPage = () => {
-		if (page < Math.ceil((data?.totalItems || 0) / 1)) {
+		if (page < Math.ceil((response?.data?.totalItems || 0) / 1)) {
 			setSearchParams({ page: String(page + 1) });
 		}
 	};
@@ -163,7 +157,7 @@ const MatchedUsers = () => {
 		);
 	}
 
-	if (isError || !data) {
+	if (isError || !response) {
 		return (
 			<Box className={classes.noResultsContainer}>
 				<Typography variant='h6' color='error'>
@@ -172,8 +166,8 @@ const MatchedUsers = () => {
 			</Box>
 		);
 	}
-	const matchedUsers: MatchedUser[] = data.matchingUsers;
-	const totalPages = Math.ceil(data.totalItems / 10);
+	const matchedUsers: MatchedUser[] = response?.data?.matchingUsers || [];
+	const totalPages = Math.ceil((response?.data?.totalItems || 0) / 10);
 
 	return (
 		<div className={classes.root}>

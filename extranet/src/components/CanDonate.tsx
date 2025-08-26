@@ -1,10 +1,10 @@
 import { Button, CircularProgress, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { useQuery } from '@tanstack/react-query';
+
 import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useCanDonate, useEvent } from '../hooks';
 import colors from '../styles/colors';
-import { fetchCanDonate, fetchEventByReference } from '../utils/queries';
 import { formatDate } from '../utils/utils';
 import CardComponent from './shared/CardComponent';
 
@@ -35,26 +35,22 @@ const CanDonate: React.FC = () => {
 		data: canDonate,
 		isLoading: isLoadingCanDonate,
 		isError: hasDonationCheckError,
-	} = useQuery({
-		queryKey: ['canDonate'],
-		queryFn: fetchCanDonate,
-	});
+	} = useCanDonate();
 
 	const {
 		data: event,
 		isLoading: isLoadingEvent,
 		isError,
-	} = useQuery({
-		queryKey: ['event', reference],
-		queryFn: () => fetchEventByReference(reference),
-	});
+	} = useEvent(reference || '');
 
 	const handleConfirmClick = () => {
 		if (canDonate) {
-			if (event && !event.isGeneric) {
+			if (event?.data && !event.data.isGeneric) {
 				// For non-generic events, include both the event reference and date
 				navigate(
-					`/donate?eventRef=${reference}&eventDate=${formatDate(event.date)}`
+					`/donate?eventRef=${reference}&eventDate=${formatDate(
+						event.data.date
+					)}`
 				);
 			} else {
 				// For generic events, only include reference

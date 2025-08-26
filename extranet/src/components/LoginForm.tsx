@@ -5,19 +5,19 @@ import {
 	TextField,
 	Typography,
 } from '@mui/material';
-import { useMutation } from '@tanstack/react-query';
-import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '../auth/AuthContext';
+import { useAuth as useAuthContext } from '../auth/AuthContext';
 import { LoginFormData } from '../data/authData';
+import { useAuth, useCheckProfileCompleteness } from '../hooks';
+import colors from '../styles/colors';
 import { authStyles, mainStyles } from '../styles/mainStyles';
 import FormContainer from './shared/FormContainer';
 import SnackbarComponent from './shared/SnackbarComponent';
 
 const LoginForm = () => {
-	const { setToken, setUserId, setIsAdmin } = useAuth();
+	const { setToken, setUserId, setIsAdmin } = useAuthContext();
 
 	const { bar, button, signUp, form } = authStyles();
 	const { textButton, subTitle } = mainStyles();
@@ -38,24 +38,10 @@ const LoginForm = () => {
 	const [passwordResetSnackbarOpen, setPasswordResetSnackbarOpen] =
 		useState(passwordReset);
 	const [signUpSnackbarOpen, setSignUpSnackbarOpen] = useState(false);
-	const [isLoading, setIsLoading] = useState(false);
 
-	// This method will prevent showing another page (/events) while the 'check-profile' is in progress
-	// CircularProgress will be displayed until the getting the boolean: isProfileComplete
-	const checkProfileCompleteness = async () => {
-		setIsLoading(true);
-		try {
-			const response = await axios.get('/api/user/check-profile');
-			setIsLoading(false);
-			console.log('response.data', response.data);
-			const { isProfileComplete } = response.data;
-			return isProfileComplete;
-		} catch (error) {
-			console.error('Error checking profile completeness:', error);
-			setIsLoading(false);
-			return false;
-		}
-	};
+	const { login } = useAuth();
+	const { updateAuthState } = useAuthContext();
+	const profileCompleteness = useCheckProfileCompleteness();
 
 	useEffect(() => {
 		if (new URLSearchParams(location.search).has('new-user')) {
@@ -63,47 +49,45 @@ const LoginForm = () => {
 		}
 	}, [location]);
 
-	const loginMutation = useMutation({
-		mutationFn: (data: LoginFormData) => {
-			return axios.post('/api/auth/login', data);
-		},
-		onSuccess: async (data) => {
-			setToken(data.data.token);
-			setUserId(data.data.userId);
-			setIsAdmin(data.data.isAdmin);
-			localStorage.setItem('token', data.data.token);
-			localStorage.setItem('userId', data.data.userId);
-			localStorage.setItem('isAdmin', String(data.data.isAdmin));
-			localStorage.setItem('refreshToken', data.data.refreshToken);
-			setIsFormSubmitted(true);
+	useEffect(() => {
+		if (login.isSuccess && login.data) {
+			// Update AuthContext state immediately
+			const { token, userId, isAdmin } = login.data.data;
+			updateAuthState(token, userId, isAdmin);
+
 			const params = new URLSearchParams(window.location.search);
 			const redirectURL = params.get('redirect');
 
 			if (redirectURL) {
 				navigate(redirectURL);
+				return;
 			}
 
-			const isProfileComplete = await checkProfileCompleteness();
-			console.log('isProfileComplete', isProfileComplete);
-			if (!isProfileComplete) {
+			// Check profile completeness and navigate accordingly
+			if (
+				profileCompleteness.data?.data &&
+				!profileCompleteness.data.data.isProfileComplete
+			) {
 				navigate('/update-profile');
 			} else {
 				navigate('/events');
 			}
-		},
-		onError: (error) => {
-			console.error('Error logging in:', error);
-		},
-	});
+		}
+	}, [
+		login.isSuccess,
+		login.data,
+		profileCompleteness.data,
+		navigate,
+		updateAuthState,
+	]);
 
-	const [, setIsFormSubmitted] = useState<boolean>(false);
 	const onSubmit = (formData: LoginFormData) => {
-		loginMutation.mutate(formData);
+		login.mutate(formData);
 	};
 
 	return (
 		<FormContainer>
-			{isLoading ? (
+			{login.isPending ? (
 				<div
 					style={{
 						display: 'flex',
@@ -138,9 +122,27 @@ const LoginForm = () => {
 					</Typography>
 					<Typography variant='h6' align='center' gutterBottom>
 						<span className={subTitle}>ليس لديك حساب؟</span>
-						<span className={textButton} onClick={() => navigate('/signup')}>
+						<button
+							type='button'
+							className={textButton}
+							onClick={() => navigate('/signup')}
+							style={{
+								background: 'none',
+								border: 'none',
+								padding: '8px 12px',
+								font: 'inherit',
+								cursor: 'pointer',
+								textDecoration: 'underline',
+								color: colors.rose,
+								fontSize: 'inherit',
+								lineHeight: 'inherit',
+								display: 'inline-block',
+								position: 'relative',
+								zIndex: 10,
+							}}
+						>
 							التسجيل
-						</span>
+						</button>
 					</Typography>
 					<form onSubmit={handleSubmit(onSubmit)} className={form}>
 						<Grid container spacing={2}>
@@ -148,7 +150,7 @@ const LoginForm = () => {
 								<Controller
 									name='username'
 									control={control}
-									defaultValue=''
+									rules={{ required: 'اسم المستخدم مطلوب' }}
 									render={({ field }) => (
 										<TextField
 											fullWidth
@@ -156,7 +158,7 @@ const LoginForm = () => {
 											required
 											{...field}
 											error={Boolean(errors.username)}
-											helperText={errors.username ? 'اسم المستخدم مطلوب' : ''}
+											helperText={errors.username?.message || ''}
 										/>
 									)}
 								/>
@@ -165,7 +167,7 @@ const LoginForm = () => {
 								<Controller
 									name='password'
 									control={control}
-									defaultValue=''
+									rules={{ required: 'كلمة المرور مطلوبة' }}
 									render={({ field }) => (
 										<TextField
 											fullWidth
@@ -174,7 +176,7 @@ const LoginForm = () => {
 											required
 											{...field}
 											error={Boolean(errors.password)}
-											helperText={errors.password ? 'كلمة المرور مطلوبة' : ''}
+											helperText={errors.password?.message || ''}
 										/>
 									)}
 								/>
@@ -190,14 +192,28 @@ const LoginForm = () => {
 								</Button>
 							</Grid>
 							<Grid item xs={12}>
-								<Typography
-									variant='body2'
-									align='center'
-									gutterBottom
-									className={textButton}
-									onClick={() => navigate('/request-reset-password')}
-								>
-									هل نسيت كلمة المرور؟
+								<Typography variant='body2' align='center' gutterBottom>
+									<button
+										type='button'
+										className={textButton}
+										onClick={() => navigate('/request-reset-password')}
+										style={{
+											background: 'none',
+											border: 'none',
+											padding: '8px 12px',
+											font: 'inherit',
+											cursor: 'pointer',
+											textDecoration: 'underline',
+											color: colors.rose,
+											fontSize: 'inherit',
+											lineHeight: 'inherit',
+											display: 'inline-block',
+											position: 'relative',
+											zIndex: 10,
+										}}
+									>
+										هل نسيت كلمة المرور؟
+									</button>
 								</Typography>
 							</Grid>
 						</Grid>

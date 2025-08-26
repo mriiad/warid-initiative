@@ -16,15 +16,14 @@ import {
 } from '../../data/ProfileFormData';
 
 import {
-	getUserProfile,
-	logout,
-	updatePassword,
-	updateProfileInfo,
-} from '../../utils/queries';
+	useUpdatePassword,
+	useUpdateProfile,
+	useUserProfile,
+} from '../../hooks';
 import { cities, formatDate, formatDateForDisplay } from '../../utils/utils';
 
 import { BloodGroup } from '@/data/constants';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 
 const useStyles = makeStyles({
 	container: {
@@ -132,16 +131,7 @@ const ProfileComponent = () => {
 	};
 
 	// fetch user profile
-	const {
-		data: userInfo,
-		isLoading,
-		isError,
-		refetch,
-	} = useQuery({
-		queryKey: ['userProfile', token],
-		queryFn: () => getUserProfile(token),
-		enabled: !!token,
-	});
+	const { data: userInfo, isLoading, isError, refetch } = useUserProfile();
 
 	// Handle userInfo data changes
 	useEffect(() => {
@@ -166,64 +156,73 @@ const ProfileComponent = () => {
 	}, [isError]);
 
 	// update profile mutation
-	const updateProfileMutation = useMutation({
-		mutationFn: (updatedInfo: UserFormData) =>
-			updateProfileInfo(token, updatedInfo),
-		onSuccess: () => {
-			showSnackbar('Profile updated successfully!', 'success');
-			setIsEditingInfo(false);
-			setLastAction('infoUpdate');
-			queryClient.invalidateQueries({ queryKey: ['userProfile', token] }); // refetch profile
-		},
-		onError: () => {
-			showSnackbar('Failed to update profile.', 'error');
-		},
-	});
-	const updatePasswordMutation = useMutation({
-		mutationFn: ({
-			currentPassword,
-			newPassword,
-		}: {
-			currentPassword: string;
-			newPassword: string;
-		}) => updatePassword(token, currentPassword, newPassword),
-		onSuccess: () => {
-			showSnackbar(
-				'Password updated successfully! You can choose to logout for security.',
-				'success'
-			);
-			setIsEditingPassword(false);
-			setLastAction('passwordUpdate');
-			setCurrentPassword('');
-			setNewPassword('');
-			setConfirmPassword('');
-			setError('');
-		},
-		onError: (error: any) => {
-			const message =
-				error.response?.data?.message || 'Failed to update password.';
-			showSnackbar(message, 'error');
-			console.error('Error updating password:', error);
-		},
-	});
+	const updateProfileMutation = useUpdateProfile();
+
+	const handleUpdateProfile = (updatedInfo: UserFormData) => {
+		updateProfileMutation.mutate(
+			{ userId: 'me', data: updatedInfo },
+			{
+				onSuccess: () => {
+					showSnackbar('Profile updated successfully!', 'success');
+					setIsEditingInfo(false);
+					setLastAction('infoUpdate');
+				},
+				onError: () => {
+					showSnackbar('Failed to update profile.', 'error');
+				},
+			}
+		);
+	};
+	const updatePasswordMutation = useUpdatePassword();
+
+	const handleUpdatePassword = ({
+		currentPassword,
+		newPassword,
+	}: {
+		currentPassword: string;
+		newPassword: string;
+	}) => {
+		updatePasswordMutation.mutate(
+			{ currentPassword, newPassword },
+			{
+				onSuccess: () => {
+					showSnackbar(
+						'Password updated successfully! You can choose to logout for security.',
+						'success'
+					);
+					setIsEditingPassword(false);
+					setLastAction('passwordUpdate');
+					setCurrentPassword('');
+					setNewPassword('');
+					setConfirmPassword('');
+					setError('');
+				},
+				onError: (error: any) => {
+					const message =
+						error.response?.data?.message || 'Failed to update password.';
+					showSnackbar(message, 'error');
+					console.error('Error updating password:', error);
+				},
+			}
+		);
+	};
 
 	// logout
-	const logoutMutation = useMutation({
-		mutationFn: logout,
-		onSuccess: () => {
-			localStorage.clear();
-			setToken(null);
-			setUserId(null);
-			setIsAdmin(null);
-			navigate('/login');
-		},
-		onError: (error) => {
-			console.error('Logout error', error);
-		},
-	});
+	const logoutMutation = useLogout();
 
 	const handleLogout = () => {
-		logoutMutation.mutate();
+		logoutMutation.mutate(undefined, {
+			onSuccess: () => {
+				localStorage.clear();
+				setToken(null);
+				setUserId(null);
+				setIsAdmin(null);
+				navigate('/login');
+			},
+			onError: (error) => {
+				console.error('Logout error', error);
+			},
+		});
 	};
 
 	const handleInfoSave = () => {
@@ -243,7 +242,7 @@ const ProfileComponent = () => {
 			return;
 		}
 
-		updateProfileMutation.mutate(editedUserInfo);
+		handleUpdateProfile(editedUserInfo);
 	};
 
 	const handlePasswordSave = () => {
@@ -255,7 +254,7 @@ const ProfileComponent = () => {
 			showSnackbar('All password fields must be filled.', 'error');
 			return;
 		}
-		updatePasswordMutation.mutate({ currentPassword, newPassword });
+		handleUpdatePassword({ currentPassword, newPassword });
 	};
 
 	// Email & phone number validation functions

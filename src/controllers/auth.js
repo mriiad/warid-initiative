@@ -1,405 +1,440 @@
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
-const nodemailer = require("nodemailer");
-const User = require("../models/user");
-const { validationResult } = require("express-validator");
-const config = require("../../config.json");
-const { STATUS_CODE } = require("../utils/errors/httpStatusCode");
-const crypto = require("crypto");
-const moment = require("moment-timezone");
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const nodemailer = require('nodemailer');
+const crypto = require('crypto');
+const moment = require('moment-timezone');
 
-const { email, password, host, secureConnection, port, ciphers, requireTLS } =
-  config.mailerConfig;
+const User = require('../models/user');
+const { validationResult } = require('express-validator');
+const config = require('../utils/config');
+const constants = require('../utils/constants');
+const { STATUS_CODE } = require('../utils/errors/httpStatusCode');
 
-const transporter = nodemailer.createTransport({
-  host: host,
-  secureConnection: secureConnection,
-  port: port,
-  tls: {
-    ciphers: ciphers,
-  },
-  requireTLS: requireTLS,
-  auth: {
-    user: email,
-    pass: password,
-  },
-});
+const createTransporter = () => {
+	if (!config.email.enabled) {
+		return null;
+	}
+
+	if (!config.email.smtp.auth.user || !config.email.smtp.auth.pass) {
+		return null;
+	}
+
+	return nodemailer.createTransport({
+		host: config.email.smtp.host,
+		secureConnection: config.email.smtp.secure,
+		port: config.email.smtp.port,
+		tls: {
+			ciphers: config.email.smtp.tls.ciphers,
+		},
+		requireTLS: config.email.smtp.tls.requireTLS,
+		auth: {
+			user: config.email.smtp.auth.user,
+			pass: config.email.smtp.auth.pass,
+		},
+	});
+};
+
+const transporter = createTransporter();
 
 exports.signup = (req, res, next) => {
-  const body = req.body;
-  const { username, email, password, gender, phoneNumber } = body;
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    const error = new Error("Validation failed.");
-    error.statusCode = STATUS_CODE.BAD_REQUEST;
-    throw error;
-  }
-  const token = jwt.sign({ email: req.body.email }, config.secret);
-  var activationLink = `http://localhost:${config.port}/api/auth/activation/${token}`;
-  bcrypt
-    .hash(password, 12)
-    .then((hashedPw) => {
-      const user = new User({
-        username,
-        email,
-        password: hashedPw,
-        phoneNumber,
-        gender,
-        isAdmin: false,
-        isActive: false,
-        confirmationCode: token,
-      });
-      return user.save();
-    })
-    .then((result) => {
-      res.status(201).json({
-        message: "User created!",
-        userId: result._id,
-      });
-      return transporter.sendMail({
-        from: "do-not-reply@warid.ma",
-        to: email,
-        subject: "Activation du compte",
-        text: `Bonjour M. ${username}, veuillez activez votre compte s'il vous plait. Merci`,
-        html: `<h1>Email Confirmation</h1>
-					<h2>Hello ${username}</h2>
-					<p>Thank you for subscribing. Please confirm your email by clicking on the following link</p>
-					<a href=${activationLink}> Click here</a>
-					</div>`,
-      });
-    })
-    .catch((err) => {
-      if (!err.statusCode) {
-        err.statusCode = STATUS_CODE.INTERNAL_SERVER;
-      }
-      next(err);
-    });
+	const body = req.body;
+	const { username, email, password, gender, phoneNumber } = body;
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		const error = new Error(constants.ERROR_MESSAGES.VALIDATION_FAILED);
+		error.statusCode = constants.HTTP_STATUS.BAD_REQUEST;
+		throw error;
+	}
+
+	const token = jwt.sign({ email: req.body.email }, config.auth.secretKey);
+	const activationLink = `${config.frontend.url}/api/auth/activation/${token}`;
+
+	bcrypt
+		.hash(password, config.constants.bcryptRounds)
+		.then((hashedPw) => {
+			const user = new User({
+				username,
+				email,
+				password: hashedPw,
+				phoneNumber,
+				gender,
+				isAdmin: false,
+				isActive: false,
+				confirmationCode: token,
+			});
+			return user.save();
+		})
+		.then((result) => {
+			res.status(constants.HTTP_STATUS.CREATED).json({
+				message: constants.ERROR_MESSAGES.USER_CREATED,
+				userId: result._id,
+			});
+
+			if (transporter) {
+				return transporter.sendMail({
+					from: config.email.from,
+					to: email,
+					subject: constants.EMAIL_SUBJECTS.ACCOUNT_ACTIVATION,
+					text: constants.EMAIL_TEMPLATES.ACTIVATION.TEXT(username),
+					html: constants.EMAIL_TEMPLATES.ACTIVATION.HTML(
+						username,
+						activationLink
+					),
+				});
+			} else {
+				return Promise.resolve();
+			}
+		})
+		.catch((err) => {
+			if (!err.statusCode) {
+				err.statusCode = constants.HTTP_STATUS.INTERNAL_SERVER;
+			}
+			next(err);
+		});
 };
 
 exports.login = (req, res, next) => {
-  const body = req.body;
-  const username = body.username;
-  const password = body.password;
-  let loadedUser;
-  User.findOne({ username: username })
-    .then((user) => {
-      if (!user) {
-        const error = new Error(
-          "A user with this username could not be found."
-        );
-        error.statusCode = STATUS_CODE.UNAUTHORIZED;
-        throw error;
-      }
-      loadedUser = user;
-      return bcrypt.compare(password, user.password);
-    })
-    .then((isEqual) => {
-      if (!isEqual) {
-        const error = new Error("Wrong password.");
-        error.statusCode = STATUS_CODE.UNAUTHORIZED;
-        throw error;
-      }
-      const token = jwt.sign(
-        {
-          email: loadedUser.email,
-          userId: loadedUser._id.toString(),
-        },
-        config.authConfig.SECRET_KEY,
-        { expiresIn: config.authConfig.JWT_EXPIRE }
-      );
-	  
-      const refreshToken = jwt.sign(
-        { userId: loadedUser._id.toString() },
-        config.authConfig.REFRESH_SECRET_KEY,
-        { expiresIn: config.authConfig.REFRESH_TOKEN_EXPIRE }
-      );
+	const body = req.body;
+	const username = body.username;
+	const password = body.password;
+	let loadedUser;
 
-      // Store refresh token in the database
-      loadedUser.refreshToken = refreshToken;
-      return loadedUser.save().then(() => {
-        return res.cookie("token", token).status(200).json({
-          token: token,
-          refreshToken: refreshToken,
-          userId: loadedUser._id.toString(),
-          isAdmin: loadedUser.isAdmin,
-        });
-      });
-    })
-    .catch((err) => {
-      if (!err.statusCode) {
-        err.statusCode = 500;
-      }
-      next(err);
-    });
+	User.findOne({ username: username })
+		.then((user) => {
+			if (!user) {
+				const error = new Error(constants.ERROR_MESSAGES.USER_NOT_FOUND);
+				error.statusCode = constants.HTTP_STATUS.UNAUTHORIZED;
+				throw error;
+			}
+			loadedUser = user;
+			return bcrypt.compare(password, user.password);
+		})
+		.then((isEqual) => {
+			if (!isEqual) {
+				const error = new Error(constants.ERROR_MESSAGES.WRONG_PASSWORD);
+				error.statusCode = constants.HTTP_STATUS.UNAUTHORIZED;
+				throw error;
+			}
+
+			const token = jwt.sign(
+				{
+					email: loadedUser.email,
+					userId: loadedUser._id.toString(),
+				},
+				config.auth.jwtSecretKey,
+				{ expiresIn: config.auth.jwtExpire }
+			);
+
+			const refreshToken = jwt.sign(
+				{ userId: loadedUser._id.toString() },
+				config.auth.refreshSecretKey,
+				{ expiresIn: config.auth.refreshTokenExpire }
+			);
+
+			loadedUser.refreshToken = refreshToken;
+			return loadedUser.save().then(() => {
+				return res
+					.cookie('token', token)
+					.status(constants.HTTP_STATUS.OK)
+					.json({
+						token: token,
+						refreshToken: refreshToken,
+						userId: loadedUser._id.toString(),
+						isAdmin: loadedUser.isAdmin,
+					});
+			});
+		})
+		.catch((err) => {
+			if (!err.statusCode) {
+				err.statusCode = constants.HTTP_STATUS.INTERNAL_SERVER;
+			}
+			next(err);
+		});
 };
 
 exports.verifyUser = (req, res, next) => {
-  const params = req.params;
-  User.findOne({
-    confirmationCode: params.confirmationCode,
-  })
-    .then((user) => {
-      if (!user) {
-        return res.status(404).send({ message: "User Not found." });
-      }
-      user.isActive = true;
-      user.save();
-      return res.status(200).send({ message: "Account activated." });
-    })
-    .catch((err) => {
-      if (!err.statusCode) {
-        err.statusCode = 500;
-      }
-      console.log("error", err);
-      next(err);
-    });
+	const params = req.params;
+	User.findOne({
+		confirmationCode: params.confirmationCode,
+	})
+		.then((user) => {
+			if (!user) {
+				return res.status(constants.HTTP_STATUS.NOT_FOUND).send({
+					message: constants.ERROR_MESSAGES.USER_NOT_FOUND,
+				});
+			}
+			user.isActive = true;
+			user.save();
+			return res.status(constants.HTTP_STATUS.OK).send({
+				message: constants.ERROR_MESSAGES.ACCOUNT_ACTIVATED,
+			});
+		})
+		.catch((err) => {
+			if (!err.statusCode) {
+				err.statusCode = constants.HTTP_STATUS.INTERNAL_SERVER;
+			}
+			console.log('error', err);
+			next(err);
+		});
 };
 
 exports.logout = (req, res, next) => {
-  try {
-    res.clearCookie("token");
-    res.status(200).json({ message: "Logged out successfully" });
-  } catch (error) {
-    if (!error.statusCode) {
-      error.statusCode = STATUS_CODE.INTERNAL_SERVER;
-    }
-    next(error);
-  }
+	try {
+		res.clearCookie('token');
+		res.status(constants.HTTP_STATUS.OK).json({
+			message: constants.ERROR_MESSAGES.LOGGED_OUT_SUCCESSFULLY,
+		});
+	} catch (error) {
+		if (!error.statusCode) {
+			error.statusCode = constants.HTTP_STATUS.INTERNAL_SERVER;
+		}
+		next(error);
+	}
 };
 
 exports.refreshToken = (req, res, next) => {
-  const refreshToken = req.body.refreshToken;
+	const refreshToken = req.body.refreshToken;
 
-  if (!refreshToken) {
-    const error = new Error("Refresh token is required.");
-    error.statusCode = STATUS_CODE.BAD_REQUEST;
-    return next(error);
-  }
+	if (!refreshToken) {
+		const error = new Error(constants.ERROR_MESSAGES.REFRESH_TOKEN_INVALID);
+		error.statusCode = constants.HTTP_STATUS.BAD_REQUEST;
+		return next(error);
+	}
 
-  // Validate refresh token
-  jwt.verify(
-    refreshToken,
-    config.authConfig.REFRESH_SECRET_KEY,
-    (err, decodedData) => {
-      if (err) {
-        const error = new Error("Invalid refresh token.");
-        error.statusCode = STATUS_CODE.UNAUTHORIZED;
-        return next(error);
-      }
+	jwt.verify(refreshToken, config.auth.refreshSecretKey, (err, decodedData) => {
+		if (err) {
+			const error = new Error(constants.ERROR_MESSAGES.REFRESH_TOKEN_INVALID);
+			error.statusCode = constants.HTTP_STATUS.UNAUTHORIZED;
+			return next(error);
+		}
 
-      // Find user with decoded userId
-      User.findOne({ _id: decodedData.userId })
-        .select("+refreshToken")
-        .then((user) => {
-          if (!user) {
-            const error = new Error("User not found.");
-            error.statusCode = STATUS_CODE.NOT_FOUND;
-            return next(error);
-          }
+		User.findOne({ _id: decodedData.userId })
+			.select('+refreshToken')
+			.then((user) => {
+				if (!user) {
+					const error = new Error(constants.ERROR_MESSAGES.USER_NOT_FOUND);
+					error.statusCode = constants.HTTP_STATUS.NOT_FOUND;
+					return next(error);
+				}
 
-          // Check if the refresh token exists for the user and is valid
-          if (user.refreshToken !== refreshToken) {
-            const error = new Error("Refresh token is not valid.");
-            error.statusCode = STATUS_CODE.UNAUTHORIZED;
-            return next(error);
-          }
+				if (user.refreshToken !== refreshToken) {
+					const error = new Error(
+						constants.ERROR_MESSAGES.REFRESH_TOKEN_NOT_VALID
+					);
+					error.statusCode = constants.HTTP_STATUS.UNAUTHORIZED;
+					return next(error);
+				}
 
-          // Generate a new access token
-          const newAccessToken = jwt.sign(
-            {
-              email: user.email,
-              userId: user._id.toString(),
-            },
-            config.authConfig.SECRET_KEY,
-            { expiresIn: config.authConfig.JWT_EXPIRE }
-          );
+				const newAccessToken = jwt.sign(
+					{
+						email: user.email,
+						userId: user._id.toString(),
+					},
+					config.auth.jwtSecretKey,
+					{ expiresIn: config.auth.jwtExpire }
+				);
 
-          // Generate a new refresh token
-          const newRefreshToken = jwt.sign(
-            { userId: user._id.toString() },
-            config.authConfig.REFRESH_SECRET_KEY,
-            { expiresIn: config.authConfig.REFRESH_TOKEN_EXPIRE }
-          );
+				const newRefreshToken = jwt.sign(
+					{ userId: user._id.toString() },
+					config.auth.refreshSecretKey,
+					{ expiresIn: config.auth.refreshTokenExpire }
+				);
 
-          // Update refresh token in the database
-          user.refreshToken = newRefreshToken;
-          return user.save().then(() => {
-            // Send the new access and refresh tokens to the client
-            res.status(200).json({
-              accessToken: newAccessToken,
-              refreshToken: newRefreshToken,
-            });
-          });
-        })
-        .catch((err) => {
-          if (!err.statusCode) {
-            err.statusCode = STATUS_CODE.INTERNAL_SERVER;
-          }
-          next(err);
-        });
-    }
-  );
+				user.refreshToken = newRefreshToken;
+				return user.save().then(() => {
+					res.status(constants.HTTP_STATUS.OK).json({
+						accessToken: newAccessToken,
+						refreshToken: newRefreshToken,
+					});
+				});
+			})
+			.catch((err) => {
+				if (!err.statusCode) {
+					err.statusCode = constants.HTTP_STATUS.INTERNAL_SERVER;
+				}
+				next(err);
+			});
+	});
 };
 
 exports.requestPasswordReset = (req, res, next) => {
-  const email = req.body.email;
-  User.findOne({ email: email })
-    .then((user) => {
-      if (!user) {
-        const error = new Error("No user found with that email address.");
-        error.statusCode = STATUS_CODE.NOT_FOUND;
-        throw error;
-      }
+	const email = req.body.email;
 
-      // Generate a reset token and set its expiration
-      const resetToken = crypto.randomBytes(32).toString("hex");
-      user.passwordResetToken = resetToken;
-      // in order to avoid timezone's problems
-      const expiryDate = moment
-        .utc()
-        .add(10, "minutes")
-        .add(2, "hours")
-        .valueOf();
-      user.passwordResetExpires = expiryDate;
-      return user.save();
-    })
-    .then((user) => {
-      // Send reset email
-      const resetURL = `http://localhost:${config.port}/reset-password/${user.passwordResetToken}`;
-      const message = `Forgot your password? Click the link below to reset it: ${resetURL}`;
+	User.findOne({ email: email })
+		.then((user) => {
+			if (!user) {
+				const error = new Error(constants.ERROR_MESSAGES.NO_USER_FOUND);
+				error.statusCode = constants.HTTP_STATUS.NOT_FOUND;
+				throw error;
+			}
 
-      return transporter.sendMail({
-        from: "do-not-reply@warid.ma",
-        to: email,
-        subject: "Password Reset Request",
-        text: message,
-        html: `<p>${message}</p>`,
-      });
-    })
-    .then(() => {
-      res.status(200).json({
-        message: "Password reset link sent to email!",
-      });
-    })
-    .catch((err) => {
-      if (!err.statusCode) {
-        err.statusCode = STATUS_CODE.INTERNAL_SERVER;
-      }
-      next(err);
-    });
+			const resetToken = crypto
+				.randomBytes(constants.VALIDATION.PASSWORD_RESET_TOKEN_BYTES)
+				.toString('hex');
+			user.passwordResetToken = resetToken;
+
+			const expiryDate = moment
+				.utc()
+				.add(config.auth.passwordResetExpireMinutes, 'minutes')
+				.toDate();
+
+			user.passwordResetExpires = expiryDate;
+			return user.save();
+		})
+		.then((user) => {
+			if (transporter) {
+				const resetURL = `${config.frontend.url}/reset-password/${user.passwordResetToken}`;
+
+				return transporter.sendMail({
+					from: config.email.from,
+					to: email,
+					subject: constants.EMAIL_SUBJECTS.PASSWORD_RESET_REQUEST,
+					text: constants.EMAIL_TEMPLATES.PASSWORD_RESET_REQUEST.TEXT(resetURL),
+					html: constants.EMAIL_TEMPLATES.PASSWORD_RESET_REQUEST.HTML(resetURL),
+				});
+			} else {
+				return Promise.resolve();
+			}
+		})
+		.then(() => {
+			res.status(constants.HTTP_STATUS.OK).json({
+				message: constants.ERROR_MESSAGES.PASSWORD_RESET_LINK_SENT,
+			});
+		})
+		.catch((err) => {
+			if (!err.statusCode) {
+				err.statusCode = constants.HTTP_STATUS.INTERNAL_SERVER;
+			}
+			next(err);
+		});
 };
 
 exports.resetPassword = (req, res, next) => {
-  const resetToken = req.params.token;
-  const newPassword = req.body.password;
-  let user;
+	const resetToken = req.params.token;
+	const newPassword = req.body.password;
+	let user;
 
-  User.findOne({
-    passwordResetToken: resetToken,
-    passwordResetExpires: { $gt: moment().utc().add(2, "hours").toDate() }, // Adjust for UTC+2 using moment
-  })
-    .then((foundUser) => {
-      if (!foundUser) {
-        const error = new Error("Token is invalid or has expired.");
-        error.statusCode = STATUS_CODE.BAD_REQUEST;
-        throw error;
-      }
-      user = foundUser;
-      return bcrypt.hash(newPassword, 12);
-    })
-    .then((hashedPw) => {
-      user.password = hashedPw;
-      user.passwordResetToken = undefined;
-      user.passwordResetExpires = undefined;
-      return user.save();
-    })
-    .then(() => {
-      // Send the success email to the user
-      sendPasswordResetSuccessEmail(user.email);
+	User.findOne({
+		passwordResetToken: resetToken,
+		passwordResetExpires: { $gt: moment.utc().toDate() }, // Consistent UTC validation
+	})
+		.then((foundUser) => {
+			if (!foundUser) {
+				const error = new Error(
+					constants.ERROR_MESSAGES.TOKEN_INVALID_OR_EXPIRED
+				);
+				error.statusCode = constants.HTTP_STATUS.BAD_REQUEST;
+				throw error;
+			}
+			user = foundUser;
+			return bcrypt.hash(newPassword, config.constants.bcryptRounds);
+		})
+		.then((hashedPw) => {
+			user.password = hashedPw;
+			user.passwordResetToken = undefined;
+			user.passwordResetExpires = undefined;
+			return user.save();
+		})
+		.then(() => {
+			sendPasswordResetSuccessEmail(user.email);
 
-      res.status(200).json({
-        message: "Password reset successful!",
-      });
-    })
-    .catch((err) => {
-      if (!err.statusCode) {
-        err.statusCode = STATUS_CODE.INTERNAL_SERVER;
-      }
-      next(err);
-    });
+			res.status(constants.HTTP_STATUS.OK).json({
+				message: constants.ERROR_MESSAGES.PASSWORD_RESET_SUCCESSFUL,
+			});
+		})
+		.catch((err) => {
+			if (!err.statusCode) {
+				err.statusCode = constants.HTTP_STATUS.INTERNAL_SERVER;
+			}
+			next(err);
+		});
 };
 
 function sendPasswordResetSuccessEmail(email) {
-  const mailOptions = {
-    from: "do-not-reply@warid.ma",
-    to: email,
-    subject: "Password Reset Successful",
-    text: "Your password has been reset successfully. You can now log in with your new password.",
-    html: `
-            <p>Your password has been reset successfully.</p>
-            <p>You can now <a href="http://localhost:3001/login">log in</a> with your new password.</p>
-        `,
-  };
+	if (!transporter) {
+		return;
+	}
 
-  transporter.sendMail(mailOptions, (error, info) => {
-    if (error) {
-      console.error("Error sending email:", error);
-    } else {
-      console.log("Password reset success email sent: " + info.response);
-    }
-  });
+	const loginURL = `${config.frontend.url}/login`;
+
+	const mailOptions = {
+		from: config.email.from,
+		to: email,
+		subject: constants.EMAIL_SUBJECTS.PASSWORD_RESET_SUCCESS,
+		text: constants.EMAIL_TEMPLATES.PASSWORD_RESET_SUCCESS.TEXT,
+		html: constants.EMAIL_TEMPLATES.PASSWORD_RESET_SUCCESS.HTML(loginURL),
+	};
+
+	transporter.sendMail(mailOptions, (error, info) => {
+		if (error) {
+			console.error('Error sending email:', error);
+		} else {
+			console.log('Password reset success email sent: ' + info.response);
+		}
+	});
 }
 
 exports.checkResetTokenValidity = (req, res, next) => {
-  const resetToken = req.params.token;
+	const resetToken = req.params.token;
 
-  console.log("resetToken", resetToken);
+	console.log('resetToken', resetToken);
 
-  User.findOne({
-    passwordResetToken: resetToken,
-    passwordResetExpires: { $gt: moment().utc().toDate() },
-  })
-    .then((user) => {
-      if (!user) {
-        const error = new Error("Token is invalid or has expired.");
-        error.statusCode = STATUS_CODE.BAD_REQUEST;
-        throw error;
-      }
-      res.status(200).json({ message: "Token is valid." });
-    })
-    .catch((err) => {
-      if (!err.statusCode) {
-        err.statusCode = STATUS_CODE.INTERNAL_SERVER;
-      }
-      next(err);
-    });
+	User.findOne({
+		passwordResetToken: resetToken,
+		passwordResetExpires: { $gt: moment.utc().toDate() }, // Consistent UTC validation
+	})
+		.then((user) => {
+			if (!user) {
+				const error = new Error(
+					constants.ERROR_MESSAGES.TOKEN_INVALID_OR_EXPIRED
+				);
+				error.statusCode = constants.HTTP_STATUS.BAD_REQUEST;
+				throw error;
+			}
+			res.status(constants.HTTP_STATUS.OK).json({
+				message: 'Token is valid.',
+			});
+		})
+		.catch((err) => {
+			if (!err.statusCode) {
+				err.statusCode = constants.HTTP_STATUS.INTERNAL_SERVER;
+			}
+			next(err);
+		});
 };
 
 exports.updatePassword = async (req, res, next) => {
-  try {
-    const userId = req.userId;
-    const { currentPassword, newPassword } = req.body;
+	try {
+		const userId = req.userId;
+		const { currentPassword, newPassword } = req.body;
 
-    const user = await User.findById(userId).select("+password");
-    if (!user) {
-      const error = new Error("User not found.");
-      error.statusCode = 404;
-      throw error;
-    }
-    const isMatch = await bcrypt.compare(currentPassword, user.password);
-    if (!isMatch) {
-      const error = new Error("Current password is incorrect.");
-      error.statusCode = 401;
-      throw error;
-    }
+		const user = await User.findById(userId).select('+password');
+		if (!user) {
+			const error = new Error(constants.ERROR_MESSAGES.USER_NOT_FOUND);
+			error.statusCode = constants.HTTP_STATUS.NOT_FOUND;
+			throw error;
+		}
 
-    user.password = await bcrypt.hash(newPassword, 12);
-    await user.save();
+		const isMatch = await bcrypt.compare(currentPassword, user.password);
+		if (!isMatch) {
+			const error = new Error(
+				constants.ERROR_MESSAGES.CURRENT_PASSWORD_INCORRECT
+			);
+			error.statusCode = constants.HTTP_STATUS.UNAUTHORIZED;
+			throw error;
+		}
 
-    res.status(200).json({ message: "Password changed successfully!" });
-  } catch (err) {
-    if (!err.statusCode) err.statusCode = 500;
-    next(err);
-  }
+		user.password = await bcrypt.hash(
+			newPassword,
+			config.constants.bcryptRounds
+		);
+		await user.save();
+
+		res.status(constants.HTTP_STATUS.OK).json({
+			message: constants.ERROR_MESSAGES.PASSWORD_CHANGED_SUCCESSFULLY,
+		});
+	} catch (err) {
+		if (!err.statusCode) err.statusCode = constants.HTTP_STATUS.INTERNAL_SERVER;
+		next(err);
+	}
 };
-

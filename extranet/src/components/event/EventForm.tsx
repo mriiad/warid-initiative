@@ -10,8 +10,8 @@ import { makeStyles } from '@mui/styles';
 import React, { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
+import { useCreateEvent } from '../../hooks';
 import { authStyles, mainStyles } from '../../styles/mainStyles';
-import { createEvent } from '../../utils/queries';
 import FormContainer from '../shared/FormContainer';
 import ResponseAnimation from '../shared/ResponseAnimation';
 
@@ -59,21 +59,22 @@ const EventForm: React.FC = () => {
 	const [isErrorResponse, setIsErrorResponse] = useState<boolean>(false);
 	const [errorMessage, setErrorMessage] = useState<string>('');
 
+	const createEventMutation = useCreateEvent();
+
 	const onSubmit = async (data: IFormInput) => {
 		try {
-			const formData = new FormData();
-			formData.append('title', data.title);
-			formData.append('subtitle', data.subtitle ?? '');
-			formData.append('location', data.location);
-			formData.append('date', data.date);
-			formData.append('mapLink', data.mapLink ?? '');
-			formData.append('description', data.description);
-			formData.append('isGeneric', data.isGeneric.toString());
-			if (image) {
-				formData.append('image', image);
-			}
+			const eventData = {
+				title: data.title,
+				subtitle: data.subtitle,
+				location: data.location,
+				date: data.date,
+				mapLink: data.mapLink,
+				description: data.description,
+				isGeneric: data.isGeneric,
+				image: image,
+			};
 
-			const response = await createEvent(formData);
+			await createEventMutation.mutateAsync(eventData);
 			setIsFormSubmitted(true);
 			setIsSuccessResponse(true);
 		} catch (error) {

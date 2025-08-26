@@ -6,6 +6,7 @@ import React, {
 	useEffect,
 	useState,
 } from 'react';
+import API_CONFIG, { buildApiUrl } from '../utils/apiConfig';
 import { useAxiosInterceptor } from './useAxiosInterceptor';
 
 interface AuthContextProps {
@@ -16,6 +17,7 @@ interface AuthContextProps {
 	setUserId: React.Dispatch<React.SetStateAction<string | null>>;
 	setIsAdmin: React.Dispatch<React.SetStateAction<boolean>>;
 	refreshToken: () => Promise<void>;
+	updateAuthState: (token: string, userId: string, isAdmin: boolean) => void;
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
@@ -44,7 +46,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 		if (currentToken && currentRefreshToken) {
 			try {
 				const response = await axios.post(
-					'http://localhost:3000/api/auth/refresh-token',
+					buildApiUrl(API_CONFIG.endpoints.auth.refreshToken),
 					{ refreshToken: currentRefreshToken }
 				);
 
@@ -63,6 +65,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 		}
 	}, []);
 
+	const updateAuthState = useCallback(
+		(newToken: string, newUserId: string, newIsAdmin: boolean) => {
+			setToken(newToken);
+			setUserId(newUserId);
+			setIsAdmin(newIsAdmin);
+		},
+		[]
+	);
+
 	useAxiosInterceptor(refreshToken);
 
 	return (
@@ -75,6 +86,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 				isAdmin,
 				setIsAdmin,
 				refreshToken,
+				updateAuthState,
 			}}
 		>
 			{children}

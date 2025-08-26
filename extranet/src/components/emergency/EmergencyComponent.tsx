@@ -1,15 +1,13 @@
 import { Alert, Button, CircularProgress, Snackbar } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
 import { useAuth } from '../../auth/AuthContext';
 import { Emergency } from '../../data/Emergency';
-import {
-	confirmEmergency,
-	fetchUnconfirmedEmergencies,
-} from '../../utils/queries';
+import { useConfirmEmergency, useUnconfirmedEmergencies } from '../../hooks';
+import API_CONFIG from '../../utils/apiConfig';
 import EmergencyCard from './EmergencyCard';
 
 const EmergenciesContainer = styled.div`
@@ -59,50 +57,44 @@ const EmergencyComponent = () => {
 		data: emergenciesResponse,
 		isLoading,
 		error,
-	} = useQuery({
-		queryKey: ['unconfirmedEmergencies', page],
-		queryFn: () => fetchUnconfirmedEmergencies(page, token),
-		enabled: !!token,
-	});
+	} = useUnconfirmedEmergencies(page);
 
-	// Update emergencies and totalPages when data arrives
 	useEffect(() => {
-		if (emergenciesResponse) {
-			setTotalPages(Math.ceil(emergenciesResponse.totalItems / 10));
+		if (emergenciesResponse?.data) {
+			setTotalPages(Math.ceil(emergenciesResponse.data.totalItems / 10));
 		}
 	}, [emergenciesResponse]);
 
-	const emergencies: Emergency[] = emergenciesResponse?.emergencies || [];
+	const emergencies: Emergency[] = emergenciesResponse?.data?.emergencies || [];
 
-	const mutation = useMutation({
-		mutationFn: (emergencyId: string) => confirmEmergency(emergencyId, token),
-		onSuccess: (_, emergencyId) => {
-			// Remove confirmed emergency from local cache
-			queryClient.setQueryData<EmergenciesResponse>(
-				['unconfirmedEmergencies', page],
-				(oldData) => {
-					if (!oldData) return oldData;
-					return {
-						...oldData,
-						emergencies: oldData.emergencies.filter(
-							(e) => e._id !== emergencyId
-						),
-						totalItems: oldData.totalItems - 1,
-					};
-				}
-			);
-			setSnackbarMessage('Emergency confirmed successfully!');
-			setSnackbarOpen(true);
-		},
-		onError: (error) => {
-			console.error('Error confirming emergency:', error);
-			setSnackbarMessage('Error confirming emergency. Please try again.');
-			setSnackbarOpen(true);
-		},
-	});
+	const mutation = useConfirmEmergency();
 
 	const handleConfirmEmergency = (emergencyId: string) => {
-		mutation.mutate(emergencyId);
+		mutation.mutate(emergencyId, {
+			onSuccess: () => {
+				// Remove confirmed emergency from local cache
+				queryClient.setQueryData<EmergenciesResponse>(
+					['emergencies', 'unconfirmed', page],
+					(oldData) => {
+						if (!oldData) return oldData;
+						return {
+							...oldData,
+							emergencies: oldData.emergencies.filter(
+								(e) => e._id !== emergencyId
+							),
+							totalItems: oldData.totalItems - 1,
+						};
+					}
+				);
+				setSnackbarMessage('Emergency confirmed successfully!');
+				setSnackbarOpen(true);
+			},
+			onError: (error) => {
+				console.error('Error confirming emergency:', error);
+				setSnackbarMessage('Error confirming emergency. Please try again.');
+				setSnackbarOpen(true);
+			},
+		});
 	};
 
 	const handleCloseSnackbar = () => {
@@ -135,7 +127,9 @@ const EmergencyComponent = () => {
 							emergency={emergency}
 							animationDelay={`${index * 0.2}s`}
 							onConfirm={() => handleConfirmEmergency(emergency._id)}
-							isConfirming={mutation.isPending}
+							isConfirming={
+								mutation.isPending && mutation.variables === emergency._id
+							}
 						/>
 					))}
 				</div>
@@ -155,7 +149,7 @@ const EmergencyComponent = () => {
 
 			<Snackbar
 				open={snackbarOpen}
-				autoHideDuration={3000}
+				autoHideDuration={API_CONFIG.ui.snackbarDuration}
 				onClose={handleCloseSnackbar}
 				anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
 			>
