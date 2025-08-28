@@ -452,6 +452,33 @@ const useStyles = makeStyles({
 		alignItems: 'center',
 		minHeight: '100vh',
 	},
+	qrCodeContainer: {
+		width: '100%',
+		maxWidth: '600px',
+		margin: '40px auto 0 auto',
+	},
+	qrCodeCard: {
+		background: 'rgba(255, 255, 255, 0.95)',
+		backdropFilter: 'blur(20px)',
+		borderRadius: '24px',
+		padding: '40px',
+		border: '1px solid rgba(59, 42, 130, 0.1)',
+		boxShadow: '0 8px 32px rgba(59, 42, 130, 0.1)',
+		textAlign: 'center',
+	},
+	qrCodeImage: {
+		maxWidth: '240px',
+		maxHeight: '240px',
+		borderRadius: '20px',
+		boxShadow: '0 8px 24px rgba(59, 42, 130, 0.2)',
+		margin: '24px 0',
+	},
+	qrCodeTitle: {
+		color: '#3b2a82',
+		fontSize: '1.4rem',
+		fontWeight: '600',
+		marginBottom: '24px',
+	},
 });
 
 const EventDetail: React.FC = () => {
@@ -461,7 +488,8 @@ const EventDetail: React.FC = () => {
 	const location = useLocation();
 	const initialRoute: boolean = location.pathname === `/events/${reference}`;
 
-	const { fallback } = useStyles();
+	const { fallback, qrCodeContainer, qrCodeCard, qrCodeImage, qrCodeTitle } =
+		useStyles();
 
 	const { data: event, isLoading, isError } = useEvent(reference || '');
 
@@ -669,20 +697,22 @@ const EventDetail: React.FC = () => {
 									</Typography>
 								</DescriptionCard>
 							)}
-
-							{event?.data?.qrCode && (
-								<QRCodeCard>
-									<Typography variant='h6' className='qrTitle'>
-										مسح رمز الاستجابة السريعة للتبرع
-									</Typography>
-									<img
-										src={event.data.qrCode}
-										alt='QR Code'
-										className='qrImage'
-									/>
-								</QRCodeCard>
-							)}
 						</ContentGrid>
+					)}
+
+					{event?.data?.event?.qrCode && (
+						<div className={qrCodeContainer}>
+							<div className={qrCodeCard}>
+								<Typography variant='h6' className={qrCodeTitle}>
+									مسح رمز الاستجابة السريعة للتبرع
+								</Typography>
+								<img
+									src={event.data.event.qrCode}
+									alt='QR Code'
+									className={qrCodeImage}
+								/>
+							</div>
+						</div>
 					)}
 
 					{initialRoute && (

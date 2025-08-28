@@ -45,6 +45,36 @@ exports.getEvent = async (req, res, next) => {
 			throw error;
 		}
 		if (event.image) event.image = event.image.toString('base64');
+
+		// Check if user is authenticated and is admin to include QR code
+		let includeQRCode = false;
+		const authHeader = req.headers['authorization'];
+
+		if (authHeader) {
+			const token = authHeader.split(' ')[1];
+			if (token) {
+				try {
+					const jwt = require('jsonwebtoken');
+					const config = require('../../config.json');
+					const decodedToken = jwt.verify(token, config.authConfig.SECRET_KEY);
+					if (decodedToken && decodedToken.userId) {
+						const User = require('../models/user');
+						const user = await User.findById(decodedToken.userId).lean();
+						if (user && user.isAdmin) {
+							includeQRCode = true;
+						}
+					}
+				} catch (tokenError) {
+					// Token is invalid, continue without QR code
+				}
+			}
+		}
+
+		// Remove QR code from response if user is not admin
+		if (!includeQRCode && event.qrCode) {
+			delete event.qrCode;
+		}
+
 		res
 			.status(STATUS_CODE.OK)
 			.json({ message: 'Event fetched successfully.', event });
