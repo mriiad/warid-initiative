@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useCreateEvent } from '../../hooks';
 import { authStyles, mainStyles } from '../../styles/mainStyles';
+import { formatDate } from '../../utils/utils';
 import FormContainer from '../shared/FormContainer';
 import ResponseAnimation from '../shared/ResponseAnimation';
 
@@ -190,7 +191,7 @@ const EventForm: React.FC = () => {
 									type='date'
 									InputLabelProps={{ shrink: true }}
 									inputProps={{
-										min: new Date().toISOString().split('T')[0],
+										min: formatDate(new Date()),
 									}}
 									error={Boolean(errors.date)}
 									helperText={errors.date?.message}

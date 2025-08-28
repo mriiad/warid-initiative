@@ -17,7 +17,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { useNavigate, useParams } from 'react-router-dom';
 import { BLOOD_GROUP_OPTIONS } from '../data/constants';
 import { authStyles } from '../styles/mainStyles';
-import { cities } from '../utils/utils';
+import { cities, formatDate } from '../utils/utils';
 import FormContainer from './shared/FormContainer';
 import SnackbarComponent from './shared/SnackbarComponent';
 
@@ -86,9 +86,7 @@ const UpdateUser = () => {
 			reset({
 				firstname: userData.firstname || '',
 				lastname: userData.lastname || '',
-				birthdate: userData.birthdate
-					? new Date(userData.birthdate).toISOString().split('T')[0]
-					: '',
+				birthdate: userData.birthdate ? formatDate(userData.birthdate) : '',
 				bloodGroup: userData.bloodGroup || '',
 				city: userData.city || '',
 				phoneNumber: userData.phoneNumber || '',

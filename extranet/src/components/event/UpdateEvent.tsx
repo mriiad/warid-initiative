@@ -15,6 +15,7 @@ import { useAuth } from '../../auth/AuthContext';
 import { useEvent } from '../../hooks';
 import { eventsService } from '../../services';
 import { authStyles, mainStyles } from '../../styles/mainStyles';
+import { formatDate } from '../../utils/utils';
 import FormContainer from '../shared/FormContainer';
 import ResponseAnimation from '../shared/ResponseAnimation';
 import SnackbarComponent from '../shared/SnackbarComponent';
@@ -74,18 +75,13 @@ const UpdateEvent: React.FC = () => {
 			let formattedDate = '';
 			if (event.date) {
 				try {
-					const dateObj = new Date(event.date);
-					if (!isNaN(dateObj.getTime())) {
-						formattedDate = dateObj.toISOString().split('T')[0];
-					} else {
-						formattedDate = new Date().toISOString().split('T')[0];
-					}
+					formattedDate = formatDate(event.date);
 				} catch (error) {
 					console.warn('Invalid date format:', event.date);
-					formattedDate = new Date().toISOString().split('T')[0];
+					formattedDate = formatDate(new Date());
 				}
 			} else {
-				formattedDate = new Date().toISOString().split('T')[0];
+				formattedDate = formatDate(new Date());
 			}
 
 			reset({

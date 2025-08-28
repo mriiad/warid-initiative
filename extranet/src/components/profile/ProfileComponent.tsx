@@ -417,9 +417,7 @@ const ProfileComponent = () => {
 										firstname: userInfo.data.firstname || '',
 										lastname: userInfo.data.lastname || '',
 										birthdate: userInfo.data.birthdate
-											? new Date(userInfo.data.birthdate)
-													.toISOString()
-													.split('T')[0]
+											? formatDate(userInfo.data.birthdate)
 											: '',
 										bloodGroup: userInfo.data.bloodGroup || BloodGroup.None,
 										city: userInfo.data.city || '',

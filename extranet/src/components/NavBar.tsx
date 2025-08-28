@@ -219,13 +219,25 @@ const Navbar = () => {
 					{token ? (
 						<ActionButton
 							title={t('common.logout')}
-							icon={<ArrowCircleLeftIcon className={loginIcon} />}
+							icon={
+								document.documentElement.dir === 'rtl' ? (
+									<ArrowCircleRightIcon className={loginIcon} />
+								) : (
+									<ArrowCircleLeftIcon className={loginIcon} />
+								)
+							}
 							onClick={() => handleLogout()}
 						/>
 					) : (
 						<ActionButton
 							title={t('common.login')}
-							icon={<ArrowCircleRightIcon className={loginIcon} />}
+							icon={
+								document.documentElement.dir === 'rtl' ? (
+									<ArrowCircleLeftIcon className={loginIcon} />
+								) : (
+									<ArrowCircleRightIcon className={loginIcon} />
+								)
+							}
 							onClick={() => navigate('/login')}
 						/>
 					)}

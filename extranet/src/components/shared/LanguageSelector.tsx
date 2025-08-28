@@ -11,6 +11,7 @@ import {
 } from '@mui/material';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import FlagIcon from './FlagIcon';
 
 const LanguageSelector: React.FC = () => {
 	const { i18n, t } = useTranslation();
@@ -32,20 +33,10 @@ const LanguageSelector: React.FC = () => {
 	};
 
 	const languages = [
-		{ code: 'fr', name: 'Français', flag: '🇫🇷' },
-		{ code: 'en', name: 'English', flag: '🇬🇧' },
-		{ code: 'ar', name: 'العربية', flag: '🇲🇦' },
+		{ code: 'fr', name: 'Français', country: 'france' },
+		{ code: 'en', name: 'English', country: 'uk' },
+		{ code: 'ar', name: 'العربية', country: 'morocco' },
 	];
-
-	// Function to get flag emoji with better rendering
-	const getFlagEmoji = (flag: string) => {
-		try {
-			// Try to render the flag emoji
-			return flag || '🏳️';
-		} catch {
-			return '🏳️'; // Fallback flag if emoji fails to load
-		}
-	};
 
 	if (isMobile) {
 		return (
@@ -90,9 +81,11 @@ const LanguageSelector: React.FC = () => {
 							sx={{ fontSize: '0.8rem' }}
 						>
 							<Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-								<span className='flag-emoji' style={{ fontSize: '1rem' }}>
-									{getFlagEmoji(language.flag)}
-								</span>
+								<FlagIcon
+									country={language.country as 'morocco' | 'france' | 'uk'}
+									size={16}
+									className='flag-emoji'
+								/>
 								<Typography variant='body2' sx={{ fontSize: '0.8rem' }}>
 									{language.code.toUpperCase()}
 								</Typography>
@@ -138,7 +131,11 @@ const LanguageSelector: React.FC = () => {
 				{languages.map((language) => (
 					<MenuItem key={language.code} value={language.code}>
 						<Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-							<span className='flag-emoji'>{getFlagEmoji(language.flag)}</span>
+							<FlagIcon
+								country={language.country as 'morocco' | 'france' | 'uk'}
+								size={20}
+								className='flag-emoji'
+							/>
 							<Typography variant='body2'>{language.name}</Typography>
 						</Box>
 					</MenuItem>
