@@ -15,7 +15,9 @@ import {
 	UserFormData,
 } from '../../data/ProfileFormData';
 
+import { useTranslation } from 'react-i18next';
 import {
+	useLogout,
 	useUpdatePassword,
 	useUpdateProfile,
 	useUserProfile,
@@ -93,6 +95,7 @@ const useStyles = makeStyles({
 
 const ProfileComponent = () => {
 	const classes = useStyles();
+	const { t } = useTranslation();
 	const { token, setToken, setIsAdmin, setUserId } = useAuth();
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
@@ -135,15 +138,15 @@ const ProfileComponent = () => {
 
 	// Handle userInfo data changes
 	useEffect(() => {
-		if (userInfo) {
+		if (userInfo?.data) {
 			setEditedUserInfo({
-				firstname: userInfo.firstname || '',
-				lastname: userInfo.lastname || '',
-				birthdate: formatDate(userInfo.birthdate) || '',
-				bloodGroup: userInfo.bloodGroup || BloodGroup.None,
-				city: userInfo.city || '',
-				phoneNumber: userInfo.phoneNumber || '',
-				email: userInfo.email || '',
+				firstname: userInfo.data.firstname || '',
+				lastname: userInfo.data.lastname || '',
+				birthdate: formatDate(userInfo.data.birthdate) || '',
+				bloodGroup: userInfo.data.bloodGroup || BloodGroup.None,
+				city: userInfo.data.city || '',
+				phoneNumber: userInfo.data.phoneNumber || '',
+				email: userInfo.data.email || '',
 			});
 		}
 	}, [userInfo]);
@@ -151,7 +154,7 @@ const ProfileComponent = () => {
 	// Handle query error
 	useEffect(() => {
 		if (isError) {
-			showSnackbar('Failed to load profile.', 'error');
+			showSnackbar(t('profile.failedToLoad'), 'error');
 		}
 	}, [isError]);
 
@@ -159,16 +162,27 @@ const ProfileComponent = () => {
 	const updateProfileMutation = useUpdateProfile();
 
 	const handleUpdateProfile = (updatedInfo: UserFormData) => {
+		const profileData = {
+			profile: {
+				firstname: updatedInfo.firstname,
+				lastname: updatedInfo.lastname,
+				bloodGroup: updatedInfo.bloodGroup,
+				city: updatedInfo.city,
+				phoneNumber: updatedInfo.phoneNumber,
+				gender: 'male' as const,
+			},
+		};
+
 		updateProfileMutation.mutate(
-			{ userId: 'me', data: updatedInfo },
+			{ userId: 'me', data: profileData },
 			{
 				onSuccess: () => {
-					showSnackbar('Profile updated successfully!', 'success');
+					showSnackbar(t('profile.profileUpdated'), 'success');
 					setIsEditingInfo(false);
 					setLastAction('infoUpdate');
 				},
 				onError: () => {
-					showSnackbar('Failed to update profile.', 'error');
+					showSnackbar(t('profile.failedToUpdate'), 'error');
 				},
 			}
 		);
@@ -186,10 +200,7 @@ const ProfileComponent = () => {
 			{ currentPassword, newPassword },
 			{
 				onSuccess: () => {
-					showSnackbar(
-						'Password updated successfully! You can choose to logout for security.',
-						'success'
-					);
+					showSnackbar(t('profile.passwordUpdated'), 'success');
 					setIsEditingPassword(false);
 					setLastAction('passwordUpdate');
 					setCurrentPassword('');
@@ -199,7 +210,8 @@ const ProfileComponent = () => {
 				},
 				onError: (error: any) => {
 					const message =
-						error.response?.data?.message || 'Failed to update password.';
+						error.response?.data?.message ||
+						t('profile.failedToUpdatePassword');
 					showSnackbar(message, 'error');
 					console.error('Error updating password:', error);
 				},
@@ -207,7 +219,6 @@ const ProfileComponent = () => {
 		);
 	};
 
-	// logout
 	const logoutMutation = useLogout();
 
 	const handleLogout = () => {
@@ -247,11 +258,11 @@ const ProfileComponent = () => {
 
 	const handlePasswordSave = () => {
 		if (newPassword !== confirmPassword) {
-			showSnackbar('New password and confirmation do not match.', 'error');
+			showSnackbar(t('profile.passwordMismatch'), 'error');
 			return;
 		}
 		if (!currentPassword || !newPassword || !confirmPassword) {
-			showSnackbar('All password fields must be filled.', 'error');
+			showSnackbar(t('profile.allFieldsRequired'), 'error');
 			return;
 		}
 		handleUpdatePassword({ currentPassword, newPassword });
@@ -259,20 +270,20 @@ const ProfileComponent = () => {
 
 	// Email & phone number validation functions
 	const phoneValidationRules = {
-		required: 'Phone number is required',
+		required: t('auth.signup.phoneRequired'),
 		pattern: {
 			value: /^[0-9]+$/,
-			message: 'Phone number must contain only numbers',
+			message: t('validation.invalidPhone'),
 		},
 		validate: (value: string) =>
-			value.length === 10 || 'Phone number must be exactly 10 digits',
+			value.length === 10 || t('validation.minLength', { count: 10 }),
 	};
 
 	const emailValidationRules = {
-		required: 'Email is required',
+		required: t('auth.signup.emailRequired'),
 		pattern: {
 			value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-			message: 'Please enter a valid email address',
+			message: t('validation.invalidEmail'),
 		},
 	};
 
@@ -292,18 +303,19 @@ const ProfileComponent = () => {
 	};
 
 	if (isLoading) return <CircularProgress />;
-	if (isError) return <Alert severity='error'>Failed to load profile.</Alert>;
+	if (isError)
+		return <Alert severity='error'>{t('profile.failedToLoad')}</Alert>;
 
 	return (
-		<div className={classes.container}>
-			<h1 className={classes.title}>Profile</h1>
+		<div className={`${classes.container} content-area`}>
+			<h1 className={classes.title}>{t('profile.title')}</h1>
 
 			{/* User Info Section */}
-			<div className={classes.section}>
-				<h3 className={classes.sectionTitle}>User Information</h3>
-				{Object.entries(userFieldDisplayNames).map(([field, label]) => (
+			<div className={`${classes.section} profile-section`}>
+				<h3 className={classes.sectionTitle}>{t('profile.userInformation')}</h3>
+				{Object.entries(userFieldDisplayNames).map(([field, labelKey]) => (
 					<div className={classes.infoRow} key={field}>
-						<span className={classes.label}>{label}:</span>
+						<span className={classes.label}>{t(labelKey)}:</span>
 						{isEditingInfo ? (
 							field === 'bloodGroup' ? (
 								<TextField
@@ -375,11 +387,12 @@ const ProfileComponent = () => {
 						) : (
 							<span className={classes.value}>
 								{field === 'birthdate'
-									? userInfo &&
+									? userInfo?.data &&
 									  formatDateForDisplay(
-											userInfo[field as keyof typeof userInfo]
+											userInfo.data[field as keyof typeof userInfo.data]
 									  )
-									: userInfo && userInfo[field as keyof typeof userInfo]}
+									: userInfo?.data &&
+									  userInfo.data[field as keyof typeof userInfo.data]}
 							</span>
 						)}
 					</div>
@@ -393,28 +406,30 @@ const ProfileComponent = () => {
 							onClick={handleInfoSave}
 							sx={{ mr: 1 }}
 						>
-							Save
+							{t('profile.save')}
 						</Button>
 						<Button
 							variant='outlined'
 							color='secondary'
 							onClick={() => {
-								if (userInfo)
+								if (userInfo?.data)
 									setEditedUserInfo({
-										firstname: userInfo.firstname,
-										lastname: userInfo.lastname,
-										birthdate: new Date(userInfo.birthdate)
-											.toISOString()
-											.split('T')[0],
-										bloodGroup: userInfo.bloodGroup,
-										city: userInfo.city,
-										phoneNumber: userInfo.phoneNumber,
-										email: userInfo.email,
+										firstname: userInfo.data.firstname || '',
+										lastname: userInfo.data.lastname || '',
+										birthdate: userInfo.data.birthdate
+											? new Date(userInfo.data.birthdate)
+													.toISOString()
+													.split('T')[0]
+											: '',
+										bloodGroup: userInfo.data.bloodGroup || BloodGroup.None,
+										city: userInfo.data.city || '',
+										phoneNumber: userInfo.data.phoneNumber || '',
+										email: userInfo.data.email || '',
 									});
 								setIsEditingInfo(false);
 							}}
 						>
-							Cancel
+							{t('profile.cancel')}
 						</Button>
 					</>
 				) : (
@@ -423,19 +438,21 @@ const ProfileComponent = () => {
 						color='primary'
 						onClick={() => setIsEditingInfo(true)}
 					>
-						Edit Info
+						{t('profile.editInfo')}
 					</Button>
 				)}
 			</div>
 
 			{/* Password Section */}
-			<div className={classes.section}>
-				<h3 className={classes.sectionTitle}>Password</h3>
+			<div className={`${classes.section} profile-section`}>
+				<h3 className={classes.sectionTitle}>{t('profile.password')}</h3>
 
 				{isEditingPassword ? (
 					<>
 						<div className={classes.infoRow}>
-							<span className={classes.label}>Current Password:</span>
+							<span className={classes.label}>
+								{t('profile.currentPassword')}:
+							</span>
 							<TextField
 								type='password'
 								size='small'
@@ -445,7 +462,7 @@ const ProfileComponent = () => {
 							/>
 						</div>
 						<div className={classes.infoRow}>
-							<span className={classes.label}>New Password:</span>
+							<span className={classes.label}>{t('profile.newPassword')}:</span>
 							<TextField
 								type='password'
 								size='small'
@@ -455,7 +472,9 @@ const ProfileComponent = () => {
 							/>
 						</div>
 						<div className={classes.infoRow}>
-							<span className={classes.label}>Confirm New Password:</span>
+							<span className={classes.label}>
+								{t('profile.confirmPassword')}:
+							</span>
 							<TextField
 								type='password'
 								size='small'
@@ -471,7 +490,7 @@ const ProfileComponent = () => {
 							onClick={handlePasswordSave}
 							sx={{ mr: 1 }}
 						>
-							Save
+							{t('profile.save')}
 						</Button>
 						<Button
 							variant='outlined'
@@ -484,13 +503,15 @@ const ProfileComponent = () => {
 								setError('');
 							}}
 						>
-							Cancel
+							{t('profile.cancel')}
 						</Button>
 					</>
 				) : (
 					<>
 						<div className={classes.infoRow}>
-							<span className={classes.label}>Current Password:</span>
+							<span className={classes.label}>
+								{t('profile.currentPassword')}:
+							</span>
 							<TextField
 								type='password'
 								size='small'
@@ -504,7 +525,7 @@ const ProfileComponent = () => {
 							color='primary'
 							onClick={() => setIsEditingPassword(true)}
 						>
-							Change Password
+							{t('profile.changePassword')}
 						</Button>
 					</>
 				)}
@@ -534,7 +555,7 @@ const ProfileComponent = () => {
 									size='small'
 									onClick={handleLogout}
 								>
-									Logout
+									{t('profile.logout')}
 								</Button>
 								<Button
 									variant='contained'
@@ -542,7 +563,7 @@ const ProfileComponent = () => {
 									size='small'
 									onClick={() => setSnackbarOpen(false)}
 								>
-									Stay Logged In
+									{t('profile.stayLoggedIn')}
 								</Button>
 							</div>
 						</div>

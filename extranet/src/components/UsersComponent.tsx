@@ -2,6 +2,7 @@ import { Tune } from '@mui/icons-material';
 import { Box, Button, Chip, CircularProgress, Typography } from '@mui/material';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
 import { useAuth } from '../auth/AuthContext';
@@ -87,6 +88,7 @@ interface Filters {
 
 const UsersComponent: React.FC = () => {
 	const navigate = useNavigate();
+	const { t } = useTranslation();
 	const { bar, button, form } = authStyles();
 	const { textButton, subTitle } = mainStyles();
 	const [users, setUsers] = useState<any[]>([]);
@@ -267,10 +269,12 @@ const UsersComponent: React.FC = () => {
 		console.log(`Deleting user with name ${username}`);
 		setConfirmationDialog({
 			open: true,
-			title: 'Delete User',
-			message: `Are you sure you want to delete the user "${username}"? This action cannot be undone.`,
-			confirmText: 'Delete',
-			cancelText: 'Cancel',
+			title: t('common.delete') + ' ' + t('common.users'),
+			message: `${t('common.confirm')} ${t('common.delete')} "${username}"? ${t(
+				'common.delete'
+			)} ${t('common.cannot')} ${t('common.undo')}.`,
+			confirmText: t('common.delete'),
+			cancelText: t('common.cancel'),
 			onConfirm: async () => {
 				try {
 					setIsLoading(true);
@@ -318,10 +322,12 @@ const UsersComponent: React.FC = () => {
 		console.log(`Making user with ID ${userId} as admin`);
 		setConfirmationDialog({
 			open: true,
-			title: 'Make User Admin',
-			message: `Are you sure you want to make "${username}" an admin? This will give them full administrative privileges.`,
-			confirmText: 'Make Admin',
-			cancelText: 'Cancel',
+			title: t('common.makeAdmin'),
+			message: `${t('common.confirm')} ${t(
+				'common.makeAdmin'
+			)} "${username}"? ${t('common.adminPrivileges')}.`,
+			confirmText: t('common.makeAdmin'),
+			cancelText: t('common.cancel'),
 			onConfirm: async () => {
 				try {
 					setIsLoading(true);
@@ -366,40 +372,46 @@ const UsersComponent: React.FC = () => {
 		<>
 			{isAdmin && (
 				<FilterHeader>
-					<FilterBar>
-						<Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+					<FilterBar className='filter-container'>
+						<Box
+							className='filter-text'
+							sx={{ display: 'flex', alignItems: 'center', gap: 2 }}
+						>
 							<Typography
 								variant='h6'
 								sx={{ color: colors.purple, fontWeight: 'bold' }}
 							>
-								Users List
+								{t('admin.users')} {t('common.list', 'List')}
 							</Typography>
 							<Typography
 								variant='body2'
 								sx={{ color: colors.purple, opacity: 0.7 }}
 							>
-								{users.length} users found
+								{users.length} {t('common.users')} {t('common.found')}
 							</Typography>
 						</Box>
-						<FilterButton
-							variant='contained'
-							startIcon={<Tune />}
-							onClick={() => setIsFilterOpen(true)}
-						>
-							Advanced Filters
-						</FilterButton>
+						<div className='filter-buttons'>
+							<FilterButton
+								variant='contained'
+								startIcon={<Tune />}
+								onClick={() => setIsFilterOpen(true)}
+								className='filter-button-text'
+							>
+								{t('common.advancedFilters')}
+							</FilterButton>
+						</div>
 					</FilterBar>
 
 					{(() => {
 						const activeFilters = getActiveFilters();
 						return (
 							activeFilters.length > 0 && (
-								<ActiveFilters>
+								<ActiveFilters className='active-filters-container'>
 									<Typography
 										variant='body2'
 										sx={{ color: colors.purple, mr: 1 }}
 									>
-										Active filters:
+										{t('common.activeFilters')}
 									</Typography>
 									{activeFilters.map((filter) => (
 										<Chip
@@ -435,7 +447,7 @@ const UsersComponent: React.FC = () => {
 											},
 										}}
 									>
-										Clear All
+										{t('common.clearAll')}
 									</Button>
 								</ActiveFilters>
 							)
@@ -497,7 +509,7 @@ const UsersComponent: React.FC = () => {
 							})
 						}
 					>
-						السابق
+						{t('common.previous')}
 					</Button>
 					<Button
 						disabled={page >= totalPages}
@@ -508,7 +520,7 @@ const UsersComponent: React.FC = () => {
 							})
 						}
 					>
-						التالي
+						{t('common.next')}
 					</Button>
 				</div>
 			)}

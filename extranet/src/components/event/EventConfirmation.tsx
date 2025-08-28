@@ -1,5 +1,6 @@
 import { OpenInNew } from '@mui/icons-material';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
 
@@ -7,6 +8,7 @@ import { useConfirmPresence, useEvent } from '../../hooks';
 import API_CONFIG from '../../utils/apiConfig';
 
 const EventConfirmation: React.FC = () => {
+	const { t } = useTranslation();
 	const { reference } = useParams<{ reference: string }>();
 	const { token } = useAuth();
 	const navigate = useNavigate();
@@ -43,13 +45,13 @@ const EventConfirmation: React.FC = () => {
 	}, [eventData, token]);
 
 	if (isEventLoading || confirmPresenceMutation.isPending)
-		return <div>يتم تأكيد حضورك ...</div>;
-	if (isConfirmed) return <div>تم تأكيد حضورك بنجاح!</div>;
+		return <div>{t('emergency.confirmingPresence')}</div>;
+	if (isConfirmed) return <div>{t('emergency.confirmationSuccess')}</div>;
 
 	if (isEventError || confirmPresenceMutation.isError) {
 		const error = confirmPresenceMutation.error as any;
 		const errorMessage =
-			error?.response?.data?.errorMessage || 'حدث خطأ غير متوقع';
+			error?.response?.data?.errorMessage || t('events.unexpectedError');
 		const details = error?.response?.data?.details;
 		const errorReference = details?.reference;
 

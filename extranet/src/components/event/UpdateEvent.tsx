@@ -9,9 +9,11 @@ import {
 import { makeStyles } from '@mui/styles';
 import React, { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
 import { useEvent } from '../../hooks';
+import { eventsService } from '../../services';
 import { authStyles, mainStyles } from '../../styles/mainStyles';
 import FormContainer from '../shared/FormContainer';
 import ResponseAnimation from '../shared/ResponseAnimation';
@@ -38,6 +40,7 @@ const useStyles = makeStyles({
 });
 
 const UpdateEvent: React.FC = () => {
+	const { t } = useTranslation();
 	const { bar, button, form } = authStyles();
 	const { subTitle } = mainStyles();
 	const { formWrapper, fileInput } = useStyles();
@@ -64,24 +67,42 @@ const UpdateEvent: React.FC = () => {
 	const [message, setMessage] = useState<string | null>(null);
 
 	const { data: eventData, isLoading, isError } = useEvent(reference || '');
+	const event = eventData?.data || eventData;
 
 	useEffect(() => {
-		if (eventData) {
+		if (event) {
+			let formattedDate = '';
+			if (event.date) {
+				try {
+					const dateObj = new Date(event.date);
+					if (!isNaN(dateObj.getTime())) {
+						formattedDate = dateObj.toISOString().split('T')[0];
+					} else {
+						formattedDate = new Date().toISOString().split('T')[0];
+					}
+				} catch (error) {
+					console.warn('Invalid date format:', event.date);
+					formattedDate = new Date().toISOString().split('T')[0];
+				}
+			} else {
+				formattedDate = new Date().toISOString().split('T')[0];
+			}
+
 			reset({
-				title: eventData.title,
-				subtitle: eventData.subtitle || '',
-				location: eventData.location,
-				date: new Date(eventData.date).toISOString().split('T')[0],
-				mapLink: eventData.mapLink || '',
-				description: eventData.description || '',
-				isGeneric: eventData.isGeneric || false,
+				title: event.title || '',
+				subtitle: event.subtitle || '',
+				location: event.location || '',
+				date: formattedDate,
+				mapLink: event.mapLink || '',
+				description: event.description || '',
+				isGeneric: event.isGeneric || false,
 			});
 		}
-	}, [eventData, reset]);
+	}, [event, reset]);
 
 	useEffect(() => {
 		if (isError) {
-			setMessage('Error loading event data');
+			setMessage(t('events.loadingEventDetails') + ' - Error');
 		}
 	}, [isError]);
 
@@ -99,27 +120,26 @@ const UpdateEvent: React.FC = () => {
 				formData.append('image', image);
 			}
 
-			const response = await fetch(
-				`http://localhost:3000/api/event/${reference}`,
-				{
-					method: 'PUT',
-					headers: {
-						Authorization: `Bearer ${token}`,
-					},
-					body: formData,
-				}
-			);
+			const response = await eventsService.update(reference || '', {
+				title: data.title,
+				subtitle: data.subtitle || '',
+				location: data.location,
+				date: data.date,
+				mapLink: data.mapLink || '',
+				description: data.description,
+				isGeneric: data.isGeneric,
+				image: image || undefined,
+			});
 
-			if (response.ok) {
+			if (response.status === 200) {
 				setIsFormSubmitted(true);
 				setIsSuccessResponse(true);
-				setMessage('Event updated successfully!');
+				setMessage(t('events.eventUpdatedSuccess'));
 				setTimeout(() => {
 					navigate('/events');
 				}, 2000);
 			} else {
-				const errorData = await response.json();
-				throw new Error(errorData.errorMessage || 'Error updating event');
+				throw new Error('Error updating event');
 			}
 		} catch (error: any) {
 			setIsFormSubmitted(true);
@@ -168,8 +188,8 @@ const UpdateEvent: React.FC = () => {
 		return (
 			<FormContainer className={formWrapper}>
 				<ResponseAnimation
-					responseMessage={'تم تحديث الفعالية بنجاح!'}
-					actionMessage={'سيتم توجيهك إلى صفحة الفعاليات...'}
+					responseMessage={t('events.eventUpdatedSuccess')}
+					actionMessage={t('events.redirectingToEvents')}
 					isSuccess={isSuccessResponse}
 					isError={!isSuccessResponse && isErrorResponse}
 					errorMessage={errorMessage}
@@ -182,7 +202,7 @@ const UpdateEvent: React.FC = () => {
 		<>
 			<FormContainer className={formWrapper}>
 				<Typography variant='h4' align='center' className={subTitle}>
-					تحديث الفعالية
+					{t('events.updateEvent')}
 					<span className={bar}></span>
 				</Typography>
 				<form onSubmit={handleSubmit(onSubmit)} className={form}>
@@ -191,11 +211,11 @@ const UpdateEvent: React.FC = () => {
 							<Controller
 								name='title'
 								control={control}
-								rules={{ required: 'العنوان مطلوب' }}
+								rules={{ required: t('events.titleRequired') }}
 								render={({ field }) => (
 									<TextField
 										{...field}
-										label='العنوان'
+										label={t('events.title')}
 										error={Boolean(errors.title)}
 										helperText={errors.title?.message}
 									/>
@@ -208,7 +228,7 @@ const UpdateEvent: React.FC = () => {
 								name='subtitle'
 								control={control}
 								render={({ field }) => (
-									<TextField {...field} label='العنوان الفرعي' />
+									<TextField {...field} label={t('events.subtitle')} />
 								)}
 							/>
 						</Grid>
@@ -217,11 +237,11 @@ const UpdateEvent: React.FC = () => {
 							<Controller
 								name='location'
 								control={control}
-								rules={{ required: 'الموقع مطلوب' }}
+								rules={{ required: t('events.locationRequired') }}
 								render={({ field }) => (
 									<TextField
 										{...field}
-										label='موقع الفعالية'
+										label={t('events.location')}
 										error={Boolean(errors.location)}
 										helperText={errors.location?.message}
 									/>
@@ -233,15 +253,15 @@ const UpdateEvent: React.FC = () => {
 							<Controller
 								name='date'
 								control={control}
-								rules={{ required: 'التاريخ مطلوب' }}
+								rules={{ required: t('events.dateRequired') }}
 								render={({ field }) => (
 									<TextField
 										{...field}
-										label='التاريخ'
+										label={t('events.date')}
 										type='date'
 										InputLabelProps={{ shrink: true }}
 										disabled={true}
-										helperText='تاريخ الفعالية لا يمكن تغييره'
+										helperText={t('events.dateCannotBeChanged')}
 									/>
 								)}
 							/>
@@ -252,7 +272,7 @@ const UpdateEvent: React.FC = () => {
 								name='mapLink'
 								control={control}
 								render={({ field }) => (
-									<TextField {...field} label='رابط الخريطة' />
+									<TextField {...field} label={t('events.mapLink')} />
 								)}
 							/>
 						</Grid>
@@ -261,11 +281,11 @@ const UpdateEvent: React.FC = () => {
 							<Controller
 								name='description'
 								control={control}
-								rules={{ required: 'الوصف مطلوب' }}
+								rules={{ required: t('events.descriptionRequired') }}
 								render={({ field }) => (
 									<TextField
 										{...field}
-										label='الوصف'
+										label={t('events.description')}
 										multiline
 										rows={4}
 										error={Boolean(errors.description)}
@@ -287,7 +307,7 @@ const UpdateEvent: React.FC = () => {
 												onChange={field.onChange}
 											/>
 										}
-										label='فعالية خاصة'
+										label={t('events.generalEvent')}
 									/>
 								)}
 							/>
@@ -303,21 +323,21 @@ const UpdateEvent: React.FC = () => {
 									accept='image/*'
 								/>
 								<Button component='span' variant='contained'>
-									اختر ملف صورة جديد (اختياري)
+									{t('events.chooseNewImage')}
 								</Button>
 							</label>
 							{image ? (
-								<span>الملف المحدد: {image.name}</span>
-							) : (
 								<span>
-									لم يتم اختيار ملف جديد - سيتم الاحتفاظ بالصورة الحالية
+									{t('events.selectedFile')}: {image.name}
 								</span>
+							) : (
+								<span>{t('events.noNewFileSelected')}</span>
 							)}
 						</Grid>
 
 						<Grid item xs={12}>
 							<Button type='submit' className={button}>
-								تحديث الفعالية
+								{t('events.updateEvent')}
 							</Button>
 						</Grid>
 					</Grid>

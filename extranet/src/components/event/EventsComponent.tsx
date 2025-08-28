@@ -9,6 +9,7 @@ import {
 import { makeStyles } from '@mui/styles';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { useAuth } from '../../auth/AuthContext';
@@ -181,6 +182,7 @@ const useStyles = makeStyles({
 const EventsComponent = () => {
 	const { eventsList, fallBack, emptyState, pagination, searchField } =
 		useStyles();
+	const { t } = useTranslation();
 	const [events, setEvents] = useState<Event[] | null>([]);
 	const [filteredEvents, setFilteredEvents] = useState<Event[] | null>([]);
 	const [searchTerm, setSearchTerm] = useState('');
@@ -309,13 +311,13 @@ const EventsComponent = () => {
 	return (
 		<EventsContainer>
 			<PageHeader>
-				<h1>فعالياتنا</h1>
-				<p>انضم إلينا في الفعاليات المختلفة لدعم بنك الدم</p>
+				<h1>{t('events.ourEvents')}</h1>
+				<p>{t('events.joinEvents')}</p>
 			</PageHeader>
 
 			<SearchContainer>
 				<TextField
-					placeholder='البحث في الفعاليات...'
+					placeholder={t('events.searchEvents')}
 					value={searchTerm}
 					onChange={(e) => setSearchTerm(e.target.value)}
 					className={searchField}
@@ -334,7 +336,7 @@ const EventsComponent = () => {
 			{isLoading ? (
 				<div className={fallBack}>
 					<CircularProgress size={60} />
-					<p>جاري تحميل الفعاليات...</p>
+					<p>{t('events.loadingEvents')}</p>
 				</div>
 			) : filteredEvents && filteredEvents.length > 0 ? (
 				<>
@@ -351,13 +353,13 @@ const EventsComponent = () => {
 					</div>
 					<div className={pagination}>
 						<Button disabled={page === 1} onClick={() => setPage(page - 1)}>
-							السابق
+							{t('events.previous')}
 						</Button>
 						<Button
 							disabled={page >= totalPages}
 							onClick={() => setPage(page + 1)}
 						>
-							التالي
+							{t('events.next')}
 						</Button>
 					</div>
 				</>
@@ -370,11 +372,11 @@ const EventsComponent = () => {
 							marginBottom: '20px',
 						}}
 					/>
-					<h3>لا توجد فعاليات متاحة</h3>
+					<h3>{t('events.noEventsAvailable')}</h3>
 					<p>
 						{searchTerm
-							? 'لم نجد أي فعاليات تطابق بحثك. جرب كلمات أخرى.'
-							: 'لا توجد فعاليات متاحة حالياً. تحقق مرة أخرى لاحقاً.'}
+							? t('events.noEventsFound')
+							: t('events.noEventsCurrently')}
 					</p>
 					{searchTerm && (
 						<Button
@@ -386,7 +388,7 @@ const EventsComponent = () => {
 								padding: '10px 30px',
 							}}
 						>
-							مسح البحث
+							{t('events.clearSearch')}
 						</Button>
 					)}
 				</div>

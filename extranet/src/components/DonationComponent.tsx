@@ -13,6 +13,7 @@ import { makeStyles } from '@mui/styles';
 import clsx from 'clsx';
 import { useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { ApiErrorResponse } from '../data/ApiErrorResponse';
@@ -69,6 +70,7 @@ const DonationComponent = () => {
 	const { wrapper, topBottom, top, bottom, separator } = useStyles();
 	const { bar, button, signUp, form } = authStyles();
 	const { subTitle } = mainStyles();
+	const { t } = useTranslation();
 
 	const navigate = useNavigate();
 	const location = useLocation();
@@ -277,7 +279,7 @@ const DonationComponent = () => {
 												error={Boolean(errors.bloodGroup)}
 												disabled={!isBloodGroupEditable}
 											>
-												<InputLabel>فصيلة الدم</InputLabel>
+												<InputLabel>{t('donation.bloodGroup')}</InputLabel>
 												<Select {...field}>
 													<MenuItem value=''>
 														<em>None</em>
@@ -289,7 +291,9 @@ const DonationComponent = () => {
 													))}
 												</Select>
 												<FormHelperText>
-													{errors.bloodGroup ? 'فصيلة الدم مطلوبة' : ''}
+													{errors.bloodGroup
+														? t('donation.bloodGroupRequired')
+														: ''}
 												</FormHelperText>
 											</FormControl>
 										)}
@@ -301,15 +305,17 @@ const DonationComponent = () => {
 										control={control}
 										defaultValue=''
 										rules={{
-											required: 'تاريخ التبرع مطلوب',
+											required: t('donation.donationDateRequired'),
 										}}
 										render={({ field }) => (
 											<TextField
 												{...field}
-												label='تاريخ التبرع'
+												label={t('donation.donationDate')}
 												error={Boolean(errors.donationDate)}
 												helperText={
-													errors.donationDate ? 'تاريخ التبرع مطلوب' : ''
+													errors.donationDate
+														? t('donation.donationDateRequired')
+														: ''
 												}
 												type='date'
 												fullWidth
@@ -327,23 +333,29 @@ const DonationComponent = () => {
 										control={control}
 										defaultValue=''
 										rules={{
-											required: 'نوع التبرع مطلوب',
+											required: t('donation.donationTypeRequired'),
 										}}
 										render={({ field }) => (
 											<FormControl
 												fullWidth
 												error={Boolean(errors.donationType)}
 											>
-												<InputLabel>نوع التبرع</InputLabel>
+												<InputLabel>{t('donation.donationType')}</InputLabel>
 												<Select {...field}>
 													<MenuItem value=''>
-														<em>لا شيء</em>
+														<em>{t('donation.none')}</em>
 													</MenuItem>
-													<MenuItem value='Blood'>الدم</MenuItem>
-													<MenuItem value='Plates'>الصفائح</MenuItem>
+													<MenuItem value='Blood'>
+														{t('donation.blood')}
+													</MenuItem>
+													<MenuItem value='Plates'>
+														{t('donation.plates')}
+													</MenuItem>
 												</Select>
 												<FormHelperText>
-													{errors.donationType ? 'نوع التبرع مطلوب' : ''}
+													{errors.donationType
+														? t('donation.donationTypeRequired')
+														: ''}
 												</FormHelperText>
 											</FormControl>
 										)}
@@ -358,7 +370,7 @@ const DonationComponent = () => {
 											defaultValue=''
 											render={({ field }) => (
 												<FormControl fullWidth error={Boolean(errors.eventId)}>
-													<InputLabel>الحدث</InputLabel>
+													<InputLabel>{t('donation.event')}</InputLabel>
 													<Select {...field}>
 														<MenuItem value=''>
 															<em>None</em>
@@ -368,12 +380,13 @@ const DonationComponent = () => {
 																<MenuItem key={event._id} value={event._id}>
 																	{event.title} (
 																	{formatDateForDisplay(event.date)})
-																	{event.isGeneric && ' - حدث عام'}
+																	{event.isGeneric &&
+																		` - ${t('donation.generalEvent')}`}
 																</MenuItem>
 															))}
 													</Select>
 													<FormHelperText>
-														{errors.eventId ? 'الحدث مطلوب' : ''}
+														{errors.eventId ? t('donation.eventRequired') : ''}
 													</FormHelperText>
 												</FormControl>
 											)}
@@ -386,7 +399,7 @@ const DonationComponent = () => {
 								className={button}
 								style={{ marginTop: '20px' }}
 							>
-								تسجيل التبرع
+								{t('donation.submitDonation')}
 							</Button>
 						</>
 					)}
@@ -396,12 +409,14 @@ const DonationComponent = () => {
 			<SnackbarComponent
 				open={showSnackbar}
 				handleClose={() => setShowSnackbar(false)}
-				message={`آخر تبرع كان بتاريخ ${defaultDonationDateDisplay}`}
+				message={`${t(
+					'donation.lastDonationMessage'
+				)} ${defaultDonationDateDisplay}`}
 			/>
 			<SnackbarComponent
 				open={reviewSnackbarOpen}
 				handleClose={() => setReviewSnackbarOpen(false)}
-				message='تم استعادة بيانات التبرع السابقة. يرجى مراجعتها قبل الإرسال.'
+				message={t('donation.previousDonationRestored')}
 			/>
 		</FormContainer>
 	);

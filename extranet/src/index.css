@@ -31,3 +31,380 @@ code {
 .MuiOutlinedInput-input {
   z-index: 2;
 }
+
+.language-stable-layout {
+  direction: ltr !important;
+  text-align: left !important;
+}
+
+.flag-emoji {
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", "Android Emoji", "EmojiSymbols", "EmojiOne Mozilla", "Twemoji Mozilla", "Segoe UI", sans-serif;
+  font-variant-emoji: unicode;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  display: inline-block;
+  line-height: 1;
+}
+
+.navbar-language-stable {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  direction: ltr;
+}
+
+.navbar-language-stable .MuiSelect-root {
+  min-width: 80px !important;
+  width: 80px !important;
+}
+
+.navbar-language-stable .MuiSelect-select {
+  font-size: 0.8rem !important;
+  padding: 8px 16px 8px 8px !important;
+}
+
+.desktop-language-selector {
+  min-width: 120px !important;
+  width: 120px !important;
+}
+
+.desktop-language-selector .MuiSelect-select {
+  font-size: 0.875rem !important;
+  padding: 8px 24px 8px 12px !important;
+}
+
+.filter-container {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+}
+
+.filter-text {
+  flex: 1;
+  margin-right: 12px;
+}
+
+.filter-buttons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.active-filters-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-top: 12px;
+}
+
+.navigation-stable {
+  direction: ltr !important;
+  text-align: left !important;
+  flex-direction: row !important;
+  justify-content: space-between !important;
+}
+
+.navigation-stable .MuiIconButton-root {
+  margin-left: auto !important;
+  margin-right: 0 !important;
+}
+
+/* Arabic specific fixes */
+[dir="ar"] .navigation-stable {
+  direction: ltr !important;
+  flex-direction: row !important;
+  justify-content: space-between !important;
+}
+
+[dir="ar"] .navbar-language-stable {
+  direction: ltr !important;
+  flex-direction: row !important;
+}
+
+/* Ensure navbar items stay in correct order */
+[dir="ar"] .navigation-stable ul {
+  direction: ltr !important;
+  display: flex !important;
+  flex-direction: row !important;
+}
+
+[dir="ar"] .navigation-stable li {
+  direction: ltr !important;
+}
+
+[dir="ar"] .filter-container {
+  direction: ltr !important;
+}
+
+/* RTL content areas (only for actual content, not navigation) */
+[dir="ar"] .content-area {
+  direction: rtl;
+  text-align: right;
+}
+
+[dir="ar"] .content-area .MuiTypography-root {
+  text-align: right;
+}
+
+[dir="ar"] .content-area .MuiTextField-root {
+  direction: rtl;
+}
+
+[dir="ar"] .content-area .MuiFormControl-root {
+  direction: rtl;
+}
+
+/* Fix for Arabic white padding issue */
+[dir="ar"] .landing-page {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+[dir="ar"] .landing-page .MuiContainer-root {
+  padding-left: 16px !important;
+  padding-right: 16px !important;
+}
+
+/* Prevent image reversal in Arabic */
+[dir="ar"] img {
+  transform: none !important;
+}
+
+/* Home page image gallery improvements */
+[dir="ar"] .galleryContainer {
+  direction: ltr !important;
+}
+
+[dir="ar"] .galleryContainer img {
+  margin: 0 2px !important;
+}
+
+/* Reduce image padding on smaller screens */
+@media (max-width: 768px) {
+  .galleryContainer {
+    padding: 4px 0 !important;
+  }
+}
+
+/* Allow filter button text to wrap properly for longer translations */
+.filter-button-text {
+  white-space: normal;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+  max-width: 180px;
+  line-height: 1.2;
+}
+
+/* Prevent text overflow in forms and buttons for longer translations */
+.MuiFormLabel-root,
+.MuiButton-root,
+.MuiTypography-root {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+/* Ensure action buttons can handle longer translated text */
+.actionButtons .MuiButton-root {
+  white-space: normal;
+  min-height: 48px;
+  height: auto;
+  padding: 12px 16px;
+}
+
+/* Handle longer navigation text */
+.navbar-language-stable .MuiSelect-root,
+.desktop-language-selector .MuiSelect-root {
+  min-width: auto !important;
+  max-width: 200px;
+}
+
+/* Ensure table cells can handle longer translated text */
+.MuiTableCell-root {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+  max-width: none;
+}
+
+/* Profile component button improvements */
+.profile-section .MuiButton-root {
+  min-height: 48px !important;
+  padding: 12px 24px !important;
+  font-size: 0.9rem !important;
+  font-weight: 500 !important;
+  border-radius: 8px !important;
+  text-transform: none !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+[dir="ar"] .profile-section .MuiButton-root {
+  direction: ltr !important;
+}
+
+/* Button spacing improvements */
+.profile-section .MuiButton-root + .MuiButton-root {
+  margin-left: 12px !important;
+}
+
+@media (max-width: 768px) {
+  .profile-section .MuiButton-root {
+    width: 100% !important;
+    margin-bottom: 8px !important;
+    margin-left: 0 !important;
+  }
+
+  .profile-section .MuiButton-root + .MuiButton-root {
+    margin-left: 0 !important;
+  }
+}
+
+/* Handle event card title and subtitle overflow */
+.titleContainer p,
+.titleContainer .subtitle {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+  line-height: 1.3;
+}
+
+/* Ensure event card content doesn't overflow */
+.cardContainer .MuiTypography-root {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+/* UserFilter drawer fixes for French text */
+.MuiDrawer-paper .MuiBox-root {
+  overflow-x: hidden !important;
+}
+
+.MuiDrawer-paper .MuiFormControl-root {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.MuiDrawer-paper .MuiTextField-root {
+  width: 100% !important;
+}
+
+.MuiDrawer-paper .MuiTypography-root {
+  word-wrap: break-word;
+  hyphens: auto;
+  overflow-wrap: break-word;
+}
+
+/* French text specific adjustments */
+[dir="fr"] .MuiDrawer-paper {
+  width: 480px !important;
+  max-width: 480px !important;
+}
+
+[dir="fr"] .MuiDrawer-paper .MuiTypography-root {
+  font-size: 0.95rem;
+  line-height: 1.3;
+}
+
+/* French language specific text handling */
+[dir="fr"] .MuiButton-root,
+[dir="fr"] .MuiFormLabel-root,
+[dir="fr"] .filter-button-text {
+  letter-spacing: 0.01em;
+  font-size: 0.95rem;
+}
+
+/* Arabic language specific text handling */
+[dir="ar"] .MuiButton-root,
+[dir="ar"] .MuiFormLabel-root,
+[dir="ar"] .filter-button-text {
+  letter-spacing: 0.01em;
+  font-size: 0.95rem;
+}
+
+/* Drawer header title adjustments */
+.MuiDrawer-paper .MuiTypography-root:first-child {
+  flex: 1;
+  margin-right: 8px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+[dir="fr"] .MuiDrawer-paper .MuiTypography-root:first-child {
+  font-size: 1.3rem !important;
+  line-height: 1.2 !important;
+}
+
+/* Mobile specific fixes */
+@media (max-width: 768px) {
+  .navbar-language-stable .MuiSelect-root {
+    min-width: 70px !important;
+    width: 70px !important;
+  }
+
+  .filter-container {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .filter-text {
+    margin-right: 0;
+    text-align: center;
+  }
+
+  .filter-buttons {
+    justify-content: center;
+  }
+
+  .active-filters-container {
+    justify-content: center;
+  }
+
+  /* Mobile drawer adjustments */
+  .MuiDrawer-paper {
+    width: 100% !important;
+    max-width: 100vw !important;
+  }
+
+  .MuiDrawer-paper .MuiBox-root {
+    padding: 16px !important;
+  }
+
+  .MuiDrawer-paper .MuiGrid-container {
+    width: 100% !important;
+  }
+
+  .MuiDrawer-paper .MuiGrid-item {
+    padding: 8px !important;
+  }
+
+  /* Mobile filter container - keep side-by-side layout */
+  .filter-container {
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+    padding: 12px 16px !important;
+    min-height: 44px !important;
+  }
+
+  .filter-text {
+    flex: 1 !important;
+    margin-right: 8px !important;
+    text-align: left !important;
+  }
+
+  .filter-buttons {
+    justify-content: flex-end !important;
+    flex-shrink: 0 !important;
+  }
+}

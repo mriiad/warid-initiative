@@ -13,6 +13,7 @@ import {
 	Typography,
 } from '@mui/material';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { BLOOD_GROUP_OPTIONS } from '../data/constants';
 import colors from '../styles/colors';
 import { authStyles } from '../styles/mainStyles';
@@ -32,6 +33,7 @@ const defaultFilters = {
 
 const UserFilter = ({ open, onClose, onApply }) => {
 	const { formField, bar, button, form } = authStyles();
+	const { t } = useTranslation();
 	const [filters, setFilters] = useState(defaultFilters);
 
 	const handleChange = (e) => {
@@ -67,21 +69,31 @@ const UserFilter = ({ open, onClose, onApply }) => {
 			onClose={onClose}
 			PaperProps={{
 				sx: {
-					width: { xs: '100%', sm: '400px' },
+					width: { xs: '100%', sm: '450px', md: '480px' },
+					maxWidth: { xs: '100vw', sm: '90vw', md: '480px' },
 					borderRadius: '20px 0 0 20px',
 					boxShadow: '0 20px 60px rgba(255, 48, 103, 0.3)',
+					overflow: 'hidden',
 				},
 			}}
 		>
 			<Box
-				sx={{ p: 3, height: '100%', display: 'flex', flexDirection: 'column' }}
+				sx={{
+					p: { xs: 2, sm: 3 },
+					height: '100%',
+					display: 'flex',
+					flexDirection: 'column',
+					overflow: 'hidden',
+					boxSizing: 'border-box',
+				}}
 			>
 				<Box
 					sx={{
 						display: 'flex',
 						alignItems: 'center',
 						justifyContent: 'space-between',
-						mb: 3,
+						mb: { xs: 2, sm: 3 },
+						flexShrink: 0,
 					}}
 				>
 					<Typography
@@ -93,7 +105,7 @@ const UserFilter = ({ open, onClose, onApply }) => {
 							color: colors.purple,
 						}}
 					>
-						Filter Users
+						{t('common.filterUsers')}
 						<span className={bar}></span>
 					</Typography>
 					<IconButton
@@ -109,30 +121,89 @@ const UserFilter = ({ open, onClose, onApply }) => {
 					</IconButton>
 				</Box>
 
-				<Box sx={{ flex: 1, overflow: 'auto' }}>
+				<Box
+					sx={{
+						flex: 1,
+						overflow: 'auto',
+						minHeight: 0,
+						'&::-webkit-scrollbar': {
+							width: '6px',
+						},
+						'&::-webkit-scrollbar-track': {
+							backgroundColor: 'transparent',
+						},
+						'&::-webkit-scrollbar-thumb': {
+							backgroundColor: colors.rose + '40',
+							borderRadius: '3px',
+							'&:hover': {
+								backgroundColor: colors.rose + '60',
+							},
+						},
+					}}
+				>
 					<form onSubmit={handleApply} className={form}>
-						<Grid container spacing={2}>
-							{[
-								'username',
-								'firstname',
-								'lastname',
-								'email',
-								'phoneNumber',
-							].map((field) => (
-								<Grid item xs={12} key={field}>
-									<TextField
-										label={field[0].toUpperCase() + field.slice(1)}
-										name={field}
-										value={filters[field]}
-										onChange={handleChange}
-										fullWidth
-										className={formField}
-									/>
-								</Grid>
-							))}
+						<Grid container spacing={{ xs: 1, sm: 2 }}>
 							<Grid item xs={12}>
-								<Typography gutterBottom>
-									Age: {filters.age[0]} - {filters.age[1]}
+								<TextField
+									label={t('common.username')}
+									name='username'
+									value={filters.username}
+									onChange={handleChange}
+									fullWidth
+									className={formField}
+								/>
+							</Grid>
+							<Grid item xs={12}>
+								<TextField
+									label={t('common.firstName')}
+									name='firstname'
+									value={filters.firstname}
+									onChange={handleChange}
+									fullWidth
+									className={formField}
+								/>
+							</Grid>
+							<Grid item xs={12}>
+								<TextField
+									label={t('common.lastName')}
+									name='lastname'
+									value={filters.lastname}
+									onChange={handleChange}
+									fullWidth
+									className={formField}
+								/>
+							</Grid>
+							<Grid item xs={12}>
+								<TextField
+									label={t('common.email')}
+									name='email'
+									value={filters.email}
+									onChange={handleChange}
+									fullWidth
+									className={formField}
+								/>
+							</Grid>
+							<Grid item xs={12}>
+								<TextField
+									label={t('common.phone')}
+									name='phoneNumber'
+									value={filters.phoneNumber}
+									onChange={handleChange}
+									fullWidth
+									className={formField}
+								/>
+							</Grid>
+							<Grid item xs={12}>
+								<Typography
+									gutterBottom
+									sx={{
+										fontSize: { xs: '0.9rem', sm: '1rem' },
+										fontWeight: 500,
+										color: colors.purple,
+										mb: 2,
+									}}
+								>
+									{t('common.age')}: {filters.age[0]} - {filters.age[1]}
 								</Typography>
 								<Slider
 									value={filters.age}
@@ -141,6 +212,18 @@ const UserFilter = ({ open, onClose, onApply }) => {
 									min={18}
 									max={65}
 									className={formField}
+									sx={{
+										color: colors.rose,
+										'& .MuiSlider-thumb': {
+											backgroundColor: colors.rose,
+										},
+										'& .MuiSlider-track': {
+											backgroundColor: colors.rose,
+										},
+										'& .MuiSlider-rail': {
+											backgroundColor: colors.rose + '40',
+										},
+									}}
 								/>
 							</Grid>
 							<Grid item xs={12}>
@@ -150,30 +233,45 @@ const UserFilter = ({ open, onClose, onApply }) => {
 											checked={filters.availableForDonation}
 											onChange={handleCheckboxChange}
 											name='availableForDonation'
+											sx={{
+												color: colors.rose,
+												'&.Mui-checked': {
+													color: colors.rose,
+												},
+											}}
 										/>
 									}
-									label='Available for Donation'
+									label={t('common.availableForDonation')}
 									className={formField}
+									sx={{
+										alignItems: 'flex-start',
+										mt: 1,
+										'& .MuiFormControlLabel-label': {
+											fontSize: { xs: '0.9rem', sm: '1rem' },
+											lineHeight: 1.4,
+											marginTop: '2px',
+										},
+									}}
 								/>
 							</Grid>
 							<Grid item xs={12}>
 								<TextField
 									select
-									label='Gender'
+									label={t('common.gender')}
 									name='gender'
 									value={filters.gender}
 									onChange={handleChange}
 									fullWidth
 									className={formField}
 								>
-									<MenuItem value='male'>Male</MenuItem>
-									<MenuItem value='female'>Female</MenuItem>
+									<MenuItem value='male'>{t('common.male')}</MenuItem>
+									<MenuItem value='female'>{t('common.female')}</MenuItem>
 								</TextField>
 							</Grid>
 							<Grid item xs={12}>
 								<TextField
 									select
-									label='Blood Group'
+									label={t('common.bloodGroup')}
 									name='bloodGroup'
 									value={filters.bloodGroup}
 									onChange={handleChange}
@@ -194,15 +292,30 @@ const UserFilter = ({ open, onClose, onApply }) => {
 											checked={filters.isAdmin}
 											onChange={handleCheckboxChange}
 											name='isAdmin'
+											sx={{
+												color: colors.rose,
+												'&.Mui-checked': {
+													color: colors.rose,
+												},
+											}}
 										/>
 									}
-									label='Is Admin'
+									label={t('common.isAdmin')}
 									className={formField}
+									sx={{
+										alignItems: 'flex-start',
+										mt: 1,
+										'& .MuiFormControlLabel-label': {
+											fontSize: { xs: '0.9rem', sm: '1rem' },
+											lineHeight: 1.4,
+											marginTop: '2px',
+										},
+									}}
 								/>
 							</Grid>
 
-							<Grid item xs={12} sx={{ mt: 2 }}>
-								<Grid container spacing={2}>
+							<Grid item xs={12} sx={{ mt: { xs: 1, sm: 2 }, mb: 1 }}>
+								<Grid container spacing={{ xs: 1, sm: 2 }}>
 									<Grid item xs={6}>
 										<Button
 											type='button'
@@ -211,8 +324,12 @@ const UserFilter = ({ open, onClose, onApply }) => {
 											color='secondary'
 											className={button}
 											fullWidth
+											sx={{
+												fontSize: { xs: '0.875rem', sm: '1rem' },
+												padding: { xs: '8px 16px', sm: '12px 24px' },
+											}}
 										>
-											Reset
+											{t('common.reset')}
 										</Button>
 									</Grid>
 									<Grid item xs={6}>
@@ -222,8 +339,12 @@ const UserFilter = ({ open, onClose, onApply }) => {
 											color='primary'
 											className={button}
 											fullWidth
+											sx={{
+												fontSize: { xs: '0.875rem', sm: '1rem' },
+												padding: { xs: '8px 16px', sm: '12px 24px' },
+											}}
 										>
-											Apply Filters
+											{t('common.applyFilters')}
 										</Button>
 									</Grid>
 								</Grid>

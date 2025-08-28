@@ -7,6 +7,7 @@ import {
 } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth as useAuthContext } from '../auth/AuthContext';
 import { LoginFormData } from '../data/authData';
@@ -18,6 +19,7 @@ import SnackbarComponent from './shared/SnackbarComponent';
 
 const LoginForm = () => {
 	const { setToken, setUserId, setIsAdmin } = useAuthContext();
+	const { t } = useTranslation();
 
 	const { bar, button, signUp, form } = authStyles();
 	const { textButton, subTitle } = mainStyles();
@@ -102,13 +104,13 @@ const LoginForm = () => {
 					<SnackbarComponent
 						open={passwordResetSnackbarOpen}
 						handleClose={() => setPasswordResetSnackbarOpen(false)}
-						message='!تمت إعادة تعيين كلمة المرور بنجاح'
+						message={t('auth.login.passwordResetSuccess')}
 						autoHideDuration={5000}
 					/>
 					<SnackbarComponent
 						open={signUpSnackbarOpen}
 						handleClose={() => setSignUpSnackbarOpen(false)}
-						message='.تم إنشاء حسابك بنجاح. يمكنك الآن تسجيل الدخول'
+						message={t('auth.login.signupSuccess')}
 						autoHideDuration={5000}
 					/>
 					<Typography
@@ -117,11 +119,11 @@ const LoginForm = () => {
 						gutterBottom
 						className={signUp}
 					>
-						تسجيل الدخول
+						{t('auth.login.title')}
 						<span className={bar}></span>
 					</Typography>
 					<Typography variant='h6' align='center' gutterBottom>
-						<span className={subTitle}>ليس لديك حساب؟</span>
+						<span className={subTitle}>{t('common.noAccount')}</span>
 						<button
 							type='button'
 							className={textButton}
@@ -141,7 +143,7 @@ const LoginForm = () => {
 								zIndex: 10,
 							}}
 						>
-							التسجيل
+							{t('common.signup')}
 						</button>
 					</Typography>
 					<form onSubmit={handleSubmit(onSubmit)} className={form}>
@@ -150,11 +152,11 @@ const LoginForm = () => {
 								<Controller
 									name='username'
 									control={control}
-									rules={{ required: 'اسم المستخدم مطلوب' }}
+									rules={{ required: t('auth.login.usernameRequired') }}
 									render={({ field }) => (
 										<TextField
 											fullWidth
-											label='اسم المستخدم'
+											label={t('common.username')}
 											required
 											{...field}
 											error={Boolean(errors.username)}
@@ -167,12 +169,12 @@ const LoginForm = () => {
 								<Controller
 									name='password'
 									control={control}
-									rules={{ required: 'كلمة المرور مطلوبة' }}
+									rules={{ required: t('auth.login.passwordRequired') }}
 									render={({ field }) => (
 										<TextField
 											fullWidth
 											type='password'
-											label='كلمة المرور'
+											label={t('common.password')}
 											required
 											{...field}
 											error={Boolean(errors.password)}
@@ -188,7 +190,7 @@ const LoginForm = () => {
 									style={{ color: 'white' }}
 									className={button}
 								>
-									تسجيل الدخول
+									{t('auth.login.loginButton')}
 								</Button>
 							</Grid>
 							<Grid item xs={12}>
@@ -212,7 +214,7 @@ const LoginForm = () => {
 											zIndex: 10,
 										}}
 									>
-										هل نسيت كلمة المرور؟
+										{t('common.forgotPassword')}
 									</button>
 								</Typography>
 							</Grid>

@@ -11,6 +11,7 @@ import {
 } from '@mui/material';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { SignupFormData } from '../data/authData';
 import { useAuth } from '../hooks';
@@ -19,6 +20,7 @@ import { authStyles, mainStyles } from '../styles/mainStyles';
 import FormContainer from './shared/FormContainer';
 
 const SignupForm = () => {
+	const { t } = useTranslation();
 	const { formField, bar, button, signUp, form } = authStyles();
 	const { subTitle, textButton } = mainStyles();
 	const {
@@ -52,17 +54,17 @@ const SignupForm = () => {
 
 	const validateEmail = (value) => {
 		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-		return emailRegex.test(value) || 'الرجاء إدخال عنوان بريد إلكتروني صالح.';
+		return emailRegex.test(value) || t('validation.invalidEmail');
 	};
 
 	return (
 		<FormContainer>
 			<Typography variant='h2' align='center' gutterBottom className={signUp}>
-				التسجيل
+				{t('auth.signup.title')}
 				<span className={bar}></span>
 			</Typography>
 			<Typography variant='h6' align='center' gutterBottom>
-				<span className={subTitle}>هل لديك حساب؟ </span>
+				<span className={subTitle}>{t('auth.signup.alreadyHaveAccount')}</span>
 				<button
 					type='button'
 					className={textButton}
@@ -82,7 +84,7 @@ const SignupForm = () => {
 						zIndex: 10,
 					}}
 				>
-					تسجيل الدخول
+					{t('common.login')}
 				</button>
 			</Typography>
 			<form onSubmit={handleSubmit(onSubmit)} className={form}>
@@ -91,11 +93,11 @@ const SignupForm = () => {
 						<Controller
 							name='username'
 							control={control}
-							rules={{ required: 'اسم المستخدم مطلوب' }}
+							rules={{ required: t('auth.signup.usernameRequired') }}
 							render={({ field }) => (
 								<TextField
 									fullWidth
-									label='رقم الهوية الوطنية'
+									label={t('common.username')}
 									required
 									{...field}
 									error={Boolean(errors.username)}
@@ -109,13 +111,13 @@ const SignupForm = () => {
 							name='email'
 							control={control}
 							rules={{
-								required: 'البريد الإلكتروني مطلوب',
+								required: t('auth.signup.emailRequired'),
 								validate: validateEmail,
 							}}
 							render={({ field }) => (
 								<TextField
 									fullWidth
-									label='البريد الإلكتروني'
+									label={t('common.email')}
 									required
 									{...field}
 									error={Boolean(errors.email)}
@@ -129,10 +131,10 @@ const SignupForm = () => {
 							name='password'
 							control={control}
 							rules={{
-								required: 'كلمة المرور مطلوبة',
+								required: t('auth.signup.passwordRequired'),
 								minLength: {
 									value: 6,
-									message: 'كلمة المرور يجب أن تكون 6 أحرف على الأقل',
+									message: t('validation.minLength', { count: 6 }),
 								},
 							}}
 							render={({ field }) => (
@@ -140,7 +142,7 @@ const SignupForm = () => {
 									fullWidth
 									type='password'
 									required
-									label='كلمة المرور'
+									label={t('common.password')}
 									{...field}
 									error={Boolean(errors.password)}
 									helperText={errors.password?.message || ''}
@@ -152,11 +154,11 @@ const SignupForm = () => {
 						<Controller
 							name='phoneNumber'
 							control={control}
-							rules={{ required: 'رقم الهاتف مطلوب' }}
+							rules={{ required: t('auth.signup.phoneRequired') }}
 							render={({ field }) => (
 								<TextField
 									fullWidth
-									label='رقم الهاتف'
+									label={t('common.phone')}
 									type='tel'
 									required
 									{...field}
@@ -171,7 +173,7 @@ const SignupForm = () => {
 							name='gender'
 							control={control}
 							defaultValue=''
-							rules={{ required: 'الجنس مطلوب' }}
+							rules={{ required: t('auth.signup.genderRequired') }}
 							render={({ field }) => (
 								<FormControl
 									component='fieldset'
@@ -182,12 +184,12 @@ const SignupForm = () => {
 										<FormControlLabel
 											value='male'
 											control={<Radio />}
-											label='ذكر'
+											label={t('common.male')}
 										/>
 										<FormControlLabel
 											value='female'
 											control={<Radio />}
-											label='أنثى'
+											label={t('common.female')}
 										/>
 									</RadioGroup>
 									{errors.gender && (
@@ -199,7 +201,7 @@ const SignupForm = () => {
 					</Grid>
 					<Grid item xs={12}>
 						<Button type='submit' className={button}>
-							إرسال
+							{t('auth.signup.signupButton')}
 						</Button>
 					</Grid>
 				</Grid>

@@ -17,6 +17,7 @@ import IconButton from '@mui/material/IconButton';
 import { makeStyles } from '@mui/styles';
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
 import { useConfirmUserInEmergency, useEmergencyMatchUsers } from '../../hooks';
@@ -79,6 +80,7 @@ const MatchedUsers = () => {
 	const { emergencyId } = useParams<{ emergencyId: string }>();
 	const { token } = useAuth();
 	const classes = useStyles();
+	const { t } = useTranslation();
 	const [snackbarOpen, setSnackbarOpen] = useState(false);
 	const [snackbarMessage, setSnackbarMessage] = useState('');
 	const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>(
@@ -211,7 +213,9 @@ const MatchedUsers = () => {
 											onClick={() => handleConfirmUser(matched._id)}
 											disabled={loadingUsers[matched._id]}
 										>
-											{loadingUsers[matched._id] ? 'Confirming...' : 'Confirm'}
+											{loadingUsers[matched._id]
+												? t('common.confirming')
+												: t('common.confirmUser')}
 										</Button>
 									</TableCell>
 								</TableRow>
@@ -221,13 +225,13 @@ const MatchedUsers = () => {
 
 					<div className={classes.pagination}>
 						<Button disabled={page === 1 || isLoading} onClick={handlePrevPage}>
-							Previous
+							{t('common.previous')}
 						</Button>
 						<Button
 							disabled={page >= totalPages || isLoading}
 							onClick={handleNextPage}
 						>
-							Next
+							{t('common.next')}
 						</Button>
 					</div>
 				</>

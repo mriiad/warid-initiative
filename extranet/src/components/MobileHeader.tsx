@@ -4,12 +4,14 @@ import LogOutIcon from '@mui/icons-material/LogoutOutlined';
 import { IconButton } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import axios from 'axios';
+import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { useAuth } from '../auth/AuthContext';
 import colors from '../styles/colors';
 import API_CONFIG, { buildApiUrl } from '../utils/apiConfig';
 import ActionButton from './shared/ActionButton';
+import LanguageSelector from './shared/LanguageSelector';
 
 interface HeaderContainerProps {
 	$isEventPage: boolean;
@@ -26,6 +28,13 @@ const HeaderContainer = styled.div<HeaderContainerProps>`
 	right: 0;
 	z-index: 102;
 	position: ${(props) => (props.$isEventPage ? 'absolute' : 'static')};
+	direction: ltr; /* Always keep header layout LTR regardless of language */
+`;
+
+const RightSection = styled.div`
+	display: flex;
+	align-items: center;
+	gap: 8px;
 `;
 
 const LogoContainer = styled.div`
@@ -66,6 +75,7 @@ const useStyles = makeStyles({
 const MobileHeader = () => {
 	const { logoImage, icon, activeIcon } = useStyles();
 	const { token, setToken, setIsAdmin, setUserId } = useAuth();
+	const { t } = useTranslation();
 	const location = useLocation();
 	const isEventPage = location.pathname.includes('events/WEVENT');
 	const navigate = useNavigate();
@@ -96,26 +106,29 @@ const MobileHeader = () => {
 			<LogoContainer onClick={() => navigate('/home')}>
 				<img src='/warid-logo.png' alt='Logo' className={logoImage} />
 			</LogoContainer>
-			{token ? (
-				<IconsContainer>
-					<Link to='/profile'>
-						<AccountCircleIcon
-							className={currentRoute === '/profile' ? activeIcon : icon}
-							fontSize='large'
-						/>
-					</Link>
+			<RightSection>
+				<LanguageSelector />
+				{token ? (
+					<IconsContainer>
+						<Link to='/profile'>
+							<AccountCircleIcon
+								className={currentRoute === '/profile' ? activeIcon : icon}
+								fontSize='large'
+							/>
+						</Link>
 
-					<IconButton onClick={handleLogout} size='large' color='inherit'>
-						<LogOutIcon fontSize='large' className={icon} />
-					</IconButton>
-				</IconsContainer>
-			) : (
-				<ActionButton
-					title='تسجيل الدخول'
-					icon={<ArrowCircleRightIcon />}
-					onClick={() => navigate('/login')}
-				/>
-			)}
+						<IconButton onClick={handleLogout} size='large' color='inherit'>
+							<LogOutIcon fontSize='large' className={icon} />
+						</IconButton>
+					</IconsContainer>
+				) : (
+					<ActionButton
+						title={t('common.login')}
+						icon={<ArrowCircleRightIcon />}
+						onClick={() => navigate('/login')}
+					/>
+				)}
+			</RightSection>
 		</HeaderContainer>
 	);
 };

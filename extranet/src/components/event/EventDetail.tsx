@@ -7,6 +7,7 @@ import { Button, Chip, CircularProgress, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
 	Route,
 	Routes,
@@ -459,6 +460,7 @@ const EventDetail: React.FC = () => {
 	const { token, isAdmin } = useAuth();
 	const navigate = useNavigate();
 	const location = useLocation();
+	const { t } = useTranslation();
 	const initialRoute: boolean = location.pathname === `/events/${reference}`;
 
 	const { fallback } = useStyles();
@@ -472,8 +474,8 @@ const EventDetail: React.FC = () => {
 		open: false,
 		title: '',
 		message: '',
-		confirmText: 'Confirm',
-		cancelText: 'Cancel',
+		confirmText: t('common.confirm'),
+		cancelText: t('common.cancel'),
 		onConfirm: () => {},
 		warning: false,
 	});
@@ -528,10 +530,12 @@ const EventDetail: React.FC = () => {
 	const handleDelete = () => {
 		setConfirmationDialog({
 			open: true,
-			title: 'Delete Event',
-			message: `Are you sure you want to delete the event "${event?.data?.title}"? This action cannot be undone.`,
-			confirmText: 'Delete',
-			cancelText: 'Cancel',
+			title: t('common.delete') + ' ' + t('common.events'),
+			message: `${t('common.confirm')} ${t('common.delete')} "${
+				event?.data?.title
+			}"? ${t('common.delete')} ${t('common.cannot')} ${t('common.undo')}.`,
+			confirmText: t('common.delete'),
+			cancelText: t('common.cancel'),
 			onConfirm: async () => {
 				try {
 					setConfirmationDialog({ ...confirmationDialog, open: false });
@@ -577,7 +581,7 @@ const EventDetail: React.FC = () => {
 				<LoadingContainer>
 					<CircularProgress size={60} />
 					<Typography className='loadingText'>
-						جاري تحميل تفاصيل الفعالية...
+						{t('events.loadingEventDetails')}
 					</Typography>
 				</LoadingContainer>
 			) : (
@@ -585,9 +589,11 @@ const EventDetail: React.FC = () => {
 					{isAdmin && (
 						<Header>
 							<div className='actionButtons'>
-								<Button onClick={handleUpdate}>Update Event</Button>
+								<Button onClick={handleUpdate}>
+									{t('common.edit')} {t('common.events')}
+								</Button>
 								<Button className='deleteButton' onClick={handleDelete}>
-									Delete Event
+									{t('common.delete')} {t('common.events')}
 								</Button>
 							</div>
 						</Header>
@@ -613,7 +619,11 @@ const EventDetail: React.FC = () => {
 						</Typography>
 
 						<Chip
-							label={event?.data?.isGeneric ? 'فعالية خاصة' : 'فعالية عامة'}
+							label={
+								event?.data?.isGeneric
+									? t('events.specialEvent')
+									: t('events.generalEvent')
+							}
 							className='eventChip'
 							icon={<EventIcon />}
 						/>
@@ -623,7 +633,7 @@ const EventDetail: React.FC = () => {
 						<ContentGrid>
 							<InfoCard>
 								<div className='cardTitle'>
-									<h3>تاريخ الفعالية</h3>
+									<h3>{t('events.eventDate')}</h3>
 									<div className='icon'>
 										<CalendarMonthIcon />
 									</div>
@@ -635,7 +645,7 @@ const EventDetail: React.FC = () => {
 
 							<InfoCard>
 								<div className='cardTitle'>
-									<h3>مكان الفعالية</h3>
+									<h3>{t('events.eventLocation')}</h3>
 									<div className='icon'>
 										<LocationOnIcon />
 									</div>
@@ -645,7 +655,7 @@ const EventDetail: React.FC = () => {
 
 							<InfoCard>
 								<div className='cardTitle'>
-									<h3>الخريطة</h3>
+									<h3>{t('events.map')}</h3>
 									<div className='icon'>
 										<MapIcon />
 									</div>
@@ -656,7 +666,7 @@ const EventDetail: React.FC = () => {
 										target='_blank'
 										rel='noopener noreferrer'
 									>
-										فتح الخريطة
+										{t('events.openMap')}
 										<OpenInNewIcon />
 									</a>
 								</div>
@@ -673,7 +683,7 @@ const EventDetail: React.FC = () => {
 							{event?.data?.qrCode && (
 								<QRCodeCard>
 									<Typography variant='h6' className='qrTitle'>
-										مسح رمز الاستجابة السريعة للتبرع
+										{t('events.scanQRCode')}
 									</Typography>
 									<img
 										src={event.data.qrCode}
@@ -687,7 +697,7 @@ const EventDetail: React.FC = () => {
 
 					{initialRoute && (
 						<ActionButton variant='contained' onClick={handleParticipateClick}>
-							المشاركة في الفعالية
+							{t('events.participateInEvent')}
 						</ActionButton>
 					)}
 

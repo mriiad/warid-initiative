@@ -29,11 +29,11 @@ export interface UserFormData {
 }
 
 export const userFieldDisplayNames: { [key in keyof UserFormData]: string } = {
-	firstname: 'First Name',
-	lastname: 'Last Name',
-	birthdate: 'Birthdate',
-	bloodGroup: 'Blood Group',
-	city: 'City',
-	phoneNumber: 'Phone Number',
-	email: 'Email',
+	firstname: 'profile.firstname',
+	lastname: 'profile.lastname',
+	birthdate: 'profile.birthdate',
+	bloodGroup: 'profile.bloodGroup',
+	city: 'profile.city',
+	phoneNumber: 'profile.phoneNumber',
+	email: 'profile.email',
 };

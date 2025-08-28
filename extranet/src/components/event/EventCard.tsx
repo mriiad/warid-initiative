@@ -6,6 +6,7 @@ import ShareIcon from '@mui/icons-material/Share';
 import { Card, CardContent, Chip, IconButton, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
 import { Event } from '../../data/Event';
@@ -220,6 +221,7 @@ const EventCard: React.FC<EventCardProps> = ({
 	onUpdate,
 	onDelete,
 }) => {
+	const { t } = useTranslation();
 	const {
 		cardContainer,
 		titleContainer,
@@ -315,13 +317,17 @@ const EventCard: React.FC<EventCardProps> = ({
 							rel='noopener noreferrer'
 							onClick={(e) => e.stopPropagation()}
 						>
-							خريطة الطريق
+							{t('events.map')}
 						</a>
 					</div>
 
 					<div className={chipContainer}>
 						<Chip
-							label={isGenericEvent ? 'فعالية خاصة' : 'فعالية عامة'}
+							label={
+								isGenericEvent
+									? t('events.specialEvent')
+									: t('events.generalEvent')
+							}
 							size='small'
 							icon={<FavoriteIcon />}
 						/>
@@ -342,14 +348,14 @@ const EventCard: React.FC<EventCardProps> = ({
 					}}
 				>
 					<ActionButton
-						title='تحديث'
+						title={t('common.update')}
 						onClick={(e) => {
 							e.stopPropagation();
 							onUpdate(event.reference);
 						}}
 					/>
 					<ActionButton
-						title='حذف'
+						title={t('common.delete')}
 						onClick={(e) => {
 							e.stopPropagation();
 							onDelete(event.reference, event.title);

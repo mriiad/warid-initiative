@@ -3,12 +3,14 @@ import ArrowCircleRightIcon from '@mui/icons-material/ArrowCircleRight';
 import { makeStyles } from '@mui/styles';
 import axios from 'axios';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import colors from '../styles/colors';
 import { mainStyles } from '../styles/mainStyles';
 import API_CONFIG, { buildApiUrl } from '../utils/apiConfig';
 import ActionButton from './shared/ActionButton';
+import LanguageSelector from './shared/LanguageSelector';
 
 const useStyles = makeStyles({
 	navbar: {
@@ -82,6 +84,7 @@ const useStyles = makeStyles({
 
 const Navbar = () => {
 	const { token, setToken, isAdmin, setIsAdmin, setUserId } = useAuth();
+	const { t } = useTranslation();
 
 	const {
 		navbar,
@@ -142,7 +145,7 @@ const Navbar = () => {
 								}`}
 								onClick={() => handleRouteChange('/')}
 							>
-								الرئيسية
+								{t('common.home')}
 							</Link>
 						</li>
 						<li className={routesListItem}>
@@ -153,7 +156,7 @@ const Navbar = () => {
 								}`}
 								onClick={() => handleRouteChange('/about')}
 							>
-								بخصوص
+								{t('common.about')}
 							</Link>
 						</li>
 						<li className={routesListItem}>
@@ -164,7 +167,7 @@ const Navbar = () => {
 								}`}
 								onClick={() => handleRouteChange('/events?page=1')}
 							>
-								الفعاليات
+								{t('common.events')}
 							</Link>
 						</li>
 						{token && isAdmin && (
@@ -176,14 +179,18 @@ const Navbar = () => {
 									}`}
 									onClick={() => handleRouteChange('/admin')}
 								>
-									المشرف
+									{t('common.admin')}
 								</Link>
 							</li>
 						)}
 					</ul>
 				</nav>
 			</div>
-			<div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+			<div
+				className='navbar-language-stable navigation-stable'
+				style={{ direction: 'ltr', flexDirection: 'row' }}
+			>
+				<LanguageSelector />
 				{!token && (
 					<button
 						type='button'
@@ -202,21 +209,22 @@ const Navbar = () => {
 							display: 'inline-block',
 							position: 'relative',
 							zIndex: 10,
+							whiteSpace: 'nowrap',
 						}}
 					>
-						التسجيل
+						{t('common.signup')}
 					</button>
 				)}
 				<div className={mainButton}>
 					{token ? (
 						<ActionButton
-							title='تسجيل الخروج'
+							title={t('common.logout')}
 							icon={<ArrowCircleLeftIcon className={loginIcon} />}
 							onClick={() => handleLogout()}
 						/>
 					) : (
 						<ActionButton
-							title='تسجيل الدخول'
+							title={t('common.login')}
 							icon={<ArrowCircleRightIcon className={loginIcon} />}
 							onClick={() => navigate('/login')}
 						/>

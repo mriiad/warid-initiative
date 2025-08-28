@@ -10,7 +10,7 @@ const useStyles = makeStyles({
 		overflowX: 'scroll',
 		display: 'flex',
 		gap: '4px',
-		padding: '18px 0',
+		padding: '8px 0',
 	},
 	item: {
 		minWidth: '160px',
