@@ -12,7 +12,6 @@ import { Event } from '../../data/Event';
 import colors from '../../styles/colors';
 import { formatDateForDisplay } from '../../utils/utils';
 import ActionButton from '../shared/ActionButton';
-import { is } from 'date-fns/locale';
 
 interface EventCardProps {
 	event: Event;
