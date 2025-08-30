@@ -639,12 +639,13 @@ const EventDetail: React.FC = () => {
 						<Typography variant='h5' className='eventSubtitle'>
 							{event?.data?.subtitle}
 						</Typography>
-
+                        {isAdmin && (
 						<Chip
 							label={event?.data?.isGeneric ? 'فعالية خاصة' : 'فعالية عامة'}
 							className='eventChip'
 							icon={<EventIcon />}
 						/>
+						)}
 					</EventHero>
 
 					{initialRoute && (
