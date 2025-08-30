@@ -12,6 +12,7 @@ import { Event } from '../../data/Event';
 import colors from '../../styles/colors';
 import { formatDateForDisplay } from '../../utils/utils';
 import ActionButton from '../shared/ActionButton';
+import { is } from 'date-fns/locale';
 
 interface EventCardProps {
 	event: Event;
@@ -318,7 +319,7 @@ const EventCard: React.FC<EventCardProps> = ({
 							خريطة الطريق
 						</a>
 					</div>
-
+                    { isAdmin && (
 					<div className={chipContainer}>
 						<Chip
 							label={isGenericEvent ? 'فعالية خاصة' : 'فعالية عامة'}
@@ -326,6 +327,7 @@ const EventCard: React.FC<EventCardProps> = ({
 							icon={<FavoriteIcon />}
 						/>
 					</div>
+					)}
 				</div>
 			</CardContent>
 
