@@ -29,6 +29,7 @@ const API_CONFIG = {
 			search: '/api/searchUsers',
 			delete: (username: string) => `/api/deleteUser/${username}`,
 			toggleAdmin: (userId: string) => `/api/users/${userId}/admin`,
+			dashboard: (userId: string) => `/api/users/${userId}/dashboard`,
 		},
 
 		events: {

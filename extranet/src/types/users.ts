@@ -24,3 +24,20 @@ export interface UpdateUserData {
 export interface AdminUserUpdateData extends UpdateUserData {
 	isActive?: boolean;
 }
+export interface DonationHistoryItem {
+	id: string;
+	date: string;
+	type: string;
+	event: string;
+}
+
+export interface DashboardStats {
+	total: number;
+	lastDonation: string | null;
+	eligibleIn: string;
+}
+
+export interface DashboardData {
+	stats: DashboardStats;
+	donations: DonationHistoryItem[];
+}

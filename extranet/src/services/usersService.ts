@@ -4,6 +4,7 @@
  */
 
 import type { UpdateUserData, UserProfileData } from '../types';
+import type { DashboardData } from '../types/users';
 import { apiClient } from '../utils/apiClient';
 
 export const usersService = {
@@ -40,4 +41,9 @@ export const usersService = {
 	toggleAdminStatus: (userId: string) => {
 		return apiClient.patch(`/api/users/${userId}/admin`);
 	},
+	getDashboard: async (userId: string): Promise<DashboardData> => {
+		const res = await apiClient.get<DashboardData>(`/api/users/${userId}/dashboard`);
+		return res.data;
+	},
+
 };
