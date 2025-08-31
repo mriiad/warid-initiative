@@ -31,13 +31,19 @@ const constants = {
 		PASSWORD_CHANGED_SUCCESSFULLY: 'Password changed successfully!',
 		EMERGENCY_NOT_FOUND: 'Emergency not found',
 		USER_NOT_FOUND: 'User not found',
+		DONATIONS_NOT_FOUND: 'No donations found for this user.',
 		EMERGENCY_CONFIRMED_SUCCESSFULLY: 'The emergency is successfully confirmed',
 		USER_ADDED_SUCCESSFULLY: 'The contacted user was added successfully',
 		ACCOUNT_ACTIVATED: 'Account activated.',
 		PASSWORD_RESET_LINK_SENT: 'Password reset link sent to email!',
 		USER_CREATED: 'User created!',
+
 	},
 
+	MESSAGES: {
+        REGULAR_DONATION: "Regular Donation",
+    },
+	
 	// Email Subjects
 	EMAIL_SUBJECTS: {
 		ACCOUNT_ACTIVATION: 'Activation du compte',

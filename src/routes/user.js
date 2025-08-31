@@ -15,6 +15,7 @@ const {
 	getUserById,
 	updateUserById,
 	makeUserAdmin,
+	getDashboard,
 } = require('../controllers/user');
 
 userRouter.get('/api/users', getUsers);
@@ -50,4 +51,5 @@ userRouter.patch(
 	makeUserAdmin
 );
 
+userRouter.get('/api/users/:userId/dashboard', isAuth, getDashboard);
 module.exports = userRouter;
