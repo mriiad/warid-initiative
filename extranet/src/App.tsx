@@ -1,10 +1,10 @@
-import useMediaQuery from '@mui/material/useMediaQuery';
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 import { useAuth } from './auth/AuthContext';
 import AdminComponent from './components/AdminComponent';
 import CanDonate from './components/CanDonate';
 import ContactForm from './components/ContactForm';
+import Dashboard from './components/Dashboard';
 import DonationComponent from './components/DonationComponent';
 import FAQComponent from './components/FAQComponent';
 import LoginForm from './components/LoginForm';
@@ -15,6 +15,7 @@ import NotFoundPage from './components/NotFoundPage';
 import PasswordResetForm from './components/PasswordResetForm';
 import ResetPasswordForm from './components/ResetPasswordForm';
 import SignupForm from './components/SignupForm';
+import UnsupportedPage from './components/UnsupportedPage';
 import UpdateUser from './components/UpdateUser';
 import UserProfileForm from './components/UserProfileForm';
 import UsersComponent from './components/UsersComponent';
@@ -28,7 +29,7 @@ import EventsComponent from './components/event/EventsComponent';
 import UpdateEvent from './components/event/UpdateEvent';
 import LandingPage from './components/home/LandingPage';
 import ProfileComponent from './components/profile/ProfileComponent';
-import Dashboard from './components/Dashboard';
+import { useIsMobile } from './hooks/useIsMobile';
 
 const AppContainer = styled.div`
 	position: relative;
@@ -70,76 +71,84 @@ const MobileNavContainer = styled.div`
 `;
 
 const App = () => {
-	const isMobile = useMediaQuery('(max-width:600px)');
+	const isMobile = useIsMobile();
 	const { isAdmin } = useAuth();
+	const location = useLocation();
+	const forceDesktop =
+		new URLSearchParams(location.search).get('forceDesktop') === '1';
+
+	if (import.meta.env.DEV) {
+		console.info(`[App] isMobile=${isMobile} forceDesktop=${forceDesktop}`);
+	}
 
 	return (
-		<BrowserRouter
-			future={{
-				v7_startTransition: true,
-				v7_relativeSplatPath: true,
-			}}
-		>
-			<AppContainer>
-				{!isMobile ? <NavBar /> : <MobileHeader />}
-				<ContentContainer>
-					<Routes>
-						<Route path='/' element={<Navigate replace to='/home' />} />
-						<Route path='/home' element={<LandingPage />} />
-						<Route path='/signup' element={<SignupForm />} />
-						<Route path='/login' element={<LoginForm />} />
-						<Route path='/update-profile' element={<UserProfileForm />} />
-						<Route path='/events' element={<EventsComponent />} />
-						{isAdmin && <Route path='/events/create' element={<EventForm />} />}
-						{isAdmin && (
+		<AppContainer>
+			{!isMobile && !forceDesktop ? (
+				<UnsupportedPage />
+			) : (
+				<>
+					{!isMobile ? <NavBar /> : <MobileHeader />}
+					<ContentContainer>
+						<Routes>
+							<Route path='/' element={<Navigate replace to='/home' />} />
+							<Route path='/home' element={<LandingPage />} />
+							<Route path='/signup' element={<SignupForm />} />
+							<Route path='/login' element={<LoginForm />} />
+							<Route path='/update-profile' element={<UserProfileForm />} />
+							<Route path='/events' element={<EventsComponent />} />
+							{isAdmin && (
+								<Route path='/events/create' element={<EventForm />} />
+							)}
+							{isAdmin && (
+								<Route
+									path='/events/update/:reference'
+									element={<UpdateEvent />}
+								/>
+							)}
+							<Route path='/events/:reference/*' element={<EventDetail />}>
+								<Route path='can-donate' element={<CanDonate />} />
+								<Route path='confirmation' element={<EventConfirmation />} />
+							</Route>
+							<Route path='/donate' element={<DonationComponent />} />
+							{isAdmin && <Route path='/users' element={<UsersComponent />} />}
+							{isAdmin && (
+								<Route path='/users/update/:userId' element={<UpdateUser />} />
+							)}
+							<Route path='/contact' element={<ContactForm />} />
+							<Route path='/admin' element={<AdminComponent />} />
 							<Route
-								path='/events/update/:reference'
-								element={<UpdateEvent />}
+								path='/request-reset-password'
+								element={<PasswordResetForm />}
 							/>
-						)}
-						<Route path='/events/:reference/*' element={<EventDetail />}>
-							<Route path='can-donate' element={<CanDonate />} />
-							<Route path='confirmation' element={<EventConfirmation />} />
-						</Route>
-						<Route path='/donate' element={<DonationComponent />} />
-						{isAdmin && <Route path='/users' element={<UsersComponent />} />}
-						{isAdmin && (
-							<Route path='/users/update/:userId' element={<UpdateUser />} />
-						)}
-						<Route path='/contact' element={<ContactForm />} />
-						<Route path='/admin' element={<AdminComponent />} />
-						<Route
-							path='/request-reset-password'
-							element={<PasswordResetForm />}
-						/>
-						<Route
-							path='/reset-password/:resetToken'
-							element={<ResetPasswordForm />}
-						/>
-						<Route path='*' element={<NotFoundPage />} />
+							<Route
+								path='/reset-password/:resetToken'
+								element={<ResetPasswordForm />}
+							/>
+							<Route path='*' element={<NotFoundPage />} />
 
-						<Route path='/FAQ' element={<FAQComponent />} />
-						<Route path='/profile' element={<ProfileComponent />} />
-						<Route path='/dashboard' element={<Dashboard />} />
-						<Route path='/emergency' element={<EmergencyForm />} />
-						{isAdmin && (
-							<Route path='/emergencies' element={<EmergencyComponent />} />
-						)}
-						{isAdmin && (
-							<Route
-								path='/emergencies/:emergencyId/matched-users/'
-								element={<MatchedUsers />}
-							/>
-						)}
-					</Routes>
-				</ContentContainer>
-				{isMobile && (
-					<MobileNavContainer>
-						<MobileNavbar />
-					</MobileNavContainer>
-				)}
-			</AppContainer>
-		</BrowserRouter>
+							<Route path='/FAQ' element={<FAQComponent />} />
+							<Route path='/profile' element={<ProfileComponent />} />
+							<Route path='/dashboard' element={<Dashboard />} />
+							<Route path='/emergency' element={<EmergencyForm />} />
+							{isAdmin && (
+								<Route path='/emergencies' element={<EmergencyComponent />} />
+							)}
+							{isAdmin && (
+								<Route
+									path='/emergencies/:emergencyId/matched-users/'
+									element={<MatchedUsers />}
+								/>
+							)}
+						</Routes>
+					</ContentContainer>
+					{isMobile && (
+						<MobileNavContainer>
+							<MobileNavbar />
+						</MobileNavContainer>
+					)}
+				</>
+			)}
+		</AppContainer>
 	);
 };
 
