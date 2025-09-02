@@ -1,7 +1,6 @@
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import EmailIcon from '@mui/icons-material/Email';
 import EventIcon from '@mui/icons-material/Event';
-import FavoriteIcon from '@mui/icons-material/Favorite';
 import EmergencyIcon from '@mui/icons-material/HealthAndSafety';
 import FAQIcon from '@mui/icons-material/Help';
 import HomeIcon from '@mui/icons-material/Home';
@@ -9,6 +8,9 @@ import { makeStyles } from '@mui/styles';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import colors from '../styles/colors';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+
+
 
 const useStyles = makeStyles({
 	navbar: {
@@ -45,7 +47,9 @@ const MobileNavbar = () => {
 			<Link to='/'>
 				<HomeIcon className={currentRoute === '/' ? activeIcon : icon} />
 			</Link>
-
+			<Link to='/dashboard'>
+				<DashboardIcon className={currentRoute === '/dashboard' ? activeIcon : icon} />
+			</Link>
 			<Link to='/events?page=1'>
 				<EventIcon
 					className={currentRoute.startsWith('/events') ? activeIcon : icon}

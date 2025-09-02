@@ -28,6 +28,7 @@ import EventsComponent from './components/event/EventsComponent';
 import UpdateEvent from './components/event/UpdateEvent';
 import LandingPage from './components/home/LandingPage';
 import ProfileComponent from './components/profile/ProfileComponent';
+import Dashboard from './components/Dashboard';
 
 const AppContainer = styled.div`
 	position: relative;
@@ -119,6 +120,7 @@ const App = () => {
 
 						<Route path='/FAQ' element={<FAQComponent />} />
 						<Route path='/profile' element={<ProfileComponent />} />
+						<Route path='/dashboard' element={<Dashboard />} />
 						<Route path='/emergency' element={<EmergencyForm />} />
 						{isAdmin && (
 							<Route path='/emergencies' element={<EmergencyComponent />} />

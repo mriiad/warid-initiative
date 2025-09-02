@@ -1,10 +1,13 @@
 const User = require('../models/user');
+const Donation = require('../models/donation')
 const ApiError = require('../utils/errors/ApiError');
 const { STATUS_CODE } = require('../utils/errors/httpStatusCode');
 const Profile = require('../models/profile');
 const { calculateAge } = require('../utils/utils');
 const { checkDonationEligibility } = require('./donation');
 const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const { HTTP_STATUS, ERROR_MESSAGES, MESSAGES } = require('../utils/constants');
+const { addDays, formatDate } = require('../utils/utils');
 
 // Get all users
 exports.getUsers = async (req, res, next) => {
@@ -574,4 +577,74 @@ exports.makeUserAdmin = async (req, res, next) => {
 		}
 		next(err);
 	}
+};
+
+exports.getDashboard = async (req, res, next) => {
+  try {
+    const userId = req.userId;
+
+    // Check if user exists
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(HTTP_STATUS.NOT_FOUND).json({
+        errorMessage: ERROR_MESSAGES.USER_NOT_FOUND
+      });
+    }
+
+    // Fetch all donations of the user
+    const donations = await Donation.find({ userId })
+      .sort({ donationDate: -1 })
+      .populate('eventId', 'title isGeneric');
+
+    // Handle case: no donations found
+    if (!donations || donations.length === 0) {
+      return res.status(HTTP_STATUS.NOT_FOUND).json({
+        errorMessage: ERROR_MESSAGES.DONATIONS_NOT_FOUND
+      });
+    }
+
+    // Total donations
+    const totalDonations = donations.length;
+
+    // Last donation date
+    const lastDonationDate = donations[0]?.donationDate || null;
+
+    // Days until eligible again
+    let eligibleInDays = 0;
+    if (lastDonationDate) {
+      const daysToAdd = user.gender === 'male' ? 60 : 90;
+      const nextDonationDate = addDays(lastDonationDate, daysToAdd);
+      const today = new Date();
+      const diff = Math.ceil((nextDonationDate - today) / (1000 * 60 * 60 * 24));
+      eligibleInDays = diff > 0 ? diff : 0;
+    }
+
+    // Prepare donation history for the dashboard
+    const donationHistory = donations.map(d => ({
+      id: d._id,
+      date: formatDate(d.donationDate),
+      type: d.donationType,
+      event: d.eventId && !d.eventId.isGeneric
+        ? d.eventId.title
+        : MESSAGES.REGULAR_DONATION
+    }));
+
+    // Response
+    res.status(STATUS_CODE.OK).json({
+      stats: {
+        total: totalDonations,
+        lastDonation: lastDonationDate ? formatDate(lastDonationDate) : null,
+        eligibleIn: `${eligibleInDays} days`,
+      },
+      donations: donationHistory
+    });
+
+  } catch (err) {
+    const statusCode = err.statusCode || STATUS_CODE.INTERNAL_SERVER;
+    res.status(statusCode).json(
+      err.getErrorResponse
+        ? err.getErrorResponse()
+        : { errorMessage: err.message }
+    );
+  }
 };

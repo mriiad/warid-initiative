@@ -6,6 +6,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { usersService } from '../services';
 import type { UpdateUserData, UserProfileData } from '../types';
+import type { DashboardData } from '../types/users';
 
 // Users hooks
 export const useUserProfile = (userId?: string) => {
@@ -107,3 +108,15 @@ export const useToggleAdminStatus = () => {
 		},
 	});
 };
+
+export const useDashboard = (userId: string) => {
+  return useQuery<DashboardData>({
+    queryKey: ['dashboard'],
+    queryFn: () => usersService.getDashboard(userId), 
+    staleTime: 5 * 60 * 1000,
+  });
+};
+
+
+
+

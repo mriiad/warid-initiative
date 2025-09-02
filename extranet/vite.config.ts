@@ -25,6 +25,6 @@ export default defineConfig({
 		sourcemap: true,
 	},
 	optimizeDeps: {
-		include: ['react', 'react-dom'],
+		include: ['react', 'react-dom', 'react/jsx-runtime', 'framer-motion'],
 	},
 });

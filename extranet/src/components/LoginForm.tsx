@@ -70,7 +70,7 @@ const LoginForm = () => {
 			) {
 				navigate('/update-profile');
 			} else {
-				navigate('/events');
+				navigate('/dashboard');
 			}
 		}
 	}, [
