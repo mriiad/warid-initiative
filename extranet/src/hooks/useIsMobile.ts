@@ -12,16 +12,9 @@ export const useIsMobile = () => {
 		const mediaQuery = window.matchMedia(query);
 		setIsMobile(mediaQuery.matches);
 
-		if (import.meta.env.DEV) {
-			console.info(
-				`[useIsMobile] initial=${mediaQuery.matches} media=${query}`
-			);
-		}
-
 		const handleChange = () => setIsMobile(mediaQuery.matches);
 		mediaQuery.addEventListener('change', handleChange);
 
-		// Safari fallback with resize event
 		const handleResize = () => setIsMobile(mediaQuery.matches);
 		window.addEventListener('resize', handleResize);
 
