@@ -77,10 +77,6 @@ const App = () => {
 	const forceDesktop =
 		new URLSearchParams(location.search).get('forceDesktop') === '1';
 
-	if (import.meta.env.DEV) {
-		console.info(`[App] isMobile=${isMobile} forceDesktop=${forceDesktop}`);
-	}
-
 	return (
 		<AppContainer>
 			{!isMobile && !forceDesktop ? (
