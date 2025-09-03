@@ -32,7 +32,7 @@ const NavbarContainer = styled(motion.div)(({ theme }) => ({
 		background: `linear-gradient(135deg,
 			rgba(255, 255, 255, 0.25) 0%,
 			rgba(255, 255, 255, 0.15) 25%,
-			rgba(255, 255, 255, 0.1) 50%,
+			rgba(255, 255, 255, 0.10) 50%,
 			rgba(255, 255, 255, 0.05) 75%,
 			rgba(255, 255, 255, 0.02) 100%
 		)`,
@@ -41,9 +41,9 @@ const NavbarContainer = styled(motion.div)(({ theme }) => ({
 		borderRadius: '24px 24px 0 0',
 		border: `1px solid rgba(255, 255, 255, 0.2)`,
 		boxShadow: `
-			0 8px 32px rgba(0, 0, 0, 0.1),
-			0 4px 16px rgba(0, 0, 0, 0.05),
-			inset 0 1px 0 rgba(255, 255, 255, 0.3)
+			0 8px 32px rgba(0, 0, 0, 0.12),
+			0 4px 16px rgba(0, 0, 0, 0.06),
+			inset 0 1px 0 rgba(255, 255, 255, 0.35)
 		`,
 	},
 }));
@@ -68,40 +68,61 @@ const NavItem = styled(motion.div)({
 	minHeight: '56px',
 	borderRadius: '16px',
 	cursor: 'pointer',
-	transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+	overflow: 'hidden',
+
 	'&::before': {
 		content: '""',
 		position: 'absolute',
 		inset: 0,
 		borderRadius: '16px',
-		background: 'rgba(255, 255, 255, 0.1)',
+		background:
+			'linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05))',
 		opacity: 0,
-		transition: 'opacity 0.2s ease',
+		transform: 'scale(0.8)',
+		transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
 	},
+
 	'&:hover::before': {
 		opacity: 1,
+		transform: 'scale(1)',
 	},
-	'&:active': {
-		transform: 'scale(0.95)',
+
+	'&::after': {
+		content: '""',
+		position: 'absolute',
+		inset: -2,
+		borderRadius: '18px',
+		background:
+			'linear-gradient(135deg, rgba(255, 255, 255, 0.1), transparent)',
+		opacity: 0,
+		transform: 'scale(0.9)',
+		transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+		pointerEvents: 'none',
+	},
+
+	'&:hover::after': {
+		opacity: 0.6,
+		transform: 'scale(1.1)',
 	},
 });
 
 const NavIcon = styled(motion.div)<{ isActive: boolean }>(({ isActive }) => ({
 	position: 'relative',
-	zIndex: 1,
+	zIndex: 2,
 	color: isActive ? colors.rose : colors.purple,
 	transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-	fontSize: '24px',
+	fontSize: isActive ? '26px' : '24px',
 	display: 'flex',
 	alignItems: 'center',
 	justifyContent: 'center',
+	filter: isActive ? `drop-shadow(0 2px 8px ${colors.rose}40)` : 'none',
 }));
 
 const NavLabel = styled(motion.div)<{ isActive: boolean }>(({ isActive }) => ({
 	fontSize: '11px',
 	fontWeight: isActive ? 600 : 500,
 	color: isActive ? colors.rose : colors.purple,
-	marginTop: '4px',
+	marginTop: '6px',
 	textAlign: 'center',
 	opacity: isActive ? 1 : 0.7,
 	transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -110,7 +131,7 @@ const NavLabel = styled(motion.div)<{ isActive: boolean }>(({ isActive }) => ({
 
 const ActiveIndicator = styled(motion.div)({
 	position: 'absolute',
-	bottom: '8px',
+	bottom: '6px',
 	left: '50%',
 	transform: 'translateX(-50%)',
 	width: '32px',
@@ -118,6 +139,30 @@ const ActiveIndicator = styled(motion.div)({
 	background: `linear-gradient(90deg, ${colors.rose}, #ff6b8a)`,
 	borderRadius: '2px',
 	boxShadow: `0 2px 8px ${colors.rose}40`,
+});
+
+const BackgroundHighlight = styled(motion.div)<{ isActive: boolean }>(
+	({ isActive }) => ({
+		position: 'absolute',
+		inset: 0,
+		borderRadius: '16px',
+		background: isActive
+			? 'linear-gradient(135deg, rgba(255, 48, 103, 0.15), rgba(255, 48, 103, 0.05))'
+			: 'linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02))',
+		opacity: isActive ? 1 : 0,
+		transform: isActive ? 'scale(1)' : 'scale(0.9)',
+		transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+		pointerEvents: 'none',
+	})
+);
+
+const RippleEffect = styled(motion.div)({
+	position: 'absolute',
+	inset: 0,
+	borderRadius: '16px',
+	background:
+		'radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%)',
+	pointerEvents: 'none',
 });
 
 const Tooltip = styled(motion.div)({
@@ -167,6 +212,27 @@ const MobileNavbar = () => {
 	const location = useLocation();
 	const currentRoute = location.pathname;
 	const [hoveredItem, setHoveredItem] = useState<string | null>(null);
+	const [ripples, setRipples] = useState<
+		Array<{ id: number; x: number; y: number }>
+	>([]);
+
+	const addRipple = (event: React.MouseEvent) => {
+		const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+		const x = event.clientX - rect.left;
+		const y = event.clientY - rect.top;
+
+		const newRipple = {
+			id: Date.now(),
+			x,
+			y,
+		};
+
+		setRipples((prev) => [...prev, newRipple]);
+
+		setTimeout(() => {
+			setRipples((prev) => prev.filter((ripple) => ripple.id !== newRipple.id));
+		}, 600);
+	};
 
 	const containerVariants = {
 		hidden: { y: 100, opacity: 0 },
@@ -174,37 +240,55 @@ const MobileNavbar = () => {
 			y: 0,
 			opacity: 1,
 			transition: {
-				duration: 0.4,
-				staggerChildren: 0.1,
+				duration: 0.5,
+				staggerChildren: 0.08,
 			},
 		},
 	};
 
 	const itemVariants = {
-		hidden: { y: 20, opacity: 0, scale: 0.8 },
+		hidden: { y: 30, opacity: 0, scale: 0.7 },
 		visible: {
 			y: 0,
 			opacity: 1,
 			scale: 1,
 			transition: {
-				duration: 0.3,
+				duration: 0.4,
 			},
 		},
 	};
 
 	const iconVariants = {
 		active: {
-			scale: 1.1,
-			rotate: [0, -5, 5, 0],
+			scale: [1, 1.15, 1.1],
+			rotate: [0, -3, 3, 0],
 			transition: {
-				duration: 0.4,
+				duration: 0.6,
 			},
 		},
 		inactive: {
 			scale: 1,
 			rotate: 0,
 			transition: {
+				duration: 0.4,
+			},
+		},
+		hover: {
+			scale: 1.2,
+			rotate: [0, -2, 2, 0],
+			transition: {
 				duration: 0.3,
+			},
+		},
+	};
+
+	const rippleVariants = {
+		initial: { scale: 0, opacity: 1 },
+		animate: {
+			scale: 4,
+			opacity: 0,
+			transition: {
+				duration: 0.6,
 			},
 		},
 	};
@@ -237,17 +321,22 @@ const MobileNavbar = () => {
 							key={item.path}
 							variants={itemVariants}
 							whileHover={{
-								scale: 1.05,
+								scale: 1.02,
 								transition: { duration: 0.2 },
 							}}
 							whileTap={{
-								scale: 0.95,
+								scale: 0.98,
 								transition: { duration: 0.1 },
 							}}
 							onHoverStart={() => setHoveredItem(item.path)}
 							onHoverEnd={() => setHoveredItem(null)}
-							onClick={() => setHoveredItem(null)}
+							onClick={(e) => {
+								addRipple(e);
+								setHoveredItem(null);
+							}}
 						>
+							<BackgroundHighlight isActive={active} />
+
 							<Link
 								to={item.path === '/events' ? '/events?page=1' : item.path}
 								style={{
@@ -259,12 +348,14 @@ const MobileNavbar = () => {
 									height: '100%',
 									padding: '8px 4px',
 									borderRadius: '16px',
+									position: 'relative',
+									zIndex: 3,
 								}}
 							>
 								<NavIcon
 									isActive={active}
 									variants={iconVariants}
-									animate={active ? 'active' : 'inactive'}
+									animate={active ? 'active' : isHovered ? 'hover' : 'inactive'}
 									whileHover={{ scale: 1.15 }}
 									whileTap={{ scale: 0.9 }}
 								>
@@ -272,8 +363,9 @@ const MobileNavbar = () => {
 										sx={{
 											fontSize: active ? '26px' : '24px',
 											filter: active
-												? `drop-shadow(0 2px 8px ${colors.rose}40)`
+												? 'drop-shadow(0 0 8px rgba(29, 185, 84, 0.4))'
 												: 'none',
+											transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
 										}}
 									/>
 								</NavIcon>
@@ -295,13 +387,29 @@ const MobileNavbar = () => {
 											animate={{ scale: 1, opacity: 1 }}
 											exit={{ scale: 0, opacity: 0 }}
 											transition={{
-												duration: 0.3,
-												ease: [0.25, 0.46, 0.45, 0.94],
+												duration: 0.4,
 											}}
 										/>
 									)}
 								</AnimatePresence>
 							</Link>
+
+							<AnimatePresence>
+								{ripples.map((ripple) => (
+									<RippleEffect
+										key={ripple.id}
+										variants={rippleVariants}
+										initial='initial'
+										animate='animate'
+										style={{
+											left: ripple.x - 20,
+											top: ripple.y - 20,
+											width: 40,
+											height: 40,
+										}}
+									/>
+								))}
+							</AnimatePresence>
 
 							<AnimatePresence>
 								{isHovered && !active && (
