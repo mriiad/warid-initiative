@@ -1,16 +1,25 @@
 const Participant = require('../models/participant');
 const Event = require('../models/event');
 const { STATUS_CODE } = require('../utils/errors/httpStatusCode');
+const { checkDonationEligibility } = require('./donation');
 
 exports.createParticipant = async (req, res, next) => {
   try {
     const { reference } = req.params;
-    const userId = req.userId; 
+    const userId = req.userId;
 
     const event = await Event.findOne({ reference });
     if (!event) {
       return res.status(STATUS_CODE.NOT_FOUND).json({
         message: `Event with reference ${reference} not found.`,
+      });
+    }
+
+    const eligibility = await checkDonationEligibility(userId);
+
+    if (!eligibility.canDonate) {
+      return res.status(STATUS_CODE.FORBIDDEN).json({
+        message: `You cannot donate yet. You can participate again on ${eligibility.nextDonationDate}`,
       });
     }
 
@@ -22,21 +31,16 @@ exports.createParticipant = async (req, res, next) => {
     await participant.save();
 
     return res.status(STATUS_CODE.CREATED).json({
-      message: 'User successfully registered as participant',
+      message: 'User successfully registered as participant.',
     });
   } catch (error) {
-    if (error.code === 11000) {
-      return res.status(STATUS_CODE.CONFLICT).json({
-        message: 'User already registered for this event',
-      });
-    }
-
     console.error('Error creating participant:', error);
     return res
       .status(STATUS_CODE.INTERNAL_SERVER)
       .json({ message: 'Server error' });
   }
 };
+
 
 exports.checkUserParticipation = async (req, res, next) => {
   try {
@@ -66,3 +70,19 @@ exports.checkUserParticipation = async (req, res, next) => {
       .json({ message: 'Server error' });
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
