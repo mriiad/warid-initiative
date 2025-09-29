@@ -540,9 +540,22 @@ const EventDetail: React.FC = () => {
 			navigate(`/login?redirect=/events/${reference}`);
 			return;
 		}
-		createParticipant.mutate(reference);
 
+		createParticipant.mutate(reference, {
+			onSuccess: (response: any) => {
+				setMessage(response.data.message || 'You are successfully added as a participant.');
+			},
+			onError: (error: any) => {
+				if (error.response && error.response.data?.message) {
+					setMessage(error.response.data.message);
+				} else {
+					setMessage('An error occurred while registering for the event.');
+				}
+				console.error('Participant registration failed:', error);
+			},
+		});
 	};
+
 
 	const handleUpdate = () => {
 		navigate(`/events/update/${reference}`);
@@ -728,7 +741,7 @@ const EventDetail: React.FC = () => {
 					)}
 
 					{initialRoute && !hasParticipated && (
-						<ActionButton variant='contained' onClick={handleParticipateClick}>
+						<ActionButton variant='contained' onClick={handleParticipateClick} disabled={createParticipant.isPending}>
 							المشاركة في الفعالية
 						</ActionButton>
 					)}
