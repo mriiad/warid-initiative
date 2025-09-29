@@ -16,7 +16,7 @@ import {
 } from 'react-router-dom';
 import styled from 'styled-components';
 import { useAuth } from '../../auth/AuthContext';
-import { useEvent } from '../../hooks';
+import { useEvent, useCheckParticipation, useEventParticipantsDetails, useCreateParticipant } from '../../hooks';
 import colors from '../../styles/colors';
 import { formatDate, formatDateForDisplay } from '../../utils/utils';
 import CanDonate from '../CanDonate';
@@ -492,6 +492,11 @@ const EventDetail: React.FC = () => {
 		useStyles();
 
 	const { data: event, isLoading, isError } = useEvent(reference || '');
+	const { data: participationData } = useCheckParticipation(reference || '');
+	const createParticipant = useCreateParticipant();
+	const { data: participantStats } = useEventParticipantsDetails(reference || '', isAdmin);
+
+	const hasParticipated = participationData?.data?.hasParticipated;
 
 	const [isFavorited, setIsFavorited] = useState(false);
 
@@ -502,7 +507,7 @@ const EventDetail: React.FC = () => {
 		message: '',
 		confirmText: 'Confirm',
 		cancelText: 'Cancel',
-		onConfirm: () => {},
+		onConfirm: () => { },
 		warning: false,
 	});
 
@@ -531,22 +536,12 @@ const EventDetail: React.FC = () => {
 	};
 
 	const handleParticipateClick = async () => {
-		if (token) {
-			if (event?.data?.isGeneric) {
-				// For generic events, use event reference
-				navigate(`/donate?eventRef=${reference}`);
-			} else {
-				// For non-generic events, include both the event reference and date
-				navigate(
-					`/donate?eventRef=${reference}&eventDate=${formatDate(
-						event?.data?.date
-					)}`
-				);
-			}
-		} else {
-			// Redirect to login, after login they'll return to the event page
-			navigate(`/login?redirect=/events/${reference}?participate`);
+		if (!token) {
+			navigate(`/login?redirect=/events/${reference}`);
+			return;
 		}
+		createParticipant.mutate(reference);
+
 	};
 
 	const handleUpdate = () => {
@@ -639,12 +634,12 @@ const EventDetail: React.FC = () => {
 						<Typography variant='h5' className='eventSubtitle'>
 							{event?.data?.subtitle}
 						</Typography>
-                        {isAdmin && (
-						<Chip
-							label={event?.data?.isGeneric ? 'فعالية خاصة' : 'فعالية عامة'}
-							className='eventChip'
-							icon={<EventIcon />}
-						/>
+						{isAdmin && (
+							<Chip
+								label={event?.data?.isGeneric ? 'فعالية خاصة' : 'فعالية عامة'}
+								className='eventChip'
+								icon={<EventIcon />}
+							/>
 						)}
 					</EventHero>
 
@@ -698,8 +693,24 @@ const EventDetail: React.FC = () => {
 									</Typography>
 								</DescriptionCard>
 							)}
+							{isAdmin && participantStats && (
+								<InfoCard>
+									<div className='cardTitle'>
+										<h3>تفاصيل المشاركين</h3>
+										<div className='icon'>
+											<EventIcon />
+										</div>
+									</div>
+									<div className='cardContent'>
+										المشاركون المسجلون: {participantStats.data.registeredParticipants} <br />
+										المتبرعون الفعليون: {participantStats.data.realDonaters}
+									</div>
+								</InfoCard>
+							)}
 						</ContentGrid>
 					)}
+
+
 
 					{event?.data?.event?.qrCode && (
 						<div className={qrCodeContainer}>
@@ -716,11 +727,17 @@ const EventDetail: React.FC = () => {
 						</div>
 					)}
 
-					{initialRoute && (
+					{initialRoute && !hasParticipated && (
 						<ActionButton variant='contained' onClick={handleParticipateClick}>
 							المشاركة في الفعالية
 						</ActionButton>
 					)}
+					{hasParticipated && (
+						<Typography color={colors.purple} fontWeight={600} marginTop={4}>
+							!تم تسجيلك بنجاح في قائمة المشاركين
+						</Typography>
+					)}
+
 
 					<Routes>
 						<Route path='can-donate' element={<CanDonate />} />

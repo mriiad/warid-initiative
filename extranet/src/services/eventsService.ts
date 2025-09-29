@@ -74,4 +74,15 @@ export const eventsService = {
 	getDonationHistory: () => {
 		return apiClient.get('/api/donation');
 	},
+	createParticipant: (reference: string) => {
+		return apiClient.post(`/api/participate/${reference}`);
+	},
+
+	checkParticipation: (reference: string) => {
+		return apiClient.get(`/api/check/${reference}`);
+	},
+
+	getEventParticipantsDetails: (reference: string) => {
+		return apiClient.get(`/api/event/${reference}/participants/details`);
+	},
 };
