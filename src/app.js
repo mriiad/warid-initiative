@@ -16,6 +16,7 @@ const donationRouter = require('./routes/donation');
 const eventRouter = require('./routes/event');
 const contactRouter = require('./routes/contact');
 const emergencyRouter = require('./routes/emergency');
+const participantRouter = require('./routes/participant');
 
 const app = express();
 
@@ -29,6 +30,7 @@ app.use(donationRouter);
 app.use(emergencyRouter);
 app.use(eventRouter);
 app.use(contactRouter);
+app.use(participantRouter);
 
 app.use(express.static(path.join(__dirname, '../extranet/build')));
 

@@ -6,6 +6,7 @@ const path = require('path');
 const ApiError = require('../utils/errors/ApiError');
 const QRCode = require('qrcode');
 const Donation = require('../models/donation');
+const Participant = require('../models/participant');
 
 exports.getEvents = async (req, res, next) => {
 	try {
@@ -412,4 +413,34 @@ exports.confirmPresence = (req, res, next) => {
 			if (!err.statusCode) err.statusCode = STATUS_CODE.INTERNAL_SERVER;
 			next(err);
 		});
+};
+
+exports.getEventParticipantDetails = async (req, res, next) => {
+  try {
+    const { reference } = req.params;
+    const event = await Event.findOne({ reference }).lean();
+    if (!event) {
+      return res.status(STATUS_CODE.NOT_FOUND).json({
+        message: `Event with reference ${reference} not found.`,
+      });
+    }
+
+    const eventId = event._id;
+    const registeredParticipants = await Participant.countDocuments({ eventId });
+    const participantUserIds = await Participant.find({ eventId }).distinct('userId');
+    const realDonaters = await Donation.distinct('userId', {
+      eventId,
+      userId: { $in: participantUserIds }
+    });
+
+    return res.status(STATUS_CODE.OK).json({
+      message: 'Event participant details fetched successfully.',
+      eventReference: reference,
+      registeredParticipants,
+      realDonaters: realDonaters.length,
+    });
+  } catch (err) {
+    if (!err.statusCode) err.statusCode = STATUS_CODE.INTERNAL_SERVER;
+    next(err);
+  }
 };
