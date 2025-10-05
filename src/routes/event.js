@@ -10,6 +10,7 @@ const {
 	updateEventHandler,
 	confirmPresence,
 	deleteEvent,
+	getEventParticipantDetails
 } = require('../controllers/event');
 const { isAuth } = require('../middleware/token-check');
 const checkIfAdmin = require('../utils/checks');
@@ -85,5 +86,7 @@ eventRouter.put(
 );
 eventRouter.delete('/api/event', isAuth, checkIfAdmin, deleteEvent);
 eventRouter.put('/api/event/confirmPresence', isAuth, confirmPresence);
+eventRouter.get('/api/event/:reference/participants/details', isAuth, checkIfAdmin, getEventParticipantDetails);
+
 
 module.exports = eventRouter;
