@@ -305,7 +305,9 @@ const MobileNavbar = () => {
 		if (!token) {
 			return item.path === '/emergency' || item.path === '/contact' || item.path === '/FAQ' || item.path === '/home';
 		}
-		
+		if (item.path === '/home') {
+			return false;
+		}
 		if (item.adminOnly && !(token && isAdmin)) {
 			return false;
 		}
