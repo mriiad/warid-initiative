@@ -11,6 +11,7 @@ import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import colors from '../styles/colors';
+import path from 'path';
 
 const NavbarContainer = styled(motion.div)(({ theme }) => ({
 	position: 'fixed',
@@ -305,7 +306,7 @@ const MobileNavbar = () => {
 	}
 	const filteredNavItems = navItems.filter((item) => {
 		if (!token) {
-			return item.path === '/emergency';
+			return item.path === '/emergency' || item.path === '/contact' || item.path === '/FAQ' ;
 		}
 		
 		if (item.adminOnly && !(token && isAdmin)) {
