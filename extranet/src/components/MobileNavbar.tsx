@@ -193,10 +193,11 @@ const Tooltip = styled(motion.div)({
 });
 
 const navItems = [
+	{ path: '/home', icon: HomeIcon, label: 'Home', exact: true },
 	{ path: '/dashboard', icon: DashboardIcon, label: 'Dashboard', exact: true },
 	{ path: '/events', icon: EventIcon, label: 'Events', exact: false },
-	{ path: '/contact', icon: EmailIcon, label: 'Contact', exact: true },
 	{ path: '/emergency', icon: EmergencyIcon, label: 'Emergency', exact: true },
+	{ path: '/contact', icon: EmailIcon, label: 'Contact', exact: true },
 	{
 		path: '/admin',
 		icon: AdminPanelSettingsIcon,
@@ -211,7 +212,6 @@ const MobileNavbar = () => {
 	const { token, isAdmin } = useAuth();
 	const location = useLocation();
 	const currentRoute = location.pathname;
-	const isAuthPage = currentRoute === '/login' || currentRoute === '/signup';
 	const [hoveredItem, setHoveredItem] = useState<string | null>(null);
 	const [ripples, setRipples] = useState<
 		Array<{ id: number; x: number; y: number }>
@@ -301,12 +301,9 @@ const MobileNavbar = () => {
 		return currentRoute.startsWith(item.path);
 	};
 
-	if (isAuthPage) {
-		return null;
-	}
 	const filteredNavItems = navItems.filter((item) => {
 		if (!token) {
-			return item.path === '/emergency' || item.path === '/contact' || item.path === '/FAQ' ;
+			return item.path === '/emergency' || item.path === '/contact' || item.path === '/FAQ' || item.path === '/home';
 		}
 		
 		if (item.adminOnly && !(token && isAdmin)) {

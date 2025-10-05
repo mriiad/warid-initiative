@@ -10,9 +10,6 @@ import { useAuth } from '../auth/AuthContext';
 import colors from '../styles/colors';
 import API_CONFIG, { buildApiUrl } from '../utils/apiConfig';
 import ActionButton from './shared/ActionButton';
-import MenuIcon from '@mui/icons-material/Menu';
-import { Menu, MenuItem } from '@mui/material';
-import { useState } from 'react';
 
 
 interface HeaderContainerProps {
@@ -94,18 +91,7 @@ const MobileHeader = () => {
 				console.error('Logout error', error);
 			});
 	};
-	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-	const open = Boolean(anchorEl);
-
-	const handleMenuClick = (event: React.MouseEvent<HTMLElement>) => {
-		setAnchorEl(event.currentTarget);
-	};
-
-	const handleMenuClose = () => {
-		setAnchorEl(null);
-	};
-
-
+	
 	return (
 		<HeaderContainer $isEventPage={isEventPage}>
 			<LogoContainer onClick={() => navigate('/home')}>
@@ -125,39 +111,12 @@ const MobileHeader = () => {
 					</IconButton>
 				</IconsContainer>
 			) : (
-				// <ActionButton
-				// 	title='تسجيل الدخول'
-				// 	icon={<ArrowCircleRightIcon />}
-				// 	onClick={() => navigate('/login')}
-				// />
-				<>
-					<IconButton onClick={handleMenuClick} color='inherit'>
-						<MenuIcon />
-					</IconButton>
-					<Menu
-						anchorEl={anchorEl}
-						open={open}
-						onClose={handleMenuClose}
-						anchorOrigin={{
-							vertical: 'bottom',
-							horizontal: 'right',
-						}}
-						transformOrigin={{
-							vertical: 'top',
-							horizontal: 'right',
-						}}
-					>
-						<MenuItem onClick={handleMenuClose} component={Link} to='/home'>
-							Home
-						</MenuItem>
-						<MenuItem onClick={handleMenuClose} component={Link} to='/login'>
-							Login
-						</MenuItem>
-						<MenuItem onClick={handleMenuClose} component={Link} to='/signup'>
-							Sign Up
-						</MenuItem>
-					</Menu>
-				</>
+				<ActionButton
+					title='تسجيل الدخول'
+					icon={<ArrowCircleRightIcon />}
+					onClick={() => navigate('/login')}
+				/>
+				
 
 			)}
 		</HeaderContainer>
