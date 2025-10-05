@@ -11,6 +11,7 @@ import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import colors from '../styles/colors';
+import path from 'path';
 
 const NavbarContainer = styled(motion.div)(({ theme }) => ({
 	position: 'fixed',
@@ -192,11 +193,11 @@ const Tooltip = styled(motion.div)({
 });
 
 const navItems = [
-	{ path: '/', icon: HomeIcon, label: 'Home', exact: true },
+	{ path: '/home', icon: HomeIcon, label: 'Home', exact: true },
 	{ path: '/dashboard', icon: DashboardIcon, label: 'Dashboard', exact: true },
 	{ path: '/events', icon: EventIcon, label: 'Events', exact: false },
-	{ path: '/contact', icon: EmailIcon, label: 'Contact', exact: true },
 	{ path: '/emergency', icon: EmergencyIcon, label: 'Emergency', exact: true },
+	{ path: '/contact', icon: EmailIcon, label: 'Contact', exact: true },
 	{
 		path: '/admin',
 		icon: AdminPanelSettingsIcon,
@@ -300,9 +301,18 @@ const MobileNavbar = () => {
 		return currentRoute.startsWith(item.path);
 	};
 
-	const filteredNavItems = navItems.filter(
-		(item) => !item.adminOnly || (token && isAdmin)
-	);
+	const filteredNavItems = navItems.filter((item) => {
+		if (!token) {
+			return item.path === '/emergency' || item.path === '/contact' || item.path === '/FAQ' || item.path === '/home';
+		}
+		if (item.path === '/home') {
+			return false;
+		}
+		if (item.adminOnly && !(token && isAdmin)) {
+			return false;
+		}
+		return true;
+	});
 
 	return (
 		<NavbarContainer

@@ -11,6 +11,7 @@ import colors from '../styles/colors';
 import API_CONFIG, { buildApiUrl } from '../utils/apiConfig';
 import ActionButton from './shared/ActionButton';
 
+
 interface HeaderContainerProps {
 	$isEventPage: boolean;
 }
@@ -90,7 +91,7 @@ const MobileHeader = () => {
 				console.error('Logout error', error);
 			});
 	};
-
+	
 	return (
 		<HeaderContainer $isEventPage={isEventPage}>
 			<LogoContainer onClick={() => navigate('/home')}>
@@ -115,6 +116,8 @@ const MobileHeader = () => {
 					icon={<ArrowCircleRightIcon />}
 					onClick={() => navigate('/login')}
 				/>
+				
+
 			)}
 		</HeaderContainer>
 	);
