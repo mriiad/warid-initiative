@@ -37,6 +37,9 @@ const API_CONFIG = {
 			create: '/api/event',
 			update: (reference: string) => `/api/event/${reference}`,
 			delete: (reference: string) => `/api/event/${reference}`,
+			createParticipant: (reference: string) => `/api/participate/${reference}`,
+		    checkParticipation: (reference: string) => `/api/check/${reference}`,
+		    participantsDetails: (reference: string) => `/api/event/${reference}/participants/details`,
 			details: '/api/event',
 		},
 

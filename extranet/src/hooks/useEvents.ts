@@ -130,3 +130,35 @@ export const useDonationHistory = () => {
 		staleTime: 5 * 60 * 1000,
 	});
 };
+
+export const useCheckParticipation = (reference: string) => {
+	return useQuery({
+		queryKey: ['checkParticipation', reference],
+		queryFn: () => eventsService.checkParticipation(reference),
+		staleTime: 5 * 60 * 1000,
+	});
+};
+
+export const useCreateParticipant = () => {
+	const queryClient = useQueryClient();
+	return useMutation({
+		mutationFn: (reference: string) => eventsService.createParticipant(reference),
+		onSuccess: (_, reference) => {
+			queryClient.invalidateQueries({ queryKey: ['checkParticipation', reference] });
+			queryClient.invalidateQueries({ queryKey: ['eventParticipants', reference] });
+		},
+		onError: (error) => {
+			console.error('Participant registration failed:', error);
+		},
+	});
+};
+
+export const useEventParticipantsDetails = (reference: string, enabled = true) => {
+	return useQuery({
+		queryKey: ['eventParticipants', reference],
+		queryFn: () => eventsService.getEventParticipantsDetails(reference),
+		enabled,
+		staleTime: 5 * 60 * 1000,
+	});
+};
+
