@@ -70,19 +70,3 @@ exports.checkUserParticipation = async (req, res, next) => {
       .json({ message: 'Server error' });
   }
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
