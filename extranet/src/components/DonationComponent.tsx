@@ -13,7 +13,7 @@ import { makeStyles } from '@mui/styles';
 import clsx from 'clsx';
 import { useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { ApiErrorResponse } from '../data/ApiErrorResponse';
 import { BLOOD_GROUP_OPTIONS } from '../data/constants';
@@ -72,10 +72,10 @@ const DonationComponent = () => {
 
 	const navigate = useNavigate();
 	const location = useLocation();
-	const params = useParams();
-	const queryParams = new URLSearchParams(location.search);
+	
+	const queryParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
 	const eventReference = queryParams.get('eventRef');
-	const eventDateFromURL = queryParams.get('eventDate');
+	const eventDateFromURL = queryParams.get('eventDate') || queryParams.get('event-Date');
 
 	const {
 		handleSubmit,
@@ -123,9 +123,8 @@ const DonationComponent = () => {
 			setValue('eventId', eventData.data._id);
 			setValue('donationDate', eventDate);
 			setIsDateDisabled(true);
-		} else if (eventReference && events?.data) {
-			// This is a generic event with reference
-			const genericEvent = events.data.find(
+		} else if (eventReference && events?.data?.events) {
+			const genericEvent = events.data.events.find(
 				(e: any) => e.isGeneric && e.reference === eventReference
 			);
 			if (genericEvent) {
@@ -196,9 +195,8 @@ const DonationComponent = () => {
 			return;
 		}
 
-		// If no event ID is set but we have an event reference, find the matching event
-		if (!formData.eventId && eventReference && events?.data) {
-			const event = events.data.find(
+		if (!formData.eventId && eventReference && events?.data?.events) {
+			const event = events.data.events.find(
 				(e: any) => e.reference === eventReference
 			);
 			if (event) {
@@ -350,7 +348,7 @@ const DonationComponent = () => {
 									/>
 								</Grid>
 
-								{eventReference === null && (
+								{!eventReference && (
 									<Grid item xs={12}>
 										<Controller
 											name='eventId'
@@ -363,8 +361,8 @@ const DonationComponent = () => {
 														<MenuItem value=''>
 															<em>None</em>
 														</MenuItem>
-														{events?.data &&
-															events.data.map((event: any) => (
+														{events?.data?.events &&
+															events.data.events.map((event: any) => (
 																<MenuItem key={event._id} value={event._id}>
 																	{event.title} (
 																	{formatDateForDisplay(event.date)})

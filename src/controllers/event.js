@@ -26,7 +26,6 @@ exports.getEvents = async (req, res, next) => {
 		});
 
 		res.status(STATUS_CODE.OK).json({
-			message: 'Fetched posts successfully.',
 			events,
 			totalItems,
 		});
