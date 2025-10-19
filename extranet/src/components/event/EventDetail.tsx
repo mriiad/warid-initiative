@@ -615,14 +615,15 @@ const EventDetail: React.FC = () => {
 		if (isNonGeneric(stats)) {
 			return (
 				<>
-					إجمالي المشاركين: {stats.registeredParticipants ?? 0 } <br />
-					من تبرعوا فعلياً: {stats.realDonaters ?? 0} <br />
-					إجمالي المتبرعين: {stats.allDonaters ?? 0}
+					المسجلون للمشاركة: {stats.registeredParticipants ?? 0} <br />
+					المسجلون الذين تبرعوا فعلياً: {stats.realDonaters ?? 0} <br />
+					المتبرعون الكلّيون: {stats.allDonaters ?? 0}
 				</>
 			);
 		}
-		return <>المتبرعون الكليّون: {stats.allDonaters ?? 0}</>;
+		return <>المتبرعون الكلّيون: {stats.allDonaters ?? 0}</>;
 	};
+
 
 
 	return (
@@ -733,7 +734,7 @@ const EventDetail: React.FC = () => {
 										</div>
 									</div>
 									<div className='cardContent'>
-										 {participantStats ? renderParticipantStats(participantStats) : null}
+										{participantStats ? renderParticipantStats(participantStats) : null}
 									</div>
 								</InfoCard>
 							)}
