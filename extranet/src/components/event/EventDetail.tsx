@@ -16,13 +16,15 @@ import {
 } from 'react-router-dom';
 import styled from 'styled-components';
 import { useAuth } from '../../auth/AuthContext';
-import { useEvent, useCheckParticipation, useEventParticipantsDetails, useCreateParticipant } from '../../hooks';
+import { useEvent, useCheckParticipation, useEventParticipantsDetails, useCreateParticipant, ParticipantStats, NonGenericStats } from '../../hooks';
 import colors from '../../styles/colors';
 import { formatDate, formatDateForDisplay } from '../../utils/utils';
 import CanDonate from '../CanDonate';
 import ConfirmationDialog from '../shared/ConfirmationDialog';
 import SnackbarComponent from '../shared/SnackbarComponent';
 import EventConfirmation from './EventConfirmation';
+
+
 const EventContainer = styled.div`
 	position: relative;
 	min-height: 100vh;
@@ -481,6 +483,9 @@ const useStyles = makeStyles({
 	},
 });
 
+const isNonGeneric = (stats: ParticipantStats): stats is NonGenericStats =>
+	stats.type === 'nonGeneric';
+
 const EventDetail: React.FC = () => {
 	const { reference } = useParams<{ reference: string }>();
 	const { token, isAdmin } = useAuth();
@@ -606,6 +611,19 @@ const EventDetail: React.FC = () => {
 	const handleCloseConfirmationDialog = () => {
 		setConfirmationDialog({ ...confirmationDialog, open: false });
 	};
+	const renderParticipantStats = (stats: ParticipantStats) => {
+		if (isNonGeneric(stats)) {
+			return (
+				<>
+					إجمالي المشاركين: {stats.registeredParticipants ?? 0 } <br />
+					من تبرعوا فعلياً: {stats.realDonaters ?? 0} <br />
+					إجمالي المتبرعين: {stats.allDonaters ?? 0}
+				</>
+			);
+		}
+		return <>المتبرعون الكليّون: {stats.allDonaters ?? 0}</>;
+	};
+
 
 	return (
 		<>
@@ -649,7 +667,7 @@ const EventDetail: React.FC = () => {
 						</Typography>
 						{isAdmin && (
 							<Chip
-								label={event?.data?.isGeneric ? 'فعالية خاصة' : 'فعالية عامة'}
+								label={event?.data?.isGeneric ? 'فعالية عامة' : 'فعالية خاصة'}
 								className='eventChip'
 								icon={<EventIcon />}
 							/>
@@ -715,11 +733,12 @@ const EventDetail: React.FC = () => {
 										</div>
 									</div>
 									<div className='cardContent'>
-										المشاركون المسجلون: {participantStats.data.registeredParticipants} <br />
-										المتبرعون الفعليون: {participantStats.data.realDonaters}
+										 {participantStats ? renderParticipantStats(participantStats) : null}
 									</div>
 								</InfoCard>
 							)}
+
+
 						</ContentGrid>
 					)}
 
@@ -740,12 +759,12 @@ const EventDetail: React.FC = () => {
 						</div>
 					)}
 
-					{initialRoute && !hasParticipated && (
+					{initialRoute && !hasParticipated && !isAdmin && (
 						<ActionButton variant='contained' onClick={handleParticipateClick} disabled={createParticipant.isPending}>
 							المشاركة في الفعالية
 						</ActionButton>
 					)}
-					{hasParticipated && (
+					{hasParticipated && !isAdmin && (
 						<Typography color={colors.purple} fontWeight={600} marginTop={4}>
 							!تم تسجيلك بنجاح في قائمة المشاركين
 						</Typography>

@@ -200,7 +200,7 @@ const EventsComponent = () => {
 		message: '',
 		confirmText: 'Confirm',
 		cancelText: 'Cancel',
-		onConfirm: () => {},
+		onConfirm: () => { },
 		warning: false,
 	});
 
@@ -225,14 +225,25 @@ const EventsComponent = () => {
 		fetchEvents();
 	}, [page]);
 
-	// Filter events - only show generic events to admins and apply search
+	// Filter events - only show generic eventsto admins and apply search
 	useEffect(() => {
 		if (events) {
-			// If admin, show all events, otherwise filter out generic events
+			// If admin, show all events, otherwise filter out generic events and old events
+			const today = new Date();
+			today.setHours(0, 0, 0, 0);
 			let filtered = isAdmin
 				? events
-				: events.filter((event) => !event.isGeneric);
+				: events
+					.filter((event) => !event.isGeneric)
+					.filter((event) => {
+						const eventDate = new Date(event.date);
+						eventDate.setHours(0, 0, 0, 0); // normalize event date
+						return eventDate >= today; 
+					}); // only future events for normal users
 
+			// Sort by date ascending (soonest first)
+			filtered.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+			
 			// Apply search filter
 			if (searchTerm) {
 				filtered = filtered.filter(
@@ -286,8 +297,7 @@ const EventsComponent = () => {
 				} catch (error) {
 					console.error('Error deleting event:', error);
 					setMessage(
-						`Error deleting event: ${
-							error.response?.data?.message || error.message
+						`Error deleting event: ${error.response?.data?.message || error.message
 						}`
 					);
 				} finally {

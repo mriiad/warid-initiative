@@ -321,7 +321,7 @@ const EventCard: React.FC<EventCardProps> = ({
                     { isAdmin && (
 					<div className={chipContainer}>
 						<Chip
-							label={isGenericEvent ? 'فعالية خاصة' : 'فعالية عامة'}
+                            label={isGenericEvent ? 'فعالية عامة' : 'فعالية خاصة'}
 							size='small'
 							icon={<FavoriteIcon />}
 						/>

@@ -153,12 +153,42 @@ export const useCreateParticipant = () => {
 	});
 };
 
-export const useEventParticipantsDetails = (reference: string, enabled = true) => {
-	return useQuery({
-		queryKey: ['eventParticipants', reference],
-		queryFn: () => eventsService.getEventParticipantsDetails(reference),
-		enabled,
-		staleTime: 5 * 60 * 1000,
-	});
-};
+export interface GenericStats {
+  type: 'generic';
+  allDonaters: number;
+}
 
+export interface NonGenericStats {
+  type: 'nonGeneric';
+  allDonaters: number;
+  registeredParticipants: number;
+  realDonaters: number;
+}
+
+export type ParticipantStats = GenericStats | NonGenericStats;
+
+export const useEventParticipantsDetails = (reference: string, enabled = true) => {
+  return useQuery<ParticipantStats>({
+    queryKey: ['eventParticipants', reference],
+    queryFn: async () => {
+      const response = await eventsService.getEventParticipantsDetails(reference);
+      const data = response.data;
+
+      if (data.isGeneric) {
+        return {
+		  type: 'generic',
+          allDonaters: data.allDonaters,
+        };
+      } else {
+        return {
+		  type: 'nonGeneric',
+          allDonaters: data.allDonaters,
+          registeredParticipants: data.registeredParticipants,
+          realDonaters: data.realDonaters,
+        };
+      }
+    },
+    enabled,
+    staleTime: 5 * 60 * 1000,
+  });
+};
