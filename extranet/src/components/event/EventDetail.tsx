@@ -16,7 +16,7 @@ import {
 } from 'react-router-dom';
 import styled from 'styled-components';
 import { useAuth } from '../../auth/AuthContext';
-import { useEvent, useCheckParticipation, useEventParticipantsDetails, useCreateParticipant, ParticipantStats, NonGenericStats } from '../../hooks';
+import { useEvent, useCheckParticipation, useEventParticipantsDetails, useCreateParticipant, ParticipantStats } from '../../hooks';
 import colors from '../../styles/colors';
 import { formatDate, formatDateForDisplay } from '../../utils/utils';
 import CanDonate from '../CanDonate';
@@ -483,9 +483,6 @@ const useStyles = makeStyles({
 	},
 });
 
-const isNonGeneric = (stats: ParticipantStats): stats is NonGenericStats =>
-	stats.type === 'nonGeneric';
-
 const EventDetail: React.FC = () => {
 	const { reference } = useParams<{ reference: string }>();
 	const { token, isAdmin } = useAuth();
@@ -612,7 +609,7 @@ const EventDetail: React.FC = () => {
 		setConfirmationDialog({ ...confirmationDialog, open: false });
 	};
 	const renderParticipantStats = (stats: ParticipantStats) => {
-		if (isNonGeneric(stats)) {
+		if (!stats.isGeneric) {
 			return (
 				<>
 					المسجلون للمشاركة: {stats.registeredParticipants ?? 0} <br />

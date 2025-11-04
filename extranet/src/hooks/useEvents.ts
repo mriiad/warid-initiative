@@ -153,19 +153,12 @@ export const useCreateParticipant = () => {
 	});
 };
 
-export interface GenericStats {
-  type: 'generic';
+export interface ParticipantStats {
+  isGeneric: boolean;
   allDonaters: number;
+  registeredParticipants?: number;
+  realDonaters?: number;
 }
-
-export interface NonGenericStats {
-  type: 'nonGeneric';
-  allDonaters: number;
-  registeredParticipants: number;
-  realDonaters: number;
-}
-
-export type ParticipantStats = GenericStats | NonGenericStats;
 
 export const useEventParticipantsDetails = (reference: string, enabled = true) => {
   return useQuery<ParticipantStats>({
@@ -176,12 +169,12 @@ export const useEventParticipantsDetails = (reference: string, enabled = true) =
 
       if (data.isGeneric) {
         return {
-		  type: 'generic',
+		  isGeneric: true,
           allDonaters: data.allDonaters,
         };
       } else {
         return {
-		  type: 'nonGeneric',
+		  isGeneric: false,
           allDonaters: data.allDonaters,
           registeredParticipants: data.registeredParticipants,
           realDonaters: data.realDonaters,
