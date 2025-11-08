@@ -425,16 +425,34 @@ exports.getEventParticipantDetails = async (req, res, next) => {
     }
 
     const eventId = event._id;
+
+    // Handle generic event
+    if (event.isGeneric) {
+      const allDonaters = await Donation.distinct('userId', { eventId });
+
+      return res.status(STATUS_CODE.OK).json({
+        message: 'Generic event participant details fetched successfully.',
+        eventReference: reference,
+		isGeneric: true, 
+        allDonaters: allDonaters.length,
+      });
+    }
+
+    // Non-generic event stats
+    const allDonaters = await Donation.distinct('userId', { eventId });
     const registeredParticipants = await Participant.countDocuments({ eventId });
     const participantUserIds = await Participant.find({ eventId }).distinct('userId');
+
     const realDonaters = await Donation.distinct('userId', {
       eventId,
-      userId: { $in: participantUserIds }
+      userId: { $in: participantUserIds },
     });
 
     return res.status(STATUS_CODE.OK).json({
       message: 'Event participant details fetched successfully.',
       eventReference: reference,
+	  isGeneric: false, 
+      allDonaters: allDonaters.length,
       registeredParticipants,
       realDonaters: realDonaters.length,
     });
