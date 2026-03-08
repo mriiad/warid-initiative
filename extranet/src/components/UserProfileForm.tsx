@@ -22,6 +22,8 @@ import { authStyles } from '../styles/mainStyles';
 import { cities, formatDate } from '../utils/utils';
 import FormContainer from './shared/FormContainer';
 import SnackbarComponent from './shared/SnackbarComponent';
+import { useQueryClient } from '@tanstack/react-query';
+
 
 const useStyles = makeStyles({
 	align: {
@@ -43,6 +45,8 @@ const UserProfileForm = () => {
 	const { formField, button, signUp, form, bar } = authStyles();
 	const [showSnackbar, setShowSnackbar] = useState(false);
 	const [incompleteFieldsMessage, setIncompleteFieldsMessage] = useState('');
+	const queryClient = useQueryClient();
+
 
 	const { data: userProfile } = useUserProfile();
 
@@ -100,6 +104,8 @@ const UserProfileForm = () => {
 	const updateProfile = async (data: ProfileFormData) => {
 		try {
 			await axios.put('/api/user/update', data);
+			// Refetch user data after profile update to ensure components get the latest values
+			queryClient.invalidateQueries({ queryKey: ['user', 'me'] });
 			navigate('/events');
 		} catch (error) {
 			console.error('Error updating profile:', error);
