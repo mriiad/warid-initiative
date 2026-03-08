@@ -493,7 +493,9 @@ const EventDetail: React.FC = () => {
 	const { fallback, qrCodeContainer, qrCodeCard, qrCodeImage, qrCodeTitle } =
 		useStyles();
 
-	const { data: event, isLoading, isError } = useEvent(reference || '');
+	const { data: eventData, isLoading, isError } = useEvent(reference || '');
+	const event = eventData?.data?.event;
+
 	const { data: participationData } = useCheckParticipation(reference || '');
 	const createParticipant = useCreateParticipant();
 	const { data: participantStats } = useEventParticipantsDetails(reference || '', isAdmin);
@@ -567,7 +569,7 @@ const EventDetail: React.FC = () => {
 		setConfirmationDialog({
 			open: true,
 			title: 'Delete Event',
-			message: `Are you sure you want to delete the event "${event?.data?.title}"? This action cannot be undone.`,
+			message: `Are you sure you want to delete the event "${event?.title}"? This action cannot be undone.`,
 			confirmText: 'Delete',
 			cancelText: 'Cancel',
 			onConfirm: async () => {
@@ -622,10 +624,9 @@ const EventDetail: React.FC = () => {
 	};
 
 
-
 	return (
 		<>
-			{isLoading ? (
+			{isLoading || !event ? (
 				<LoadingContainer>
 					<CircularProgress size={60} />
 					<Typography className='loadingText'>
@@ -648,24 +649,24 @@ const EventDetail: React.FC = () => {
 					<EventHero>
 						<img
 							src={
-								event?.data?.image
-									? `data:image/jpeg;base64,${event.data.image}`
+								event?.image
+									? `data:image/jpeg;base64,${event.image}`
 									: '/event-default.png'
 							}
-							alt={event?.data?.title}
+							alt={event?.title}
 							className='eventImage'
 						/>
 
 						<Typography variant='h1' className='eventTitle'>
-							{event?.data?.title}
+							{event?.title}
 						</Typography>
 
 						<Typography variant='h5' className='eventSubtitle'>
-							{event?.data?.subtitle}
+							{event?.subtitle}
 						</Typography>
 						{isAdmin && (
 							<Chip
-								label={event?.data?.isGeneric ? 'فعالية عامة' : 'فعالية خاصة'}
+								label={event?.isGeneric ? 'فعالية عامة' : 'فعالية خاصة'}
 								className='eventChip'
 								icon={<EventIcon />}
 							/>
@@ -682,7 +683,7 @@ const EventDetail: React.FC = () => {
 									</div>
 								</div>
 								<div className='cardContent'>
-									{formatDateForDisplay(event?.data?.date)}
+									{formatDateForDisplay(event?.date)}
 								</div>
 							</InfoCard>
 
@@ -693,7 +694,7 @@ const EventDetail: React.FC = () => {
 										<LocationOnIcon />
 									</div>
 								</div>
-								<div className='cardContent'>{event?.data?.location}</div>
+								<div className='cardContent'>{event?.location}</div>
 							</InfoCard>
 
 							<InfoCard>
@@ -705,7 +706,7 @@ const EventDetail: React.FC = () => {
 								</div>
 								<div className='cardContent'>
 									<a
-										href={event?.data?.mapLink}
+										href={event?.mapLink}
 										target='_blank'
 										rel='noopener noreferrer'
 									>
@@ -715,10 +716,10 @@ const EventDetail: React.FC = () => {
 								</div>
 							</InfoCard>
 
-							{event?.data?.description && (
+							{event?.description && (
 								<DescriptionCard>
 									<Typography className='descriptionText'>
-										{event.data.description}
+										{event.description}
 									</Typography>
 								</DescriptionCard>
 							)}
@@ -742,14 +743,14 @@ const EventDetail: React.FC = () => {
 
 
 
-					{event?.data?.event?.qrCode && (
+					{event?.qrCode && (
 						<div className={qrCodeContainer}>
 							<div className={qrCodeCard}>
 								<Typography variant='h6' className={qrCodeTitle}>
 									مسح رمز الاستجابة السريعة للتبرع
 								</Typography>
 								<img
-									src={event.data.event.qrCode}
+									src={event.qrCode}
 									alt='QR Code'
 									className={qrCodeImage}
 								/>
