@@ -67,14 +67,15 @@ const UpdateEvent: React.FC = () => {
 
 	useEffect(() => {
 		if (eventData) {
+			const event = eventData.data.event;
 			reset({
-				title: eventData.title,
-				subtitle: eventData.subtitle || '',
-				location: eventData.location,
-				date: new Date(eventData.date).toISOString().split('T')[0],
-				mapLink: eventData.mapLink || '',
-				description: eventData.description || '',
-				isGeneric: eventData.isGeneric || false,
+				title: event.title,
+				subtitle: event.subtitle || '',
+				location: event.location,
+				date: new Date(event.date).toISOString().split('T')[0],
+				mapLink: event.mapLink || '',
+				description: event.description || '',
+				isGeneric: event.isGeneric || false,
 			});
 		}
 	}, [eventData, reset]);
