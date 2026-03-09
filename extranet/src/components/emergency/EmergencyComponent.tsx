@@ -72,25 +72,10 @@ const EmergencyComponent = () => {
 	const handleConfirmEmergency = (emergencyId: string) => {
 		mutation.mutate(emergencyId, {
 			onSuccess: () => {
-				// Remove confirmed emergency from local cache
-				queryClient.setQueryData<EmergenciesResponse>(
-					['emergencies', 'unconfirmed', page],
-					(oldData) => {
-						if (!oldData) return oldData;
-						return {
-							...oldData,
-							emergencies: oldData.emergencies.filter(
-								(e) => e._id !== emergencyId
-							),
-							totalItems: oldData.totalItems - 1,
-						};
-					}
-				);
 				setSnackbarMessage('Emergency confirmed successfully!');
 				setSnackbarOpen(true);
 			},
 			onError: (error) => {
-				console.error('Error confirming emergency:', error);
 				setSnackbarMessage('Error confirming emergency. Please try again.');
 				setSnackbarOpen(true);
 			},
