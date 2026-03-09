@@ -598,9 +598,9 @@ exports.getDashboard = async (req, res, next) => {
 
     // Handle case: no donations found
     if (!donations || donations.length === 0) {
-      return res.status(HTTP_STATUS.NOT_FOUND).json({
-        errorMessage: ERROR_MESSAGES.DONATIONS_NOT_FOUND
-      });
+       return res.status(200).json({
+         donations: donations || [],
+       });
     }
 
     // Total donations
