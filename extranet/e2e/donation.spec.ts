@@ -1,0 +1,48 @@
+import { test, expect } from '@playwright/test';
+import { mockJson, seedAuth, fullProfileResponse } from './support/mockApi';
+
+test.describe('Donation form', () => {
+	test('BUG: an eligible, first-time donor sees "not eligible ... starting undefined" (user-facing symptom of issue #200)', async ({ page }) => {
+		// This mocks the REAL (buggy) backend response reproduced in
+		// e2e/backend/donation.spec.js: donate() never awaits
+		// checkDonationEligibility(), so canDonate/nextDonationDate are always
+		// undefined and every donation is rejected with this exact message --
+		// even for a first-time donor who has never donated before.
+		await seedAuth(page);
+		await mockJson(page, '**/api/user/profile', fullProfileResponse());
+		await mockJson(
+			page,
+			'**/api/donation',
+			{ errorMessage: 'Based on your last donation date, you are not eligible to donate at this time. You can register for a new donation starting undefined', errorKeys: ['donationDate'] },
+			{ status: 403, method: 'POST' }
+		);
+
+		await page.goto('/donate');
+		// The donation-type <Select> has no accessible name (a separate,
+		// smaller a11y gap), so it's targeted positionally: blood group (disabled)
+		// is the first combobox, donation type is the second.
+		await page.getByRole('combobox').nth(1).click();
+		await page.getByRole('option', { name: 'الدم' }).click();
+		await page.locator('button[type=submit]').click();
+		await page.waitForTimeout(500);
+		await expect(page.getByText(/starting undefined/)).toBeVisible({ timeout: 5000 });
+	});
+
+	test('BUG: GET /api/donation/canDonate 500s, so the eligibility hint never loads', async ({ page }) => {
+		// Reproduces the ReferenceError bug in src/controllers/donation.js's
+		// canDonate handler (documented in e2e/backend/donation.spec.js): it
+		// calls the bare identifier `checkDonationEligibility` instead of
+		// `exports.checkDonationEligibility`, throwing on every single call.
+		await seedAuth(page);
+		await mockJson(page, '**/api/user/profile', fullProfileResponse());
+		await mockJson(page, '**/api/donation/canDonate', { message: 'checkDonationEligibility is not defined', statusCode: 500 }, { status: 500 });
+
+		const errors: string[] = [];
+		page.on('console', (msg) => { if (msg.type() === 'error') errors.push(msg.text()); });
+
+		await page.goto('/donate');
+		await page.waitForTimeout(1000);
+		// The page should still render the form rather than crash outright.
+		await expect(page.locator('form')).toBeVisible();
+	});
+});

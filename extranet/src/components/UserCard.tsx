@@ -7,6 +7,7 @@ import GenderIcon from '@mui/icons-material/Wc';
 import Typography from '@mui/material/Typography';
 import { makeStyles } from '@mui/styles';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { User } from '../data/User';
 import colors from '../styles/colors';
 import ActionButton from './shared/ActionButton';
@@ -66,6 +67,7 @@ const UserCard: React.FC<UserCardProps> = ({
 	animationDelay,
 	isAdmin = false,
 }) => {
+	const { t } = useTranslation();
 	const classes = useStyles({ animationDelay, isAdmin: user.isAdmin });
 
 	const fullName = user.profile
@@ -95,7 +97,7 @@ const UserCard: React.FC<UserCardProps> = ({
 			<div>
 				{user.isAdmin && (
 					<div className={classes.adminIcons}>
-						<span>مشرف</span>
+						<span>{t('users.card.admin')}</span>
 					</div>
 				)}
 
@@ -119,7 +121,10 @@ const UserCard: React.FC<UserCardProps> = ({
 				{displayGender && (
 					<Typography variant='subtitle1'>
 						{' '}
-						<GenderIcon /> {displayGender}
+						<GenderIcon />{' '}
+						{displayGender === 'male'
+							? t('auth.completeProfile.male')
+							: t('auth.completeProfile.female')}
 					</Typography>
 				)}
 				{typeof age === 'number' && (
@@ -138,12 +143,18 @@ const UserCard: React.FC<UserCardProps> = ({
 
 			{isAdmin && (
 				<div className={classes.buttons}>
-					<ActionButton title='تحديث' onClick={() => onUpdate(user._id)} />
-					<ActionButton title='حذف' onClick={() => onDelete(user._id)} />
+					<ActionButton
+						title={t('users.card.update')}
+						onClick={() => onUpdate(user._id)}
+					/>
+					<ActionButton
+						title={t('users.card.delete')}
+						onClick={() => onDelete(user._id)}
+					/>
 
 					{!user.isAdmin && (
 						<ActionButton
-							title='تعيين مشرف'
+							title={t('users.card.makeAdmin')}
 							onClick={() => onMakeAdmin(user._id)}
 						/>
 					)}

@@ -1,5 +1,6 @@
 import { Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import colors from '../styles/colors';
 
@@ -53,6 +54,7 @@ const useStyles = makeStyles({
 });
 
 const NoUserFound = () => {
+	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const {
 		noUsersContainer,
@@ -65,7 +67,7 @@ const NoUserFound = () => {
 	return (
 		<div className={noUsersContainer}>
 			<Typography variant='h1' className={noUsersText}>
-				No Users Found
+				{t('users.list.noUsersTitle')}
 			</Typography>
 			<img
 				src='/blood-donation-hand.svg'
@@ -73,7 +75,7 @@ const NoUserFound = () => {
 				className={svgIllustration}
 			/>
 			<Typography className={description}>
-				We couldn't find any users matching your criteria.
+				{t('users.list.noUsersBody')}
 			</Typography>
 			<div
 				className={homeButton}
@@ -82,7 +84,7 @@ const NoUserFound = () => {
 				}}
 				role='button'
 			>
-				Reset Filter
+				{t('users.list.resetFilter')}
 			</div>
 		</div>
 	);

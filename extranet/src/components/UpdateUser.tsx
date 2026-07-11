@@ -14,6 +14,7 @@ import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { BLOOD_GROUP_OPTIONS } from '../data/constants';
 import { authStyles } from '../styles/mainStyles';
@@ -38,6 +39,7 @@ interface UpdateUserFormData {
 }
 
 const UpdateUser = () => {
+	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const { userId } = useParams<{ userId: string }>();
 	const { align } = useStyles();
@@ -106,7 +108,7 @@ const UpdateUser = () => {
 				},
 			});
 
-			setMessage('User updated successfully!');
+			setMessage(t('users.update.success'));
 			setShowSnackbar(true);
 
 			setTimeout(() => {
@@ -114,7 +116,7 @@ const UpdateUser = () => {
 			}, 2000);
 		} catch (error) {
 			console.error('Error updating user:', error);
-			setMessage('Error updating user. Please try again.');
+			setMessage(t('users.update.error'));
 			setShowSnackbar(true);
 		}
 	};
@@ -122,16 +124,16 @@ const UpdateUser = () => {
 	if (isLoading) {
 		return (
 			<FormContainer>
-				<Typography>Loading user data...</Typography>
+				<Typography>{t('users.update.loading')}</Typography>
 			</FormContainer>
 		);
 	}
 
 	return (
 		<>
-			<FormContainer className={align} style={{ marginBottom: '120px' }}>
+			<FormContainer className={align}>
 				<Typography variant='h2' align='center' gutterBottom className={signUp}>
-					<b>Update User Information</b>
+					<b>{t('users.update.title')}</b>
 					<span className={bar}></span>
 				</Typography>
 
@@ -141,11 +143,11 @@ const UpdateUser = () => {
 							<Controller
 								name='firstname'
 								control={control}
-								rules={{ required: 'First name is required' }}
+								rules={{ required: t('users.update.firstNameRequired') }}
 								render={({ field }) => (
 									<TextField
 										{...field}
-										label='First Name'
+										label={t('users.update.firstName')}
 										fullWidth
 										error={Boolean(errors.firstname)}
 										helperText={errors.firstname?.message}
@@ -159,11 +161,11 @@ const UpdateUser = () => {
 							<Controller
 								name='lastname'
 								control={control}
-								rules={{ required: 'Last name is required' }}
+								rules={{ required: t('users.update.lastNameRequired') }}
 								render={({ field }) => (
 									<TextField
 										{...field}
-										label='Last Name'
+										label={t('users.update.lastName')}
 										fullWidth
 										error={Boolean(errors.lastname)}
 										helperText={errors.lastname?.message}
@@ -178,16 +180,16 @@ const UpdateUser = () => {
 								name='email'
 								control={control}
 								rules={{
-									required: 'Email is required',
+									required: t('users.update.emailRequired'),
 									pattern: {
 										value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-										message: 'Invalid email address',
+										message: t('users.update.emailInvalid'),
 									},
 								}}
 								render={({ field }) => (
 									<TextField
 										{...field}
-										label='Email'
+										label={t('users.update.email')}
 										type='email'
 										fullWidth
 										error={Boolean(errors.email)}
@@ -202,11 +204,11 @@ const UpdateUser = () => {
 							<Controller
 								name='phoneNumber'
 								control={control}
-								rules={{ required: 'Phone number is required' }}
+								rules={{ required: t('users.update.phoneRequired') }}
 								render={({ field }) => (
 									<TextField
 										{...field}
-										label='Phone Number'
+										label={t('users.update.phone')}
 										fullWidth
 										error={Boolean(errors.phoneNumber)}
 										helperText={errors.phoneNumber?.message}
@@ -220,11 +222,11 @@ const UpdateUser = () => {
 							<Controller
 								name='birthdate'
 								control={control}
-								rules={{ required: 'Birthdate is required' }}
+								rules={{ required: t('users.update.birthdateRequired') }}
 								render={({ field }) => (
 									<TextField
 										{...field}
-										label='Birthdate'
+										label={t('users.update.birthdate')}
 										type='date'
 										fullWidth
 										error={Boolean(errors.birthdate)}
@@ -240,11 +242,11 @@ const UpdateUser = () => {
 							<Controller
 								name='city'
 								control={control}
-								rules={{ required: 'City is required' }}
+								rules={{ required: t('users.update.cityRequired') }}
 								render={({ field }) => (
 									<FormControl fullWidth error={Boolean(errors.city)}>
-										<InputLabel>City</InputLabel>
-										<Select {...field} label='City'>
+										<InputLabel>{t('users.update.city')}</InputLabel>
+										<Select {...field} label={t('users.update.city')}>
 											{cities.map((city) => (
 												<MenuItem key={city} value={city}>
 													{city}
@@ -263,11 +265,11 @@ const UpdateUser = () => {
 							<Controller
 								name='bloodGroup'
 								control={control}
-								rules={{ required: 'Blood group is required' }}
+								rules={{ required: t('users.update.bloodGroupRequired') }}
 								render={({ field }) => (
 									<FormControl fullWidth error={Boolean(errors.bloodGroup)}>
-										<InputLabel>Blood Group</InputLabel>
-										<Select {...field} label='Blood Group'>
+										<InputLabel>{t('users.update.bloodGroup')}</InputLabel>
+										<Select {...field} label={t('users.update.bloodGroup')}>
 											{BLOOD_GROUP_OPTIONS.map((option) => (
 												<MenuItem key={option.value} value={option.value}>
 													{option.label}
@@ -292,7 +294,7 @@ const UpdateUser = () => {
 								className={button}
 								fullWidth
 							>
-								Update User Information
+								{t('users.update.submit')}
 							</Button>
 						</Grid>
 					</Grid>

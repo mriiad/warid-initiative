@@ -32,7 +32,7 @@ export const eventsService = {
 				}
 			}
 		});
-		return apiClient.post('/api/events', formData, {
+		return apiClient.post('/api/event', formData, {
 			headers: { 'Content-Type': 'multipart/form-data' },
 		});
 	},
