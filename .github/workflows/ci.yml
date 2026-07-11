@@ -31,10 +31,13 @@ jobs:
         # config.json is intentionally gitignored (it normally holds
         # per-environment secrets); src/middleware/token-check.js requires
         # it directly, so tests need a throwaway one with dummy values.
+        # SECRET_KEY must match the JWT_SECRET_KEY set in
+        # e2e/backend/support/jest.setup.js (see jwtHelper.js) or every
+        # authenticated-route test fails with 401.
         run: |
           cat > config.json <<'EOF'
           {
-            "authConfig": { "SECRET_KEY": "ci-test-secret-key" },
+            "authConfig": { "SECRET_KEY": "test-jwt-secret-key-for-sandbox" },
             "mailerConfig": {
               "email": "test@example.com",
               "password": "test-password",
