@@ -4,8 +4,9 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { UserFormData } from '../data/ProfileFormData';
 import { usersService } from '../services';
-import type { UpdateUserData, UserProfileData } from '../types';
+import type { UpdateUserData } from '../types';
 import type { DashboardData } from '../types/users';
 
 // Users hooks
@@ -18,15 +19,13 @@ export const useUserProfile = (userId?: string) => {
 	});
 };
 
-export const useUpdateProfile = () => {
+export const useUpdateMyProfile = () => {
 	const queryClient = useQueryClient();
 
 	return useMutation({
-		mutationFn: ({ userId, data }: { userId: string; data: UserProfileData }) =>
-			usersService.updateProfile(userId, data),
-		onSuccess: (_, { userId }) => {
-			// Invalidate user profile
-			queryClient.invalidateQueries({ queryKey: ['user', userId] });
+		mutationFn: (data: Partial<Omit<UserFormData, 'phoneNumber'>> & { phoneNumber?: number }) =>
+			usersService.updateMyProfile(data),
+		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ['user', 'me'] });
 		},
 		onError: (error) => {

@@ -40,8 +40,8 @@ import {
 } from '../../data/ProfileFormData';
 
 import {
+	useUpdateMyProfile,
 	useUpdatePassword,
-	useUpdateProfile,
 	useUserProfile,
 } from '../../hooks';
 import colors from '../../styles/colors';
@@ -473,7 +473,7 @@ const ProfileComponent = () => {
 	}, [isError]);
 
 	// update profile mutation
-	const updateProfileMutation = useUpdateProfile();
+	const updateProfileMutation = useUpdateMyProfile();
 
 	const handleUpdateProfile = (updatedInfo: UserFormData) => {
 		// Convert phoneNumber back to number for API
@@ -481,18 +481,15 @@ const ProfileComponent = () => {
 			...updatedInfo,
 			phoneNumber: Number(updatedInfo.phoneNumber) || 0,
 		};
-		updateProfileMutation.mutate(
-			{ userId: 'me', data: apiData as any },
-			{
-				onSuccess: () => {
-					showSnackbar('Profile updated successfully!', 'success');
-					setIsEditingInfo(false);
-				},
-				onError: () => {
-					showSnackbar('Failed to update profile.', 'error');
-				},
-			}
-		);
+		updateProfileMutation.mutate(apiData, {
+			onSuccess: () => {
+				showSnackbar('Profile updated successfully!', 'success');
+				setIsEditingInfo(false);
+			},
+			onError: () => {
+				showSnackbar('Failed to update profile.', 'error');
+			},
+		});
 	};
 	const updatePasswordMutation = useUpdatePassword();
 
