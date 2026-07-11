@@ -11,7 +11,6 @@ import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import colors from '../styles/colors';
-import path from 'path';
 
 const NavbarContainer = styled(motion.div)(({ theme }) => ({
 	position: 'fixed',
