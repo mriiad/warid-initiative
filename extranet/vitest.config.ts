@@ -15,5 +15,7 @@ export default defineConfig({
 		setupFiles: ['./src/setupTests.js'],
 		include: ['src/**/*.{test,spec}.{js,jsx,ts,tsx}'],
 		css: false,
+		// Don't fail CI on zero test files, only on actual test failures.
+		passWithNoTests: true,
 	},
 });

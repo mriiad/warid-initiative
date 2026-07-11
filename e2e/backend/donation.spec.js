@@ -49,11 +49,12 @@ describe('GET /api/donation/canDonate (NEW BUG: endpoint is completely broken)',
 	});
 });
 
-describe('POST /api/donation (BUG regression for issue #200)', () => {
-	it('BUG: rejects a brand-new, fully-eligible user with "not eligible ... starting undefined"', async () => {
+describe('POST /api/donation (regression test for issue #200)', () => {
+	it('accepts a brand-new, fully-eligible user (fixed: eligibility promise is now awaited)', async () => {
 		// A user who has never donated before: checkDonationEligibility()
-		// resolves { canDonate: true, nextDonationDate: null }. The donate()
-		// handler is supposed to accept this request.
+		// resolves { canDonate: true, nextDonationDate: null }. donate() and
+		// the checkExistingDonation() helper it calls both now correctly
+		// await exports.checkDonationEligibility(...), so the request succeeds.
 		User.findById.mockReturnValue(resolveTo({ _id: USER_ID, gender: 'male' }));
 		Donation.find.mockReturnValue(resolveTo([]));
 		Event.findOne.mockReturnValue(resolveTo({ _id: 'event-1', isGeneric: true }));
@@ -63,20 +64,13 @@ describe('POST /api/donation (BUG regression for issue #200)', () => {
 			.set('Authorization', authHeader(USER_ID))
 			.send({ bloodGroup: 'O+', donationDate: new Date().toISOString(), donationType: 'BLOOD' });
 
-		// EXPECTED (per product intent): 201, donation accepted.
-		// ACTUAL: src/controllers/donation.js:72-73 calls
-		//   `this.checkDonationEligibility(req.userId)` WITHOUT awaiting the
-		// promise, so `canDonate`/`nextDonationDate` destructure to
-		// `undefined`. `if (!canDonate)` is then always true, so every
-		// donation attempt is rejected -- reproducing the exact message from
-		// issue #200 ("...starting undefined"), even for an eligible user.
 		expect(res.status).toBe(201);
 	});
 
-	it('demonstrates the exact malformed error body currently returned', async () => {
+	it('rejects a not-yet-eligible existing user with the real next-eligible date (not "undefined")', async () => {
+		const recentDonationDate = new Date();
 		User.findById.mockReturnValue(resolveTo({ _id: USER_ID, gender: 'male' }));
-		Donation.find.mockReturnValue(resolveTo([]));
-		Event.findOne.mockReturnValue(resolveTo({ _id: 'event-1', isGeneric: true }));
+		Donation.find.mockReturnValue(resolveTo([{ donationDate: recentDonationDate }]));
 
 		const res = await request(app)
 			.post('/api/donation')
@@ -84,7 +78,8 @@ describe('POST /api/donation (BUG regression for issue #200)', () => {
 			.send({ bloodGroup: 'O+', donationDate: new Date().toISOString(), donationType: 'BLOOD' });
 
 		expect(res.status).toBe(403);
-		expect(res.body.errorMessage).toContain('starting undefined');
+		expect(res.body.errorMessage).not.toContain('undefined');
+		expect(res.body.errorMessage).toMatch(/starting \d{2}\/\d{2}\/\d{4}/);
 	});
 });
 

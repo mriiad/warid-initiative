@@ -131,7 +131,7 @@ const UpdateUser = () => {
 
 	return (
 		<>
-			<FormContainer className={align} style={{ marginBottom: '120px' }}>
+			<FormContainer className={align}>
 				<Typography variant='h2' align='center' gutterBottom className={signUp}>
 					<b>{t('users.update.title')}</b>
 					<span className={bar}></span>
