@@ -97,7 +97,13 @@ const DonationComponent = () => {
 	const [showSnackbar, setShowSnackbar] = useState(false);
 	const [reviewSnackbarOpen, setReviewSnackbarOpen] = useState(false);
 	const [isBloodGroupEditable, setIsBloodGroupEditable] = useState(true);
-	const [isDateDisabled, setIsDateDisabled] = useState(false);
+	// Whenever the form was opened via an event's QR code (eventReference
+	// present), the date is derived from that event and must never be
+	// user-editable -- including in the brief window before the event
+	// details finish loading.
+	const [isDateDisabled, setIsDateDisabled] = useState<boolean>(() =>
+		Boolean(eventReference)
+	);
 	const donationType = watch('donationType');
 
 	const defaultDonationDate = useMemo(() => {
@@ -117,10 +123,18 @@ const DonationComponent = () => {
 	}, [donation, error, isLoading, token]);
 
 	useEffect(() => {
-		if (eventReference && eventData?.data) {
-			// This is a non-generic event with reference
-			const eventDate = eventDateFromURL || formatDate(eventData.data.date);
-			setValue('eventId', eventData.data._id);
+		// GET /api/events/:reference responds with `{ message, event }`, so the
+		// actual event fields live at `eventData.data.event`, not
+		// `eventData.data` directly.
+		if (eventReference && eventData?.data?.event) {
+			const event = eventData.data.event;
+			// General (generic) events can happen any day, so the donation date
+			// is always today, greyed out. Specific events use the fixed date
+			// encoded in the QR link (falling back to the event's own date).
+			const eventDate = event.isGeneric
+				? formatDate(new Date())
+				: eventDateFromURL || formatDate(event.date);
+			setValue('eventId', event._id);
 			setValue('donationDate', eventDate);
 			setIsDateDisabled(true);
 		} else if (eventReference && events?.data?.events) {
@@ -130,8 +144,9 @@ const DonationComponent = () => {
 			if (genericEvent) {
 				setValue('eventId', genericEvent._id);
 				setValue('donationDate', formatDate(new Date()));
+				setIsDateDisabled(true);
 			}
-		} else {
+		} else if (!eventReference) {
 			// Regular donation - no event reference
 			setValue('donationDate', formatDate(new Date()));
 		}
