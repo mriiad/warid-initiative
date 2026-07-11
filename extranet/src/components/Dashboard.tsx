@@ -9,6 +9,7 @@ import { Box, Button, Card, CardContent, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { motion } from 'framer-motion';
 import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../auth/AuthContext';
 import colors from '../styles/colors';
 
@@ -100,6 +101,7 @@ export default function Dashboard() {
 		donationCard,
 		emptyState,
 	} = useStyles();
+	const { t } = useTranslation();
 	const { userId } = useAuth();
 	const { data, isLoading, isError, error } = useDashboard(userId);
 
@@ -109,11 +111,11 @@ export default function Dashboard() {
 		}
 	}, [data]);
 
-	if (isLoading) return <Typography p={2}>Loading dashboard...</Typography>;
+	if (isLoading) return <Typography p={2}>{t('dashboard.loading')}</Typography>;
 	if (isError)
 		return (
 			<Typography p={2} color='error'>
-				Error loading dashboard: {error?.message || 'Unknown error'}
+				{t('dashboard.errorPrefix')} {error?.message || t('dashboard.unknownError')}
 			</Typography>
 		);
 
@@ -130,11 +132,10 @@ export default function Dashboard() {
 				<Card className={heroCard} sx={{ borderRadius: '24px' }}>
 					<Box className={heroContent}>
 						<Typography variant='h6' sx={{ color: 'white' }}>
-							Welcome
+							{t('dashboard.welcome')}
 						</Typography>
 						<Typography variant='body2' sx={{ color: 'white' }}>
-							Thanks you for being part of the warid community and helping
-							saving live
+							{t('dashboard.welcomeMessage')}
 						</Typography>
 						<Button
 							variant='contained'
@@ -142,7 +143,7 @@ export default function Dashboard() {
 							href='/events?page=1'
 							className={heroButton}
 						>
-							Explore Events
+							{t('dashboard.exploreEvents')}
 						</Button>
 					</Box>
 					<Box className={heroOverlay} />
@@ -158,7 +159,7 @@ export default function Dashboard() {
 					<Card className={statCard} sx={{ borderRadius: '24px' }}>
 						<FavoriteIcon sx={{ color: colors.rose }} fontSize='large' />
 						<Typography variant='subtitle2' color='text.secondary'>
-							Total Donations
+							{t('dashboard.totalDonations')}
 						</Typography>
 						<Typography variant='h6'>{stats.total}</Typography>
 					</Card>
@@ -172,7 +173,7 @@ export default function Dashboard() {
 					<Card className={statCard} sx={{ borderRadius: '24px' }}>
 						<AccessTimeIcon sx={{ color: colors.purple }} fontSize='large' />
 						<Typography variant='subtitle2' color='text.secondary'>
-							Next Donation
+							{t('dashboard.nextDonation')}
 						</Typography>
 						<Typography variant='h6'>{stats.eligibleIn}</Typography>
 					</Card>
@@ -186,7 +187,7 @@ export default function Dashboard() {
 					<Card className={statCard} sx={{ borderRadius: '24px' }}>
 						<CalendarMonthIcon sx={{ color: colors.purple }} fontSize='large' />
 						<Typography variant='subtitle2' color='text.secondary'>
-							Last donation
+							{t('dashboard.lastDonation')}
 						</Typography>
 						<Typography variant='h6'>{stats.lastDonation}</Typography>
 					</Card>
@@ -194,7 +195,7 @@ export default function Dashboard() {
 			</Box>
 
 			<Box display='flex' flexDirection='column' gap={2}>
-				<Typography variant='h5'>Your donations history</Typography>
+				<Typography variant='h5'>{t('dashboard.donationHistory')}</Typography>
 				{donations.length > 0 ? (
 					donations.map((d) => (
 						<motion.div
@@ -231,11 +232,10 @@ export default function Dashboard() {
 							sx={{ mb: 1 }}
 						/>
 						<Typography variant='h6' color='textSecondary' gutterBottom>
-							You haven't made any donations yet!
+							{t('dashboard.noDonationsTitle')}
 						</Typography>
 						<Typography variant='body2' color='textSecondary'>
-							Join our community of heroes and start saving lives today. Explore
-							upcoming events and make your first donation!
+							{t('dashboard.noDonationsBody')}
 						</Typography>
 						<Button
 							variant='contained'
@@ -243,7 +243,7 @@ export default function Dashboard() {
 							href='/events?page=1'
 							sx={{ mt: 2 }}
 						>
-							See Upcoming Events
+							{t('dashboard.seeUpcomingEvents')}
 						</Button>
 					</Box>
 				)}

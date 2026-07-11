@@ -9,6 +9,7 @@ import {
 import { makeStyles } from '@mui/styles';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { useAuth } from '../../auth/AuthContext';
@@ -179,6 +180,7 @@ const useStyles = makeStyles({
 });
 
 const EventsComponent = () => {
+	const { t } = useTranslation();
 	const { eventsList, fallBack, emptyState, pagination, searchField } =
 		useStyles();
 	const [events, setEvents] = useState<Event[] | null>([]);
@@ -198,8 +200,8 @@ const EventsComponent = () => {
 		open: false,
 		title: '',
 		message: '',
-		confirmText: 'Confirm',
-		cancelText: 'Cancel',
+		confirmText: t('common.confirm'),
+		cancelText: t('common.cancel'),
 		onConfirm: () => { },
 		warning: false,
 	});
@@ -272,10 +274,10 @@ const EventsComponent = () => {
 		console.log(`Deleting event with title ${title}`);
 		setConfirmationDialog({
 			open: true,
-			title: 'Delete Event',
-			message: `Are you sure you want to delete the event "${title}"? This action cannot be undone.`,
-			confirmText: 'Delete',
-			cancelText: 'Cancel',
+			title: t('events.list.deleteTitle'),
+			message: t('events.list.deleteConfirm', { title }),
+			confirmText: t('common.delete'),
+			cancelText: t('common.cancel'),
 			onConfirm: async () => {
 				try {
 					setIsLoading(true);
@@ -297,13 +299,14 @@ const EventsComponent = () => {
 								prevEvents?.filter((event) => event.reference !== reference) ||
 								[]
 						);
-						setMessage('Event deleted successfully');
+						setMessage(t('events.list.deleteSuccess'));
 					}
 				} catch (error) {
 					console.error('Error deleting event:', error);
 					setMessage(
-						`Error deleting event: ${error.response?.data?.message || error.message
-						}`
+						t('events.list.deleteError', {
+							message: error.response?.data?.message || error.message,
+						})
 					);
 				} finally {
 					setIsLoading(false);
@@ -324,13 +327,13 @@ const EventsComponent = () => {
 	return (
 		<EventsContainer>
 			<PageHeader>
-				<h1>فعالياتنا</h1>
-				<p>انضم إلينا في الفعاليات المختلفة لدعم بنك الدم</p>
+				<h1>{t('events.list.title')}</h1>
+				<p>{t('events.list.subtitle')}</p>
 			</PageHeader>
 
 			<SearchContainer>
 				<TextField
-					placeholder='البحث في الفعاليات...'
+					placeholder={t('events.list.searchPlaceholder')}
 					value={searchTerm}
 					onChange={(e) => setSearchTerm(e.target.value)}
 					className={searchField}
@@ -349,7 +352,7 @@ const EventsComponent = () => {
 			{isLoading ? (
 				<div className={fallBack}>
 					<CircularProgress size={60} />
-					<p>جاري تحميل الفعاليات...</p>
+					<p>{t('events.list.loading')}</p>
 				</div>
 			) : filteredEvents && filteredEvents.length > 0 ? (
 				<>
@@ -366,13 +369,13 @@ const EventsComponent = () => {
 					</div>
 					<div className={pagination}>
 						<Button disabled={page === 1} onClick={() => setPage(page - 1)}>
-							السابق
+							{t('common.previous')}
 						</Button>
 						<Button
 							disabled={page >= totalPages}
 							onClick={() => setPage(page + 1)}
 						>
-							التالي
+							{t('common.next')}
 						</Button>
 					</div>
 				</>
@@ -385,11 +388,11 @@ const EventsComponent = () => {
 							marginBottom: '20px',
 						}}
 					/>
-					<h3>لا توجد فعاليات متاحة</h3>
+					<h3>{t('events.list.noEventsTitle')}</h3>
 					<p>
 						{searchTerm
-							? 'لم نجد أي فعاليات تطابق بحثك. جرب كلمات أخرى.'
-							: 'لا توجد فعاليات متاحة حالياً. تحقق مرة أخرى لاحقاً.'}
+							? t('events.list.noEventsSearch')
+							: t('events.list.noEventsGeneral')}
 					</p>
 					{searchTerm && (
 						<Button
@@ -401,7 +404,7 @@ const EventsComponent = () => {
 								padding: '10px 30px',
 							}}
 						>
-							مسح البحث
+							{t('events.list.clearSearch')}
 						</Button>
 					)}
 				</div>

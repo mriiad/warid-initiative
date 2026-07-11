@@ -2,6 +2,7 @@ import { Button, CircularProgress, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useCanDonate, useEvent } from '../hooks';
 import colors from '../styles/colors';
@@ -26,6 +27,7 @@ const useStyles = makeStyles({
 });
 
 const CanDonate: React.FC = () => {
+	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const { reference } = useParams<{ reference: string }>();
 
@@ -68,21 +70,21 @@ const CanDonate: React.FC = () => {
 					<CircularProgress />
 				) : canDonate === null ? (
 					<Typography className={resultMessage}>
-						غير قادر على تحديد الأهلية.
+						{t('canDonate.unableToDetermine')}
 					</Typography>
 				) : canDonate ? (
 					<Typography className={resultMessage}>
-						بناءً على تاريخ تبرعك الأخير، يُسمح لك بالتبرع.
+						{t('canDonate.canDonate')}
 					</Typography>
 				) : (
 					<Typography className={resultMessage}>
-						عذرًا، لا يُسمح لك بالتبرع.
+						{t('canDonate.cannotDonate')}
 					</Typography>
 				)}
 			</CardComponent>
 
 			<Button className={confirmButton} onClick={handleConfirmClick}>
-				تأكيد
+				{t('canDonate.confirm')}
 			</Button>
 		</>
 	);

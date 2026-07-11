@@ -9,6 +9,7 @@ import LocationOnIcon from '@mui/icons-material/LocationOn';
 import PhoneIcon from '@mui/icons-material/Phone';
 import InfoIcon from '@mui/icons-material/Info';
 import { makeStyles } from '@mui/styles';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Emergency } from '../../data/Emergency';
 import colors from '../../styles/colors';
@@ -52,6 +53,7 @@ const useStyles = makeStyles({
 });
 
 const EmergencyCard = ({ emergency, animationDelay, onConfirm, isConfirming }: EmergencyCardProps) => {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const classes = useStyles();
 
@@ -95,14 +97,16 @@ const EmergencyCard = ({ emergency, animationDelay, onConfirm, isConfirming }: E
                         onClick={onConfirm}
                         disabled={isConfirming}
                     >
-                        {isConfirming ? "Confirming..." : "Confirm Emergency"}
+                        {isConfirming
+                            ? t('emergency.card.confirming')
+                            : t('emergency.card.confirm')}
                     </Button>
                     <Button
                         variant="outlined"
                         color="info"
                         onClick={handleMatchedUsers}
                     >
-                        Matched Users
+                        {t('emergency.card.matchedUsers')}
                     </Button>
                 </div>
             </CardContent>

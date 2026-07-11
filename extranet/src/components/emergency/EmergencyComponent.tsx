@@ -2,6 +2,7 @@ import { Alert, Button, CircularProgress, Snackbar } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
 import { useAuth } from '../../auth/AuthContext';
@@ -43,6 +44,7 @@ interface EmergenciesResponse {
 }
 
 const EmergencyComponent = () => {
+	const { t } = useTranslation();
 	const classes = useStyles();
 	const { token } = useAuth();
 	const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -86,12 +88,12 @@ const EmergencyComponent = () => {
 						};
 					}
 				);
-				setSnackbarMessage('Emergency confirmed successfully!');
+				setSnackbarMessage(t('emergency.list.confirmSuccess'));
 				setSnackbarOpen(true);
 			},
 			onError: (error) => {
 				console.error('Error confirming emergency:', error);
-				setSnackbarMessage('Error confirming emergency. Please try again.');
+				setSnackbarMessage(t('emergency.list.confirmError'));
 				setSnackbarOpen(true);
 			},
 		});
@@ -137,13 +139,13 @@ const EmergencyComponent = () => {
 
 			<div className={classes.pagination}>
 				<Button disabled={page === 1 || isLoading} onClick={handlePrevPage}>
-					Previous
+					{t('common.previous')}
 				</Button>
 				<Button
 					disabled={page >= totalPages || isLoading}
 					onClick={handleNextPage}
 				>
-					Next
+					{t('common.next')}
 				</Button>
 			</div>
 
