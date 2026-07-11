@@ -3,7 +3,8 @@
  * Handles all user management related API calls
  */
 
-import type { UpdateUserData, UserProfileData } from '../types';
+import type { UserFormData } from '../data/ProfileFormData';
+import type { UpdateUserData } from '../types';
 import type { DashboardData } from '../types/users';
 import { apiClient } from '../utils/apiClient';
 
@@ -15,8 +16,14 @@ export const usersService = {
 		return apiClient.get(endpoint);
 	},
 
-	updateProfile: (userId: string, data: UserProfileData) => {
-		return apiClient.put(`/api/users/${userId}`, data);
+	// Self-service update of the logged-in user's own profile. Resolves the
+	// user from the auth token server-side (PATCH /api/user/profile), unlike
+	// updateUserInfo below which targets an admin-supplied :userId.
+	// phoneNumber is sent as a number to match the User schema's type.
+	updateMyProfile: (
+		data: Partial<Omit<UserFormData, 'phoneNumber'>> & { phoneNumber?: number }
+	) => {
+		return apiClient.patch('/api/user/profile', data);
 	},
 
 	updateUserInfo: (userId: string, data: UpdateUserData) => {
