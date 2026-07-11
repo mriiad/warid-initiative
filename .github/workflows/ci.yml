@@ -33,11 +33,16 @@ jobs:
         # it directly, so tests need a throwaway one with dummy values.
         # SECRET_KEY must match the JWT_SECRET_KEY set in
         # e2e/backend/support/jest.setup.js (see jwtHelper.js) or every
-        # authenticated-route test fails with 401.
+        # authenticated-route test fails with 401. JWT_EXPIRE must be
+        # present (e2e/event.e2e.spec.js passes it straight through as
+        # jwt.sign's `expiresIn`, which throws if given `undefined`).
         run: |
           cat > config.json <<'EOF'
           {
-            "authConfig": { "SECRET_KEY": "test-jwt-secret-key-for-sandbox" },
+            "authConfig": {
+              "SECRET_KEY": "test-jwt-secret-key-for-sandbox",
+              "JWT_EXPIRE": "1h"
+            },
             "mailerConfig": {
               "email": "test@example.com",
               "password": "test-password",
@@ -50,7 +55,10 @@ jobs:
           }
           EOF
 
-      - name: Run backend + API e2e tests
+      - name: Run backend tests (mocked models)
+        run: npm run test:e2e:backend
+
+      - name: Run API e2e tests (real mongodb-memory-server)
         run: npm run test:e2e
 
   frontend-checks:
