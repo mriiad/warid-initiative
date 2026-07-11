@@ -8,6 +8,7 @@ import HomeIcon from '@mui/icons-material/Home';
 import { styled } from '@mui/material/styles';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import colors from '../styles/colors';
@@ -192,23 +193,24 @@ const Tooltip = styled(motion.div)({
 });
 
 const navItems = [
-	{ path: '/home', icon: HomeIcon, label: 'Home', exact: true },
-	{ path: '/dashboard', icon: DashboardIcon, label: 'Dashboard', exact: true },
-	{ path: '/events', icon: EventIcon, label: 'Events', exact: false },
-	{ path: '/emergency', icon: EmergencyIcon, label: 'Emergency', exact: true },
-	{ path: '/contact', icon: EmailIcon, label: 'Contact', exact: true },
+	{ path: '/home', icon: HomeIcon, labelKey: 'nav.home', exact: true },
+	{ path: '/dashboard', icon: DashboardIcon, labelKey: 'nav.dashboard', exact: true },
+	{ path: '/events', icon: EventIcon, labelKey: 'nav.events', exact: false },
+	{ path: '/emergency', icon: EmergencyIcon, labelKey: 'nav.emergency', exact: true },
+	{ path: '/contact', icon: EmailIcon, labelKey: 'nav.contact', exact: true },
 	{
 		path: '/admin',
 		icon: AdminPanelSettingsIcon,
-		label: 'Admin',
+		labelKey: 'nav.admin',
 		exact: true,
 		adminOnly: true,
 	},
-	{ path: '/FAQ', icon: FAQIcon, label: 'Help', exact: true },
+	{ path: '/FAQ', icon: FAQIcon, labelKey: 'nav.help', exact: true },
 ];
 
 const MobileNavbar = () => {
 	const { token, isAdmin } = useAuth();
+	const { t } = useTranslation();
 	const location = useLocation();
 	const currentRoute = location.pathname;
 	const [hoveredItem, setHoveredItem] = useState<string | null>(null);
@@ -386,7 +388,7 @@ const MobileNavbar = () => {
 										fontWeight: active ? 600 : 500,
 									}}
 								>
-									{item.label}
+									{t(item.labelKey)}
 								</NavLabel>
 
 								<AnimatePresence>
@@ -428,7 +430,7 @@ const MobileNavbar = () => {
 										exit={{ opacity: 0, y: 10 }}
 										transition={{ duration: 0.2 }}
 									>
-										{item.label}
+										{t(item.labelKey)}
 									</Tooltip>
 								)}
 							</AnimatePresence>

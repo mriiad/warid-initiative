@@ -10,8 +10,13 @@ import {
 import { makeStyles } from '@mui/styles';
 import { motion } from 'framer-motion';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import colors from '../styles/colors';
-import { appFaq, bloodDonationFaq } from '../utils/faqData';
+
+interface FaqItem {
+	question: string;
+	answer: string;
+}
 
 const useStyles = makeStyles({
 	container: {
@@ -85,6 +90,7 @@ const useStyles = makeStyles({
 	},
 });
 const FAQComponent: React.FC = () => {
+	const { t } = useTranslation();
 	const {
 		container,
 		heading,
@@ -97,6 +103,9 @@ const FAQComponent: React.FC = () => {
 		divider,
 	} = useStyles();
 
+	const bloodDonationFaq = t('faq.blood', { returnObjects: true }) as FaqItem[];
+	const appFaq = t('faq.app', { returnObjects: true }) as FaqItem[];
+
 	return (
 		<Container maxWidth='md' className={container}>
 			<motion.div
@@ -105,10 +114,10 @@ const FAQComponent: React.FC = () => {
 				transition={{ duration: 0.6 }}
 			>
 				<Typography variant='h4' className={heading}>
-					FAQ - Blood Donation
+					{t('faq.bloodTitle')}
 				</Typography>
 				<Typography variant='subtitle1' className={headingSubtitle}>
-					Find quick answers to common questions
+					{t('faq.bloodSubtitle')}
 				</Typography>
 			</motion.div>
 			<Divider className={divider} />
@@ -141,10 +150,10 @@ const FAQComponent: React.FC = () => {
 				transition={{ duration: 0.6, delay: 0.5 }}
 			>
 				<Typography variant='h4' className={`${heading} ${extraTopPadding}`}>
-					FAQ - Warid App
+					{t('faq.appTitle')}
 				</Typography>
 				<Typography variant='subtitle1' className={headingSubtitle}>
-					Everything about using the app smoothly
+					{t('faq.appSubtitle')}
 				</Typography>
 			</motion.div>
 			<Divider className={divider} />

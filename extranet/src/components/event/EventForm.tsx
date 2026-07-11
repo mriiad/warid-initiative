@@ -9,6 +9,7 @@ import {
 import { makeStyles } from '@mui/styles';
 import React, { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useCreateEvent } from '../../hooks';
 import { authStyles, mainStyles } from '../../styles/mainStyles';
@@ -36,6 +37,7 @@ const useStyles = makeStyles({
 });
 
 const EventForm: React.FC = () => {
+	const { t } = useTranslation();
 	const { bar, button, form } = authStyles();
 	const { subTitle } = mainStyles();
 	const { formWrapper, fileInput } = useStyles();
@@ -82,11 +84,13 @@ const EventForm: React.FC = () => {
 			setIsSuccessResponse(false);
 			setIsErrorResponse(true);
 			setErrorMessage(
-				error.data?.errorMessage || 'Error while creating the event'
+				error.data?.errorMessage || t('events.form.createError')
 			);
 			if (error.response?.data?.errorKeys) {
 				error.response.data.errorKeys.forEach((key: string) => {
-					setError(key as keyof IFormInput, { message: 'Invalid input' });
+					setError(key as keyof IFormInput, {
+						message: t('events.form.invalidInput'),
+					});
 				});
 			}
 		}
@@ -107,8 +111,8 @@ const EventForm: React.FC = () => {
 		return (
 			<FormContainer className={formWrapper}>
 				<ResponseAnimation
-					responseMessage={'تم إنشاء الحدث بنجاح!'}
-					actionMessage={'هل ترغب في إنشاء المزيد؟ انقر أدناه'}
+					responseMessage={t('events.form.createSuccess')}
+					actionMessage={t('events.form.createAnotherPrompt')}
 					isSuccess={isSuccessResponse}
 					isError={!isSuccessResponse && isErrorResponse}
 					errorMessage={errorMessage}
@@ -118,7 +122,9 @@ const EventForm: React.FC = () => {
 					className={button}
 					style={{ marginTop: '20px' }}
 				>
-					{isSuccessResponse ? 'إنشاء حدث آخر' : 'العودة إلى إنشاء الحدث'}
+					{isSuccessResponse
+						? t('events.form.createAnother')
+						: t('events.form.backToCreate')}
 				</Button>
 			</FormContainer>
 		);
@@ -127,7 +133,7 @@ const EventForm: React.FC = () => {
 	return (
 		<FormContainer className={formWrapper}>
 			<Typography variant='h4' align='center' className={subTitle}>
-				إنشاء حدث
+				{t('events.form.createTitle')}
 				<span className={bar}></span>
 			</Typography>
 			<form onSubmit={handleSubmit(onSubmit)} className={form}>
@@ -136,11 +142,11 @@ const EventForm: React.FC = () => {
 						<Controller
 							name='title'
 							control={control}
-							rules={{ required: 'العنوان مطلوب' }}
+							rules={{ required: t('events.form.titleRequired') }}
 							render={({ field }) => (
 								<TextField
 									{...field}
-									label='العنوان'
+									label={t('events.form.titleLabel')}
 									error={Boolean(errors.title)}
 									helperText={errors.title?.message}
 								/>
@@ -153,7 +159,7 @@ const EventForm: React.FC = () => {
 							name='subtitle'
 							control={control}
 							render={({ field }) => (
-								<TextField {...field} label='العنوان الفرعي' />
+								<TextField {...field} label={t('events.form.subtitleLabel')} />
 							)}
 						/>
 					</Grid>
@@ -162,11 +168,11 @@ const EventForm: React.FC = () => {
 						<Controller
 							name='location'
 							control={control}
-							rules={{ required: 'الموقع مطلوب' }}
+							rules={{ required: t('events.form.locationRequired') }}
 							render={({ field }) => (
 								<TextField
 									{...field}
-									label='موقع الحدث'
+									label={t('events.form.locationLabel')}
 									error={Boolean(errors.location)}
 									helperText={errors.location?.message}
 								/>
@@ -178,11 +184,11 @@ const EventForm: React.FC = () => {
 						<Controller
 							name='date'
 							control={control}
-							rules={{ required: 'التاريخ مطلوب' }}
+							rules={{ required: t('events.form.dateRequired') }}
 							render={({ field }) => (
 								<TextField
 									{...field}
-									label='التاريخ'
+									label={t('events.form.dateLabel')}
 									type='date'
 									InputLabelProps={{ shrink: true }}
 									inputProps={{
@@ -200,7 +206,7 @@ const EventForm: React.FC = () => {
 							name='mapLink'
 							control={control}
 							render={({ field }) => (
-								<TextField {...field} label='رابط الخريطة' />
+								<TextField {...field} label={t('events.form.mapLinkLabel')} />
 							)}
 						/>
 					</Grid>
@@ -209,11 +215,11 @@ const EventForm: React.FC = () => {
 						<Controller
 							name='description'
 							control={control}
-							rules={{ required: 'الوصف مطلوب' }}
+							rules={{ required: t('events.form.descriptionRequired') }}
 							render={({ field }) => (
 								<TextField
 									{...field}
-									label='الوصف'
+									label={t('events.form.descriptionLabel')}
 									multiline
 									rows={4}
 									error={Boolean(errors.description)}
@@ -232,7 +238,7 @@ const EventForm: React.FC = () => {
 									control={
 										<Checkbox checked={field.value} onChange={field.onChange} />
 									}
-									label='حدث عام'
+									label={t('events.form.isGeneric')}
 								/>
 							)}
 						/>
@@ -247,19 +253,21 @@ const EventForm: React.FC = () => {
 								style={{ display: 'none' }}
 							/>
 							<Button component='span' variant='contained'>
-								اختر ملف
+								{t('events.form.selectPhoto')}
 							</Button>
 						</label>
 						{image ? (
-							<span>الملف المحدد: {image.name}</span>
+							<span>
+								{t('events.form.photoSelected')} {image.name}
+							</span>
 						) : (
-							<span>لم يتم اختيار أي ملف</span>
+							<span>{t('events.form.noPhotoSelected')}</span>
 						)}
 					</Grid>
 
 					<Grid item xs={12}>
 						<Button type='submit' className={button}>
-							إنشاء الحدث
+							{t('events.form.createButton')}
 						</Button>
 					</Grid>
 				</Grid>

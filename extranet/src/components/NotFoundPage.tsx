@@ -1,5 +1,6 @@
 import { Typography } from '@mui/material';
 import makeStyles from '@mui/styles/makeStyles';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import colors from '../styles/colors';
 
@@ -53,6 +54,7 @@ const useStyles = makeStyles({
 
 const NotFoundPage = () => {
 	const navigate = useNavigate();
+	const { t } = useTranslation();
 	const {
 		notFoundContainer,
 		notFoundText,
@@ -64,7 +66,7 @@ const NotFoundPage = () => {
 	return (
 		<div className={notFoundContainer}>
 			<Typography variant='h1' className={notFoundText}>
-				404
+				{t('notFound.title')}
 			</Typography>
 			<img
 				src='/blood-donation-hand.svg'
@@ -72,10 +74,10 @@ const NotFoundPage = () => {
 				className={svgIllustration}
 			/>
 			<Typography className={description}>
-				Oops! The page you're looking for isn't here.
+				{t('notFound.description')}
 			</Typography>
 			<div className={homeButton} onClick={() => navigate('/')}>
-				Go Back Home
+				{t('notFound.button')}
 			</div>
 		</div>
 	);

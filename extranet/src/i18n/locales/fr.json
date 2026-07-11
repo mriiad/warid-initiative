@@ -1,0 +1,492 @@
+{
+	"common": {
+		"confirm": "Confirmer",
+		"cancel": "Annuler",
+		"delete": "Supprimer",
+		"update": "Modifier",
+		"save": "Enregistrer",
+		"loading": "Chargement...",
+		"previous": "Précédent",
+		"next": "Suivant",
+		"close": "Fermer",
+		"error": "Une erreur est survenue.",
+		"required": "Ce champ est requis",
+		"none": "Aucun",
+		"yes": "Oui"
+	},
+	"nav": {
+		"home": "Accueil",
+		"about": "À propos",
+		"events": "Événements",
+		"dashboard": "Tableau de bord",
+		"emergency": "Urgence",
+		"contact": "Contact",
+		"help": "Aide",
+		"admin": "Admin",
+		"login": "Connexion",
+		"logout": "Déconnexion",
+		"signup": "S'inscrire",
+		"profile": "Profil",
+		"donate": "Faire un don"
+	},
+	"unsupported": {
+		"title": "Cette application est optimisée pour mobile",
+		"subtitle": "Pour une meilleure expérience, veuillez ouvrir ce site depuis votre téléphone ou votre tablette.",
+		"browserHint": "✨ Meilleure expérience sur les navigateurs mobiles comme Safari, Chrome ou Firefox"
+	},
+	"notFound": {
+		"title": "404",
+		"description": "Oups ! La page que vous recherchez n'existe pas.",
+		"button": "Retour à l'accueil"
+	},
+	"landing": {
+		"intro": "Association marocaine dont le but principal est de sensibiliser les gens à l'importance du don périodique et de fournir à la banque de sang locale des quantités suffisantes de poches de sang afin d'aider les patients atteints de cancer",
+		"weAre": "Nous sommes",
+		"volunteers": "bénévoles",
+		"ageRange": "âgés de 18 à 27 ans",
+		"qualifications": "Avec des connaissances et qualifications élevées dans divers domaines et disciplines, unis par un objectif commun : vous servir",
+		"andYouAreNow": "Et vous êtes maintenant",
+		"regularDonor": "un donneur régulier",
+		"gallery": "Galerie photo",
+		"partners": "Nos partenaires",
+		"privacyPolicy": "Politique de confidentialité",
+		"copyright": "© 2024 WARID"
+	},
+	"auth": {
+		"signup": {
+			"title": "S'inscrire",
+			"haveAccount": "Vous avez déjà un compte ?",
+			"login": "Se connecter",
+			"cin": "Numéro de CIN",
+			"cinRequired": "Le numéro de CIN est requis",
+			"email": "Adresse e-mail",
+			"emailRequired": "L'adresse e-mail est requise",
+			"invalidEmail": "Veuillez saisir une adresse e-mail valide.",
+			"password": "Mot de passe",
+			"passwordRequired": "Le mot de passe est requis",
+			"passwordMinLength": "Le mot de passe doit contenir au moins 6 caractères",
+			"phone": "Numéro de téléphone",
+			"phoneRequired": "Le numéro de téléphone est requis",
+			"male": "Homme",
+			"female": "Femme",
+			"genderRequired": "Le genre est requis",
+			"submit": "Envoyer"
+		},
+		"login": {
+			"title": "Se connecter",
+			"noAccount": "Vous n'avez pas de compte ?",
+			"signup": "S'inscrire",
+			"username": "Nom d'utilisateur",
+			"usernameRequired": "Le nom d'utilisateur est requis",
+			"password": "Mot de passe",
+			"passwordRequired": "Le mot de passe est requis",
+			"forgotPassword": "Mot de passe oublié ?",
+			"passwordResetSuccess": "Réinitialisation du mot de passe réussie !",
+			"signupSuccess": "Votre compte a bien été créé. Vous pouvez maintenant vous connecter."
+		},
+		"passwordReset": {
+			"title": "Réinitialiser le mot de passe",
+			"email": "Adresse e-mail",
+			"emailRequired": "L'adresse e-mail est requise",
+			"submit": "Envoyer le lien de réinitialisation"
+		},
+		"resetPassword": {
+			"title": "Réinitialiser le mot de passe",
+			"checking": "Vérification du lien en cours...",
+			"invalidToken": "Ce lien de réinitialisation du mot de passe est invalide ou a expiré.",
+			"resetAgain": "Réinitialiser à nouveau ?",
+			"newPassword": "Nouveau mot de passe",
+			"newPasswordRequired": "Le mot de passe est requis",
+			"confirmPassword": "Confirmer le nouveau mot de passe",
+			"confirmPasswordRequired": "Veuillez confirmer votre mot de passe",
+			"passwordsMismatch": "Les mots de passe ne correspondent pas",
+			"submit": "Réinitialiser le mot de passe"
+		},
+		"completeProfile": {
+			"title": "Complétez votre profil",
+			"firstName": "Prénom",
+			"firstNameRequired": "Le prénom est requis",
+			"lastName": "Nom",
+			"lastNameRequired": "Le nom est requis",
+			"birthdate": "Date de naissance",
+			"birthdateRequired": "La date de naissance est requise",
+			"gender": "Genre",
+			"genderRequired": "Le genre est requis",
+			"male": "Homme",
+			"female": "Femme",
+			"bloodGroup": "Groupe sanguin",
+			"bloodGroupRequired": "Le groupe sanguin est requis",
+			"none": "Je ne connais pas mon groupe sanguin",
+			"city": "Ville",
+			"cityRequired": "La ville est requise",
+			"missingFields": "Merci de renseigner les informations requises ci-dessous.",
+			"submit": "Mettre à jour"
+		}
+	},
+	"profile": {
+		"personalInformation": "Informations personnelles",
+		"firstName": "Prénom",
+		"lastName": "Nom",
+		"birthdate": "Date de naissance",
+		"gender": "Genre",
+		"bloodGroup": "Groupe sanguin",
+		"city": "Ville",
+		"phoneNumber": "Numéro de téléphone",
+		"email": "Adresse e-mail",
+		"save": "Enregistrer les modifications",
+		"cancel": "Annuler",
+		"updateSuccess": "Profil mis à jour avec succès !",
+		"updateError": "Échec de la mise à jour du profil.",
+		"loadError": "Échec du chargement du profil.",
+		"passwordSecurity": "Sécurité du mot de passe",
+		"passwordProtected": "Mot de passe protégé",
+		"passwordProtectedBody": "Votre mot de passe est stocké de manière sécurisée et ne peut pas être consulté.",
+		"currentPassword": "Mot de passe actuel",
+		"newPassword": "Nouveau mot de passe",
+		"confirmNewPassword": "Confirmer le nouveau mot de passe",
+		"changePassword": "Changer le mot de passe",
+		"updatePassword": "Mettre à jour le mot de passe",
+		"passwordUpdateSuccess": "Mot de passe mis à jour avec succès !",
+		"passwordUpdateError": "Échec de la mise à jour du mot de passe.",
+		"phoneInvalid": "Le numéro de téléphone doit comporter exactement 10 chiffres",
+		"phoneNumeric": "Le numéro de téléphone ne doit contenir que des chiffres",
+		"emailInvalid": "Veuillez saisir une adresse e-mail valide",
+		"passwordsMismatch": "Le nouveau mot de passe et sa confirmation ne correspondent pas.",
+		"passwordFieldsRequired": "Tous les champs du mot de passe doivent être remplis."
+	},
+	"dashboard": {
+		"welcome": "Bienvenue",
+		"welcomeMessage": "Merci de faire partie de la communauté Warid et d'aider à sauver des vies",
+		"loading": "Chargement du tableau de bord...",
+		"errorPrefix": "Erreur de chargement du tableau de bord :",
+		"unknownError": "Erreur inconnue",
+		"exploreEvents": "Explorer les événements",
+		"totalDonations": "Total des dons",
+		"nextDonation": "Prochain don",
+		"lastDonation": "Dernier don",
+		"donationHistory": "Historique de vos dons",
+		"noDonationsTitle": "Vous n'avez encore fait aucun don !",
+		"noDonationsBody": "Rejoignez notre communauté de héros et commencez à sauver des vies dès aujourd'hui. Explorez les événements à venir et faites votre premier don !",
+		"seeUpcomingEvents": "Voir les événements à venir",
+		"regularDonation": "Don régulier"
+	},
+	"donation": {
+		"title": "Faire un don",
+		"beTheHero": "Soyez le héros",
+		"bloodGroup": "Groupe sanguin",
+		"bloodGroupRequired": "Le groupe sanguin est requis",
+		"donationDate": "Date du don",
+		"donationDateRequired": "La date du don est requise",
+		"donationType": "Type de don",
+		"donationTypeRequired": "Le type de don est requis",
+		"donationTypeNone": "Aucun",
+		"blood": "Sang",
+		"plates": "Plaquettes",
+		"event": "Événement",
+		"eventNone": "Aucun",
+		"eventRequired": "L'événement est requis",
+		"genericEventSuffix": " - Événement général",
+		"submit": "Enregistrer le don",
+		"successTitle": "Demande de don enregistrée avec succès !",
+		"successBody": "Notre équipe vous contactera bientôt pour plus de détails.",
+		"genericError": "Une erreur est survenue.",
+		"lastDonationMessage": "Votre dernier don remonte au {{date}}",
+		"restoredMessage": "Les détails de votre don précédent ont été restaurés. Veuillez les vérifier avant de soumettre.",
+		"fieldInvalid": "{{field}} est invalide"
+	},
+	"canDonate": {
+		"unableToDetermine": "Impossible de déterminer l'éligibilité.",
+		"canDonate": "D'après la date de votre dernier don, vous êtes autorisé à donner.",
+		"cannotDonate": "Désolé, vous n'êtes pas éligible pour donner pour le moment.",
+		"confirm": "Confirmer"
+	},
+	"events": {
+		"list": {
+			"title": "Nos événements",
+			"subtitle": "Rejoignez-nous lors de nos différents événements pour soutenir la banque de sang",
+			"searchPlaceholder": "Rechercher des événements...",
+			"loading": "Chargement des événements...",
+			"noEventsTitle": "Aucun événement disponible",
+			"noEventsSearch": "Nous n'avons trouvé aucun événement correspondant à votre recherche. Essayez d'autres mots-clés.",
+			"noEventsGeneral": "Aucun événement disponible pour le moment. Revenez plus tard.",
+			"clearSearch": "Effacer la recherche",
+			"deleteTitle": "Supprimer l'événement",
+			"deleteConfirm": "Êtes-vous sûr de vouloir supprimer l'événement \"{{title}}\" ? Cette action est irréversible.",
+			"deleteSuccess": "Événement supprimé avec succès",
+			"deleteError": "Erreur lors de la suppression de l'événement : {{message}}"
+		},
+		"card": {
+			"openMap": "Voir sur la carte",
+			"update": "Modifier",
+			"delete": "Supprimer",
+			"generic": "Événement général",
+			"specific": "Événement spécifique"
+		},
+		"detail": {
+			"description": "Description",
+			"loading": "Chargement des détails de l’événement...",
+			"date": "Date",
+			"location": "Lieu",
+			"openMap": "Ouvrir la carte",
+			"participate": "Participer",
+			"alreadyParticipating": "Vous êtes déjà inscrit à cet événement",
+			"participateSuccess": "Vous avez été ajouté avec succès comme participant.",
+			"participateError": "Une erreur est survenue lors de votre inscription à l'événement.",
+			"deleteSuccess": "Événement supprimé avec succès !",
+			"deleteError": "Erreur lors de la suppression de l'événement : {{message}}",
+			"participantDetailsTitle": "Détails des participants",
+			"registeredParticipants": "Participants inscrits",
+			"realDonaters": "Ayant réellement donné",
+			"allDonaters": "Total des donneurs",
+			"qrScanTitle": "Scannez le code QR pour donner",
+			"participationConfirmed": "Vous avez été inscrit avec succès en tant que participant !",
+			"shareFallbackTitle": "Événement",
+			"shareFallbackText": "Découvrez cet événement"
+		},
+		"confirmation": {
+			"confirming": "Confirmation de votre présence...",
+			"confirmed": "Votre présence a été confirmée avec succès !",
+			"unexpectedError": "Une erreur inattendue est survenue."
+		},
+		"form": {
+			"createTitle": "Créer un événement",
+			"updateTitle": "Modifier l'événement",
+			"titleLabel": "Titre",
+			"titleRequired": "Le titre est requis",
+			"subtitleLabel": "Sous-titre",
+			"locationLabel": "Lieu",
+			"locationRequired": "Le lieu est requis",
+			"dateLabel": "Date",
+			"dateRequired": "La date est requise",
+			"dateLocked": "La date de l'événement ne peut pas être modifiée",
+			"mapLinkLabel": "Lien de localisation",
+			"descriptionLabel": "Description",
+			"descriptionRequired": "La description est requise",
+			"isGeneric": "Événement général",
+			"selectPhoto": "Choisir une photo",
+			"changePhoto": "Choisir une nouvelle photo (facultatif)",
+			"noPhotoSelected": "Aucune photo sélectionnée",
+			"keepCurrentPhoto": "Aucun nouveau fichier sélectionné - la photo actuelle sera conservée",
+			"photoSelected": "Fichier sélectionné :",
+			"createButton": "Créer l'événement",
+			"updateButton": "Modifier l'événement",
+			"createAnother": "Créer un autre événement",
+			"backToCreate": "Retour à la création d'événement",
+			"createSuccess": "Événement créé avec succès !",
+			"createAnotherPrompt": "Souhaitez-vous en créer un autre ? Cliquez ci-dessous",
+			"updateSuccess": "Événement mis à jour avec succès !",
+			"loadingEvent": "Chargement des données de l'événement...",
+			"eventNotFound": "Événement introuvable",
+			"createError": "Erreur lors de la création de l'événement",
+			"invalidInput": "Entrée invalide",
+			"loadError": "Erreur lors du chargement des données de l'événement",
+			"updateError": "Erreur lors de la mise à jour de l'événement",
+			"redirectingToEvents": "Vous allez être redirigé vers la page des événements...",
+			"isSpecific": "Événement spécifique"
+		}
+	},
+	"contact": {
+		"title": "Contactez-nous",
+		"firstName": "Prénom",
+		"firstNameRequired": "Le prénom est requis",
+		"lastName": "Nom",
+		"lastNameRequired": "Le nom est requis",
+		"email": "Adresse e-mail",
+		"emailRequired": "L'adresse e-mail est requise",
+		"phone": "Numéro de téléphone",
+		"phoneRequired": "Le numéro de téléphone est requis",
+		"subject": "Sujet",
+		"subjectRequired": "Le sujet est requis",
+		"message": "Message",
+		"messageRequired": "Le message est requis",
+		"submit": "Envoyer",
+		"successTitle": "Votre message a été envoyé avec succès !",
+		"successBody": "Nous vous répondrons bientôt.",
+		"sendAnother": "Envoyer un autre message",
+		"genericError": "Erreur lors de l'envoi du formulaire de contact"
+	},
+	"faq": {
+		"bloodTitle": "FAQ - Don de sang",
+		"bloodSubtitle": "Trouvez rapidement des réponses aux questions courantes",
+		"appTitle": "FAQ - Application Warid",
+		"appSubtitle": "Tout savoir pour utiliser l'application facilement",
+		"blood": [
+			{
+				"question": "Qui est autorisé à donner son sang ?",
+				"answer": "Les adultes en bonne santé âgés de 18 à 60 ans, pesant au moins 50 kg et en bonne santé, sont éligibles pour donner leur sang."
+			},
+			{
+				"question": "Qui n'est pas autorisé à donner son sang ?",
+				"answer": "Les personnes atteintes de maladies chroniques ou infectieuses, ou qui ne remplissent pas les conditions d'âge et de poids, ne sont pas autorisées à donner."
+			},
+			{
+				"question": "À quelle fréquence peut-on donner son sang ?",
+				"answer": "Les hommes peuvent donner tous les 2 mois, et les femmes tous les 3 mois."
+			},
+			{
+				"question": "Le don de sang est-il sûr ?",
+				"answer": "Oui, du matériel stérile à usage unique est utilisé, et les donneurs subissent un contrôle médical au préalable."
+			},
+			{
+				"question": "Le sang est-il testé ?",
+				"answer": "Oui, tout le sang est testé pour détecter les maladies infectieuses."
+			},
+			{
+				"question": "Quels sont les bienfaits du don ?",
+				"answer": "Il sauve des vies, stimule la circulation sanguine et réduit l'excès de fer dans le corps."
+			},
+			{
+				"question": "Faut-il jeûner avant de donner son sang ?",
+				"answer": "Non, il est recommandé de prendre un repas léger et de boire de l'eau avant le don."
+			},
+			{
+				"question": "Quelles conditions temporaires empêchent le don ?",
+				"answer": "Après une vaccination, une extraction dentaire ou une convalescence, un délai d'attente est nécessaire."
+			},
+			{
+				"question": "Les femmes peuvent-elles donner leur sang ?",
+				"answer": "Oui, à condition de remplir les critères d'âge, de santé et de poids."
+			},
+			{
+				"question": "Comment le sang donné est-il utilisé ?",
+				"answer": "Il est utilisé lors d'opérations chirurgicales, d'urgences et de traitements de maladies chroniques."
+			}
+		],
+		"app": [
+			{
+				"question": "Qu'est-ce que Warid ?",
+				"answer": "Warid est une plateforme numérique qui facilite et organise le don de sang au Maroc en connectant les donneurs aux centres et aux patients."
+			},
+			{
+				"question": "L'inscription est-elle gratuite ?",
+				"answer": "Oui, l'inscription est entièrement gratuite et ouverte à tous."
+			},
+			{
+				"question": "Puis-je donner mon sang en dehors des campagnes ?",
+				"answer": "Oui, vous pouvez consulter le centre de don le plus proche et vous y rendre à tout moment."
+			},
+			{
+				"question": "Les ONG ou hôpitaux peuvent-ils s'inscrire ?",
+				"answer": "Oui, il existe une section spéciale pour les partenaires afin de gérer les demandes et d'organiser des événements de don."
+			},
+			{
+				"question": "Mes données personnelles sont-elles protégées ?",
+				"answer": "Oui, nous protégeons strictement votre vie privée et ne partageons jamais vos données sans votre consentement."
+			}
+		]
+	},
+	"emergency": {
+		"form": {
+			"title": "Créer une urgence",
+			"bloodGroup": "Groupe sanguin",
+			"bloodGroupRequired": "Le groupe sanguin est requis",
+			"none": "Aucun",
+			"city": "Ville",
+			"cityRequired": "La ville est requise",
+			"phone": "Numéro de téléphone",
+			"phoneRequired": "Le numéro de téléphone est requis",
+			"phoneNumeric": "Le numéro de téléphone ne doit contenir que des chiffres",
+			"phoneLength": "Le numéro de téléphone doit comporter exactement 10 chiffres",
+			"details": "Détails",
+			"detailsRequired": "Les détails sont requis",
+			"submit": "Créer l'urgence",
+			"submitting": "Création en cours...",
+			"successTitle": "Urgence créée avec succès !",
+			"successBody": "Notre équipe fera de son mieux pour trouver des donneurs.",
+			"genericError": "Une erreur inattendue est survenue.",
+			"fieldInvalid": "{{field}} est invalide"
+		},
+		"list": {
+			"confirmSuccess": "Urgence confirmée avec succès !",
+			"confirmError": "Erreur lors de la confirmation de l'urgence. Veuillez réessayer."
+		},
+		"card": {
+			"confirm": "Confirmer l'urgence",
+			"confirming": "Confirmation en cours...",
+			"matchedUsers": "Utilisateurs correspondants"
+		},
+		"matchedUsers": {
+			"title": "Utilisateurs correspondants",
+			"failedToLoad": "Échec du chargement des utilisateurs correspondants.",
+			"noResults": "Aucun utilisateur correspondant trouvé.",
+			"firstName": "Prénom",
+			"lastName": "Nom",
+			"phone": "Numéro de téléphone",
+			"action": "Action",
+			"confirm": "Confirmer",
+			"confirming": "Confirmation en cours...",
+			"confirmSuccess": "Utilisateur confirmé avec succès !",
+			"confirmError": "Échec de la confirmation de l'utilisateur."
+		}
+	},
+	"admin": {
+		"addEvent": "Ajouter un événement",
+		"usersList": "Liste des utilisateurs",
+		"emergenciesList": "Liste des urgences"
+	},
+	"users": {
+		"list": {
+			"title": "Liste des utilisateurs",
+			"usersFound": "{{count}} utilisateurs trouvés",
+			"advancedFilters": "Filtres avancés",
+			"activeFilters": "Filtres actifs :",
+			"clearAll": "Tout effacer",
+			"deleteTitle": "Supprimer l'utilisateur",
+			"deleteConfirm": "Êtes-vous sûr de vouloir supprimer l'utilisateur \"{{username}}\" ? Cette action est irréversible.",
+			"deleteSuccess": "Utilisateur supprimé avec succès",
+			"deleteError": "Erreur lors de la suppression de l'utilisateur : {{message}}",
+			"makeAdminTitle": "Nommer administrateur",
+			"makeAdminConfirm": "Êtes-vous sûr de vouloir nommer \"{{username}}\" administrateur ? Cela lui donnera tous les privilèges administratifs.",
+			"makeAdminSuccess": "{{username}} est désormais administrateur",
+			"makeAdminError": "Erreur lors de la nomination de l'administrateur : {{message}}",
+			"noUsersTitle": "Aucun utilisateur trouvé",
+			"noUsersBody": "Nous n'avons trouvé aucun utilisateur correspondant à vos critères.",
+			"resetFilter": "Réinitialiser le filtre"
+		},
+		"card": {
+			"admin": "Admin",
+			"update": "Modifier",
+			"delete": "Supprimer",
+			"makeAdmin": "Nommer admin"
+		},
+		"filter": {
+			"title": "Filtrer les utilisateurs",
+			"username": "Nom d'utilisateur",
+			"firstName": "Prénom",
+			"lastName": "Nom",
+			"email": "Adresse e-mail",
+			"phoneNumber": "Numéro de téléphone",
+			"age": "Âge",
+			"availableForDonation": "Disponible pour un don",
+			"gender": "Genre",
+			"male": "Homme",
+			"female": "Femme",
+			"bloodGroup": "Groupe sanguin",
+			"isAdmin": "Est administrateur",
+			"reset": "Réinitialiser",
+			"apply": "Appliquer les filtres"
+		},
+		"update": {
+			"title": "Modifier les informations de l'utilisateur",
+			"firstName": "Prénom",
+			"firstNameRequired": "Le prénom est requis",
+			"lastName": "Nom",
+			"lastNameRequired": "Le nom est requis",
+			"email": "Adresse e-mail",
+			"emailRequired": "L'adresse e-mail est requise",
+			"emailInvalid": "Adresse e-mail invalide",
+			"phone": "Numéro de téléphone",
+			"phoneRequired": "Le numéro de téléphone est requis",
+			"birthdate": "Date de naissance",
+			"birthdateRequired": "La date de naissance est requise",
+			"city": "Ville",
+			"cityRequired": "La ville est requise",
+			"bloodGroup": "Groupe sanguin",
+			"bloodGroupRequired": "Le groupe sanguin est requis",
+			"submit": "Modifier les informations de l'utilisateur",
+			"loading": "Chargement des données utilisateur...",
+			"success": "Utilisateur mis à jour avec succès !",
+			"error": "Erreur lors de la mise à jour de l'utilisateur. Veuillez réessayer."
+		}
+	}
+}

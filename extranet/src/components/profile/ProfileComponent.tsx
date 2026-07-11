@@ -32,16 +32,14 @@ import {
 import { makeStyles } from '@mui/styles';
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../../auth/AuthContext';
-import {
-	userFieldDisplayNames,
-	UserFormData,
-} from '../../data/ProfileFormData';
+import { UserFormData } from '../../data/ProfileFormData';
 
 import {
+	useUpdateMyProfile,
 	useUpdatePassword,
-	useUpdateProfile,
 	useUserProfile,
 } from '../../hooks';
 import colors from '../../styles/colors';
@@ -378,7 +376,18 @@ const useStyles = makeStyles({
 	},
 });
 
+const profileFields: { field: keyof UserFormData; labelKey: string }[] = [
+	{ field: 'firstname', labelKey: 'profile.firstName' },
+	{ field: 'lastname', labelKey: 'profile.lastName' },
+	{ field: 'birthdate', labelKey: 'profile.birthdate' },
+	{ field: 'bloodGroup', labelKey: 'profile.bloodGroup' },
+	{ field: 'city', labelKey: 'profile.city' },
+	{ field: 'phoneNumber', labelKey: 'profile.phoneNumber' },
+	{ field: 'email', labelKey: 'profile.email' },
+];
+
 const ProfileComponent = () => {
+	const { t } = useTranslation();
 	const {
 		root,
 		container,
@@ -468,12 +477,12 @@ const ProfileComponent = () => {
 	// Handle query error
 	useEffect(() => {
 		if (isError) {
-			showSnackbar('Failed to load profile.', 'error');
+			showSnackbar(t('profile.loadError'), 'error');
 		}
-	}, [isError]);
+	}, [isError, t]);
 
 	// update profile mutation
-	const updateProfileMutation = useUpdateProfile();
+	const updateProfileMutation = useUpdateMyProfile();
 
 	const handleUpdateProfile = (updatedInfo: UserFormData) => {
 		// Convert phoneNumber back to number for API
@@ -481,18 +490,15 @@ const ProfileComponent = () => {
 			...updatedInfo,
 			phoneNumber: Number(updatedInfo.phoneNumber) || 0,
 		};
-		updateProfileMutation.mutate(
-			{ userId: 'me', data: apiData as any },
-			{
-				onSuccess: () => {
-					showSnackbar('Profile updated successfully!', 'success');
-					setIsEditingInfo(false);
-				},
-				onError: () => {
-					showSnackbar('Failed to update profile.', 'error');
-				},
-			}
-		);
+		updateProfileMutation.mutate(apiData, {
+			onSuccess: () => {
+				showSnackbar(t('profile.updateSuccess'), 'success');
+				setIsEditingInfo(false);
+			},
+			onError: () => {
+				showSnackbar(t('profile.updateError'), 'error');
+			},
+		});
 	};
 	const updatePasswordMutation = useUpdatePassword();
 
@@ -507,7 +513,7 @@ const ProfileComponent = () => {
 			{ currentPassword, newPassword },
 			{
 				onSuccess: () => {
-					showSnackbar('Password updated successfully!', 'success');
+					showSnackbar(t('profile.passwordUpdateSuccess'), 'success');
 					setIsEditingPassword(false);
 					setCurrentPassword('');
 					setNewPassword('');
@@ -516,7 +522,7 @@ const ProfileComponent = () => {
 				},
 				onError: (error: any) => {
 					const message =
-						error.response?.data?.message || 'Failed to update password.';
+						error.response?.data?.message || t('profile.passwordUpdateError');
 					showSnackbar(message, 'error');
 					console.error('Error updating password:', error);
 				},
@@ -546,11 +552,11 @@ const ProfileComponent = () => {
 
 	const handlePasswordSave = () => {
 		if (newPassword !== confirmPassword) {
-			showSnackbar('New password and confirmation do not match.', 'error');
+			showSnackbar(t('profile.passwordsMismatch'), 'error');
 			return;
 		}
 		if (!currentPassword || !newPassword || !confirmPassword) {
-			showSnackbar('All password fields must be filled.', 'error');
+			showSnackbar(t('profile.passwordFieldsRequired'), 'error');
 			return;
 		}
 		handleUpdatePassword({ currentPassword, newPassword });
@@ -558,20 +564,19 @@ const ProfileComponent = () => {
 
 	// Email & phone number validation functions
 	const phoneValidationRules = {
-		required: 'Phone number is required',
+		required: t('auth.signup.phoneRequired'),
 		pattern: {
 			value: /^[0-9]+$/,
-			message: 'Phone number must contain only numbers',
+			message: t('auth.signup.phoneRequired'),
 		},
-		validate: (value: string) =>
-			value.length === 10 || 'Phone number must be exactly 10 digits',
+		validate: (value: string) => value.length === 10 || t('profile.phoneInvalid'),
 	};
 
 	const emailValidationRules = {
-		required: 'Email is required',
+		required: t('auth.signup.emailRequired'),
 		pattern: {
 			value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-			message: 'Please enter a valid email address',
+			message: t('profile.emailInvalid'),
 		},
 	};
 
@@ -672,7 +677,7 @@ const ProfileComponent = () => {
 							<Box className={sectionHeader}>
 								<Typography variant='h5' className={sectionTitle}>
 									<Person className={sectionIcon} />
-									Personal Information
+									{t('profile.personalInformation')}
 								</Typography>
 								{!isEditingInfo && (
 									<IconButton
@@ -693,8 +698,8 @@ const ProfileComponent = () => {
 							</Box>
 
 							<Grid container spacing={3}>
-								{Object.entries(userFieldDisplayNames).map(
-									([field, label], index) => (
+								{profileFields.map(
+									({ field, labelKey }, index) => (
 										<Grid item xs={12} md={6} key={field}>
 											<motion.div
 												initial={{ opacity: 0, x: -20 }}
@@ -704,7 +709,7 @@ const ProfileComponent = () => {
 											>
 												<Typography className={fieldLabel}>
 													{getFieldIcon(field)}
-													{label}
+													{t(labelKey)}
 												</Typography>
 												{isEditingInfo ? (
 													field === 'bloodGroup' ? (
@@ -843,7 +848,7 @@ const ProfileComponent = () => {
 											className={cancelButton}
 											startIcon={<Cancel />}
 										>
-											Cancel
+											{t('profile.cancel')}
 										</Button>
 										<Button
 											variant='contained'
@@ -851,7 +856,7 @@ const ProfileComponent = () => {
 											className={saveButton}
 											startIcon={<Save />}
 										>
-											Save Changes
+											{t('profile.save')}
 										</Button>
 									</Box>
 								</Fade>
@@ -880,7 +885,7 @@ const ProfileComponent = () => {
 							<Box className={sectionHeader}>
 								<Typography variant='h5' className={sectionTitle}>
 									<Lock className={sectionIcon} />
-									Password Security
+									{t('profile.passwordSecurity')}
 								</Typography>
 								{!isEditingPassword && (
 									<IconButton
@@ -907,7 +912,7 @@ const ProfileComponent = () => {
 										<Box className={fieldContainer}>
 											<Typography className={fieldLabel}>
 												<Lock className={fieldIcon} />
-												Current Password
+												{t('profile.currentPassword')}
 											</Typography>
 											<TextField
 												type={showCurrentPassword ? 'text' : 'password'}
@@ -939,7 +944,7 @@ const ProfileComponent = () => {
 										<Box className={fieldContainer}>
 											<Typography className={fieldLabel}>
 												<Lock className={fieldIcon} />
-												New Password
+												{t('profile.newPassword')}
 											</Typography>
 											<TextField
 												type={showNewPassword ? 'text' : 'password'}
@@ -971,7 +976,7 @@ const ProfileComponent = () => {
 										<Box className={fieldContainer}>
 											<Typography className={fieldLabel}>
 												<Lock className={fieldIcon} />
-												Confirm New Password
+												{t('profile.confirmNewPassword')}
 											</Typography>
 											<TextField
 												type={showConfirmPassword ? 'text' : 'password'}
@@ -1021,7 +1026,7 @@ const ProfileComponent = () => {
 												className={cancelButton}
 												startIcon={<Cancel />}
 											>
-												Cancel
+												{t('profile.cancel')}
 											</Button>
 											<Button
 												variant='contained'
@@ -1029,7 +1034,7 @@ const ProfileComponent = () => {
 												className={saveButton}
 												startIcon={<Save />}
 											>
-												Update Password
+												{t('profile.updatePassword')}
 											</Button>
 										</Box>
 									</Box>
@@ -1048,10 +1053,10 @@ const ProfileComponent = () => {
 										variant='h6'
 										sx={{ color: colors.darkPurple, mb: 2 }}
 									>
-										Password Protected
+										{t('profile.passwordProtected')}
 									</Typography>
 									<Typography variant='body2' sx={{ color: '#666', mb: 3 }}>
-										Your password is securely stored and protected
+										{t('profile.passwordProtectedBody')}
 									</Typography>
 									<Button
 										variant='contained'
@@ -1059,7 +1064,7 @@ const ProfileComponent = () => {
 										className={editButton}
 										startIcon={<Edit />}
 									>
-										Change Password
+										{t('profile.changePassword')}
 									</Button>
 								</Box>
 							)}

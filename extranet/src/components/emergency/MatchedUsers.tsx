@@ -17,6 +17,7 @@ import IconButton from '@mui/material/IconButton';
 import { makeStyles } from '@mui/styles';
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
 import { useConfirmUserInEmergency, useEmergencyMatchUsers } from '../../hooks';
@@ -76,6 +77,7 @@ const useStyles = makeStyles({
 });
 
 const MatchedUsers = () => {
+	const { t } = useTranslation();
 	const { emergencyId } = useParams<{ emergencyId: string }>();
 	const { token } = useAuth();
 	const classes = useStyles();
@@ -110,12 +112,12 @@ const MatchedUsers = () => {
 			{ emergencyId: emergencyId!, userId },
 			{
 				onSuccess: () => {
-					setSnackbarMessage('User confirmed successfully!');
+					setSnackbarMessage(t('emergency.matchedUsers.confirmSuccess'));
 					setSnackbarSeverity('success');
 					setSnackbarOpen(true);
 				},
 				onError: () => {
-					setSnackbarMessage('Failed to confirm user.');
+					setSnackbarMessage(t('emergency.matchedUsers.confirmError'));
 					setSnackbarSeverity('error');
 					setSnackbarOpen(true);
 				},
@@ -161,7 +163,7 @@ const MatchedUsers = () => {
 		return (
 			<Box className={classes.noResultsContainer}>
 				<Typography variant='h6' color='error'>
-					Failed to load matched users.
+					{t('emergency.matchedUsers.failedToLoad')}
 				</Typography>
 			</Box>
 		);
@@ -180,21 +182,23 @@ const MatchedUsers = () => {
 				<Box className={classes.noResultsContainer}>
 					<SearchOffIcon className={classes.noResultsIcon} color='action' />
 					<Typography variant='h6' color='textSecondary'>
-						No matched users found.
+						{t('emergency.matchedUsers.noResults')}
 					</Typography>
 				</Box>
 			) : (
 				<>
 					<Typography variant='h5' className={classes.title}>
-						Matched Users
+						{t('emergency.matchedUsers.title')}
 					</Typography>
 					<Table className={classes.table}>
 						<TableHead>
 							<TableRow>
-								<TableCell>First Name</TableCell>
-								<TableCell>Last Name</TableCell>
-								<TableCell>Phone Number</TableCell>
-								<TableCell className={classes.actionCell}>Action</TableCell>
+								<TableCell>{t('emergency.matchedUsers.firstName')}</TableCell>
+								<TableCell>{t('emergency.matchedUsers.lastName')}</TableCell>
+								<TableCell>{t('emergency.matchedUsers.phone')}</TableCell>
+								<TableCell className={classes.actionCell}>
+									{t('emergency.matchedUsers.action')}
+								</TableCell>
 							</TableRow>
 						</TableHead>
 						<TableBody>
@@ -211,7 +215,9 @@ const MatchedUsers = () => {
 											onClick={() => handleConfirmUser(matched._id)}
 											disabled={loadingUsers[matched._id]}
 										>
-											{loadingUsers[matched._id] ? 'Confirming...' : 'Confirm'}
+											{loadingUsers[matched._id]
+												? t('emergency.matchedUsers.confirming')
+												: t('emergency.matchedUsers.confirm')}
 										</Button>
 									</TableCell>
 								</TableRow>
@@ -221,13 +227,13 @@ const MatchedUsers = () => {
 
 					<div className={classes.pagination}>
 						<Button disabled={page === 1 || isLoading} onClick={handlePrevPage}>
-							Previous
+							{t('common.previous')}
 						</Button>
 						<Button
 							disabled={page >= totalPages || isLoading}
 							onClick={handleNextPage}
 						>
-							Next
+							{t('common.next')}
 						</Button>
 					</div>
 				</>
