@@ -52,7 +52,7 @@ const LoginForm = () => {
 	}, [location]);
 
 	useEffect(() => {
-		if (login.isSuccess && login.data) {
+		if (login.isSuccess && login.data && profileCompleteness.data) {
 			// Update AuthContext state immediately
 			const { token, userId, isAdmin } = login.data.data;
 			updateAuthState(token, userId, isAdmin);
@@ -65,11 +65,9 @@ const LoginForm = () => {
 				return;
 			}
 
-			// Check profile completeness and navigate accordingly
-			if (
-				profileCompleteness.data?.data &&
-				!profileCompleteness.data.data.isProfileComplete
-			) {
+			// Navigate based on profile completeness
+			const isProfileComplete = profileCompleteness.data.data.isProfileComplete;
+			if (!isProfileComplete) {
 				navigate('/update-profile');
 			} else {
 				navigate('/dashboard');
