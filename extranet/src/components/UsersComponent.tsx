@@ -2,6 +2,7 @@ import { Tune } from '@mui/icons-material';
 import { Box, Button, Chip, CircularProgress, Typography } from '@mui/material';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
 import { useAuth } from '../auth/AuthContext';
@@ -86,6 +87,7 @@ interface Filters {
 }
 
 const UsersComponent: React.FC = () => {
+	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const { bar, button, form } = authStyles();
 	const { textButton, subTitle } = mainStyles();
@@ -101,8 +103,8 @@ const UsersComponent: React.FC = () => {
 		open: false,
 		title: '',
 		message: '',
-		confirmText: 'Confirm',
-		cancelText: 'Cancel',
+		confirmText: t('common.confirm'),
+		cancelText: t('common.cancel'),
 		onConfirm: () => {},
 		warning: false,
 	});
@@ -135,7 +137,7 @@ const UsersComponent: React.FC = () => {
 				value: `${minAge || 18}-${maxAge || 65}`,
 			});
 		if (availableForDonation)
-			activeFilters.push({ key: 'availableForDonation', value: 'Yes' });
+			activeFilters.push({ key: 'availableForDonation', value: t('common.yes') });
 		return activeFilters;
 	};
 
@@ -267,10 +269,10 @@ const UsersComponent: React.FC = () => {
 		console.log(`Deleting user with name ${username}`);
 		setConfirmationDialog({
 			open: true,
-			title: 'Delete User',
-			message: `Are you sure you want to delete the user "${username}"? This action cannot be undone.`,
-			confirmText: 'Delete',
-			cancelText: 'Cancel',
+			title: t('users.list.deleteTitle'),
+			message: t('users.list.deleteConfirm', { username }),
+			confirmText: t('common.delete'),
+			cancelText: t('common.cancel'),
 			onConfirm: async () => {
 				try {
 					setIsLoading(true);
@@ -290,14 +292,14 @@ const UsersComponent: React.FC = () => {
 							(prevUsers) =>
 								prevUsers?.filter((user) => user._id !== userId) || []
 						);
-						setMessage('User deleted successfully');
+						setMessage(t('users.list.deleteSuccess'));
 					}
 				} catch (error) {
 					console.error('Error deleting user:', error);
 					setMessage(
-						`Error deleting user: ${
-							error.response?.data?.message || error.message
-						}`
+						t('users.list.deleteError', {
+							message: error.response?.data?.message || error.message,
+						})
 					);
 				} finally {
 					setIsLoading(false);
@@ -318,10 +320,10 @@ const UsersComponent: React.FC = () => {
 		console.log(`Making user with ID ${userId} as admin`);
 		setConfirmationDialog({
 			open: true,
-			title: 'Make User Admin',
-			message: `Are you sure you want to make "${username}" an admin? This will give them full administrative privileges.`,
-			confirmText: 'Make Admin',
-			cancelText: 'Cancel',
+			title: t('users.list.makeAdminTitle'),
+			message: t('users.list.makeAdminConfirm', { username }),
+			confirmText: t('users.card.makeAdmin'),
+			cancelText: t('common.cancel'),
 			onConfirm: async () => {
 				try {
 					setIsLoading(true);
@@ -345,14 +347,14 @@ const UsersComponent: React.FC = () => {
 									user._id === userId ? { ...user, isAdmin: true } : user
 								) || []
 						);
-						setMessage(`${username} is now an admin`);
+						setMessage(t('users.list.makeAdminSuccess', { username }));
 					}
 				} catch (error) {
 					console.error('Error making user admin:', error);
 					setMessage(
-						`Error making user admin: ${
-							error.response?.data?.message || error.message
-						}`
+						t('users.list.makeAdminError', {
+							message: error.response?.data?.message || error.message,
+						})
 					);
 				} finally {
 					setIsLoading(false);
@@ -372,13 +374,13 @@ const UsersComponent: React.FC = () => {
 								variant='h6'
 								sx={{ color: colors.purple, fontWeight: 'bold' }}
 							>
-								Users List
+								{t('users.list.title')}
 							</Typography>
 							<Typography
 								variant='body2'
 								sx={{ color: colors.purple, opacity: 0.7 }}
 							>
-								{users.length} users found
+								{t('users.list.usersFound', { count: users.length })}
 							</Typography>
 						</Box>
 						<FilterButton
@@ -386,7 +388,7 @@ const UsersComponent: React.FC = () => {
 							startIcon={<Tune />}
 							onClick={() => setIsFilterOpen(true)}
 						>
-							Advanced Filters
+							{t('users.list.advancedFilters')}
 						</FilterButton>
 					</FilterBar>
 
@@ -399,7 +401,7 @@ const UsersComponent: React.FC = () => {
 										variant='body2'
 										sx={{ color: colors.purple, mr: 1 }}
 									>
-										Active filters:
+										{t('users.list.activeFilters')}
 									</Typography>
 									{activeFilters.map((filter) => (
 										<Chip
@@ -435,7 +437,7 @@ const UsersComponent: React.FC = () => {
 											},
 										}}
 									>
-										Clear All
+										{t('users.list.clearAll')}
 									</Button>
 								</ActiveFilters>
 							)
@@ -497,7 +499,7 @@ const UsersComponent: React.FC = () => {
 							})
 						}
 					>
-						السابق
+						{t('common.previous')}
 					</Button>
 					<Button
 						disabled={page >= totalPages}
@@ -508,7 +510,7 @@ const UsersComponent: React.FC = () => {
 							})
 						}
 					>
-						التالي
+						{t('common.next')}
 					</Button>
 				</div>
 			)}

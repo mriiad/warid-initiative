@@ -4,12 +4,14 @@ import LogOutIcon from '@mui/icons-material/LogoutOutlined';
 import { IconButton } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import axios from 'axios';
+import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { useAuth } from '../auth/AuthContext';
 import colors from '../styles/colors';
 import API_CONFIG, { buildApiUrl } from '../utils/apiConfig';
 import ActionButton from './shared/ActionButton';
+import LanguageSwitcher from './shared/LanguageSwitcher';
 
 
 interface HeaderContainerProps {
@@ -67,6 +69,7 @@ const useStyles = makeStyles({
 const MobileHeader = () => {
 	const { logoImage, icon, activeIcon } = useStyles();
 	const { token, setToken, setIsAdmin, setUserId } = useAuth();
+	const { t } = useTranslation();
 	const location = useLocation();
 	const isEventPage = location.pathname.includes('events/WEVENT');
 	const navigate = useNavigate();
@@ -99,6 +102,7 @@ const MobileHeader = () => {
 			</LogoContainer>
 			{token ? (
 				<IconsContainer>
+					<LanguageSwitcher />
 					<Link to='/profile'>
 						<AccountCircleIcon
 							className={currentRoute === '/profile' ? activeIcon : icon}
@@ -111,13 +115,14 @@ const MobileHeader = () => {
 					</IconButton>
 				</IconsContainer>
 			) : (
-				<ActionButton
-					title='تسجيل الدخول'
-					icon={<ArrowCircleRightIcon />}
-					onClick={() => navigate('/login')}
-				/>
-				
-
+				<IconsContainer>
+					<LanguageSwitcher />
+					<ActionButton
+						title={t('nav.login')}
+						icon={<ArrowCircleRightIcon />}
+						onClick={() => navigate('/login')}
+					/>
+				</IconsContainer>
 			)}
 		</HeaderContainer>
 	);

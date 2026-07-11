@@ -13,6 +13,7 @@ import {
 	Typography,
 } from '@mui/material';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { BLOOD_GROUP_OPTIONS } from '../data/constants';
 import colors from '../styles/colors';
 import { authStyles } from '../styles/mainStyles';
@@ -30,7 +31,16 @@ const defaultFilters = {
 	isAdmin: false,
 };
 
+const filterFieldLabelKeys: Record<string, string> = {
+	username: 'users.filter.username',
+	firstname: 'users.filter.firstName',
+	lastname: 'users.filter.lastName',
+	email: 'users.filter.email',
+	phoneNumber: 'users.filter.phoneNumber',
+};
+
 const UserFilter = ({ open, onClose, onApply }) => {
+	const { t } = useTranslation();
 	const { formField, bar, button, form } = authStyles();
 	const [filters, setFilters] = useState(defaultFilters);
 
@@ -93,7 +103,7 @@ const UserFilter = ({ open, onClose, onApply }) => {
 							color: colors.purple,
 						}}
 					>
-						Filter Users
+						{t('users.filter.title')}
 						<span className={bar}></span>
 					</Typography>
 					<IconButton
@@ -121,7 +131,7 @@ const UserFilter = ({ open, onClose, onApply }) => {
 							].map((field) => (
 								<Grid item xs={12} key={field}>
 									<TextField
-										label={field[0].toUpperCase() + field.slice(1)}
+										label={t(filterFieldLabelKeys[field])}
 										name={field}
 										value={filters[field]}
 										onChange={handleChange}
@@ -132,7 +142,7 @@ const UserFilter = ({ open, onClose, onApply }) => {
 							))}
 							<Grid item xs={12}>
 								<Typography gutterBottom>
-									Age: {filters.age[0]} - {filters.age[1]}
+									{t('users.filter.age')}: {filters.age[0]} - {filters.age[1]}
 								</Typography>
 								<Slider
 									value={filters.age}
@@ -152,28 +162,28 @@ const UserFilter = ({ open, onClose, onApply }) => {
 											name='availableForDonation'
 										/>
 									}
-									label='Available for Donation'
+									label={t('users.filter.availableForDonation')}
 									className={formField}
 								/>
 							</Grid>
 							<Grid item xs={12}>
 								<TextField
 									select
-									label='Gender'
+									label={t('users.filter.gender')}
 									name='gender'
 									value={filters.gender}
 									onChange={handleChange}
 									fullWidth
 									className={formField}
 								>
-									<MenuItem value='male'>Male</MenuItem>
-									<MenuItem value='female'>Female</MenuItem>
+									<MenuItem value='male'>{t('users.filter.male')}</MenuItem>
+									<MenuItem value='female'>{t('users.filter.female')}</MenuItem>
 								</TextField>
 							</Grid>
 							<Grid item xs={12}>
 								<TextField
 									select
-									label='Blood Group'
+									label={t('users.filter.bloodGroup')}
 									name='bloodGroup'
 									value={filters.bloodGroup}
 									onChange={handleChange}
@@ -196,7 +206,7 @@ const UserFilter = ({ open, onClose, onApply }) => {
 											name='isAdmin'
 										/>
 									}
-									label='Is Admin'
+									label={t('users.filter.isAdmin')}
 									className={formField}
 								/>
 							</Grid>
@@ -212,7 +222,7 @@ const UserFilter = ({ open, onClose, onApply }) => {
 											className={button}
 											fullWidth
 										>
-											Reset
+											{t('users.filter.reset')}
 										</Button>
 									</Grid>
 									<Grid item xs={6}>
@@ -223,7 +233,7 @@ const UserFilter = ({ open, onClose, onApply }) => {
 											className={button}
 											fullWidth
 										>
-											Apply Filters
+											{t('users.filter.apply')}
 										</Button>
 									</Grid>
 								</Grid>

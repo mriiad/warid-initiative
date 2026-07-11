@@ -1,6 +1,7 @@
 import { PhoneAndroid, Smartphone, Tablet } from '@mui/icons-material';
 import { Box, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
+import { useTranslation } from 'react-i18next';
 import colors from '../styles/colors';
 
 const useStyles = makeStyles({
@@ -76,6 +77,7 @@ const useStyles = makeStyles({
 });
 
 const UnsupportedPage = () => {
+	const { t } = useTranslation();
 	const {
 		root,
 		contentCard,
@@ -93,12 +95,11 @@ const UnsupportedPage = () => {
 				<img src='/warid-logo.png' alt='Warid Logo' className={logo} />
 
 				<Typography variant='h4' className={title}>
-					This app is optimized for mobile
+					{t('unsupported.title')}
 				</Typography>
 
 				<Typography variant='body1' className={subtitle}>
-					For the best experience, please open this site on your phone or tablet
-					device.
+					{t('unsupported.subtitle')}
 				</Typography>
 
 				<Box className={deviceIcons}>
@@ -108,7 +109,7 @@ const UnsupportedPage = () => {
 				</Box>
 
 				<Typography variant='caption' className={browserText}>
-					✨ Best viewed on mobile browsers like Safari, Chrome, or Firefox
+					✨ {t('unsupported.browserHint')}
 				</Typography>
 			</Box>
 		</Box>
