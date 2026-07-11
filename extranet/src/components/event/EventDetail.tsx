@@ -495,7 +495,9 @@ const EventDetail: React.FC = () => {
 	const { fallback, qrCodeContainer, qrCodeCard, qrCodeImage, qrCodeTitle } =
 		useStyles();
 
-	const { data: event, isLoading, isError } = useEvent(reference || '');
+	const { data: eventData, isLoading, isError } = useEvent(reference || '');
+	const event = eventData?.data?.event;
+
 	const { data: participationData } = useCheckParticipation(reference || '');
 	const createParticipant = useCreateParticipant();
 	const { data: participantStats } = useEventParticipantsDetails(reference || '', isAdmin);
@@ -528,13 +530,13 @@ const EventDetail: React.FC = () => {
 	const handleShare = () => {
 		if (navigator.share) {
 			navigator.share({
-				title: event?.data?.title || t('events.detail.shareFallbackTitle'),
-				text: event?.data?.subtitle || t('events.detail.shareFallbackText'),
+				title: event?.title || t('events.detail.shareFallbackTitle'),
+				text: event?.subtitle || t('events.detail.shareFallbackText'),
 				url: window.location.href,
 			});
 		} else {
 			navigator.clipboard.writeText(
-				`${event?.data?.title} - ${event?.data?.subtitle}\n${window.location.href}`
+				`${event?.title} - ${event?.subtitle}\n${window.location.href}`
 			);
 		}
 	};
@@ -571,7 +573,7 @@ const EventDetail: React.FC = () => {
 		setConfirmationDialog({
 			open: true,
 			title: t('events.list.deleteTitle'),
-			message: t('events.list.deleteConfirm', { title: event?.data?.title }),
+			message: t('events.list.deleteConfirm', { title: event?.title }),
 			confirmText: t('common.delete'),
 			cancelText: t('common.cancel'),
 			onConfirm: async () => {
@@ -632,10 +634,9 @@ const EventDetail: React.FC = () => {
 	};
 
 
-
 	return (
 		<>
-			{isLoading ? (
+			{isLoading || !event ? (
 				<LoadingContainer>
 					<CircularProgress size={60} />
 					<Typography className='loadingText'>
@@ -658,25 +659,25 @@ const EventDetail: React.FC = () => {
 					<EventHero>
 						<img
 							src={
-								event?.data?.image
-									? `data:image/jpeg;base64,${event.data.image}`
+								event?.image
+									? `data:image/jpeg;base64,${event.image}`
 									: '/event-default.png'
 							}
-							alt={event?.data?.title}
+							alt={event?.title}
 							className='eventImage'
 						/>
 
 						<Typography variant='h1' className='eventTitle'>
-							{event?.data?.title}
+							{event?.title}
 						</Typography>
 
 						<Typography variant='h5' className='eventSubtitle'>
-							{event?.data?.subtitle}
+							{event?.subtitle}
 						</Typography>
 						{isAdmin && (
 							<Chip
 								label={
-									event?.data?.isGeneric
+									event?.isGeneric
 										? t('events.card.generic')
 										: t('events.card.specific')
 								}
@@ -696,7 +697,7 @@ const EventDetail: React.FC = () => {
 									</div>
 								</div>
 								<div className='cardContent'>
-									{formatDateForDisplay(event?.data?.date)}
+									{formatDateForDisplay(event?.date)}
 								</div>
 							</InfoCard>
 
@@ -707,7 +708,7 @@ const EventDetail: React.FC = () => {
 										<LocationOnIcon />
 									</div>
 								</div>
-								<div className='cardContent'>{event?.data?.location}</div>
+								<div className='cardContent'>{event?.location}</div>
 							</InfoCard>
 
 							<InfoCard>
@@ -719,7 +720,7 @@ const EventDetail: React.FC = () => {
 								</div>
 								<div className='cardContent'>
 									<a
-										href={event?.data?.mapLink}
+										href={event?.mapLink}
 										target='_blank'
 										rel='noopener noreferrer'
 									>
@@ -729,10 +730,10 @@ const EventDetail: React.FC = () => {
 								</div>
 							</InfoCard>
 
-							{event?.data?.description && (
+							{event?.description && (
 								<DescriptionCard>
 									<Typography className='descriptionText'>
-										{event.data.description}
+										{event.description}
 									</Typography>
 								</DescriptionCard>
 							)}
@@ -756,14 +757,14 @@ const EventDetail: React.FC = () => {
 
 
 
-					{event?.data?.event?.qrCode && (
+					{event?.qrCode && (
 						<div className={qrCodeContainer}>
 							<div className={qrCodeCard}>
 								<Typography variant='h6' className={qrCodeTitle}>
 									{t('events.detail.qrScanTitle')}
 								</Typography>
 								<img
-									src={event.data.event.qrCode}
+									src={event.qrCode}
 									alt='QR Code'
 									className={qrCodeImage}
 								/>
