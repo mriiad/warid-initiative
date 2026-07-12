@@ -70,78 +70,85 @@ const MobileNavContainer = styled.div`
 	z-index: 101;
 `;
 
+// Routes that ship their own full-bleed header/layout (the redesigned auth
+// screens) skip the app chrome below instead of sitting inside the padded
+// ContentContainer with a NavBar/MobileHeader above and MobileNavbar below.
+const FULL_SCREEN_ROUTES = ['/login', '/signup'];
+
 const App = () => {
 	const isMobile = useIsMobile();
 	const { isAdmin } = useAuth();
 	const location = useLocation();
 	const forceDesktop =
 		new URLSearchParams(location.search).get('forceDesktop') === '1';
+	const isFullScreenRoute = FULL_SCREEN_ROUTES.includes(location.pathname);
+
+	const routes = (
+		<Routes>
+			<Route path='/' element={<Navigate replace to='/home' />} />
+			<Route path='/home' element={<LandingPage />} />
+			<Route path='/signup' element={<SignupForm />} />
+			<Route path='/login' element={<LoginForm />} />
+			<Route path='/update-profile' element={<UserProfileForm />} />
+			<Route path='/events' element={<EventsComponent />} />
+			{/*
+				These two routes must always be registered (not gated by
+				isAdmin) so they win route matching against the
+				'/events/:reference/*' wildcard below -- otherwise a
+				non-admin visiting them has React Router treat 'create' or
+				'update' as an event reference and load EventDetail
+				indefinitely instead of showing 404. Each component checks
+				isAdmin itself and renders NotFoundPage when it isn't.
+			*/}
+			<Route path='/events/create' element={<EventForm />} />
+			<Route path='/events/update/:reference' element={<UpdateEvent />} />
+			<Route path='/events/:reference/*' element={<EventDetail />}>
+				<Route path='can-donate' element={<CanDonate />} />
+				<Route path='confirmation' element={<EventConfirmation />} />
+			</Route>
+			<Route path='/donate' element={<DonationComponent />} />
+			{isAdmin && <Route path='/users' element={<UsersComponent />} />}
+			{isAdmin && (
+				<Route path='/users/update/:userId' element={<UpdateUser />} />
+			)}
+			<Route path='/contact' element={<ContactForm />} />
+			<Route path='/admin' element={<AdminComponent />} />
+			<Route
+				path='/request-reset-password'
+				element={<PasswordResetForm />}
+			/>
+			<Route
+				path='/reset-password/:resetToken'
+				element={<ResetPasswordForm />}
+			/>
+			<Route path='*' element={<NotFoundPage />} />
+
+			<Route path='/FAQ' element={<FAQComponent />} />
+			<Route path='/profile' element={<ProfileComponent />} />
+			<Route path='/dashboard' element={<Dashboard />} />
+			<Route path='/emergency' element={<EmergencyForm />} />
+			{isAdmin && (
+				<Route path='/emergencies' element={<EmergencyComponent />} />
+			)}
+			{isAdmin && (
+				<Route
+					path='/emergencies/:emergencyId/matched-users/'
+					element={<MatchedUsers />}
+				/>
+			)}
+		</Routes>
+	);
 
 	return (
 		<AppContainer>
 			{!isMobile && !forceDesktop ? (
 				<UnsupportedPage />
+			) : isFullScreenRoute ? (
+				routes
 			) : (
 				<>
 					{!isMobile ? <NavBar /> : <MobileHeader />}
-					<ContentContainer>
-						<Routes>
-							<Route path='/' element={<Navigate replace to='/home' />} />
-							<Route path='/home' element={<LandingPage />} />
-							<Route path='/signup' element={<SignupForm />} />
-							<Route path='/login' element={<LoginForm />} />
-							<Route path='/update-profile' element={<UserProfileForm />} />
-							<Route path='/events' element={<EventsComponent />} />
-							{/*
-								These two routes must always be registered (not gated by
-								isAdmin) so they win route matching against the
-								'/events/:reference/*' wildcard below -- otherwise a
-								non-admin visiting them has React Router treat 'create' or
-								'update' as an event reference and load EventDetail
-								indefinitely instead of showing 404. Each component checks
-								isAdmin itself and renders NotFoundPage when it isn't.
-							*/}
-							<Route path='/events/create' element={<EventForm />} />
-							<Route
-								path='/events/update/:reference'
-								element={<UpdateEvent />}
-							/>
-							<Route path='/events/:reference/*' element={<EventDetail />}>
-								<Route path='can-donate' element={<CanDonate />} />
-								<Route path='confirmation' element={<EventConfirmation />} />
-							</Route>
-							<Route path='/donate' element={<DonationComponent />} />
-							{isAdmin && <Route path='/users' element={<UsersComponent />} />}
-							{isAdmin && (
-								<Route path='/users/update/:userId' element={<UpdateUser />} />
-							)}
-							<Route path='/contact' element={<ContactForm />} />
-							<Route path='/admin' element={<AdminComponent />} />
-							<Route
-								path='/request-reset-password'
-								element={<PasswordResetForm />}
-							/>
-							<Route
-								path='/reset-password/:resetToken'
-								element={<ResetPasswordForm />}
-							/>
-							<Route path='*' element={<NotFoundPage />} />
-
-							<Route path='/FAQ' element={<FAQComponent />} />
-							<Route path='/profile' element={<ProfileComponent />} />
-							<Route path='/dashboard' element={<Dashboard />} />
-							<Route path='/emergency' element={<EmergencyForm />} />
-							{isAdmin && (
-								<Route path='/emergencies' element={<EmergencyComponent />} />
-							)}
-							{isAdmin && (
-								<Route
-									path='/emergencies/:emergencyId/matched-users/'
-									element={<MatchedUsers />}
-								/>
-							)}
-						</Routes>
-					</ContentContainer>
+					<ContentContainer>{routes}</ContentContainer>
 					{isMobile && (
 						<MobileNavContainer>
 							<MobileNavbar />

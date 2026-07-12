@@ -1,10 +1,4 @@
-import {
-	Button,
-	CircularProgress,
-	Grid,
-	TextField,
-	Typography,
-} from '@mui/material';
+import { Button, Checkbox, CircularProgress, TextField } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -12,17 +6,27 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth as useAuthContext } from '../auth/AuthContext';
 import { LoginFormData } from '../data/authData';
 import { useAuth, useCheckProfileCompleteness } from '../hooks';
-import colors from '../styles/colors';
-import { authStyles, mainStyles } from '../styles/mainStyles';
-import FormContainer from './shared/FormContainer';
+import { authRedesignStyles } from '../styles/authRedesign';
+import AuthHeader from './shared/AuthHeader';
+import GoogleButton from './shared/GoogleButton';
+import PasswordField from './shared/PasswordField';
 import SnackbarComponent from './shared/SnackbarComponent';
 
 const LoginForm = () => {
 	const { t } = useTranslation();
-	const { setToken, setUserId, setIsAdmin } = useAuthContext();
 
-	const { bar, button, signUp, form } = authStyles();
-	const { textButton, subTitle } = mainStyles();
+	const {
+		screen,
+		card,
+		input,
+		primaryButton,
+		divider,
+		inlineRow,
+		rememberMe,
+		link,
+		footerText,
+		subtitleLink,
+	} = authRedesignStyles();
 	const {
 		handleSubmit,
 		formState: { errors },
@@ -40,6 +44,8 @@ const LoginForm = () => {
 	const [passwordResetSnackbarOpen, setPasswordResetSnackbarOpen] =
 		useState(passwordReset);
 	const [signUpSnackbarOpen, setSignUpSnackbarOpen] = useState(false);
+	const [googleSnackbarOpen, setGoogleSnackbarOpen] = useState(false);
+	const [rememberMeChecked, setRememberMeChecked] = useState(false);
 
 	const { login } = useAuth();
 	const { updateAuthState } = useAuthContext();
@@ -86,67 +92,61 @@ const LoginForm = () => {
 	};
 
 	return (
-		<FormContainer>
-			{login.isPending ? (
-				<div
-					style={{
-						display: 'flex',
-						justifyContent: 'center',
-						alignItems: 'center',
-					}}
-				>
-					<CircularProgress />
-				</div>
-			) : (
-				<>
-					<SnackbarComponent
-						open={passwordResetSnackbarOpen}
-						handleClose={() => setPasswordResetSnackbarOpen(false)}
-						message={t('auth.login.passwordResetSuccess')}
-						autoHideDuration={5000}
-					/>
-					<SnackbarComponent
-						open={signUpSnackbarOpen}
-						handleClose={() => setSignUpSnackbarOpen(false)}
-						message={t('auth.login.signupSuccess')}
-						autoHideDuration={5000}
-					/>
-					<Typography
-						variant='h2'
-						align='center'
-						gutterBottom
-						className={signUp}
-					>
-						{t('auth.login.title')}
-						<span className={bar}></span>
-					</Typography>
-					<Typography variant='h6' align='center' gutterBottom>
-						<span className={subTitle}>{t('auth.login.noAccount')}</span>
+		<div className={screen}>
+			<AuthHeader
+				title={t('auth.login.title')}
+				backLabel={t('auth.login.back')}
+				subtitle={
+					<>
+						{t('auth.login.noAccount')}
 						<button
 							type='button'
-							className={textButton}
+							className={subtitleLink}
 							onClick={() => navigate('/signup')}
-							style={{
-								background: 'none',
-								border: 'none',
-								padding: '8px 12px',
-								font: 'inherit',
-								cursor: 'pointer',
-								textDecoration: 'underline',
-								color: colors.rose,
-								fontSize: 'inherit',
-								lineHeight: 'inherit',
-								display: 'inline-block',
-								position: 'relative',
-								zIndex: 10,
-							}}
 						>
 							{t('auth.login.signup')}
 						</button>
-					</Typography>
-					<form onSubmit={handleSubmit(onSubmit)} className={form} noValidate>
-						<Grid container spacing={2}>
-							<Grid item xs={12}>
+					</>
+				}
+			/>
+			<div className={card}>
+				{login.isPending ? (
+					<div
+						style={{
+							display: 'flex',
+							justifyContent: 'center',
+							alignItems: 'center',
+							padding: '32px 0',
+						}}
+					>
+						<CircularProgress />
+					</div>
+				) : (
+					<>
+						<SnackbarComponent
+							open={passwordResetSnackbarOpen}
+							handleClose={() => setPasswordResetSnackbarOpen(false)}
+							message={t('auth.login.passwordResetSuccess')}
+							autoHideDuration={5000}
+						/>
+						<SnackbarComponent
+							open={signUpSnackbarOpen}
+							handleClose={() => setSignUpSnackbarOpen(false)}
+							message={t('auth.login.signupSuccess')}
+							autoHideDuration={5000}
+						/>
+						<SnackbarComponent
+							open={googleSnackbarOpen}
+							handleClose={() => setGoogleSnackbarOpen(false)}
+							message={t('auth.login.continueWithGoogle')}
+							autoHideDuration={3000}
+						/>
+						<GoogleButton onClick={() => setGoogleSnackbarOpen(true)}>
+							{t('auth.login.continueWithGoogle')}
+						</GoogleButton>
+						<div className={divider}>{t('auth.login.orLoginWith')}</div>
+						<form onSubmit={handleSubmit(onSubmit)} noValidate>
+							<div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 								<Controller
 									name='username'
 									control={control}
@@ -154,6 +154,7 @@ const LoginForm = () => {
 									render={({ field }) => (
 										<TextField
 											fullWidth
+											className={input}
 											label={t('auth.login.username')}
 											required
 											{...field}
@@ -162,65 +163,59 @@ const LoginForm = () => {
 										/>
 									)}
 								/>
-							</Grid>
-							<Grid item xs={12}>
 								<Controller
 									name='password'
 									control={control}
 									rules={{ required: t('auth.login.passwordRequired') }}
 									render={({ field }) => (
-										<TextField
+										<PasswordField
 											fullWidth
-											type='password'
+											className={input}
 											label={t('auth.login.password')}
 											required
+											showLabel={t('auth.login.showPassword')}
+											hideLabel={t('auth.login.hidePassword')}
 											{...field}
 											error={Boolean(errors.password)}
 											helperText={errors.password?.message || ''}
 										/>
 									)}
 								/>
-							</Grid>
-							<Grid item xs={12}>
-								<Button
-									type='submit'
-									color='primary'
-									style={{ color: 'white' }}
-									className={button}
-								>
-									{t('auth.login.title')}
-								</Button>
-							</Grid>
-							<Grid item xs={12}>
-								<Typography variant='body2' align='center' gutterBottom>
+								<div className={inlineRow}>
+									<label className={rememberMe}>
+										<Checkbox
+											checked={rememberMeChecked}
+											onChange={(e) => setRememberMeChecked(e.target.checked)}
+										/>
+										{t('auth.login.rememberMe')}
+									</label>
 									<button
 										type='button'
-										className={textButton}
+										className={link}
 										onClick={() => navigate('/request-reset-password')}
-										style={{
-											background: 'none',
-											border: 'none',
-											padding: '8px 12px',
-											font: 'inherit',
-											cursor: 'pointer',
-											textDecoration: 'underline',
-											color: colors.rose,
-											fontSize: 'inherit',
-											lineHeight: 'inherit',
-											display: 'inline-block',
-											position: 'relative',
-											zIndex: 10,
-										}}
 									>
 										{t('auth.login.forgotPassword')}
 									</button>
-								</Typography>
-							</Grid>
-						</Grid>
-					</form>
-				</>
-			)}
-		</FormContainer>
+								</div>
+								<Button type='submit' fullWidth className={primaryButton}>
+									{t('auth.login.title')}
+								</Button>
+							</div>
+						</form>
+						<div className={footerText}>
+							{t('auth.login.noAccount')}{' '}
+							<button
+								type='button'
+								className={link}
+								onClick={() => navigate('/signup')}
+							>
+								{t('auth.login.signup')}
+							</button>
+						</div>
+					</>
+				)}
+			</div>
+		</div>
 	);
 };
 

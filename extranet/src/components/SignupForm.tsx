@@ -1,13 +1,11 @@
 import {
-	Button,
 	FormControl,
 	FormControlLabel,
 	FormHelperText,
-	Grid,
 	Radio,
 	RadioGroup,
 	TextField,
-	Typography,
+	Button,
 } from '@mui/material';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
@@ -15,14 +13,24 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { SignupFormData } from '../data/authData';
 import { useAuth } from '../hooks';
-import colors from '../styles/colors';
-import { authStyles, mainStyles } from '../styles/mainStyles';
-import FormContainer from './shared/FormContainer';
+import { authRedesignStyles } from '../styles/authRedesign';
+import AuthHeader from './shared/AuthHeader';
+import GoogleButton from './shared/GoogleButton';
+import PasswordField from './shared/PasswordField';
+import SnackbarComponent from './shared/SnackbarComponent';
 
 const SignupForm = () => {
 	const { t } = useTranslation();
-	const { formField, bar, button, signUp, form } = authStyles();
-	const { subTitle, textButton } = mainStyles();
+	const {
+		screen,
+		card,
+		input,
+		primaryButton,
+		divider,
+		phoneRow,
+		countryChip,
+		subtitleLink,
+	} = authRedesignStyles();
 	const {
 		handleSubmit,
 		formState: { errors },
@@ -32,6 +40,7 @@ const SignupForm = () => {
 	const navigate = useNavigate();
 
 	const { signup } = useAuth();
+	const [googleSnackbarOpen, setGoogleSnackbarOpen] = useState(false);
 
 	const onSubmit = (formData: SignupFormData) => {
 		signup.mutate(formData as any, {
@@ -44,52 +53,42 @@ const SignupForm = () => {
 		});
 	};
 
-	const [, setPhoneNumber] = useState('');
-	const onChange = (e) => {
-		const re = /^[0-9\b]+$/;
-		if (e.target.value === '' || re.test(e.target.value)) {
-			setPhoneNumber(e.target.value);
-		}
-	};
-
-	const validateEmail = (value) => {
+	const validateEmail = (value: string) => {
 		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 		return emailRegex.test(value) || t('auth.signup.invalidEmail');
 	};
 
+	const validatePhoneDigits = (value: string) => {
+		return /^[0-9]+$/.test(value) || t('auth.signup.phoneRequired');
+	};
+
 	return (
-		<FormContainer>
-			<Typography variant='h2' align='center' gutterBottom className={signUp}>
-				{t('auth.signup.title')}
-				<span className={bar}></span>
-			</Typography>
-			<Typography variant='h6' align='center' gutterBottom>
-				<span className={subTitle}>{t('auth.signup.haveAccount')} </span>
-				<button
-					type='button'
-					className={textButton}
-					onClick={() => navigate('/login')}
-					style={{
-						background: 'none',
-						border: 'none',
-						padding: '8px 12px',
-						font: 'inherit',
-						cursor: 'pointer',
-						textDecoration: 'underline',
-						color: colors.rose,
-						fontSize: 'inherit',
-						lineHeight: 'inherit',
-						display: 'inline-block',
-						position: 'relative',
-						zIndex: 10,
-					}}
-				>
-					{t('auth.signup.login')}
-				</button>
-			</Typography>
-			<form onSubmit={handleSubmit(onSubmit)} className={form} noValidate>
-				<Grid container spacing={2}>
-					<Grid item xs={12}>
+		<div className={screen}>
+			<AuthHeader
+				title={t('auth.signup.title')}
+				backLabel={t('auth.signup.back')}
+				subtitle={
+					<>
+						{t('auth.signup.haveAccount')}
+						<button
+							type='button'
+							className={subtitleLink}
+							onClick={() => navigate('/login')}
+						>
+							{t('auth.signup.login')}
+						</button>
+					</>
+				}
+			/>
+			<div className={card}>
+				<SnackbarComponent
+					open={googleSnackbarOpen}
+					handleClose={() => setGoogleSnackbarOpen(false)}
+					message={t('auth.signup.signupWithGoogle')}
+					autoHideDuration={3000}
+				/>
+				<form onSubmit={handleSubmit(onSubmit)} noValidate>
+					<div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 						<Controller
 							name='username'
 							control={control}
@@ -97,6 +96,7 @@ const SignupForm = () => {
 							render={({ field }) => (
 								<TextField
 									fullWidth
+									className={input}
 									label={t('auth.signup.cin')}
 									required
 									{...field}
@@ -105,8 +105,6 @@ const SignupForm = () => {
 								/>
 							)}
 						/>
-					</Grid>
-					<Grid item xs={12}>
 						<Controller
 							name='email'
 							control={control}
@@ -117,6 +115,7 @@ const SignupForm = () => {
 							render={({ field }) => (
 								<TextField
 									fullWidth
+									className={input}
 									label={t('auth.signup.email')}
 									required
 									{...field}
@@ -125,8 +124,6 @@ const SignupForm = () => {
 								/>
 							)}
 						/>
-					</Grid>
-					<Grid item xs={12}>
 						<Controller
 							name='password'
 							control={control}
@@ -138,37 +135,44 @@ const SignupForm = () => {
 								},
 							}}
 							render={({ field }) => (
-								<TextField
+								<PasswordField
 									fullWidth
-									type='password'
+									className={input}
 									required
 									label={t('auth.signup.password')}
+									showLabel={t('auth.signup.showPassword')}
+									hideLabel={t('auth.signup.hidePassword')}
 									{...field}
 									error={Boolean(errors.password)}
 									helperText={errors.password?.message || ''}
 								/>
 							)}
 						/>
-					</Grid>
-					<Grid item xs={12}>
-						<Controller
-							name='phoneNumber'
-							control={control}
-							rules={{ required: t('auth.signup.phoneRequired') }}
-							render={({ field }) => (
-								<TextField
-									fullWidth
-									label={t('auth.signup.phone')}
-									type='tel'
-									required
-									{...field}
-									error={Boolean(errors.phoneNumber)}
-									helperText={errors.phoneNumber?.message || ''}
-								/>
-							)}
-						/>
-					</Grid>
-					<Grid item xs={12} className={formField}>
+						<div className={phoneRow}>
+							<div className={countryChip} aria-hidden='true'>
+								🇲🇦
+							</div>
+							<Controller
+								name='phoneNumber'
+								control={control}
+								rules={{
+									required: t('auth.signup.phoneRequired'),
+									validate: validatePhoneDigits,
+								}}
+								render={({ field }) => (
+									<TextField
+										fullWidth
+										className={input}
+										label={t('auth.signup.phone')}
+										type='tel'
+										required
+										{...field}
+										error={Boolean(errors.phoneNumber)}
+										helperText={errors.phoneNumber?.message || ''}
+									/>
+								)}
+							/>
+						</div>
 						<Controller
 							name='gender'
 							control={control}
@@ -198,15 +202,17 @@ const SignupForm = () => {
 								</FormControl>
 							)}
 						/>
-					</Grid>
-					<Grid item xs={12}>
-						<Button type='submit' className={button}>
+						<Button type='submit' fullWidth className={primaryButton}>
 							{t('auth.signup.submit')}
 						</Button>
-					</Grid>
-				</Grid>
-			</form>
-		</FormContainer>
+						<div className={divider}>{t('auth.signup.orSignupWith')}</div>
+						<GoogleButton onClick={() => setGoogleSnackbarOpen(true)}>
+							{t('auth.signup.signupWithGoogle')}
+						</GoogleButton>
+					</div>
+				</form>
+			</div>
+		</div>
 	);
 };
 

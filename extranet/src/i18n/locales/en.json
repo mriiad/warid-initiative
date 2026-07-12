@@ -1,492 +1,503 @@
 {
-	"common": {
-		"confirm": "Confirm",
-		"cancel": "Cancel",
-		"delete": "Delete",
-		"update": "Update",
-		"save": "Save",
-		"loading": "Loading...",
-		"previous": "Previous",
-		"next": "Next",
-		"close": "Close",
-		"error": "An error occurred.",
-		"required": "This field is required",
-		"none": "None",
-		"yes": "Yes"
-	},
-	"nav": {
-		"home": "Home",
-		"about": "About",
-		"events": "Events",
-		"dashboard": "Dashboard",
-		"emergency": "Emergency",
-		"contact": "Contact",
-		"help": "Help",
-		"admin": "Admin",
-		"login": "Login",
-		"logout": "Logout",
-		"signup": "Sign Up",
-		"profile": "Profile",
-		"donate": "Donate now"
-	},
-	"unsupported": {
-		"title": "This app is optimized for mobile",
-		"subtitle": "For the best experience, please open this site on your phone or tablet device.",
-		"browserHint": "Best viewed on mobile browsers like Safari, Chrome, or Firefox"
-	},
-	"notFound": {
-		"title": "404",
-		"description": "Oops! The page you're looking for isn't here.",
-		"button": "Go Back Home"
-	},
-	"landing": {
-		"intro": "A Moroccan association whose main goal is to raise awareness about the importance of periodic donation and to provide the local blood bank with sufficient quantities of blood bags to help cancer patients",
-		"weAre": "We are",
-		"volunteers": "volunteers",
-		"ageRange": "aged between 18 and 27",
-		"qualifications": "With high knowledge and qualifications in various fields and disciplines, united by a common goal: to serve you",
-		"andYouAreNow": "And you are now",
-		"regularDonor": "a regular donor",
-		"gallery": "Photo Gallery",
-		"partners": "Our Partners",
-		"privacyPolicy": "Privacy Policy",
-		"copyright": "© 2024 WARID"
-	},
-	"auth": {
-		"signup": {
-			"title": "Sign Up",
-			"haveAccount": "Already have an account?",
-			"login": "Login",
-			"cin": "National ID Number",
-			"cinRequired": "National ID number is required",
-			"email": "Email",
-			"emailRequired": "Email is required",
-			"invalidEmail": "Please enter a valid email address.",
-			"password": "Password",
-			"passwordRequired": "Password is required",
-			"passwordMinLength": "Password must be at least 6 characters",
-			"phone": "Phone Number",
-			"phoneRequired": "Phone number is required",
-			"male": "Male",
-			"female": "Female",
-			"genderRequired": "Gender is required",
-			"submit": "Submit"
-		},
-		"login": {
-			"title": "Login",
-			"noAccount": "Don't have an account?",
-			"signup": "Sign Up",
-			"username": "Username",
-			"usernameRequired": "Username is required",
-			"password": "Password",
-			"passwordRequired": "Password is required",
-			"forgotPassword": "Forgot your password?",
-			"passwordResetSuccess": "Password reset successfully!",
-			"signupSuccess": "Your account has been successfully created. You can now log in."
-		},
-		"passwordReset": {
-			"title": "Reset Password",
-			"email": "Email",
-			"emailRequired": "Email is required",
-			"submit": "Send Reset Link"
-		},
-		"resetPassword": {
-			"title": "Reset Password",
-			"checking": "Checking token validity...",
-			"invalidToken": "This password reset link is invalid or has expired.",
-			"resetAgain": "Reset again?",
-			"newPassword": "New Password",
-			"newPasswordRequired": "Password is required",
-			"confirmPassword": "Confirm New Password",
-			"confirmPasswordRequired": "Please confirm your password",
-			"passwordsMismatch": "Passwords do not match",
-			"submit": "Reset Password"
-		},
-		"completeProfile": {
-			"title": "Complete Your Profile",
-			"firstName": "First Name",
-			"firstNameRequired": "First name is required",
-			"lastName": "Last Name",
-			"lastNameRequired": "Last name is required",
-			"birthdate": "Birthdate",
-			"birthdateRequired": "Birthdate is required",
-			"gender": "Gender",
-			"genderRequired": "Gender is required",
-			"male": "Male",
-			"female": "Female",
-			"bloodGroup": "Blood Group",
-			"bloodGroupRequired": "Blood group is required",
-			"none": "I don't know my blood group",
-			"city": "City",
-			"cityRequired": "City is required",
-			"missingFields": "Could you please provide the required details below?",
-			"submit": "Update"
-		}
-	},
-	"profile": {
-		"personalInformation": "Personal Information",
-		"firstName": "First Name",
-		"lastName": "Last Name",
-		"birthdate": "Birthdate",
-		"gender": "Gender",
-		"bloodGroup": "Blood Group",
-		"city": "City",
-		"phoneNumber": "Phone Number",
-		"email": "Email",
-		"save": "Save Changes",
-		"cancel": "Cancel",
-		"updateSuccess": "Profile updated successfully!",
-		"updateError": "Failed to update profile.",
-		"loadError": "Failed to load profile.",
-		"passwordSecurity": "Password Security",
-		"passwordProtected": "Password Protected",
-		"passwordProtectedBody": "Your password is securely stored and cannot be viewed.",
-		"currentPassword": "Current Password",
-		"newPassword": "New Password",
-		"confirmNewPassword": "Confirm New Password",
-		"changePassword": "Change Password",
-		"updatePassword": "Update Password",
-		"passwordUpdateSuccess": "Password updated successfully!",
-		"passwordUpdateError": "Failed to update password.",
-		"phoneInvalid": "Phone number must be exactly 10 digits",
-		"phoneNumeric": "Phone number must contain only numbers",
-		"emailInvalid": "Please enter a valid email address",
-		"passwordsMismatch": "New password and confirmation do not match.",
-		"passwordFieldsRequired": "All password fields must be filled."
-	},
-	"dashboard": {
-		"welcome": "Welcome",
-		"welcomeMessage": "Thank you for being part of the Warid community and helping save lives",
-		"loading": "Loading dashboard...",
-		"errorPrefix": "Error loading dashboard:",
-		"unknownError": "Unknown error",
-		"exploreEvents": "Explore Events",
-		"totalDonations": "Total Donations",
-		"nextDonation": "Next Donation",
-		"lastDonation": "Last donation",
-		"donationHistory": "Your donations history",
-		"noDonationsTitle": "You haven't made any donations yet!",
-		"noDonationsBody": "Join our community of heroes and start saving lives today. Explore upcoming events and make your first donation!",
-		"seeUpcomingEvents": "See Upcoming Events",
-		"regularDonation": "Regular Donation"
-	},
-	"donation": {
-		"title": "Donate",
-		"beTheHero": "Be the hero",
-		"bloodGroup": "Blood Group",
-		"bloodGroupRequired": "Blood group is required",
-		"donationDate": "Donation Date",
-		"donationDateRequired": "Donation date is required",
-		"donationType": "Donation Type",
-		"donationTypeRequired": "Donation type is required",
-		"donationTypeNone": "None",
-		"blood": "Blood",
-		"plates": "Platelets",
-		"event": "Event",
-		"eventNone": "None",
-		"eventRequired": "Event is required",
-		"genericEventSuffix": " - General event",
-		"submit": "Register Donation",
-		"successTitle": "Donation request registered successfully!",
-		"successBody": "Our team will contact you soon to provide more details.",
-		"genericError": "An error occurred.",
-		"lastDonationMessage": "Your last donation was on {{date}}",
-		"restoredMessage": "Your previous donation details have been restored. Please review them before submitting.",
-		"fieldInvalid": "{{field}} is invalid"
-	},
-	"canDonate": {
-		"unableToDetermine": "Unable to determine eligibility.",
-		"canDonate": "Based on the date of your last donation, you are allowed to donate.",
-		"cannotDonate": "Sorry, you are not eligible to donate at this time.",
-		"confirm": "Confirm"
-	},
-	"events": {
-		"list": {
-			"title": "Our Events",
-			"subtitle": "Join us at our various events to support the blood bank",
-			"searchPlaceholder": "Search events...",
-			"loading": "Loading events...",
-			"noEventsTitle": "No events available",
-			"noEventsSearch": "We couldn't find any events matching your search. Try different keywords.",
-			"noEventsGeneral": "No events available right now. Check back later.",
-			"clearSearch": "Clear Search",
-			"deleteTitle": "Delete Event",
-			"deleteConfirm": "Are you sure you want to delete the event \"{{title}}\"? This action cannot be undone.",
-			"deleteSuccess": "Event deleted successfully",
-			"deleteError": "Error deleting event: {{message}}"
-		},
-		"card": {
-			"openMap": "Open Map",
-			"update": "Update",
-			"delete": "Delete",
-			"generic": "General event",
-			"specific": "Specific event"
-		},
-		"detail": {
-			"description": "Description",
-			"loading": "Loading event details...",
-			"date": "Date",
-			"location": "Location",
-			"openMap": "Open Map",
-			"participate": "Participate",
-			"alreadyParticipating": "You're already registered for this event",
-			"participateSuccess": "You are successfully added as a participant.",
-			"participateError": "An error occurred while registering for the event.",
-			"deleteSuccess": "Event deleted successfully!",
-			"deleteError": "Error deleting event: {{message}}",
-			"participantDetailsTitle": "Participant Details",
-			"registeredParticipants": "Registered participants",
-			"realDonaters": "Actually donated",
-			"allDonaters": "Total donors",
-			"qrScanTitle": "Scan the QR code to donate",
-			"participationConfirmed": "You have been successfully registered as a participant!",
-			"shareFallbackTitle": "Event",
-			"shareFallbackText": "Check out this event"
-		},
-		"confirmation": {
-			"confirming": "Confirming your attendance...",
-			"confirmed": "Your attendance was confirmed successfully!",
-			"unexpectedError": "An unexpected error occurred."
-		},
-		"form": {
-			"createTitle": "Create Event",
-			"updateTitle": "Update Event",
-			"titleLabel": "Title",
-			"titleRequired": "Title is required",
-			"subtitleLabel": "Subtitle",
-			"locationLabel": "Location",
-			"locationRequired": "Location is required",
-			"dateLabel": "Date",
-			"dateRequired": "Date is required",
-			"dateLocked": "The event date cannot be changed",
-			"mapLinkLabel": "Location Link",
-			"descriptionLabel": "Description",
-			"descriptionRequired": "Description is required",
-			"isGeneric": "General event",
-			"selectPhoto": "Select a Photo",
-			"changePhoto": "Choose a new photo (optional)",
-			"noPhotoSelected": "No photo selected",
-			"keepCurrentPhoto": "No new file selected - the current photo will be kept",
-			"photoSelected": "Selected file:",
-			"createButton": "Create Event",
-			"updateButton": "Update Event",
-			"createAnother": "Create Another Event",
-			"backToCreate": "Back to Event Creation",
-			"createSuccess": "Event created successfully!",
-			"createAnotherPrompt": "Would you like to create another one? Click below",
-			"updateSuccess": "Event updated successfully!",
-			"loadingEvent": "Loading event data...",
-			"eventNotFound": "Event not found",
-			"createError": "Error while creating the event",
-			"invalidInput": "Invalid input",
-			"loadError": "Error loading event data",
-			"updateError": "Error updating the event",
-			"redirectingToEvents": "You will be redirected to the events page...",
-			"isSpecific": "Specific event"
-		}
-	},
-	"contact": {
-		"title": "Contact Us",
-		"firstName": "First Name",
-		"firstNameRequired": "First name is required",
-		"lastName": "Last Name",
-		"lastNameRequired": "Last name is required",
-		"email": "Email",
-		"emailRequired": "Email is required",
-		"phone": "Phone Number",
-		"phoneRequired": "Phone number is required",
-		"subject": "Subject",
-		"subjectRequired": "Subject is required",
-		"message": "Message",
-		"messageRequired": "Message is required",
-		"submit": "Send",
-		"successTitle": "Your message has been sent successfully!",
-		"successBody": "We will get back to you soon.",
-		"sendAnother": "Send Another Message",
-		"genericError": "Error submitting contact form"
-	},
-	"faq": {
-		"bloodTitle": "FAQ - Blood Donation",
-		"bloodSubtitle": "Find quick answers to common questions",
-		"appTitle": "FAQ - Warid App",
-		"appSubtitle": "Everything about using the app smoothly",
-		"blood": [
-			{
-				"question": "Who is allowed to donate blood?",
-				"answer": "Healthy adults aged between 18 and 60, weighing at least 50 kg and in good health are eligible to donate blood."
-			},
-			{
-				"question": "Who is not allowed to donate blood?",
-				"answer": "Those with chronic or infectious diseases, or who do not meet age and weight requirements, are not allowed to donate."
-			},
-			{
-				"question": "How often can you donate blood?",
-				"answer": "Men can donate every 2 months, and women every 3 months."
-			},
-			{
-				"question": "Is blood donation safe?",
-				"answer": "Yes, single-use sterile equipment is used, and donors undergo a medical check beforehand."
-			},
-			{
-				"question": "Is the blood tested?",
-				"answer": "Yes, all blood is tested for infectious diseases."
-			},
-			{
-				"question": "What are the benefits of donating?",
-				"answer": "It saves lives, stimulates blood circulation, and reduces excess iron in the body."
-			},
-			{
-				"question": "Do you need to fast before donating?",
-				"answer": "No, it is recommended to eat a light meal and drink water before donating."
-			},
-			{
-				"question": "What temporary conditions prevent donation?",
-				"answer": "After vaccination, tooth extraction, or recovery from illness, a waiting period is required."
-			},
-			{
-				"question": "Can women donate blood?",
-				"answer": "Yes, provided they meet the age, health, and weight requirements."
-			},
-			{
-				"question": "How is the donated blood used?",
-				"answer": "It is used in surgeries, emergencies, and treatment of chronic diseases."
-			}
-		],
-		"app": [
-			{
-				"question": "What is Warid?",
-				"answer": "Warid is a digital platform that facilitates and organizes blood donation in Morocco by connecting donors to centers and patients."
-			},
-			{
-				"question": "Is registration free?",
-				"answer": "Yes, registration is completely free and open to everyone."
-			},
-			{
-				"question": "Can I donate blood outside of campaigns?",
-				"answer": "Yes, you can check the nearest donation center and go anytime."
-			},
-			{
-				"question": "Can NGOs or hospitals register?",
-				"answer": "Yes, there is a special section for partners to manage requests and organize donation events."
-			},
-			{
-				"question": "Is my personal data protected?",
-				"answer": "Yes, we strictly protect your privacy and never share your data without your consent."
-			}
-		]
-	},
-	"emergency": {
-		"form": {
-			"title": "Create Emergency",
-			"bloodGroup": "Blood Group",
-			"bloodGroupRequired": "Blood group is required",
-			"none": "None",
-			"city": "City",
-			"cityRequired": "City is required",
-			"phone": "Phone Number",
-			"phoneRequired": "Phone number is required",
-			"phoneNumeric": "Phone number must contain only numbers",
-			"phoneLength": "Phone number must be exactly 10 numbers",
-			"details": "Details",
-			"detailsRequired": "The details are required",
-			"submit": "Create Emergency",
-			"submitting": "Creating...",
-			"successTitle": "Emergency created successfully!",
-			"successBody": "Our team will do their best to find donors.",
-			"genericError": "An unexpected error occurred.",
-			"fieldInvalid": "{{field}} is invalid"
-		},
-		"list": {
-			"confirmSuccess": "Emergency confirmed successfully!",
-			"confirmError": "Error confirming emergency. Please try again."
-		},
-		"card": {
-			"confirm": "Confirm Emergency",
-			"confirming": "Confirming...",
-			"matchedUsers": "Matched Users"
-		},
-		"matchedUsers": {
-			"title": "Matched Users",
-			"failedToLoad": "Failed to load matched users.",
-			"noResults": "No matched users found.",
-			"firstName": "First Name",
-			"lastName": "Last Name",
-			"phone": "Phone Number",
-			"action": "Action",
-			"confirm": "Confirm",
-			"confirming": "Confirming...",
-			"confirmSuccess": "User confirmed successfully!",
-			"confirmError": "Failed to confirm user."
-		}
-	},
-	"admin": {
-		"addEvent": "Add Event",
-		"usersList": "Users List",
-		"emergenciesList": "Emergencies List"
-	},
-	"users": {
-		"list": {
-			"title": "Users List",
-			"usersFound": "{{count}} users found",
-			"advancedFilters": "Advanced Filters",
-			"activeFilters": "Active filters:",
-			"clearAll": "Clear All",
-			"deleteTitle": "Delete User",
-			"deleteConfirm": "Are you sure you want to delete the user \"{{username}}\"? This action cannot be undone.",
-			"deleteSuccess": "User deleted successfully",
-			"deleteError": "Error deleting user: {{message}}",
-			"makeAdminTitle": "Make User Admin",
-			"makeAdminConfirm": "Are you sure you want to make \"{{username}}\" an admin? This will give them full administrative privileges.",
-			"makeAdminSuccess": "{{username}} is now an admin",
-			"makeAdminError": "Error making user admin: {{message}}",
-			"noUsersTitle": "No Users Found",
-			"noUsersBody": "We couldn't find any users matching your criteria.",
-			"resetFilter": "Reset Filter"
-		},
-		"card": {
-			"admin": "Admin",
-			"update": "Update",
-			"delete": "Delete",
-			"makeAdmin": "Make Admin"
-		},
-		"filter": {
-			"title": "Filter Users",
-			"username": "Username",
-			"firstName": "First name",
-			"lastName": "Last name",
-			"email": "Email",
-			"phoneNumber": "Phone number",
-			"age": "Age",
-			"availableForDonation": "Available for Donation",
-			"gender": "Gender",
-			"male": "Male",
-			"female": "Female",
-			"bloodGroup": "Blood Group",
-			"isAdmin": "Is Admin",
-			"reset": "Reset",
-			"apply": "Apply Filters"
-		},
-		"update": {
-			"title": "Update User Information",
-			"firstName": "First Name",
-			"firstNameRequired": "First name is required",
-			"lastName": "Last Name",
-			"lastNameRequired": "Last name is required",
-			"email": "Email",
-			"emailRequired": "Email is required",
-			"emailInvalid": "Invalid email address",
-			"phone": "Phone Number",
-			"phoneRequired": "Phone number is required",
-			"birthdate": "Birthdate",
-			"birthdateRequired": "Birthdate is required",
-			"city": "City",
-			"cityRequired": "City is required",
-			"bloodGroup": "Blood Group",
-			"bloodGroupRequired": "Blood group is required",
-			"submit": "Update User Information",
-			"loading": "Loading user data...",
-			"success": "User updated successfully!",
-			"error": "Error updating user. Please try again."
-		}
-	}
+  "common": {
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "update": "Update",
+    "save": "Save",
+    "loading": "Loading...",
+    "previous": "Previous",
+    "next": "Next",
+    "close": "Close",
+    "error": "An error occurred.",
+    "required": "This field is required",
+    "none": "None",
+    "yes": "Yes"
+  },
+  "nav": {
+    "home": "Home",
+    "about": "About",
+    "events": "Events",
+    "dashboard": "Dashboard",
+    "emergency": "Emergency",
+    "contact": "Contact",
+    "help": "Help",
+    "admin": "Admin",
+    "login": "Login",
+    "logout": "Logout",
+    "signup": "Sign Up",
+    "profile": "Profile",
+    "donate": "Donate now"
+  },
+  "unsupported": {
+    "title": "This app is optimized for mobile",
+    "subtitle": "For the best experience, please open this site on your phone or tablet device.",
+    "browserHint": "Best viewed on mobile browsers like Safari, Chrome, or Firefox"
+  },
+  "notFound": {
+    "title": "404",
+    "description": "Oops! The page you're looking for isn't here.",
+    "button": "Go Back Home"
+  },
+  "landing": {
+    "intro": "A Moroccan association whose main goal is to raise awareness about the importance of periodic donation and to provide the local blood bank with sufficient quantities of blood bags to help cancer patients",
+    "weAre": "We are",
+    "volunteers": "volunteers",
+    "ageRange": "aged between 18 and 27",
+    "qualifications": "With high knowledge and qualifications in various fields and disciplines, united by a common goal: to serve you",
+    "andYouAreNow": "And you are now",
+    "regularDonor": "a regular donor",
+    "gallery": "Photo Gallery",
+    "partners": "Our Partners",
+    "privacyPolicy": "Privacy Policy",
+    "copyright": "© 2024 WARID"
+  },
+  "auth": {
+    "signup": {
+      "title": "Sign Up",
+      "haveAccount": "Already have an account?",
+      "login": "Login",
+      "cin": "National ID Number",
+      "cinRequired": "National ID number is required",
+      "email": "Email",
+      "emailRequired": "Email is required",
+      "invalidEmail": "Please enter a valid email address.",
+      "password": "Password",
+      "passwordRequired": "Password is required",
+      "passwordMinLength": "Password must be at least 6 characters",
+      "phone": "Phone Number",
+      "phoneRequired": "Phone number is required",
+      "male": "Male",
+      "female": "Female",
+      "genderRequired": "Gender is required",
+      "submit": "Submit",
+      "orSignupWith": "Or",
+      "signupWithGoogle": "Sign up with Google",
+      "back": "Back",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password"
+    },
+    "login": {
+      "title": "Login",
+      "noAccount": "Don't have an account?",
+      "signup": "Sign Up",
+      "username": "Username",
+      "usernameRequired": "Username is required",
+      "password": "Password",
+      "passwordRequired": "Password is required",
+      "forgotPassword": "Forgot your password?",
+      "passwordResetSuccess": "Password reset successfully!",
+      "signupSuccess": "Your account has been successfully created. You can now log in.",
+      "rememberMe": "Remember me",
+      "orLoginWith": "Or login with",
+      "continueWithGoogle": "Continue with Google",
+      "back": "Back",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password"
+    },
+    "passwordReset": {
+      "title": "Reset Password",
+      "email": "Email",
+      "emailRequired": "Email is required",
+      "submit": "Send Reset Link"
+    },
+    "resetPassword": {
+      "title": "Reset Password",
+      "checking": "Checking token validity...",
+      "invalidToken": "This password reset link is invalid or has expired.",
+      "resetAgain": "Reset again?",
+      "newPassword": "New Password",
+      "newPasswordRequired": "Password is required",
+      "confirmPassword": "Confirm New Password",
+      "confirmPasswordRequired": "Please confirm your password",
+      "passwordsMismatch": "Passwords do not match",
+      "submit": "Reset Password"
+    },
+    "completeProfile": {
+      "title": "Complete Your Profile",
+      "firstName": "First Name",
+      "firstNameRequired": "First name is required",
+      "lastName": "Last Name",
+      "lastNameRequired": "Last name is required",
+      "birthdate": "Birthdate",
+      "birthdateRequired": "Birthdate is required",
+      "gender": "Gender",
+      "genderRequired": "Gender is required",
+      "male": "Male",
+      "female": "Female",
+      "bloodGroup": "Blood Group",
+      "bloodGroupRequired": "Blood group is required",
+      "none": "I don't know my blood group",
+      "city": "City",
+      "cityRequired": "City is required",
+      "missingFields": "Could you please provide the required details below?",
+      "submit": "Update"
+    }
+  },
+  "profile": {
+    "personalInformation": "Personal Information",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "birthdate": "Birthdate",
+    "gender": "Gender",
+    "bloodGroup": "Blood Group",
+    "city": "City",
+    "phoneNumber": "Phone Number",
+    "email": "Email",
+    "save": "Save Changes",
+    "cancel": "Cancel",
+    "updateSuccess": "Profile updated successfully!",
+    "updateError": "Failed to update profile.",
+    "loadError": "Failed to load profile.",
+    "passwordSecurity": "Password Security",
+    "passwordProtected": "Password Protected",
+    "passwordProtectedBody": "Your password is securely stored and cannot be viewed.",
+    "currentPassword": "Current Password",
+    "newPassword": "New Password",
+    "confirmNewPassword": "Confirm New Password",
+    "changePassword": "Change Password",
+    "updatePassword": "Update Password",
+    "passwordUpdateSuccess": "Password updated successfully!",
+    "passwordUpdateError": "Failed to update password.",
+    "phoneInvalid": "Phone number must be exactly 10 digits",
+    "phoneNumeric": "Phone number must contain only numbers",
+    "emailInvalid": "Please enter a valid email address",
+    "passwordsMismatch": "New password and confirmation do not match.",
+    "passwordFieldsRequired": "All password fields must be filled."
+  },
+  "dashboard": {
+    "welcome": "Welcome",
+    "welcomeMessage": "Thank you for being part of the Warid community and helping save lives",
+    "loading": "Loading dashboard...",
+    "errorPrefix": "Error loading dashboard:",
+    "unknownError": "Unknown error",
+    "exploreEvents": "Explore Events",
+    "totalDonations": "Total Donations",
+    "nextDonation": "Next Donation",
+    "lastDonation": "Last donation",
+    "donationHistory": "Your donations history",
+    "noDonationsTitle": "You haven't made any donations yet!",
+    "noDonationsBody": "Join our community of heroes and start saving lives today. Explore upcoming events and make your first donation!",
+    "seeUpcomingEvents": "See Upcoming Events",
+    "regularDonation": "Regular Donation"
+  },
+  "donation": {
+    "title": "Donate",
+    "beTheHero": "Be the hero",
+    "bloodGroup": "Blood Group",
+    "bloodGroupRequired": "Blood group is required",
+    "donationDate": "Donation Date",
+    "donationDateRequired": "Donation date is required",
+    "donationType": "Donation Type",
+    "donationTypeRequired": "Donation type is required",
+    "donationTypeNone": "None",
+    "blood": "Blood",
+    "plates": "Platelets",
+    "event": "Event",
+    "eventNone": "None",
+    "eventRequired": "Event is required",
+    "genericEventSuffix": " - General event",
+    "submit": "Register Donation",
+    "successTitle": "Donation request registered successfully!",
+    "successBody": "Our team will contact you soon to provide more details.",
+    "genericError": "An error occurred.",
+    "lastDonationMessage": "Your last donation was on {{date}}",
+    "restoredMessage": "Your previous donation details have been restored. Please review them before submitting.",
+    "fieldInvalid": "{{field}} is invalid"
+  },
+  "canDonate": {
+    "unableToDetermine": "Unable to determine eligibility.",
+    "canDonate": "Based on the date of your last donation, you are allowed to donate.",
+    "cannotDonate": "Sorry, you are not eligible to donate at this time.",
+    "confirm": "Confirm"
+  },
+  "events": {
+    "list": {
+      "title": "Our Events",
+      "subtitle": "Join us at our various events to support the blood bank",
+      "searchPlaceholder": "Search events...",
+      "loading": "Loading events...",
+      "noEventsTitle": "No events available",
+      "noEventsSearch": "We couldn't find any events matching your search. Try different keywords.",
+      "noEventsGeneral": "No events available right now. Check back later.",
+      "clearSearch": "Clear Search",
+      "deleteTitle": "Delete Event",
+      "deleteConfirm": "Are you sure you want to delete the event \"{{title}}\"? This action cannot be undone.",
+      "deleteSuccess": "Event deleted successfully",
+      "deleteError": "Error deleting event: {{message}}"
+    },
+    "card": {
+      "openMap": "Open Map",
+      "update": "Update",
+      "delete": "Delete",
+      "generic": "General event",
+      "specific": "Specific event"
+    },
+    "detail": {
+      "description": "Description",
+      "loading": "Loading event details...",
+      "date": "Date",
+      "location": "Location",
+      "openMap": "Open Map",
+      "participate": "Participate",
+      "alreadyParticipating": "You're already registered for this event",
+      "participateSuccess": "You are successfully added as a participant.",
+      "participateError": "An error occurred while registering for the event.",
+      "deleteSuccess": "Event deleted successfully!",
+      "deleteError": "Error deleting event: {{message}}",
+      "participantDetailsTitle": "Participant Details",
+      "registeredParticipants": "Registered participants",
+      "realDonaters": "Actually donated",
+      "allDonaters": "Total donors",
+      "qrScanTitle": "Scan the QR code to donate",
+      "participationConfirmed": "You have been successfully registered as a participant!",
+      "shareFallbackTitle": "Event",
+      "shareFallbackText": "Check out this event"
+    },
+    "confirmation": {
+      "confirming": "Confirming your attendance...",
+      "confirmed": "Your attendance was confirmed successfully!",
+      "unexpectedError": "An unexpected error occurred."
+    },
+    "form": {
+      "createTitle": "Create Event",
+      "updateTitle": "Update Event",
+      "titleLabel": "Title",
+      "titleRequired": "Title is required",
+      "subtitleLabel": "Subtitle",
+      "locationLabel": "Location",
+      "locationRequired": "Location is required",
+      "dateLabel": "Date",
+      "dateRequired": "Date is required",
+      "dateLocked": "The event date cannot be changed",
+      "mapLinkLabel": "Location Link",
+      "descriptionLabel": "Description",
+      "descriptionRequired": "Description is required",
+      "isGeneric": "General event",
+      "selectPhoto": "Select a Photo",
+      "changePhoto": "Choose a new photo (optional)",
+      "noPhotoSelected": "No photo selected",
+      "keepCurrentPhoto": "No new file selected - the current photo will be kept",
+      "photoSelected": "Selected file:",
+      "createButton": "Create Event",
+      "updateButton": "Update Event",
+      "createAnother": "Create Another Event",
+      "backToCreate": "Back to Event Creation",
+      "createSuccess": "Event created successfully!",
+      "createAnotherPrompt": "Would you like to create another one? Click below",
+      "updateSuccess": "Event updated successfully!",
+      "loadingEvent": "Loading event data...",
+      "eventNotFound": "Event not found",
+      "createError": "Error while creating the event",
+      "invalidInput": "Invalid input",
+      "loadError": "Error loading event data",
+      "updateError": "Error updating the event",
+      "redirectingToEvents": "You will be redirected to the events page...",
+      "isSpecific": "Specific event"
+    }
+  },
+  "contact": {
+    "title": "Contact Us",
+    "firstName": "First Name",
+    "firstNameRequired": "First name is required",
+    "lastName": "Last Name",
+    "lastNameRequired": "Last name is required",
+    "email": "Email",
+    "emailRequired": "Email is required",
+    "phone": "Phone Number",
+    "phoneRequired": "Phone number is required",
+    "subject": "Subject",
+    "subjectRequired": "Subject is required",
+    "message": "Message",
+    "messageRequired": "Message is required",
+    "submit": "Send",
+    "successTitle": "Your message has been sent successfully!",
+    "successBody": "We will get back to you soon.",
+    "sendAnother": "Send Another Message",
+    "genericError": "Error submitting contact form"
+  },
+  "faq": {
+    "bloodTitle": "FAQ - Blood Donation",
+    "bloodSubtitle": "Find quick answers to common questions",
+    "appTitle": "FAQ - Warid App",
+    "appSubtitle": "Everything about using the app smoothly",
+    "blood": [
+      {
+        "question": "Who is allowed to donate blood?",
+        "answer": "Healthy adults aged between 18 and 60, weighing at least 50 kg and in good health are eligible to donate blood."
+      },
+      {
+        "question": "Who is not allowed to donate blood?",
+        "answer": "Those with chronic or infectious diseases, or who do not meet age and weight requirements, are not allowed to donate."
+      },
+      {
+        "question": "How often can you donate blood?",
+        "answer": "Men can donate every 2 months, and women every 3 months."
+      },
+      {
+        "question": "Is blood donation safe?",
+        "answer": "Yes, single-use sterile equipment is used, and donors undergo a medical check beforehand."
+      },
+      {
+        "question": "Is the blood tested?",
+        "answer": "Yes, all blood is tested for infectious diseases."
+      },
+      {
+        "question": "What are the benefits of donating?",
+        "answer": "It saves lives, stimulates blood circulation, and reduces excess iron in the body."
+      },
+      {
+        "question": "Do you need to fast before donating?",
+        "answer": "No, it is recommended to eat a light meal and drink water before donating."
+      },
+      {
+        "question": "What temporary conditions prevent donation?",
+        "answer": "After vaccination, tooth extraction, or recovery from illness, a waiting period is required."
+      },
+      {
+        "question": "Can women donate blood?",
+        "answer": "Yes, provided they meet the age, health, and weight requirements."
+      },
+      {
+        "question": "How is the donated blood used?",
+        "answer": "It is used in surgeries, emergencies, and treatment of chronic diseases."
+      }
+    ],
+    "app": [
+      {
+        "question": "What is Warid?",
+        "answer": "Warid is a digital platform that facilitates and organizes blood donation in Morocco by connecting donors to centers and patients."
+      },
+      {
+        "question": "Is registration free?",
+        "answer": "Yes, registration is completely free and open to everyone."
+      },
+      {
+        "question": "Can I donate blood outside of campaigns?",
+        "answer": "Yes, you can check the nearest donation center and go anytime."
+      },
+      {
+        "question": "Can NGOs or hospitals register?",
+        "answer": "Yes, there is a special section for partners to manage requests and organize donation events."
+      },
+      {
+        "question": "Is my personal data protected?",
+        "answer": "Yes, we strictly protect your privacy and never share your data without your consent."
+      }
+    ]
+  },
+  "emergency": {
+    "form": {
+      "title": "Create Emergency",
+      "bloodGroup": "Blood Group",
+      "bloodGroupRequired": "Blood group is required",
+      "none": "None",
+      "city": "City",
+      "cityRequired": "City is required",
+      "phone": "Phone Number",
+      "phoneRequired": "Phone number is required",
+      "phoneNumeric": "Phone number must contain only numbers",
+      "phoneLength": "Phone number must be exactly 10 numbers",
+      "details": "Details",
+      "detailsRequired": "The details are required",
+      "submit": "Create Emergency",
+      "submitting": "Creating...",
+      "successTitle": "Emergency created successfully!",
+      "successBody": "Our team will do their best to find donors.",
+      "genericError": "An unexpected error occurred.",
+      "fieldInvalid": "{{field}} is invalid"
+    },
+    "list": {
+      "confirmSuccess": "Emergency confirmed successfully!",
+      "confirmError": "Error confirming emergency. Please try again."
+    },
+    "card": {
+      "confirm": "Confirm Emergency",
+      "confirming": "Confirming...",
+      "matchedUsers": "Matched Users"
+    },
+    "matchedUsers": {
+      "title": "Matched Users",
+      "failedToLoad": "Failed to load matched users.",
+      "noResults": "No matched users found.",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "phone": "Phone Number",
+      "action": "Action",
+      "confirm": "Confirm",
+      "confirming": "Confirming...",
+      "confirmSuccess": "User confirmed successfully!",
+      "confirmError": "Failed to confirm user."
+    }
+  },
+  "admin": {
+    "addEvent": "Add Event",
+    "usersList": "Users List",
+    "emergenciesList": "Emergencies List"
+  },
+  "users": {
+    "list": {
+      "title": "Users List",
+      "usersFound": "{{count}} users found",
+      "advancedFilters": "Advanced Filters",
+      "activeFilters": "Active filters:",
+      "clearAll": "Clear All",
+      "deleteTitle": "Delete User",
+      "deleteConfirm": "Are you sure you want to delete the user \"{{username}}\"? This action cannot be undone.",
+      "deleteSuccess": "User deleted successfully",
+      "deleteError": "Error deleting user: {{message}}",
+      "makeAdminTitle": "Make User Admin",
+      "makeAdminConfirm": "Are you sure you want to make \"{{username}}\" an admin? This will give them full administrative privileges.",
+      "makeAdminSuccess": "{{username}} is now an admin",
+      "makeAdminError": "Error making user admin: {{message}}",
+      "noUsersTitle": "No Users Found",
+      "noUsersBody": "We couldn't find any users matching your criteria.",
+      "resetFilter": "Reset Filter"
+    },
+    "card": {
+      "admin": "Admin",
+      "update": "Update",
+      "delete": "Delete",
+      "makeAdmin": "Make Admin"
+    },
+    "filter": {
+      "title": "Filter Users",
+      "username": "Username",
+      "firstName": "First name",
+      "lastName": "Last name",
+      "email": "Email",
+      "phoneNumber": "Phone number",
+      "age": "Age",
+      "availableForDonation": "Available for Donation",
+      "gender": "Gender",
+      "male": "Male",
+      "female": "Female",
+      "bloodGroup": "Blood Group",
+      "isAdmin": "Is Admin",
+      "reset": "Reset",
+      "apply": "Apply Filters"
+    },
+    "update": {
+      "title": "Update User Information",
+      "firstName": "First Name",
+      "firstNameRequired": "First name is required",
+      "lastName": "Last Name",
+      "lastNameRequired": "Last name is required",
+      "email": "Email",
+      "emailRequired": "Email is required",
+      "emailInvalid": "Invalid email address",
+      "phone": "Phone Number",
+      "phoneRequired": "Phone number is required",
+      "birthdate": "Birthdate",
+      "birthdateRequired": "Birthdate is required",
+      "city": "City",
+      "cityRequired": "City is required",
+      "bloodGroup": "Blood Group",
+      "bloodGroupRequired": "Blood group is required",
+      "submit": "Update User Information",
+      "loading": "Loading user data...",
+      "success": "User updated successfully!",
+      "error": "Error updating user. Please try again."
+    }
+  }
 }
