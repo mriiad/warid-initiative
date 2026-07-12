@@ -9,12 +9,12 @@ test.describe('Basic navigation', () => {
 	test('unknown route renders the 404 page', async ({ page }) => {
 		await page.goto('/this-route-does-not-exist');
 		await expect(page.getByText('404')).toBeVisible();
-		await expect(page.getByText(/isn't here/i)).toBeVisible();
+		await expect(page.getByText(/غير موجودة هنا/)).toBeVisible();
 	});
 
 	test('FAQ page renders questions', async ({ page }) => {
 		await page.goto('/FAQ?forceDesktop=1');
-		await expect(page.getByText(/Find quick answers/i)).toBeVisible();
+		await expect(page.getByText(/أجوبة سريعة/)).toBeVisible();
 	});
 
 	test('root path redirects to /home', async ({ page }) => {

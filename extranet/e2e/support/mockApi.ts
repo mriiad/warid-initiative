@@ -102,13 +102,6 @@ export const dashboardResponse = (overrides: Record<string, unknown> = {}) => ({
 	...overrides,
 });
 
-// GET /api/users/:userId/dashboard 404 body when no donations exist yet
-// (this is the real, currently-broken backend response -- see issue #203
-// and e2e/backend/user.spec.js)
-export const dashboardNoDonationsResponse = () => ({
-	errorMessage: 'No donations found for this user.',
-});
-
 export const sampleUser = (overrides: Record<string, unknown> = {}) => ({
 	_id: 'user-1',
 	username: 'CIN123456',

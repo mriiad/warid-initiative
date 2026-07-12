@@ -20,14 +20,14 @@ test.describe('Emergency', () => {
 		await page.getByRole('option', { name: 'O+' }).click();
 		await page.getByRole('combobox').nth(1).click();
 		await page.getByRole('option').nth(1).click(); // index 0 is the empty "None" placeholder
-		await page.getByLabel('Phone Number').fill('0600000000');
-		await page.getByLabel('Details').fill('Urgent need for surgery.');
-		await page.getByRole('button', { name: 'Create Emergency' }).click();
+		await page.getByLabel('رقم الهاتف').fill('0600000000');
+		await page.getByLabel('التفاصيل').fill('Urgent need for surgery.');
+		await page.getByRole('button', { name: 'إنشاء حالة طارئة' }).click();
 		await page.waitForTimeout(500);
 
 		expect(requestBody).not.toBeNull();
 		expect(requestBody.bloodGroup).toBe('O+');
-		await expect(page.getByText('Emergency created successfully!')).toBeVisible({ timeout: 5000 });
+		await expect(page.getByText('تم إنشاء الحالة الطارئة بنجاح')).toBeVisible({ timeout: 5000 });
 	});
 
 	test('non-admin users cannot see the emergencies management route', async ({ page }) => {
@@ -50,7 +50,7 @@ test.describe('Emergency', () => {
 		});
 		await page.goto('/emergencies');
 		await expect(page.getByText('Urgent')).toBeVisible({ timeout: 5000 });
-		await page.getByRole('button', { name: /confirm/i }).first().click();
+		await page.getByRole('button', { name: 'تأكيد الحالة الطارئة' }).first().click();
 		await page.waitForTimeout(500);
 		expect(confirmCalled).toBe(true);
 	});

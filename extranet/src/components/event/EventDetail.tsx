@@ -511,8 +511,8 @@ const EventDetail: React.FC = () => {
 		open: false,
 		title: '',
 		message: '',
-		confirmText: t('common.confirm'),
-		cancelText: t('common.cancel'),
+		confirmText: 'Confirm',
+		cancelText: 'Cancel',
 		onConfirm: () => { },
 		warning: false,
 	});
@@ -572,10 +572,10 @@ const EventDetail: React.FC = () => {
 	const handleDelete = () => {
 		setConfirmationDialog({
 			open: true,
-			title: t('events.list.deleteTitle'),
-			message: t('events.list.deleteConfirm', { title: event?.title }),
-			confirmText: t('common.delete'),
-			cancelText: t('common.cancel'),
+			title: 'Delete Event',
+			message: `Are you sure you want to delete the event "${event?.title}"? This action cannot be undone.`,
+			confirmText: 'Delete',
+			cancelText: 'Cancel',
 			onConfirm: async () => {
 				try {
 					setConfirmationDialog({ ...confirmationDialog, open: false });
@@ -648,9 +648,9 @@ const EventDetail: React.FC = () => {
 					{isAdmin && (
 						<Header>
 							<div className='actionButtons'>
-								<Button onClick={handleUpdate}>{t('events.form.updateButton')}</Button>
+								<Button onClick={handleUpdate}>Update Event</Button>
 								<Button className='deleteButton' onClick={handleDelete}>
-									{t('events.list.deleteTitle')}
+									Delete Event
 								</Button>
 							</div>
 						</Header>

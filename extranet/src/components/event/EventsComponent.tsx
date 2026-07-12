@@ -200,8 +200,8 @@ const EventsComponent = () => {
 		open: false,
 		title: '',
 		message: '',
-		confirmText: t('common.confirm'),
-		cancelText: t('common.cancel'),
+		confirmText: 'Confirm',
+		cancelText: 'Cancel',
 		onConfirm: () => { },
 		warning: false,
 	});
@@ -274,10 +274,10 @@ const EventsComponent = () => {
 		console.log(`Deleting event with title ${title}`);
 		setConfirmationDialog({
 			open: true,
-			title: t('events.list.deleteTitle'),
-			message: t('events.list.deleteConfirm', { title }),
-			confirmText: t('common.delete'),
-			cancelText: t('common.cancel'),
+			title: 'Delete Event',
+			message: `Are you sure you want to delete the event "${title}"? This action cannot be undone.`,
+			confirmText: 'Delete',
+			cancelText: 'Cancel',
 			onConfirm: async () => {
 				try {
 					setIsLoading(true);

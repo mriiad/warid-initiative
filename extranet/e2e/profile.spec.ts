@@ -51,16 +51,16 @@ test.describe('Profile page', () => {
 		});
 
 		await page.goto('/profile');
-		await expect(page.getByText('Personal Information')).toBeVisible();
+		await expect(page.getByText('المعلومات الشخصية')).toBeVisible();
 		await page
-			.locator('h5', { hasText: 'Personal Information' })
+			.locator('h5', { hasText: 'المعلومات الشخصية' })
 			.locator('xpath=ancestor::*[contains(@class,"MuiBox-root")][1]')
 			.getByRole('button')
 			.click();
 
-		const saveButton = page.getByRole('button', { name: /save/i });
+		const saveButton = page.getByRole('button', { name: 'حفظ التغييرات' });
 		await saveButton.click({ timeout: 5000 });
-		await expect(page.getByText('Profile updated successfully!')).toBeVisible({ timeout: 5000 });
+		await expect(page.getByText('تم تحديث الملف الشخصي بنجاح')).toBeVisible({ timeout: 5000 });
 
 		expect(capturedUrl).toContain('/api/user/profile');
 		expect(capturedMethod).toBe('PATCH');
