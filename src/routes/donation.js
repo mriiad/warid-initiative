@@ -11,8 +11,6 @@ const donationRouter = express.Router();
 const { isAuth } = require('../middleware/token-check');
 const checkIfAdmin = require('../utils/checks');
 
-donationRouter.get('/', (req, res, next) => {});
-
 donationRouter.post('/api/donation', isAuth, donate);
 
 donationRouter.get('/api/donation', isAuth, getDonation);

@@ -16,6 +16,17 @@ const { authHeader } = require('./support/jwtHelper');
 const app = buildApp();
 const USER_ID = '507f1f77bcf86cd799439011';
 
+describe('GET / (regression: dead handler previously hung every request to the site root)', () => {
+	it('does not hang and does not swallow the request before later middleware/routes', async () => {
+		// donationRouter used to register `.get('/', (req, res, next) => {})`,
+		// an empty handler that never called res.send() or next(). Mounted
+		// ahead of express.static + the SPA fallback in the real app.js, it
+		// silently captured every GET / and hung the request forever -- the
+		// production site's actual homepage URL never resolved.
+		await request(app).get('/').timeout(2000);
+	});
+});
+
 describe('GET /api/donation/canDonate (NEW BUG: endpoint is completely broken)', () => {
 	it('BUG: 500s with ReferenceError instead of reporting eligibility (never-donated user)', async () => {
 		// src/controllers/donation.js `canDonate` calls the bare identifier
