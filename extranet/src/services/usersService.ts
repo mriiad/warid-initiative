@@ -5,7 +5,7 @@
 
 import type { UserFormData } from '../data/ProfileFormData';
 import type { UpdateUserData } from '../types';
-import type { DashboardData } from '../types/users';
+import type { AdminStats, DashboardData } from '../types/users';
 import { apiClient } from '../utils/apiClient';
 
 export const usersService = {
@@ -50,6 +50,11 @@ export const usersService = {
 	},
 	getDashboard: async (userId: string): Promise<DashboardData> => {
 		const res = await apiClient.get<DashboardData>(`/api/users/${userId}/dashboard`);
+		return res.data;
+	},
+
+	getAdminStats: async (): Promise<AdminStats> => {
+		const res = await apiClient.get<AdminStats>('/api/admin/stats');
 		return res.data;
 	},
 

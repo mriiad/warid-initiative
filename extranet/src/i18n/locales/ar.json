@@ -12,7 +12,8 @@
     "error": ".حدث خطأ",
     "required": "هذا الحقل مطلوب",
     "none": "لا شيء",
-    "yes": "نعم"
+    "yes": "نعم",
+    "edit": "تعديل"
   },
   "nav": {
     "home": "الصفحة الرئيسية",
@@ -27,7 +28,10 @@
     "logout": "تسجيل الخروج",
     "signup": "التسجيل",
     "profile": "الملف الشخصي",
-    "donate": "تبرع الآن"
+    "donate": "تبرع الآن",
+    "calendar": "التقويم",
+    "emergencies": "الطوارئ",
+    "addEventShort": "إضافة"
   },
   "unsupported": {
     "title": "هذا التطبيق مُحسّن للهواتف المحمولة",
@@ -433,7 +437,31 @@
   "admin": {
     "addEvent": "إضافة حدث",
     "usersList": "لائحة المستخدمين",
-    "emergenciesList": "لائحة الحالات الطارئة"
+    "emergenciesList": "لائحة الحالات الطارئة",
+    "greetingMorning": "صباح الخير! {{name}}",
+    "greetingAfternoon": "مساء الخير! {{name}}",
+    "greetingEvening": "مساء الخير! {{name}}",
+    "greetingSubtitle": "سعداء برؤيتك مجددًا",
+    "searchPlaceholder": "بحث...",
+    "logout": "تسجيل الخروج",
+    "overview": "نظرة عامة",
+    "totalUsers": "إجمالي المستخدمين",
+    "totalDonations": "إجمالي التبرعات",
+    "totalEvents": "إجمالي الفعاليات",
+    "nextEvent": "الفعالية القادمة",
+    "noUpcomingEvents": "لا توجد فعاليات قادمة",
+    "viewLocation": "عرض الموقع",
+    "viewDetails": "عرض التفاصيل",
+    "createdOn": "نُشرت",
+    "weekday": {
+      "Mon": "إث",
+      "Tue": "ثل",
+      "Wed": "أر",
+      "Thu": "خم",
+      "Fri": "جم",
+      "Sat": "سب",
+      "Sun": "أح"
+    }
   },
   "users": {
     "list": {

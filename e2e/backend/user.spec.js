@@ -4,10 +4,12 @@ const { resolveTo } = require('./support/mongooseMock');
 jest.mock('../../src/models/user', () => require('./support/mongooseMock').makeModelMock());
 jest.mock('../../src/models/profile', () => require('./support/mongooseMock').makeModelMock());
 jest.mock('../../src/models/donation', () => require('./support/mongooseMock').makeModelMock());
+jest.mock('../../src/models/event', () => require('./support/mongooseMock').makeModelMock());
 
 const User = require('../../src/models/user');
 const Profile = require('../../src/models/profile');
 const Donation = require('../../src/models/donation');
+const Event = require('../../src/models/event');
 const { buildApp } = require('./support/testApp');
 const { authHeader } = require('./support/jwtHelper');
 
@@ -197,5 +199,33 @@ describe('GET /api/users/:userId/dashboard (regression test for issue #203)', ()
 			.set('Authorization', authHeader(USER_ID));
 		expect(res.status).toBe(200);
 		expect(res.body.stats.total).toBe(1);
+	});
+});
+
+describe('GET /api/admin/stats', () => {
+	it('rejects non-admin users', async () => {
+		User.findById.mockReturnValue(resolveTo({ _id: USER_ID, isAdmin: false }));
+		const res = await request(app)
+			.get('/api/admin/stats')
+			.set('Authorization', authHeader(USER_ID));
+		expect(res.status).toBe(403);
+	});
+
+	it('returns site-wide counts for admins', async () => {
+		User.findById.mockReturnValue(resolveTo({ _id: ADMIN_ID, isAdmin: true }));
+		User.countDocuments.mockReturnValue(resolveTo(12));
+		Event.countDocuments.mockReturnValue(resolveTo(3));
+		Donation.countDocuments.mockReturnValue(resolveTo(27));
+
+		const res = await request(app)
+			.get('/api/admin/stats')
+			.set('Authorization', authHeader(ADMIN_ID));
+
+		expect(res.status).toBe(200);
+		expect(res.body).toEqual({
+			totalUsers: 12,
+			totalEvents: 3,
+			totalDonations: 27,
+		});
 	});
 });

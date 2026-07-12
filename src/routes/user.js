@@ -16,6 +16,7 @@ const {
 	updateUserById,
 	makeUserAdmin,
 	getDashboard,
+	getAdminStats,
 } = require('../controllers/user');
 
 userRouter.get('/api/users', getUsers);
@@ -52,4 +53,5 @@ userRouter.patch(
 );
 
 userRouter.get('/api/users/:userId/dashboard', isAuth, getDashboard);
+userRouter.get('/api/admin/stats', isAuth, checkIfAdmin, getAdminStats);
 module.exports = userRouter;

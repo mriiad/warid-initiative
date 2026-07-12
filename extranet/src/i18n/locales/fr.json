@@ -12,7 +12,8 @@
     "error": "Une erreur est survenue.",
     "required": "Ce champ est requis",
     "none": "Aucun",
-    "yes": "Oui"
+    "yes": "Oui",
+    "edit": "Modifier"
   },
   "nav": {
     "home": "Accueil",
@@ -27,7 +28,10 @@
     "logout": "Déconnexion",
     "signup": "S'inscrire",
     "profile": "Profil",
-    "donate": "Faire un don"
+    "donate": "Faire un don",
+    "calendar": "Calendrier",
+    "emergencies": "Urgences",
+    "addEventShort": "Ajouter"
   },
   "unsupported": {
     "title": "Cette application est optimisée pour mobile",
@@ -433,7 +437,31 @@
   "admin": {
     "addEvent": "Ajouter un événement",
     "usersList": "Liste des utilisateurs",
-    "emergenciesList": "Liste des urgences"
+    "emergenciesList": "Liste des urgences",
+    "greetingMorning": "Bonjour ! {{name}}",
+    "greetingAfternoon": "Bon après-midi ! {{name}}",
+    "greetingEvening": "Bonsoir ! {{name}}",
+    "greetingSubtitle": "Ravis de vous revoir",
+    "searchPlaceholder": "Rechercher...",
+    "logout": "Se déconnecter",
+    "overview": "Vue d'ensemble",
+    "totalUsers": "Utilisateurs",
+    "totalDonations": "Dons",
+    "totalEvents": "Événements",
+    "nextEvent": "Prochain événement",
+    "noUpcomingEvents": "Aucun événement à venir",
+    "viewLocation": "Voir le lieu",
+    "viewDetails": "Voir les détails",
+    "createdOn": "Publié",
+    "weekday": {
+      "Mon": "Lun",
+      "Tue": "Mar",
+      "Wed": "Mer",
+      "Thu": "Jeu",
+      "Fri": "Ven",
+      "Sat": "Sam",
+      "Sun": "Dim"
+    }
   },
   "users": {
     "list": {

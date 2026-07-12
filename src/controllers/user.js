@@ -1,5 +1,6 @@
 const User = require('../models/user');
 const Donation = require('../models/donation')
+const Event = require('../models/event');
 const ApiError = require('../utils/errors/ApiError');
 const { STATUS_CODE } = require('../utils/errors/httpStatusCode');
 const Profile = require('../models/profile');
@@ -647,4 +648,24 @@ exports.getDashboard = async (req, res, next) => {
         : { errorMessage: err.message }
     );
   }
+};
+
+// Site-wide counts for the admin dashboard overview.
+exports.getAdminStats = async (req, res, next) => {
+	try {
+		const [totalUsers, totalEvents, totalDonations] = await Promise.all([
+			User.countDocuments(),
+			Event.countDocuments(),
+			Donation.countDocuments(),
+		]);
+
+		res.status(STATUS_CODE.OK).json({
+			totalUsers,
+			totalEvents,
+			totalDonations,
+		});
+	} catch (err) {
+		if (!err.statusCode) err.statusCode = STATUS_CODE.INTERNAL_SERVER;
+		next(err);
+	}
 };

@@ -41,3 +41,9 @@ export interface DashboardData {
 	stats: DashboardStats;
 	donations: DonationHistoryItem[];
 }
+
+export interface AdminStats {
+	totalUsers: number;
+	totalEvents: number;
+	totalDonations: number;
+}

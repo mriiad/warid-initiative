@@ -12,7 +12,8 @@
     "error": "An error occurred.",
     "required": "This field is required",
     "none": "None",
-    "yes": "Yes"
+    "yes": "Yes",
+    "edit": "Edit"
   },
   "nav": {
     "home": "Home",
@@ -27,7 +28,10 @@
     "logout": "Logout",
     "signup": "Sign Up",
     "profile": "Profile",
-    "donate": "Donate now"
+    "donate": "Donate now",
+    "calendar": "Calendar",
+    "emergencies": "Emergencies",
+    "addEventShort": "Add"
   },
   "unsupported": {
     "title": "This app is optimized for mobile",
@@ -433,7 +437,31 @@
   "admin": {
     "addEvent": "Add Event",
     "usersList": "Users List",
-    "emergenciesList": "Emergencies List"
+    "emergenciesList": "Emergencies List",
+    "greetingMorning": "Good Morning! {{name}}",
+    "greetingAfternoon": "Good Afternoon! {{name}}",
+    "greetingEvening": "Good Evening! {{name}}",
+    "greetingSubtitle": "We're glad to see you again",
+    "searchPlaceholder": "Search...",
+    "logout": "Log out",
+    "overview": "Overview",
+    "totalUsers": "Total Users",
+    "totalDonations": "Total Donations",
+    "totalEvents": "Total Events",
+    "nextEvent": "Next Event",
+    "noUpcomingEvents": "No upcoming events",
+    "viewLocation": "View location",
+    "viewDetails": "View details",
+    "createdOn": "Posted",
+    "weekday": {
+      "Mon": "Mon",
+      "Tue": "Tue",
+      "Wed": "Wed",
+      "Thu": "Thu",
+      "Fri": "Fri",
+      "Sat": "Sat",
+      "Sun": "Sun"
+    }
   },
   "users": {
     "list": {

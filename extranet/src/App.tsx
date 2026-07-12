@@ -1,7 +1,7 @@
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 import { useAuth } from './auth/AuthContext';
-import AdminComponent from './components/AdminComponent';
+import AdminDashboard from './components/admin/AdminDashboard';
 import CanDonate from './components/CanDonate';
 import ContactForm from './components/ContactForm';
 import Dashboard from './components/Dashboard';
@@ -50,6 +50,7 @@ const AppContainer = styled.div`
 		bottom: 0;
 		background: url('/background-cover.png') no-repeat center/cover;
 		opacity: 0.07;
+		pointer-events: none;
 	}
 
 	background: linear-gradient(to left, #e0d1f5, #f6ecf3 48%, #e0d1f5);
@@ -73,7 +74,7 @@ const MobileNavContainer = styled.div`
 // Routes that ship their own full-bleed header/layout (the redesigned auth
 // screens) skip the app chrome below instead of sitting inside the padded
 // ContentContainer with a NavBar/MobileHeader above and MobileNavbar below.
-const FULL_SCREEN_ROUTES = ['/login', '/signup'];
+const FULL_SCREEN_ROUTES = ['/login', '/signup', '/admin'];
 
 const App = () => {
 	const isMobile = useIsMobile();
@@ -112,7 +113,7 @@ const App = () => {
 				<Route path='/users/update/:userId' element={<UpdateUser />} />
 			)}
 			<Route path='/contact' element={<ContactForm />} />
-			<Route path='/admin' element={<AdminComponent />} />
+			<Route path='/admin' element={<AdminDashboard />} />
 			<Route
 				path='/request-reset-password'
 				element={<PasswordResetForm />}
