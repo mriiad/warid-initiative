@@ -144,7 +144,7 @@ const LoginForm = () => {
 							{t('auth.login.signup')}
 						</button>
 					</Typography>
-					<form onSubmit={handleSubmit(onSubmit)} className={form}>
+					<form onSubmit={handleSubmit(onSubmit)} className={form} noValidate>
 						<Grid container spacing={2}>
 							<Grid item xs={12}>
 								<Controller

@@ -92,15 +92,20 @@ const App = () => {
 							<Route path='/login' element={<LoginForm />} />
 							<Route path='/update-profile' element={<UserProfileForm />} />
 							<Route path='/events' element={<EventsComponent />} />
-							{isAdmin && (
-								<Route path='/events/create' element={<EventForm />} />
-							)}
-							{isAdmin && (
-								<Route
-									path='/events/update/:reference'
-									element={<UpdateEvent />}
-								/>
-							)}
+							{/*
+								These two routes must always be registered (not gated by
+								isAdmin) so they win route matching against the
+								'/events/:reference/*' wildcard below -- otherwise a
+								non-admin visiting them has React Router treat 'create' or
+								'update' as an event reference and load EventDetail
+								indefinitely instead of showing 404. Each component checks
+								isAdmin itself and renders NotFoundPage when it isn't.
+							*/}
+							<Route path='/events/create' element={<EventForm />} />
+							<Route
+								path='/events/update/:reference'
+								element={<UpdateEvent />}
+							/>
 							<Route path='/events/:reference/*' element={<EventDetail />}>
 								<Route path='can-donate' element={<CanDonate />} />
 								<Route path='confirmation' element={<EventConfirmation />} />
