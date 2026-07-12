@@ -20,6 +20,11 @@ test.describe('Mobile-only gate (App.tsx)', () => {
 	});
 
 	test('?forceDesktop=1 bypasses the mobile gate on a desktop viewport', async ({ browser }) => {
+		// Creating a fresh browser context is measurably slower under CI's
+		// shared/contended runners (this and the two other tests in this file
+		// that also call browser.newContext() run 2-3x slower there than
+		// locally), so the default 30s timeout is too tight here specifically.
+		test.setTimeout(60000);
 		const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
 		const page = await context.newPage();
 		await page.goto('/home?forceDesktop=1');
