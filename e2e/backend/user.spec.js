@@ -167,19 +167,19 @@ describe('DELETE /api/deleteUser/:username (admin only)', () => {
 	});
 });
 
-describe('GET /api/users/:userId/dashboard (BUG regression for issue #203)', () => {
-	it('BUG: 404s a brand-new user instead of returning an empty-state dashboard', async () => {
-		// getDashboard treats "no donations yet" the same as an error: it
-		// returns 404 with errorMessage "No donations found for this user."
-		// A first-time user visiting their dashboard therefore sees an error
-		// page instead of an empty/welcome state.
+describe('GET /api/users/:userId/dashboard (regression test for issue #203)', () => {
+	it('returns an empty-state dashboard (200, empty donations) for a brand-new user', async () => {
+		// getDashboard used to treat "no donations yet" the same as an
+		// error, returning 404. A first-time user visiting their dashboard
+		// saw an error page instead of an empty/welcome state. Fixed to
+		// return 200 with an empty donations array.
 		User.findById.mockReturnValue(resolveTo({ _id: USER_ID, gender: 'male' }));
 		Donation.find.mockReturnValue(resolveTo([]));
 		const res = await request(app)
 			.get(`/api/users/${USER_ID}/dashboard`)
 			.set('Authorization', authHeader(USER_ID));
-		expect(res.status).toBe(404);
-		expect(res.body.errorMessage).toMatch(/No donations found/);
+		expect(res.status).toBe(200);
+		expect(res.body.donations).toEqual([]);
 	});
 
 	it('returns donation stats for a user with donation history', async () => {

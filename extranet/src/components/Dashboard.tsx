@@ -8,7 +8,6 @@ import OpacityIcon from '@mui/icons-material/Opacity';
 import { Box, Button, Card, CardContent, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { motion } from 'framer-motion';
-import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../auth/AuthContext';
 import colors from '../styles/colors';
@@ -105,12 +104,6 @@ export default function Dashboard() {
 	const { userId } = useAuth();
 	const { data, isLoading, isError, error } = useDashboard(userId);
 
-	useEffect(() => {
-		if (data) {
-			console.log('Dashboard data:', data);
-		}
-	}, [data]);
-
 	if (isLoading) return <Typography p={2}>{t('dashboard.loading')}</Typography>;
 	if (isError)
 		return (
@@ -121,6 +114,30 @@ export default function Dashboard() {
 
 	const stats = data?.stats ?? { total: 0, lastDonation: '-', eligibleIn: '-' };
 	const donations = data?.donations ?? [];
+
+	if (donations.length === 0) {
+		return (
+			<Box p={2} display='flex' flexDirection='column' gap={3}>
+				<Box className={emptyState} sx={{ borderRadius: '24px' }}>
+					<FavoriteBorderIcon color='disabled' fontSize='large' sx={{ mb: 1 }} />
+					<Typography variant='h6' color='textSecondary' gutterBottom>
+						{t('dashboard.noDonationsTitle')}
+					</Typography>
+					<Typography variant='body2' color='textSecondary'>
+						{t('dashboard.noDonationsBody')}
+					</Typography>
+					<Button
+						variant='contained'
+						color='error'
+						href='/events?page=1'
+						sx={{ mt: 2 }}
+					>
+						{t('dashboard.seeUpcomingEvents')}
+					</Button>
+				</Box>
+			</Box>
+		);
+	}
 
 	return (
 		<Box p={2} display='flex' flexDirection='column' gap={3}>
@@ -196,57 +213,33 @@ export default function Dashboard() {
 
 			<Box display='flex' flexDirection='column' gap={2}>
 				<Typography variant='h5'>{t('dashboard.donationHistory')}</Typography>
-				{donations.length > 0 ? (
-					donations.map((d) => (
-						<motion.div
-							key={d.id}
-							initial={{ opacity: 0, y: 20 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ duration: 0.4 }}
-						>
-							<Box className={donationCard} sx={{ borderRadius: '24px' }}>
-								<CardContent>
-									<Typography variant='h6'>{d.event}</Typography>
+				{donations.map((d) => (
+					<motion.div
+						key={d.id}
+						initial={{ opacity: 0, y: 20 }}
+						animate={{ opacity: 1, y: 0 }}
+						transition={{ duration: 0.4 }}
+					>
+						<Box className={donationCard} sx={{ borderRadius: '24px' }}>
+							<CardContent>
+								<Typography variant='h6'>{d.event}</Typography>
 
-									<Box display='flex' alignItems='center' gap={1} mb={0.5}>
-										<CalendarTodayIcon
-											fontSize='small'
-											sx={{ color: colors.purple }}
-										/>
-										<Typography variant='body2'>{d.date}</Typography>
-									</Box>
+								<Box display='flex' alignItems='center' gap={1} mb={0.5}>
+									<CalendarTodayIcon
+										fontSize='small'
+										sx={{ color: colors.purple }}
+									/>
+									<Typography variant='body2'>{d.date}</Typography>
+								</Box>
 
-									<Box display='flex' alignItems='center' gap={1}>
-										<OpacityIcon fontSize='small' sx={{ color: colors.rose }} />
-										<Typography variant='body2'>{d.type}</Typography>
-									</Box>
-								</CardContent>
-							</Box>
-						</motion.div>
-					))
-				) : (
-					<Box className={emptyState} sx={{ borderRadius: '24px' }}>
-						<FavoriteBorderIcon
-							color='disabled'
-							fontSize='large'
-							sx={{ mb: 1 }}
-						/>
-						<Typography variant='h6' color='textSecondary' gutterBottom>
-							{t('dashboard.noDonationsTitle')}
-						</Typography>
-						<Typography variant='body2' color='textSecondary'>
-							{t('dashboard.noDonationsBody')}
-						</Typography>
-						<Button
-							variant='contained'
-							color='error'
-							href='/events?page=1'
-							sx={{ mt: 2 }}
-						>
-							{t('dashboard.seeUpcomingEvents')}
-						</Button>
-					</Box>
-				)}
+								<Box display='flex' alignItems='center' gap={1}>
+									<OpacityIcon fontSize='small' sx={{ color: colors.rose }} />
+									<Typography variant='body2'>{d.type}</Typography>
+								</Box>
+							</CardContent>
+						</Box>
+					</motion.div>
+				))}
 			</Box>
 		</Box>
 	);

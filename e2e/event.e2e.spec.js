@@ -73,7 +73,7 @@ describe('E2E: Event APIs', () => {
 		expect(res.body.message).toMatch(/Admin/);
 	});
 
-	test('Admin can create two events same day; second gets -01 suffix', async () => {
+	test('Admin can create an event; a second event on the same date is rejected', async () => {
 		const res1 = await request(app)
 			.post('/api/event')
 			.set('Authorization', `Bearer ${adminToken}`)
@@ -85,6 +85,9 @@ describe('E2E: Event APIs', () => {
 		expect(res1.status).toBe(201);
 		expect(res1.body.event.reference).toBe('WEVENT20990820');
 
+		// The event reference is derived from the date (WEVENT + YYYYMMDD),
+		// so a second event on the same date would collide. The controller
+		// rejects this outright instead of generating a suffix.
 		const res2 = await request(app)
 			.post('/api/event')
 			.set('Authorization', `Bearer ${adminToken}`)
@@ -93,8 +96,8 @@ describe('E2E: Event APIs', () => {
 			.field('date', '2099-08-20')
 			.field('description', 'desc')
 			.field('isGeneric', 'false');
-		expect(res2.status).toBe(201);
-		expect(res2.body.event.reference).toBe('WEVENT20990820-01');
+		expect(res2.status).toBe(409);
+		expect(res2.body.errorMessage).toMatch(/already exists for this date/);
 	});
 
 	test('GET /api/events returns paginated list', async () => {

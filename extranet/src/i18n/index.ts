@@ -34,7 +34,12 @@ i18n
 			escapeValue: false,
 		},
 		detection: {
-			order: ['localStorage', 'navigator'],
+			// Arabic-first is the whole point of fallbackLng below -- if we
+			// let 'navigator' into the order, any visitor whose browser/OS
+			// isn't set to Arabic (the common case) gets bumped to English
+			// instead, silently defeating the fallback. Only an explicit,
+			// saved choice from the language switcher should override it.
+			order: ['localStorage'],
 			caches: ['localStorage'],
 			lookupLocalStorage: 'warid_language',
 		},

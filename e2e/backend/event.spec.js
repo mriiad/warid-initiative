@@ -86,17 +86,14 @@ describe('POST /api/event (admin only)', () => {
 		expect(res.status).toBe(400);
 	});
 
-	it('BUG: reports a duplicate event date as 500 instead of 409', async () => {
-		// src/utils/errors/httpStatusCode.js's STATUS_CODE map has no CONFLICT
-		// entry, so `STATUS_CODE.CONFLICT` is `undefined`. `new ApiError(msg,
-		// undefined, ...)` sets `statusCode = undefined`, and error-handler.js's
+	it('reports a duplicate event date as 409 (fixed: STATUS_CODE.CONFLICT now defined)', async () => {
+		// httpStatusCode.js's STATUS_CODE map was missing a CONFLICT entry, so
+		// `STATUS_CODE.CONFLICT` was `undefined` and error-handler.js's
 		// `if (!error.statusCode) error.statusCode = STATUS_CODE.INTERNAL_SERVER`
-		// then silently downgrades it to 500. The response body still carries
-		// the correct message/errorKeys, but any client (or monitoring) that
-		// checks the HTTP status code sees a server crash instead of a normal
-		// "pick another date" conflict. Same root cause affects the
-		// "no generic event to reassign donations" path in deleteEvent and the
-		// "already confirmed presence" path in confirmPresence.
+		// silently downgraded every conflict here to 500. Same root cause
+		// affected the "no generic event to reassign donations" path in
+		// deleteEvent and the "already confirmed presence" path in
+		// confirmPresence -- both now also return 409 correctly.
 		mockAdmin();
 		Event.exists.mockReturnValue(Promise.resolve(true));
 		const res = await request(app)
@@ -105,7 +102,7 @@ describe('POST /api/event (admin only)', () => {
 			.field('title', 'Drive')
 			.field('location', 'Casablanca')
 			.field('date', '2099-01-01');
-		expect(res.status).toBe(500);
+		expect(res.status).toBe(409);
 		expect(res.body.errorMessage).toMatch(/already exists for this date/);
 	});
 
