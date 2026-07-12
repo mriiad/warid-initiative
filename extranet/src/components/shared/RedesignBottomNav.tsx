@@ -1,6 +1,6 @@
 import AddIcon from '@mui/icons-material/Add';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
-import HealthAndSafetyIcon from '@mui/icons-material/HealthAndSafety';
 import HomeIcon from '@mui/icons-material/Home';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import { makeStyles } from '@mui/styles';
@@ -65,17 +65,17 @@ const useStyles = makeStyles({
 });
 
 const NAV_ITEMS = [
-	{ path: '/admin', icon: HomeIcon, labelKey: 'nav.home', adminOnly: true },
+	{ path: '/home', icon: HomeIcon, labelKey: 'nav.home', adminOnly: false },
 	{ path: '/events?page=1', icon: CalendarMonthIcon, labelKey: 'nav.calendar', matchPath: '/events', adminOnly: false },
-	{ path: '/emergencies?page=1', icon: HealthAndSafetyIcon, labelKey: 'nav.emergencies', matchPath: '/emergencies', adminOnly: true },
-	{ path: '/users?page=1', icon: PersonOutlineIcon, labelKey: 'nav.admin', matchPath: '/users', adminOnly: true },
+	{ path: '/admin', icon: AdminPanelSettingsIcon, labelKey: 'nav.admin', adminOnly: true },
+	{ path: '/users?page=1', icon: PersonOutlineIcon, labelKey: 'admin.usersList', matchPath: '/users', adminOnly: true },
 ];
 
-// The bottom nav for redesigned screens. Home/emergencies/users are
-// admin-only routes (guarded server- and route-side elsewhere), so a
-// non-admin only gets the events tab plus a home fallback -- there's no
-// mockup yet for what a donor's version of this nav should show, so this
-// is a conservative default rather than a hidden nav bar.
+// The bottom nav for redesigned screens. Home and events work for anyone
+// ('/home' shows LandingPage for non-admins, the redesigned dashboard for
+// admins; '/events' similarly falls back to the pre-existing page for
+// non-admins). Admin and users are admin-only routes, guarded server- and
+// route-side elsewhere too.
 const RedesignBottomNav = () => {
 	const { wrapper, bar, item, itemActive, fab } = useStyles();
 	const { t } = useTranslation();

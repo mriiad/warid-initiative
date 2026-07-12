@@ -459,6 +459,8 @@ exports.getUserById = async (req, res, next) => {
 				.json({ message: 'User not found' });
 		}
 
+		const { canDonate } = await checkDonationEligibility(userId);
+
 		// Return user data with profile information
 		const userData = {
 			_id: user._id,
@@ -467,6 +469,7 @@ exports.getUserById = async (req, res, next) => {
 			phoneNumber: user.phoneNumber,
 			isAdmin: user.isAdmin,
 			gender: user.gender,
+			canDonate,
 			...(user.profile && {
 				firstname: user.profile.firstname,
 				lastname: user.profile.lastname,

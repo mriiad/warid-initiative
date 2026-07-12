@@ -2,10 +2,14 @@ import { test, expect } from '@playwright/test';
 import { mockJson, seedAuth, sampleEvent } from './support/mockApi';
 
 test.describe('Admin dashboard', () => {
-	test('non-admin users cannot see the admin dashboard route', async ({ page }) => {
+	// The dashboard (greeting/stats/next-event) lives at '/home' for admins,
+	// matching the bottom nav's Home tab -- the '/admin' route now shows a
+	// separate admin menu screen instead (see admin-menu.spec.ts).
+	test('non-admin users visiting /home see the regular landing page, not the admin dashboard', async ({ page }) => {
 		await seedAuth(page, { isAdmin: false });
-		await page.goto('/admin');
-		await expect(page.getByText('404')).toBeVisible();
+		await page.goto('/home');
+		await expect(page.getByText('جمعية مغربية', { exact: false })).toBeVisible({ timeout: 5000 });
+		await expect(page.getByText('لا توجد فعاليات قادمة')).toHaveCount(0);
 	});
 
 	test('admin sees the greeting, overview stats and the next upcoming event', async ({ page }) => {
@@ -25,7 +29,7 @@ test.describe('Admin dashboard', () => {
 			totalItems: 1,
 		});
 
-		await page.goto('/admin');
+		await page.goto('/home');
 
 		await expect(page.getByText('Mahmoud', { exact: false })).toBeVisible({ timeout: 5000 });
 		await expect(page.getByText('55')).toBeVisible();
@@ -40,7 +44,7 @@ test.describe('Admin dashboard', () => {
 		await mockJson(page, '**/api/user/profile', { gender: 'male' });
 		await mockJson(page, '**/api/events*', { events: [], totalItems: 0 });
 
-		await page.goto('/admin');
+		await page.goto('/home');
 
 		await expect(page.getByText('لا توجد فعاليات قادمة')).toBeVisible({ timeout: 5000 });
 	});
@@ -61,7 +65,7 @@ test.describe('Admin dashboard', () => {
 		});
 		await mockJson(page, '**/api/events/WEVENTAGADIR', sampleEvent({ reference: 'WEVENTAGADIR', title: 'Agadir Event' }));
 
-		await page.goto('/admin');
+		await page.goto('/home');
 		await expect(page.getByText('Agadir Event')).toBeVisible({ timeout: 5000 });
 		await page.getByRole('button', { name: 'تعديل' }).click();
 		await expect(page).toHaveURL(/\/events\/update\/WEVENTAGADIR/);
@@ -73,7 +77,7 @@ test.describe('Admin dashboard', () => {
 		await mockJson(page, '**/api/user/profile', { gender: 'male' });
 		await mockJson(page, '**/api/events*', { events: [], totalItems: 0 });
 
-		await page.goto('/admin');
+		await page.goto('/home');
 		await page.getByRole('button', { name: 'إضافة حدث' }).click();
 		await expect(page).toHaveURL(/\/events\/create/);
 	});

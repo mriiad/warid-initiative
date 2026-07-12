@@ -482,7 +482,9 @@
       "makeAdminError": "Error making user admin: {{message}}",
       "noUsersTitle": "No Users Found",
       "noUsersBody": "We couldn't find any users matching your criteria.",
-      "resetFilter": "Reset Filter"
+      "resetFilter": "Reset Filter",
+      "heroSubtitle": "Let's do it!",
+      "countLabel": "User"
     },
     "card": {
       "admin": "Admin",
@@ -528,6 +530,15 @@
       "loading": "Loading user data...",
       "success": "User updated successfully!",
       "error": "Error updating user. Please try again."
+    },
+    "detail": {
+      "available": "Available",
+      "unavailable": "Unavailable",
+      "bloodType": "Blood Type",
+      "phoneNumber": "Phone Number",
+      "mail": "Mail",
+      "call": "Call",
+      "sendMail": "Send an email"
     }
   }
 }

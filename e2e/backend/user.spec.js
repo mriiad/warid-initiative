@@ -202,6 +202,48 @@ describe('GET /api/users/:userId/dashboard (regression test for issue #203)', ()
 	});
 });
 
+describe('GET /api/users/profile/:userId (admin only)', () => {
+	it('includes canDonate: true for a user with no donation history', async () => {
+		User.findById.mockImplementation((id) => {
+			if (id === ADMIN_ID) return resolveTo({ _id: ADMIN_ID, isAdmin: true });
+			return resolveTo({
+				_id: USER_ID,
+				username: 'CIN000111',
+				email: 'donor@example.com',
+				phoneNumber: 600000000,
+				isAdmin: false,
+				gender: 'male',
+				profile: { firstname: 'Amine', lastname: 'Bennani', bloodGroup: 'A+', city: 'Rabat' },
+			});
+		});
+		Donation.find.mockReturnValue(resolveTo([]));
+		const res = await request(app)
+			.get(`/api/users/profile/${USER_ID}`)
+			.set('Authorization', authHeader(ADMIN_ID));
+		expect(res.status).toBe(200);
+		expect(res.body.canDonate).toBe(true);
+	});
+
+	it('includes canDonate: false for a user still inside the cooldown window', async () => {
+		User.findById.mockImplementation((id) => {
+			if (id === ADMIN_ID) return resolveTo({ _id: ADMIN_ID, isAdmin: true });
+			return resolveTo({
+				_id: USER_ID,
+				username: 'CIN000111',
+				isAdmin: false,
+				gender: 'male',
+				profile: { firstname: 'Amine', lastname: 'Bennani', bloodGroup: 'A+', city: 'Rabat' },
+			});
+		});
+		Donation.find.mockReturnValue(resolveTo([{ donationDate: new Date() }]));
+		const res = await request(app)
+			.get(`/api/users/profile/${USER_ID}`)
+			.set('Authorization', authHeader(ADMIN_ID));
+		expect(res.status).toBe(200);
+		expect(res.body.canDonate).toBe(false);
+	});
+});
+
 describe('GET /api/admin/stats', () => {
 	it('rejects non-admin users', async () => {
 		User.findById.mockReturnValue(resolveTo({ _id: USER_ID, isAdmin: false }));

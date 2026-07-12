@@ -1,7 +1,7 @@
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import EventIcon from '@mui/icons-material/Event';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
-import { IconButton, Typography } from '@mui/material';
+import { Button, IconButton, Typography } from '@mui/material';
 import clsx from 'clsx';
 import { ReactNode, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -111,10 +111,10 @@ const EventOverviewCard = ({
 			{(primaryActionLabel || onViewDetails) && (
 				<div className={actionsRow}>
 					{primaryActionLabel && onPrimaryAction && (
-						<button type='button' className={primaryActionButton} onClick={onPrimaryAction}>
+						<Button type='button' className={primaryActionButton} onClick={onPrimaryAction}>
 							{primaryActionLabel}
 							{primaryActionIcon}
-						</button>
+						</Button>
 					)}
 					{mapLink && (
 						<IconButton

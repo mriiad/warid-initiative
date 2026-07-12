@@ -1,77 +1,16 @@
-import { Tune } from '@mui/icons-material';
-import { Box, Button, Chip, CircularProgress, Typography } from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import PeopleIcon from '@mui/icons-material/People';
+import TuneIcon from '@mui/icons-material/Tune';
+import { Chip, CircularProgress, IconButton, Typography } from '@mui/material';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import styled from 'styled-components';
-import { useAuth } from '../auth/AuthContext';
-import colors from '../styles/colors';
-import { authStyles, mainStyles } from '../styles/mainStyles';
+import RedesignBottomNav from './shared/RedesignBottomNav';
+import { usersListRedesignStyles } from '../styles/usersListRedesign';
 import NoUserFound from './NoUserFound';
-import ConfirmationDialog from './shared/ConfirmationDialog';
-import SnackbarComponent from './shared/SnackbarComponent';
-import UserCard from './UserCard';
 import UserFilter from './UserFilter';
-
-const UsersContainer = styled.div`
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	padding-top: 96px;
-	padding-bottom: 128px;
-`;
-
-const FilterHeader = styled.div`
-	width: 100%;
-	max-width: 1200px;
-	margin: 0 auto 24px auto;
-	padding: 0 20px;
-`;
-
-const FilterBar = styled.div`
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	background: linear-gradient(135deg, ${colors.rose}15, ${colors.purple}15);
-	border: 1px solid ${colors.rose}30;
-	border-radius: 16px;
-	padding: 16px 24px;
-	margin-bottom: 16px;
-	box-shadow: 0 4px 20px rgba(255, 48, 103, 0.1);
-`;
-
-const FilterButton = styled(Button)`
-	background: linear-gradient(
-		135deg,
-		${colors.rose},
-		${colors.purple}
-	) !important;
-	color: white !important;
-	border-radius: 12px !important;
-	padding: 12px 24px !important;
-	font-weight: 600 !important;
-	font-size: 14px !important;
-	text-transform: none !important;
-	box-shadow: 0 4px 15px rgba(255, 48, 103, 0.3) !important;
-	transition: all 0.3s ease !important;
-
-	&:hover {
-		transform: translateY(-2px) !important;
-		box-shadow: 0 8px 25px rgba(255, 48, 103, 0.4) !important;
-	}
-
-	&.MuiButton-root {
-		min-height: 48px;
-	}
-`;
-
-const ActiveFilters = styled.div`
-	display: flex;
-	flex-wrap: wrap;
-	gap: 8px;
-	align-items: center;
-`;
 
 interface Filters {
 	username?: string;
@@ -89,25 +28,12 @@ interface Filters {
 const UsersComponent: React.FC = () => {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
-	const { bar, button, form } = authStyles();
-	const { textButton, subTitle } = mainStyles();
 	const [users, setUsers] = useState<any[]>([]);
 	const [totalPages, setTotalPages] = useState(0);
 	const [isLoading, setIsLoading] = useState(false);
 	const [isFilterOpen, setIsFilterOpen] = useState(false);
 	const [noUsersFound, setNoUsersFound] = useState(false);
 	const [searchParams, setSearchParams] = useSearchParams();
-
-	// Confirmation dialog state
-	const [confirmationDialog, setConfirmationDialog] = useState({
-		open: false,
-		title: '',
-		message: '',
-		confirmText: 'Confirm',
-		cancelText: 'Cancel',
-		onConfirm: () => {},
-		warning: false,
-	});
 
 	const page = parseInt(searchParams.get('page') || '1', 10);
 	const username = searchParams.get('username') || '';
@@ -119,9 +45,25 @@ const UsersComponent: React.FC = () => {
 		searchParams.get('availableForDonation') === 'true';
 	const bloodGroup = searchParams.get('bloodGroup') || '';
 
-	const [message, setMessage] = useState<string | null>(null);
-
-	const { token, isAdmin } = useAuth();
+	const {
+		screen,
+		topBar,
+		topBarDivider,
+		topBarTitle,
+		content,
+		hero,
+		heroIcon,
+		heroTitle,
+		heroSubtitle,
+		heroCount,
+		heroCountLabel,
+		userRow,
+		userAvatar,
+		userName,
+		userMeta,
+		emptyState,
+		paginationRow,
+	} = usersListRedesignStyles();
 
 	// Get active filters for display
 	const getActiveFilters = () => {
@@ -215,7 +157,7 @@ const UsersComponent: React.FC = () => {
 			filters.set('page', currentPage.toString());
 			setSearchParams(filters);
 		} catch (error) {
-			console.error('❌ Error applying filters:', error);
+			console.error('Error applying filters:', error);
 			if (error.response && error.response.status === 404) {
 				setNoUsersFound(true);
 			} else {
@@ -229,13 +171,11 @@ const UsersComponent: React.FC = () => {
 	const handleFilterChange = (newFilters: Filters) => {
 		const params = new URLSearchParams();
 
-		// Handle empty filters (reset case)
 		if (Object.keys(newFilters).length === 0) {
 			handleFilterApply(params, 1);
 			return;
 		}
 
-		// Handle actual filters
 		if (newFilters.username) params.set('username', newFilters.username);
 		if (newFilters.firstname) params.set('firstname', newFilters.firstname);
 		if (newFilters.lastname) params.set('lastname', newFilters.lastname);
@@ -248,11 +188,9 @@ const UsersComponent: React.FC = () => {
 			params.set('minAge', newFilters.age[0].toString());
 			params.set('maxAge', newFilters.age[1].toString());
 		}
-		// Only include donation filter when explicitly enabled
 		if (newFilters.availableForDonation === true) {
 			params.set('availableForDonation', 'true');
 		}
-		// Only include isAdmin when explicitly enabled
 		if (newFilters.isAdmin === true) {
 			params.set('isAdmin', 'true');
 		}
@@ -260,278 +198,140 @@ const UsersComponent: React.FC = () => {
 		handleFilterApply(params, 1);
 	};
 
-	const handleUpdate = (userId: string) => {
-		console.log(`Updating user with ID ${userId}`);
-		navigate(`/users/update/${userId}`);
-	};
-
-	const handleDelete = async (userId: string, username: string) => {
-		console.log(`Deleting user with name ${username}`);
-		setConfirmationDialog({
-			open: true,
-			title: 'Delete User',
-			message: `Are you sure you want to delete the user "${username}"? This action cannot be undone.`,
-			confirmText: 'Delete',
-			cancelText: 'Cancel',
-			onConfirm: async () => {
-				try {
-					setIsLoading(true);
-					setConfirmationDialog({ ...confirmationDialog, open: false });
-
-					const response = await axios.delete(
-						`http://localhost:3000/api/deleteUser/${username}`,
-						{
-							headers: {
-								Authorization: `Bearer ${token}`,
-							},
-						}
-					);
-
-					if (response.status === 200) {
-						setUsers(
-							(prevUsers) =>
-								prevUsers?.filter((user) => user._id !== userId) || []
-						);
-						setMessage(t('users.list.deleteSuccess'));
-					}
-				} catch (error) {
-					console.error('Error deleting user:', error);
-					setMessage(
-						t('users.list.deleteError', {
-							message: error.response?.data?.message || error.message,
-						})
-					);
-				} finally {
-					setIsLoading(false);
-				}
-			},
-			warning: true,
-		});
-	};
-	const handleCloseSnackbar = () => {
-		setMessage(null);
-	};
-
-	const handleCloseConfirmationDialog = () => {
-		setConfirmationDialog({ ...confirmationDialog, open: false });
-	};
-
-	const handleMakeAdmin = async (userId: string, username: string) => {
-		console.log(`Making user with ID ${userId} as admin`);
-		setConfirmationDialog({
-			open: true,
-			title: 'Make User Admin',
-			message: `Are you sure you want to make "${username}" an admin? This will give them full administrative privileges.`,
-			confirmText: 'Make Admin',
-			cancelText: 'Cancel',
-			onConfirm: async () => {
-				try {
-					setIsLoading(true);
-					setConfirmationDialog({ ...confirmationDialog, open: false });
-
-					const response = await axios.patch(
-						`http://localhost:3000/api/users/${userId}/admin`,
-						{},
-						{
-							headers: {
-								Authorization: `Bearer ${token}`,
-							},
-						}
-					);
-
-					if (response.status === 200) {
-						// Update the user in the list to reflect admin status
-						setUsers(
-							(prevUsers) =>
-								prevUsers?.map((user) =>
-									user._id === userId ? { ...user, isAdmin: true } : user
-								) || []
-						);
-						setMessage(t('users.list.makeAdminSuccess', { username }));
-					}
-				} catch (error) {
-					console.error('Error making user admin:', error);
-					setMessage(
-						t('users.list.makeAdminError', {
-							message: error.response?.data?.message || error.message,
-						})
-					);
-				} finally {
-					setIsLoading(false);
-				}
-			},
-			warning: false,
-		});
-	};
+	const activeFilters = getActiveFilters();
 
 	return (
-		<>
-			{isAdmin && (
-				<FilterHeader>
-					<FilterBar>
-						<Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-							<Typography
-								variant='h6'
-								sx={{ color: colors.purple, fontWeight: 'bold' }}
-							>
-								{t('users.list.title')}
-							</Typography>
-							<Typography
-								variant='body2'
-								sx={{ color: colors.purple, opacity: 0.7 }}
-							>
-								{t('users.list.usersFound', { count: users.length })}
-							</Typography>
-						</Box>
-						<FilterButton
-							variant='contained'
-							startIcon={<Tune />}
-							onClick={() => setIsFilterOpen(true)}
-						>
-							{t('users.list.advancedFilters')}
-						</FilterButton>
-					</FilterBar>
+		<div className={screen}>
+			<div className={topBar}>
+				<IconButton aria-label={t('common.back')} onClick={() => navigate(-1)}>
+					<ArrowBackIcon />
+				</IconButton>
+				<div className={topBarDivider} />
+				<Typography className={topBarTitle}>{t('users.list.title')}</Typography>
+				<IconButton
+					aria-label={t('users.list.advancedFilters')}
+					onClick={() => setIsFilterOpen(true)}
+				>
+					<TuneIcon />
+				</IconButton>
+			</div>
 
-					{(() => {
-						const activeFilters = getActiveFilters();
-						return (
-							activeFilters.length > 0 && (
-								<ActiveFilters>
-									<Typography
-										variant='body2'
-										sx={{ color: colors.purple, mr: 1 }}
-									>
-										{t('users.list.activeFilters')}
-									</Typography>
-									{activeFilters.map((filter) => (
-										<Chip
-											key={filter.key}
-											label={`${filter.key}: ${filter.value}`}
-											onDelete={() => removeFilter(filter.key)}
-											size='small'
-											sx={{
-												backgroundColor: colors.rose + '20',
-												color: colors.purple,
-												fontWeight: '500',
-												'& .MuiChip-deleteIcon': {
-													color: colors.rose,
-													'&:hover': {
-														color: colors.purple,
-													},
-												},
-											}}
-										/>
-									))}
-									<Button
-										size='small'
-										onClick={() => {
-											setSearchParams(new URLSearchParams());
-											handleFilterApply(new URLSearchParams(), 1);
-										}}
-										sx={{
-											color: colors.rose,
-											textTransform: 'none',
-											fontSize: '12px',
-											'&:hover': {
-												color: colors.purple,
-											},
-										}}
-									>
-										{t('users.list.clearAll')}
-									</Button>
-								</ActiveFilters>
-							)
-						);
-					})()}
-				</FilterHeader>
-			)}
-			{isAdmin && (
-				<UserFilter
-					open={isFilterOpen}
-					onClose={() => setIsFilterOpen(false)}
-					onApply={handleFilterChange}
-				/>
-			)}
-			<UsersContainer>
+			<UserFilter
+				open={isFilterOpen}
+				onClose={() => setIsFilterOpen(false)}
+				onApply={handleFilterChange}
+			/>
+
+			<div className={content}>
+				<div className={hero}>
+					<div className={heroIcon}>
+						<PeopleIcon />
+					</div>
+					<div style={{ flexGrow: 1 }}>
+						<Typography className={heroTitle}>{t('users.list.title')}</Typography>
+						<Typography className={heroSubtitle}>{t('users.list.heroSubtitle')}</Typography>
+					</div>
+					<div>
+						<div className={heroCount}>{users.length}</div>
+						<div className={heroCountLabel}>{t('users.list.countLabel')}</div>
+					</div>
+				</div>
+
+				{activeFilters.length > 0 && (
+					<div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+						{activeFilters.map((filter) => (
+							<Chip
+								key={filter.key}
+								label={`${filter.key}: ${filter.value}`}
+								onDelete={() => removeFilter(filter.key)}
+								size='small'
+							/>
+						))}
+					</div>
+				)}
+
 				{isLoading ? (
-					<div
-						style={{
-							display: 'flex',
-							justifyContent: 'center',
-							alignItems: 'center',
-							minHeight: '100vh',
-							paddingTop: '96px',
-							paddingBottom: '128px',
-						}}
-					>
+					<div style={{ display: 'flex', justifyContent: 'center', padding: '32px 0' }}>
 						<CircularProgress />
 					</div>
-				) : noUsersFound ? (
+				) : noUsersFound || users.length === 0 ? (
 					<NoUserFound />
 				) : (
-					users.map((user, index) => (
-						<UserCard
-							key={user._id}
-							user={user}
-							onUpdate={handleUpdate}
-							onDelete={(userId) => handleDelete(userId, user.username)}
-							onMakeAdmin={(userId) => handleMakeAdmin(userId, user.username)}
-							animationDelay={`${index * 0.2}s`}
-							isAdmin={isAdmin}
-						/>
-					))
+					<>
+						{users.map((user) => {
+							const fullName = [user.profile?.firstname, user.profile?.lastname]
+								.filter(Boolean)
+								.join(' ');
+							return (
+								<button
+									key={user._id}
+									type='button'
+									className={userRow}
+									onClick={() => navigate(`/users/${user._id}`)}
+								>
+									<div className={userAvatar}>
+										{(fullName || user.username || '?').charAt(0).toUpperCase()}
+									</div>
+									<div style={{ flexGrow: 1 }}>
+										<Typography className={userName}>
+											{fullName || user.username}
+										</Typography>
+										<Typography className={userMeta}>
+											{[user.phoneNumber, user.profile?.bloodGroup]
+												.filter(Boolean)
+												.join('   ')}
+										</Typography>
+									</div>
+									<span
+										aria-hidden='true'
+										style={{
+											display: 'flex',
+											alignItems: 'center',
+											justifyContent: 'center',
+											width: '40px',
+											height: '40px',
+											backgroundColor: '#F1EFF4',
+											borderRadius: '12px',
+											flexShrink: 0,
+										}}
+									>
+										<ArrowForwardIcon fontSize='small' />
+									</span>
+								</button>
+							);
+						})}
+						{totalPages > 1 && (
+							<div className={paginationRow}>
+								<button
+									disabled={page === 1}
+									onClick={() =>
+										setSearchParams({
+											...Object.fromEntries(searchParams),
+											page: (page - 1).toString(),
+										})
+									}
+								>
+									{t('common.previous')}
+								</button>
+								<button
+									disabled={page >= totalPages}
+									onClick={() =>
+										setSearchParams({
+											...Object.fromEntries(searchParams),
+											page: (page + 1).toString(),
+										})
+									}
+								>
+									{t('common.next')}
+								</button>
+							</div>
+						)}
+					</>
 				)}
-			</UsersContainer>
-			{!isLoading && !noUsersFound && totalPages > 1 && (
-				<div
-					style={{
-						display: 'flex',
-						justifyContent: 'center',
-						marginBottom: '64px',
-					}}
-				>
-					<Button
-						disabled={page === 1}
-						onClick={() =>
-							setSearchParams({
-								...Object.fromEntries(searchParams),
-								page: (page - 1).toString(),
-							})
-						}
-					>
-						{t('common.previous')}
-					</Button>
-					<Button
-						disabled={page >= totalPages}
-						onClick={() =>
-							setSearchParams({
-								...Object.fromEntries(searchParams),
-								page: (page + 1).toString(),
-							})
-						}
-					>
-						{t('common.next')}
-					</Button>
-				</div>
-			)}
-			{message && (
-				<SnackbarComponent
-					open={!!message}
-					message={message}
-					handleClose={handleCloseSnackbar}
-				/>
-			)}
-			<ConfirmationDialog
-				open={confirmationDialog.open}
-				title={confirmationDialog.title}
-				message={confirmationDialog.message}
-				confirmText={confirmationDialog.confirmText}
-				cancelText={confirmationDialog.cancelText}
-				onConfirm={confirmationDialog.onConfirm}
-				onCancel={handleCloseConfirmationDialog}
-				warning={confirmationDialog.warning}
-			/>
-		</>
+			</div>
+
+			<RedesignBottomNav />
+		</div>
 	);
 };
 

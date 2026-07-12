@@ -482,7 +482,9 @@
       "makeAdminError": "Erreur lors de la nomination de l'administrateur : {{message}}",
       "noUsersTitle": "Aucun utilisateur trouvé",
       "noUsersBody": "Nous n'avons trouvé aucun utilisateur correspondant à vos critères.",
-      "resetFilter": "Réinitialiser le filtre"
+      "resetFilter": "Réinitialiser le filtre",
+      "heroSubtitle": "C'est parti !",
+      "countLabel": "Utilisateur"
     },
     "card": {
       "admin": "Admin",
@@ -528,6 +530,15 @@
       "loading": "Chargement des données utilisateur...",
       "success": "Utilisateur mis à jour avec succès !",
       "error": "Erreur lors de la mise à jour de l'utilisateur. Veuillez réessayer."
+    },
+    "detail": {
+      "available": "Disponible",
+      "unavailable": "Indisponible",
+      "bloodType": "Groupe sanguin",
+      "phoneNumber": "Numéro de téléphone",
+      "mail": "E-mail",
+      "call": "Appeler",
+      "sendMail": "Envoyer un e-mail"
     }
   }
 }

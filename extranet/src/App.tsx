@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 import { useAuth } from './auth/AuthContext';
+import AdminComponent from './components/AdminComponent';
 import AdminDashboard from './components/admin/AdminDashboard';
 import CanDonate from './components/CanDonate';
 import ContactForm from './components/ContactForm';
@@ -17,6 +18,7 @@ import ResetPasswordForm from './components/ResetPasswordForm';
 import SignupForm from './components/SignupForm';
 import UnsupportedPage from './components/UnsupportedPage';
 import UpdateUser from './components/UpdateUser';
+import UserDetailView from './components/UserDetailView';
 import UserProfileForm from './components/UserProfileForm';
 import UsersComponent from './components/UsersComponent';
 import EmergencyComponent from './components/emergency/EmergencyComponent';
@@ -74,14 +76,21 @@ const MobileNavContainer = styled.div`
 // Routes that ship their own full-bleed header/layout (the redesigned
 // screens) skip the app chrome below instead of sitting inside the padded
 // ContentContainer with a NavBar/MobileHeader above and MobileNavbar below.
-const FULL_SCREEN_ROUTES = ['/login', '/signup', '/admin'];
-// '/events' and an event's own detail page only go full-screen for admins --
-// their redesign is admin-only so far (see EventsComponent/EventDetail),
-// and non-admins still need the old chrome. The detail-page pattern
-// excludes '/events/create' (a distinct, not-yet-redesigned route) and
-// anything with a further path segment (the can-donate/confirmation
-// sub-routes nested under EventDetail, which are donor-only flows).
-const ADMIN_ONLY_FULL_SCREEN_ROUTES = ['/events'];
+// '/admin' (the admin menu) is here unconditionally: it's only meaningful
+// for admins, but it self-guards (like the other admin screens) and a
+// non-admin landing on it should see a bare NotFoundPage, not app chrome
+// wrapped around one. '/emergency' is public (no isAuth on that endpoint),
+// so it's here for every visitor, not just admins.
+const FULL_SCREEN_ROUTES = ['/login', '/signup', '/admin', '/emergency'];
+// '/home', '/events', an event's own detail page, and '/events/create' only
+// go full-screen for admins -- their redesign is admin-only so far (see
+// AdminDashboard/EventsComponent/EventDetail/EventForm), and non-admins
+// still need the old chrome (LandingPage for '/home', the pre-existing
+// EventsComponent/EventDetail views for the rest). The detail-page pattern
+// excludes '/events/create' itself (matched separately below) and anything
+// with a further path segment (the can-donate/confirmation sub-routes
+// nested under EventDetail, which are donor-only flows).
+const ADMIN_ONLY_FULL_SCREEN_ROUTES = ['/home', '/events', '/events/create'];
 const ADMIN_ONLY_FULL_SCREEN_ROUTE_PATTERN = /^\/events\/(?!create$)[^/]+$/;
 
 const App = () => {
@@ -99,7 +108,7 @@ const App = () => {
 	const routes = (
 		<Routes>
 			<Route path='/' element={<Navigate replace to='/home' />} />
-			<Route path='/home' element={<LandingPage />} />
+			<Route path='/home' element={isAdmin ? <AdminDashboard /> : <LandingPage />} />
 			<Route path='/signup' element={<SignupForm />} />
 			<Route path='/login' element={<LoginForm />} />
 			<Route path='/update-profile' element={<UserProfileForm />} />
@@ -121,11 +130,19 @@ const App = () => {
 			</Route>
 			<Route path='/donate' element={<DonationComponent />} />
 			{isAdmin && <Route path='/users' element={<UsersComponent />} />}
+			{/*
+				Registered ahead of '/users/update/:userId' below only in the
+				sense that both are always mounted (not gated) -- same
+				always-register-then-self-guard pattern as the events routes
+				above, so a non-admin gets NotFoundPage instead of a route
+				mismatch.
+			*/}
+			{isAdmin && <Route path='/users/:userId' element={<UserDetailView />} />}
 			{isAdmin && (
 				<Route path='/users/update/:userId' element={<UpdateUser />} />
 			)}
 			<Route path='/contact' element={<ContactForm />} />
-			<Route path='/admin' element={<AdminDashboard />} />
+			<Route path='/admin' element={<AdminComponent />} />
 			<Route
 				path='/request-reset-password'
 				element={<PasswordResetForm />}

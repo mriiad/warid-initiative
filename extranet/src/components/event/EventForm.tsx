@@ -1,21 +1,24 @@
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import EventIcon from '@mui/icons-material/Event';
+import SearchIcon from '@mui/icons-material/Search';
 import {
 	Button,
 	Checkbox,
 	FormControlLabel,
-	Grid,
+	IconButton,
 	TextField,
 	Typography,
 } from '@mui/material';
-import { makeStyles } from '@mui/styles';
 import React, { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
 import { useCreateEvent } from '../../hooks';
-import { authStyles, mainStyles } from '../../styles/mainStyles';
-import FormContainer from '../shared/FormContainer';
+import { authRedesignStyles } from '../../styles/authRedesign';
+import { eventsListRedesignStyles } from '../../styles/eventsListRedesign';
 import NotFoundPage from '../NotFoundPage';
+import RedesignBottomNav from '../shared/RedesignBottomNav';
 import ResponseAnimation from '../shared/ResponseAnimation';
 
 interface IFormInput {
@@ -29,22 +32,13 @@ interface IFormInput {
 	isGeneric: boolean;
 }
 
-const useStyles = makeStyles({
-	formWrapper: {
-		marginBottom: '88px',
-	},
-	fileInput: {
-		marginTop: '20px',
-	},
-});
-
 const EventForm: React.FC = () => {
 	const { t } = useTranslation();
 	const { isAdmin } = useAuth();
-	const { bar, button, form } = authStyles();
-	const { subTitle } = mainStyles();
-	const { formWrapper, fileInput } = useStyles();
 	const navigate = useNavigate();
+	const { input, primaryButton } = authRedesignStyles();
+	const { screen, topBar, topBarDivider, topBarTitle, content, hero, heroIcon, heroTitle } =
+		eventsListRedesignStyles();
 
 	const {
 		control,
@@ -114,172 +108,203 @@ const EventForm: React.FC = () => {
 		}
 	};
 
-	if (isFormSubmitted) {
-		return (
-			<FormContainer className={formWrapper}>
-				<ResponseAnimation
-					responseMessage={t('events.form.createSuccess')}
-					actionMessage={t('events.form.createAnotherPrompt')}
-					isSuccess={isSuccessResponse}
-					isError={!isSuccessResponse && isErrorResponse}
-					errorMessage={errorMessage}
-				/>
-				<Button
-					onClick={handleCreateAnotherEvent}
-					className={button}
-					style={{ marginTop: '20px' }}
-				>
-					{isSuccessResponse
-						? t('events.form.createAnother')
-						: t('events.form.backToCreate')}
-				</Button>
-			</FormContainer>
-		);
-	}
+	const todayLabel = new Date().toLocaleDateString(undefined, {
+		day: 'numeric',
+		month: 'short',
+		year: 'numeric',
+	});
 
 	return (
-		<FormContainer className={formWrapper}>
-			<Typography variant='h4' align='center' className={subTitle}>
-				{t('events.form.createTitle')}
-				<span className={bar}></span>
-			</Typography>
-			<form onSubmit={handleSubmit(onSubmit)} className={form}>
-				<Grid container spacing={2}>
-					<Grid item xs={12}>
-						<Controller
-							name='title'
-							control={control}
-							rules={{ required: t('events.form.titleRequired') }}
-							render={({ field }) => (
-								<TextField
-									{...field}
-									label={t('events.form.titleLabel')}
-									error={Boolean(errors.title)}
-									helperText={errors.title?.message}
-								/>
-							)}
+		<div className={screen}>
+			<div className={topBar}>
+				<IconButton aria-label={t('common.back')} onClick={() => navigate(-1)}>
+					<ArrowBackIcon />
+				</IconButton>
+				<div className={topBarDivider} />
+				<Typography className={topBarTitle}>{t('events.form.createTitle')}</Typography>
+				<IconButton aria-label={t('admin.searchPlaceholder')}>
+					<SearchIcon />
+				</IconButton>
+			</div>
+
+			<div className={content}>
+				<div className={hero}>
+					<div className={heroIcon}>
+						<EventIcon />
+					</div>
+					<Typography className={heroTitle}>{t('events.form.createTitle')}</Typography>
+					<Typography style={{ color: 'rgba(255,255,255,0.75)', fontSize: '13px', marginTop: '4px' }}>
+						{todayLabel}
+					</Typography>
+				</div>
+
+				{isFormSubmitted ? (
+					<>
+						<ResponseAnimation
+							responseMessage={t('events.form.createSuccess')}
+							actionMessage={t('events.form.createAnotherPrompt')}
+							isSuccess={isSuccessResponse}
+							isError={!isSuccessResponse && isErrorResponse}
+							errorMessage={errorMessage}
 						/>
-					</Grid>
-
-					<Grid item xs={12}>
-						<Controller
-							name='subtitle'
-							control={control}
-							render={({ field }) => (
-								<TextField {...field} label={t('events.form.subtitleLabel')} />
-							)}
-						/>
-					</Grid>
-
-					<Grid item xs={12}>
-						<Controller
-							name='location'
-							control={control}
-							rules={{ required: t('events.form.locationRequired') }}
-							render={({ field }) => (
-								<TextField
-									{...field}
-									label={t('events.form.locationLabel')}
-									error={Boolean(errors.location)}
-									helperText={errors.location?.message}
-								/>
-							)}
-						/>
-					</Grid>
-
-					<Grid item xs={12}>
-						<Controller
-							name='date'
-							control={control}
-							rules={{ required: t('events.form.dateRequired') }}
-							render={({ field }) => (
-								<TextField
-									{...field}
-									label={t('events.form.dateLabel')}
-									type='date'
-									InputLabelProps={{ shrink: true }}
-									inputProps={{
-										min: new Date().toISOString().split('T')[0],
-									}}
-									error={Boolean(errors.date)}
-									helperText={errors.date?.message}
-								/>
-							)}
-						/>
-					</Grid>
-
-					<Grid item xs={12}>
-						<Controller
-							name='mapLink'
-							control={control}
-							render={({ field }) => (
-								<TextField {...field} label={t('events.form.mapLinkLabel')} />
-							)}
-						/>
-					</Grid>
-
-					<Grid item xs={12}>
-						<Controller
-							name='description'
-							control={control}
-							rules={{ required: t('events.form.descriptionRequired') }}
-							render={({ field }) => (
-								<TextField
-									{...field}
-									label={t('events.form.descriptionLabel')}
-									multiline
-									rows={4}
-									error={Boolean(errors.description)}
-									helperText={errors.description?.message}
-								/>
-							)}
-						/>
-					</Grid>
-
-					<Grid item xs={12}>
-						<Controller
-							name='isGeneric'
-							control={control}
-							render={({ field }) => (
-								<FormControlLabel
-									control={
-										<Checkbox checked={field.value} onChange={field.onChange} />
-									}
-									label={t('events.form.isGeneric')}
-								/>
-							)}
-						/>
-					</Grid>
-
-					<Grid item xs={12}>
-						<label htmlFor='upload-file'>
-							<input
-								type='file'
-								id='upload-file'
-								onChange={handleImageChange}
-								style={{ display: 'none' }}
-							/>
-							<Button component='span' variant='contained'>
-								{t('events.form.selectPhoto')}
-							</Button>
-						</label>
-						{image ? (
-							<span>
-								{t('events.form.photoSelected')} {image.name}
-							</span>
-						) : (
-							<span>{t('events.form.noPhotoSelected')}</span>
-						)}
-					</Grid>
-
-					<Grid item xs={12}>
-						<Button type='submit' className={button}>
-							{t('events.form.createButton')}
+						<Button
+							type='button'
+							fullWidth
+							className={primaryButton}
+							onClick={handleCreateAnotherEvent}
+							style={{ marginTop: '16px' }}
+						>
+							{isSuccessResponse
+								? t('events.form.createAnother')
+								: t('events.form.backToCreate')}
 						</Button>
-					</Grid>
-				</Grid>
-			</form>
-		</FormContainer>
+					</>
+				) : (
+					<form onSubmit={handleSubmit(onSubmit)}>
+						<div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+							<Controller
+								name='title'
+								control={control}
+								rules={{ required: t('events.form.titleRequired') }}
+								render={({ field }) => (
+									<TextField
+										{...field}
+										fullWidth
+										className={input}
+										label={t('events.form.titleLabel')}
+										error={Boolean(errors.title)}
+										helperText={errors.title?.message}
+									/>
+								)}
+							/>
+
+							<Controller
+								name='subtitle'
+								control={control}
+								render={({ field }) => (
+									<TextField
+										{...field}
+										fullWidth
+										className={input}
+										label={t('events.form.subtitleLabel')}
+									/>
+								)}
+							/>
+
+							<Controller
+								name='location'
+								control={control}
+								rules={{ required: t('events.form.locationRequired') }}
+								render={({ field }) => (
+									<TextField
+										{...field}
+										fullWidth
+										className={input}
+										label={t('events.form.locationLabel')}
+										error={Boolean(errors.location)}
+										helperText={errors.location?.message}
+									/>
+								)}
+							/>
+
+							<Controller
+								name='date'
+								control={control}
+								rules={{ required: t('events.form.dateRequired') }}
+								render={({ field }) => (
+									<TextField
+										{...field}
+										fullWidth
+										className={input}
+										label={t('events.form.dateLabel')}
+										type='date'
+										InputLabelProps={{ shrink: true }}
+										inputProps={{
+											min: new Date().toISOString().split('T')[0],
+										}}
+										error={Boolean(errors.date)}
+										helperText={errors.date?.message}
+									/>
+								)}
+							/>
+
+							<Controller
+								name='mapLink'
+								control={control}
+								render={({ field }) => (
+									<TextField
+										{...field}
+										fullWidth
+										className={input}
+										label={t('events.form.mapLinkLabel')}
+									/>
+								)}
+							/>
+
+							<Controller
+								name='description'
+								control={control}
+								rules={{ required: t('events.form.descriptionRequired') }}
+								render={({ field }) => (
+									<TextField
+										{...field}
+										fullWidth
+										className={input}
+										label={t('events.form.descriptionLabel')}
+										multiline
+										rows={4}
+										error={Boolean(errors.description)}
+										helperText={errors.description?.message}
+									/>
+								)}
+							/>
+
+							<Controller
+								name='isGeneric'
+								control={control}
+								render={({ field }) => (
+									<FormControlLabel
+										control={
+											<Checkbox checked={field.value} onChange={field.onChange} />
+										}
+										label={t('events.form.isGeneric')}
+									/>
+								)}
+							/>
+
+							<div>
+								<label htmlFor='upload-file'>
+									<input
+										type='file'
+										id='upload-file'
+										onChange={handleImageChange}
+										style={{ display: 'none' }}
+									/>
+									<Button component='span' className={primaryButton}>
+										{t('events.form.selectPhoto')}
+									</Button>
+								</label>
+								<div style={{ marginTop: '8px', fontSize: '13px' }}>
+									{image ? (
+										<span>
+											{t('events.form.photoSelected')} {image.name}
+										</span>
+									) : (
+										<span>{t('events.form.noPhotoSelected')}</span>
+									)}
+								</div>
+							</div>
+
+							<Button type='submit' fullWidth className={primaryButton}>
+								{t('events.form.createButton')}
+							</Button>
+						</div>
+					</form>
+				)}
+			</div>
+
+			<RedesignBottomNav />
+		</div>
 	);
 };
 
