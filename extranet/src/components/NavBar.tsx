@@ -3,12 +3,14 @@ import ArrowCircleRightIcon from '@mui/icons-material/ArrowCircleRight';
 import { makeStyles } from '@mui/styles';
 import axios from 'axios';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import colors from '../styles/colors';
 import { mainStyles } from '../styles/mainStyles';
 import API_CONFIG, { buildApiUrl } from '../utils/apiConfig';
 import ActionButton from './shared/ActionButton';
+import LanguageSwitcher from './shared/LanguageSwitcher';
 
 const useStyles = makeStyles({
 	navbar: {
@@ -82,6 +84,7 @@ const useStyles = makeStyles({
 
 const Navbar = () => {
 	const { token, setToken, isAdmin, setIsAdmin, setUserId } = useAuth();
+	const { t } = useTranslation();
 
 	const {
 		navbar,
@@ -142,7 +145,7 @@ const Navbar = () => {
 								}`}
 								onClick={() => handleRouteChange('/')}
 							>
-								الرئيسية
+								{t('nav.home')}
 							</Link>
 						</li>
 						<li className={routesListItem}>
@@ -153,7 +156,7 @@ const Navbar = () => {
 								}`}
 								onClick={() => handleRouteChange('/about')}
 							>
-								بخصوص
+								{t('nav.about')}
 							</Link>
 						</li>
 						<li className={routesListItem}>
@@ -164,7 +167,7 @@ const Navbar = () => {
 								}`}
 								onClick={() => handleRouteChange('/events?page=1')}
 							>
-								الفعاليات
+								{t('nav.events')}
 							</Link>
 						</li>
 						{token && isAdmin && (
@@ -176,7 +179,7 @@ const Navbar = () => {
 									}`}
 									onClick={() => handleRouteChange('/admin')}
 								>
-									المشرف
+									{t('nav.admin')}
 								</Link>
 							</li>
 						)}
@@ -184,6 +187,7 @@ const Navbar = () => {
 				</nav>
 			</div>
 			<div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+				<LanguageSwitcher />
 				{!token && (
 					<button
 						type='button'
@@ -204,19 +208,19 @@ const Navbar = () => {
 							zIndex: 10,
 						}}
 					>
-						التسجيل
+						{t('nav.signup')}
 					</button>
 				)}
 				<div className={mainButton}>
 					{token ? (
 						<ActionButton
-							title='تسجيل الخروج'
+							title={t('nav.logout')}
 							icon={<ArrowCircleLeftIcon className={loginIcon} />}
 							onClick={() => handleLogout()}
 						/>
 					) : (
 						<ActionButton
-							title='تسجيل الدخول'
+							title={t('nav.login')}
 							icon={<ArrowCircleRightIcon className={loginIcon} />}
 							onClick={() => navigate('/login')}
 						/>

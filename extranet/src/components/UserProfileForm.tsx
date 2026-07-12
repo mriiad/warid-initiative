@@ -14,14 +14,17 @@ import { makeStyles } from '@mui/styles';
 import axios from 'axios';
 import { useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { ProfileFormData, fieldDisplayNames } from '../data/ProfileFormData';
+import { ProfileFormData } from '../data/ProfileFormData';
 import { BLOOD_GROUP_OPTIONS, BloodGroup } from '../data/constants';
 import { useUserProfile } from '../hooks';
 import { authStyles } from '../styles/mainStyles';
 import { cities, formatDate } from '../utils/utils';
 import FormContainer from './shared/FormContainer';
 import SnackbarComponent from './shared/SnackbarComponent';
+import { useQueryClient } from '@tanstack/react-query';
+
 
 const useStyles = makeStyles({
 	align: {
@@ -37,12 +40,23 @@ const useStyles = makeStyles({
 	},
 });
 
+const fieldTranslationKeys: { [K in keyof ProfileFormData]: string } = {
+	firstname: 'auth.completeProfile.firstName',
+	lastname: 'auth.completeProfile.lastName',
+	birthdate: 'auth.completeProfile.birthdate',
+	bloodGroup: 'auth.completeProfile.bloodGroup',
+	city: 'auth.completeProfile.city',
+};
+
 const UserProfileForm = () => {
 	const navigate = useNavigate();
+	const { t } = useTranslation();
 	const { align, radioGroup, radioMargin } = useStyles();
 	const { formField, button, signUp, form, bar } = authStyles();
 	const [showSnackbar, setShowSnackbar] = useState(false);
 	const [incompleteFieldsMessage, setIncompleteFieldsMessage] = useState('');
+	const queryClient = useQueryClient();
+
 
 	const { data: userProfile } = useUserProfile();
 
@@ -84,13 +98,13 @@ const UserProfileForm = () => {
 				}
 				setValue(field, value);
 				if (!userProfile.data[field])
-					missingFields.push(fieldDisplayNames[field]);
+					missingFields.push(t(fieldTranslationKeys[field]));
 			});
 
 			if (missingFields.length > 0) {
-				const formattedMessage = `Could you please provide the following details? ${missingFields.join(
-					', '
-				)}.`;
+				const formattedMessage = `${t(
+					'auth.completeProfile.missingFields'
+				)} ${missingFields.join(', ')}`;
 				setIncompleteFieldsMessage(formattedMessage);
 				setShowSnackbar(true);
 			}
@@ -100,6 +114,8 @@ const UserProfileForm = () => {
 	const updateProfile = async (data: ProfileFormData) => {
 		try {
 			await axios.put('/api/user/update', data);
+			// Refetch user data after profile update to ensure components get the latest values
+			queryClient.invalidateQueries({ queryKey: ['user', 'me'] });
 			navigate('/events');
 		} catch (error) {
 			console.error('Error updating profile:', error);
@@ -113,7 +129,7 @@ const UserProfileForm = () => {
 	return (
 		<FormContainer className={align}>
 			<Typography variant='h2' align='center' gutterBottom className={signUp}>
-				Complete Your Profile
+				{t('auth.completeProfile.title')}
 				<span className={bar}></span>
 			</Typography>
 			<form onSubmit={handleSubmit(onSubmit)} className={form}>
@@ -121,29 +137,35 @@ const UserProfileForm = () => {
 					<Grid item xs={12}>
 						<FormControlField
 							name='firstname'
-							label='First Name'
+							label={t('auth.completeProfile.firstName')}
 							control={control}
 							error={errors.firstname}
-							helperText={errors.firstname ? 'First name is required' : ''}
+							helperText={
+								errors.firstname ? t('auth.completeProfile.firstNameRequired') : ''
+							}
 						/>
 					</Grid>
 					<Grid item xs={12}>
 						<FormControlField
 							name='lastname'
-							label='Last Name'
+							label={t('auth.completeProfile.lastName')}
 							control={control}
 							error={errors.lastname}
-							helperText={errors.lastname ? 'Last name is required' : ''}
+							helperText={
+								errors.lastname ? t('auth.completeProfile.lastNameRequired') : ''
+							}
 						/>
 					</Grid>
 					<Grid item xs={12}>
 						<FormControlField
 							name='birthdate'
-							label='Birthdate'
+							label={t('auth.completeProfile.birthdate')}
 							control={control}
 							type='date'
 							error={errors.birthdate}
-							helperText={errors.birthdate ? 'Birthdate is required' : ''}
+							helperText={
+								errors.birthdate ? t('auth.completeProfile.birthdateRequired') : ''
+							}
 						/>
 					</Grid>
 					<Grid item xs={12}>
@@ -152,10 +174,10 @@ const UserProfileForm = () => {
 							control={control}
 							render={({ field }) => (
 								<FormControl fullWidth error={Boolean(errors.bloodGroup)}>
-									<InputLabel>Blood Group</InputLabel>
+									<InputLabel>{t('auth.completeProfile.bloodGroup')}</InputLabel>
 									<Select {...field}>
 										<MenuItem value=''>
-											<em>None</em>
+											<em>{t('common.none')}</em>
 										</MenuItem>
 										{BLOOD_GROUP_OPTIONS.map((option) => (
 											<MenuItem key={option.value} value={option.value}>
@@ -164,7 +186,9 @@ const UserProfileForm = () => {
 										))}
 									</Select>
 									<FormHelperText>
-										{errors.bloodGroup ? 'Blood Group is required' : ''}
+										{errors.bloodGroup
+											? t('auth.completeProfile.bloodGroupRequired')
+											: ''}
 									</FormHelperText>
 								</FormControl>
 							)}
@@ -173,15 +197,15 @@ const UserProfileForm = () => {
 					<Grid item xs={12}>
 						<Controller
 							name='city'
-							rules={{ required: 'City is required' }}
+							rules={{ required: t('auth.completeProfile.cityRequired') }}
 							defaultValue=''
 							control={control}
 							render={({ field }) => (
 								<FormControl fullWidth error={Boolean(errors.city)}>
-									<InputLabel>City</InputLabel>
+									<InputLabel>{t('auth.completeProfile.city')}</InputLabel>
 									<Select {...field}>
 										<MenuItem value=''>
-											<em>None</em>
+											<em>{t('common.none')}</em>
 										</MenuItem>
 										{cities &&
 											cities.map((city) => (
@@ -197,7 +221,7 @@ const UserProfileForm = () => {
 					</Grid>
 					<Grid item xs={12}>
 						<Button type='submit' className={button}>
-							Update
+							{t('auth.completeProfile.submit')}
 						</Button>
 					</Grid>
 				</Grid>

@@ -1,10 +1,10 @@
 import Button from '@mui/material/Button';
-import { FC, ReactNode } from 'react';
+import { FC, MouseEvent, ReactNode } from 'react';
 import { mainStyles } from '../../styles/mainStyles';
 
 interface ActionButtonProps {
 	icon?: ReactNode;
-	onClick: () => void;
+	onClick: (event: MouseEvent<HTMLDivElement>) => void;
 	title: string;
 }
 

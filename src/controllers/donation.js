@@ -70,7 +70,7 @@ exports.donate = async (req, res, next) => {
 	try {
 		const { bloodGroup, donationDate, donationType, eventId } = req.body;
 		const { canDonate, lastDonationDate, nextDonationDate } =
-			this.checkDonationEligibility(req.userId);
+			await this.checkDonationEligibility(req.userId);
 
 		console.log('canDonate', canDonate);
 		console.log('lastDonationDate', lastDonationDate);
@@ -135,7 +135,7 @@ exports.donate = async (req, res, next) => {
 const checkExistingDonation = async (userId, userProvidedDate) => {
 	try {
 		// Use checkDonationEligibility to verify if the user is able to donate
-		const { canDonate, nextDonationDate } = await checkDonationEligibility(
+		const { canDonate, nextDonationDate } = await exports.checkDonationEligibility(
 			userId
 		);
 

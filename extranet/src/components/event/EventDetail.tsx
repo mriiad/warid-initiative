@@ -7,6 +7,7 @@ import { Button, Chip, CircularProgress, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
 	Route,
 	Routes,
@@ -484,6 +485,7 @@ const useStyles = makeStyles({
 });
 
 const EventDetail: React.FC = () => {
+	const { t } = useTranslation();
 	const { reference } = useParams<{ reference: string }>();
 	const { token, isAdmin } = useAuth();
 	const navigate = useNavigate();
@@ -493,7 +495,9 @@ const EventDetail: React.FC = () => {
 	const { fallback, qrCodeContainer, qrCodeCard, qrCodeImage, qrCodeTitle } =
 		useStyles();
 
-	const { data: event, isLoading, isError } = useEvent(reference || '');
+	const { data: eventData, isLoading, isError } = useEvent(reference || '');
+	const event = eventData?.data?.event;
+
 	const { data: participationData } = useCheckParticipation(reference || '');
 	const createParticipant = useCreateParticipant();
 	const { data: participantStats } = useEventParticipantsDetails(reference || '', isAdmin);
@@ -507,8 +511,8 @@ const EventDetail: React.FC = () => {
 		open: false,
 		title: '',
 		message: '',
-		confirmText: 'Confirm',
-		cancelText: 'Cancel',
+		confirmText: t('common.confirm'),
+		cancelText: t('common.cancel'),
 		onConfirm: () => { },
 		warning: false,
 	});
@@ -526,13 +530,13 @@ const EventDetail: React.FC = () => {
 	const handleShare = () => {
 		if (navigator.share) {
 			navigator.share({
-				title: event?.data?.title || 'Event',
-				text: event?.data?.subtitle || 'Check out this event',
+				title: event?.title || t('events.detail.shareFallbackTitle'),
+				text: event?.subtitle || t('events.detail.shareFallbackText'),
 				url: window.location.href,
 			});
 		} else {
 			navigator.clipboard.writeText(
-				`${event?.data?.title} - ${event?.data?.subtitle}\n${window.location.href}`
+				`${event?.title} - ${event?.subtitle}\n${window.location.href}`
 			);
 		}
 	};
@@ -545,13 +549,15 @@ const EventDetail: React.FC = () => {
 
 		createParticipant.mutate(reference, {
 			onSuccess: (response: any) => {
-				setMessage(response.data.message || 'You are successfully added as a participant.');
+				setMessage(
+					response.data.message || t('events.detail.participateSuccess')
+				);
 			},
 			onError: (error: any) => {
 				if (error.response && error.response.data?.message) {
 					setMessage(error.response.data.message);
 				} else {
-					setMessage('An error occurred while registering for the event.');
+					setMessage(t('events.detail.participateError'));
 				}
 				console.error('Participant registration failed:', error);
 			},
@@ -566,10 +572,10 @@ const EventDetail: React.FC = () => {
 	const handleDelete = () => {
 		setConfirmationDialog({
 			open: true,
-			title: 'Delete Event',
-			message: `Are you sure you want to delete the event "${event?.data?.title}"? This action cannot be undone.`,
-			confirmText: 'Delete',
-			cancelText: 'Cancel',
+			title: t('events.list.deleteTitle'),
+			message: t('events.list.deleteConfirm', { title: event?.title }),
+			confirmText: t('common.delete'),
+			cancelText: t('common.cancel'),
 			onConfirm: async () => {
 				try {
 					setConfirmationDialog({ ...confirmationDialog, open: false });
@@ -584,7 +590,7 @@ const EventDetail: React.FC = () => {
 					});
 
 					if (response.ok) {
-						setMessage('Event deleted successfully!');
+						setMessage(t('events.detail.deleteSuccess'));
 						setTimeout(() => {
 							navigate('/events');
 						}, 2000);
@@ -594,7 +600,9 @@ const EventDetail: React.FC = () => {
 					}
 				} catch (error: any) {
 					console.error('Error deleting event:', error);
-					setMessage(`Error deleting event: ${error.message}`);
+					setMessage(
+						t('events.detail.deleteError', { message: error.message })
+					);
 				}
 			},
 			warning: true,
@@ -612,24 +620,27 @@ const EventDetail: React.FC = () => {
 		if (!stats.isGeneric) {
 			return (
 				<>
-					المسجلون للمشاركة: {stats.registeredParticipants ?? 0} <br />
-					المسجلون الذين تبرعوا فعلياً: {stats.realDonaters ?? 0} <br />
-					المتبرعون الكلّيون: {stats.allDonaters ?? 0}
+					{t('events.detail.registeredParticipants')}: {stats.registeredParticipants ?? 0} <br />
+					{t('events.detail.realDonaters')}: {stats.realDonaters ?? 0} <br />
+					{t('events.detail.allDonaters')}: {stats.allDonaters ?? 0}
 				</>
 			);
 		}
-		return <>المتبرعون الكلّيون: {stats.allDonaters ?? 0}</>;
+		return (
+			<>
+				{t('events.detail.allDonaters')}: {stats.allDonaters ?? 0}
+			</>
+		);
 	};
-
 
 
 	return (
 		<>
-			{isLoading ? (
+			{isLoading || !event ? (
 				<LoadingContainer>
 					<CircularProgress size={60} />
 					<Typography className='loadingText'>
-						جاري تحميل تفاصيل الفعالية...
+						{t('events.detail.loading')}
 					</Typography>
 				</LoadingContainer>
 			) : (
@@ -637,9 +648,9 @@ const EventDetail: React.FC = () => {
 					{isAdmin && (
 						<Header>
 							<div className='actionButtons'>
-								<Button onClick={handleUpdate}>Update Event</Button>
+								<Button onClick={handleUpdate}>{t('events.form.updateButton')}</Button>
 								<Button className='deleteButton' onClick={handleDelete}>
-									Delete Event
+									{t('events.list.deleteTitle')}
 								</Button>
 							</div>
 						</Header>
@@ -648,24 +659,28 @@ const EventDetail: React.FC = () => {
 					<EventHero>
 						<img
 							src={
-								event?.data?.image
-									? `data:image/jpeg;base64,${event.data.image}`
+								event?.image
+									? `data:image/jpeg;base64,${event.image}`
 									: '/event-default.png'
 							}
-							alt={event?.data?.title}
+							alt={event?.title}
 							className='eventImage'
 						/>
 
 						<Typography variant='h1' className='eventTitle'>
-							{event?.data?.title}
+							{event?.title}
 						</Typography>
 
 						<Typography variant='h5' className='eventSubtitle'>
-							{event?.data?.subtitle}
+							{event?.subtitle}
 						</Typography>
 						{isAdmin && (
 							<Chip
-								label={event?.data?.isGeneric ? 'فعالية عامة' : 'فعالية خاصة'}
+								label={
+									event?.isGeneric
+										? t('events.card.generic')
+										: t('events.card.specific')
+								}
 								className='eventChip'
 								icon={<EventIcon />}
 							/>
@@ -676,56 +691,56 @@ const EventDetail: React.FC = () => {
 						<ContentGrid>
 							<InfoCard>
 								<div className='cardTitle'>
-									<h3>تاريخ الفعالية</h3>
+									<h3>{t('events.detail.date')}</h3>
 									<div className='icon'>
 										<CalendarMonthIcon />
 									</div>
 								</div>
 								<div className='cardContent'>
-									{formatDateForDisplay(event?.data?.date)}
+									{formatDateForDisplay(event?.date)}
 								</div>
 							</InfoCard>
 
 							<InfoCard>
 								<div className='cardTitle'>
-									<h3>مكان الفعالية</h3>
+									<h3>{t('events.detail.location')}</h3>
 									<div className='icon'>
 										<LocationOnIcon />
 									</div>
 								</div>
-								<div className='cardContent'>{event?.data?.location}</div>
+								<div className='cardContent'>{event?.location}</div>
 							</InfoCard>
 
 							<InfoCard>
 								<div className='cardTitle'>
-									<h3>الخريطة</h3>
+									<h3>{t('events.detail.openMap')}</h3>
 									<div className='icon'>
 										<MapIcon />
 									</div>
 								</div>
 								<div className='cardContent'>
 									<a
-										href={event?.data?.mapLink}
+										href={event?.mapLink}
 										target='_blank'
 										rel='noopener noreferrer'
 									>
-										فتح الخريطة
+										{t('events.detail.openMap')}
 										<OpenInNewIcon />
 									</a>
 								</div>
 							</InfoCard>
 
-							{event?.data?.description && (
+							{event?.description && (
 								<DescriptionCard>
 									<Typography className='descriptionText'>
-										{event.data.description}
+										{event.description}
 									</Typography>
 								</DescriptionCard>
 							)}
 							{isAdmin && participantStats && (
 								<InfoCard>
 									<div className='cardTitle'>
-										<h3>تفاصيل المشاركين</h3>
+										<h3>{t('events.detail.participantDetailsTitle')}</h3>
 										<div className='icon'>
 											<EventIcon />
 										</div>
@@ -742,14 +757,14 @@ const EventDetail: React.FC = () => {
 
 
 
-					{event?.data?.event?.qrCode && (
+					{event?.qrCode && (
 						<div className={qrCodeContainer}>
 							<div className={qrCodeCard}>
 								<Typography variant='h6' className={qrCodeTitle}>
-									مسح رمز الاستجابة السريعة للتبرع
+									{t('events.detail.qrScanTitle')}
 								</Typography>
 								<img
-									src={event.data.event.qrCode}
+									src={event.qrCode}
 									alt='QR Code'
 									className={qrCodeImage}
 								/>
@@ -759,12 +774,12 @@ const EventDetail: React.FC = () => {
 
 					{initialRoute && !hasParticipated && !isAdmin && (
 						<ActionButton variant='contained' onClick={handleParticipateClick} disabled={createParticipant.isPending}>
-							المشاركة في الفعالية
+							{t('events.detail.participate')}
 						</ActionButton>
 					)}
 					{hasParticipated && !isAdmin && (
 						<Typography color={colors.purple} fontWeight={600} marginTop={4}>
-							!تم تسجيلك بنجاح في قائمة المشاركين
+							{t('events.detail.participationConfirmed')}
 						</Typography>
 					)}
 
