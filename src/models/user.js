@@ -29,8 +29,8 @@ const userSchema = new Schema({
     type: String,
     required: false,
     unique: true,
+    sparse: true,
     select: false,
-    default: null,
   },
   isAdmin: {
     type: Boolean,
