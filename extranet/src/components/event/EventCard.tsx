@@ -6,6 +6,7 @@ import ShareIcon from '@mui/icons-material/Share';
 import { Card, CardContent, Chip, IconButton, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
 import { Event } from '../../data/Event';
@@ -232,6 +233,7 @@ const EventCard: React.FC<EventCardProps> = ({
 		actions,
 	} = useStyles();
 
+	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const [isFavorited, setIsFavorited] = useState(false);
 	const { isAdmin } = useAuth();
@@ -315,13 +317,13 @@ const EventCard: React.FC<EventCardProps> = ({
 							rel='noopener noreferrer'
 							onClick={(e) => e.stopPropagation()}
 						>
-							خريطة الطريق
+							{t('events.card.openMap')}
 						</a>
 					</div>
                     { isAdmin && (
 					<div className={chipContainer}>
 						<Chip
-                            label={isGenericEvent ? 'فعالية عامة' : 'فعالية خاصة'}
+                            label={isGenericEvent ? t('events.card.generic') : t('events.card.specific')}
 							size='small'
 							icon={<FavoriteIcon />}
 						/>
@@ -343,14 +345,14 @@ const EventCard: React.FC<EventCardProps> = ({
 					}}
 				>
 					<ActionButton
-						title='تحديث'
+						title={t('events.card.update')}
 						onClick={(e) => {
 							e.stopPropagation();
 							onUpdate(event.reference);
 						}}
 					/>
 					<ActionButton
-						title='حذف'
+						title={t('events.card.delete')}
 						onClick={(e) => {
 							e.stopPropagation();
 							onDelete(event.reference, event.title);

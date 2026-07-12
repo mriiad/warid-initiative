@@ -1,7 +1,7 @@
 import { Alert, Button, CircularProgress, Snackbar } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
 import { useAuth } from '../../auth/AuthContext';
@@ -37,19 +37,15 @@ const useStyles = makeStyles({
 		gap: '10px',
 	},
 });
-interface EmergenciesResponse {
-	emergencies: Emergency[];
-	totalItems: number;
-}
 
 const EmergencyComponent = () => {
+	const { t } = useTranslation();
 	const classes = useStyles();
 	const { token } = useAuth();
 	const [snackbarOpen, setSnackbarOpen] = useState(false);
 	const [snackbarMessage, setSnackbarMessage] = useState('');
 	const [searchParams, setSearchParams] = useSearchParams();
 	const page = parseInt(searchParams.get('page') || '1', 10);
-	const queryClient = useQueryClient();
 
 	const [totalPages, setTotalPages] = useState(0);
 
@@ -72,26 +68,11 @@ const EmergencyComponent = () => {
 	const handleConfirmEmergency = (emergencyId: string) => {
 		mutation.mutate(emergencyId, {
 			onSuccess: () => {
-				// Remove confirmed emergency from local cache
-				queryClient.setQueryData<EmergenciesResponse>(
-					['emergencies', 'unconfirmed', page],
-					(oldData) => {
-						if (!oldData) return oldData;
-						return {
-							...oldData,
-							emergencies: oldData.emergencies.filter(
-								(e) => e._id !== emergencyId
-							),
-							totalItems: oldData.totalItems - 1,
-						};
-					}
-				);
-				setSnackbarMessage('Emergency confirmed successfully!');
+				setSnackbarMessage(t('emergency.list.confirmSuccess'));
 				setSnackbarOpen(true);
 			},
 			onError: (error) => {
-				console.error('Error confirming emergency:', error);
-				setSnackbarMessage('Error confirming emergency. Please try again.');
+				setSnackbarMessage(t('emergency.list.confirmError'));
 				setSnackbarOpen(true);
 			},
 		});
@@ -137,13 +118,13 @@ const EmergencyComponent = () => {
 
 			<div className={classes.pagination}>
 				<Button disabled={page === 1 || isLoading} onClick={handlePrevPage}>
-					Previous
+					{t('common.previous')}
 				</Button>
 				<Button
 					disabled={page >= totalPages || isLoading}
 					onClick={handleNextPage}
 				>
-					Next
+					{t('common.next')}
 				</Button>
 			</div>
 

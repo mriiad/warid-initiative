@@ -108,7 +108,6 @@ export const useResetPassword = () => {
 export const useCheckResetToken = (token = '', enabled = true) => {
 	return useMutation({
 		mutationFn: () => authService.checkResetToken(token),
-		enabled: enabled && !!token,
 		onSuccess: (response) => {
 			// Token is valid
 		},

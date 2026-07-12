@@ -1,12 +1,14 @@
 import { Button, Grid, TextField, Typography } from '@mui/material';
 import axios from 'axios';
 import { Controller, useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { authStyles } from '../styles/mainStyles';
 import API_CONFIG, { buildApiUrl } from '../utils/apiConfig';
 import FormContainer from './shared/FormContainer';
 
 const PasswordResetForm = () => {
+	const { t } = useTranslation();
 	const { bar, button, signUp, form } = authStyles();
 
 	const {
@@ -36,7 +38,7 @@ const PasswordResetForm = () => {
 	return (
 		<FormContainer>
 			<Typography variant='h2' align='center' gutterBottom className={signUp}>
-				Reset Password
+				{t('auth.passwordReset.title')}
 				<span className={bar}></span>
 			</Typography>
 			<form onSubmit={handleSubmit(onSubmit)} className={form}>
@@ -49,11 +51,13 @@ const PasswordResetForm = () => {
 							render={({ field }) => (
 								<TextField
 									fullWidth
-									label='Email'
+									label={t('auth.passwordReset.email')}
 									required
 									{...field}
 									error={Boolean(errors.email)}
-									helperText={errors.email ? 'Email is required' : ''}
+									helperText={
+										errors.email ? t('auth.passwordReset.emailRequired') : ''
+									}
 								/>
 							)}
 						/>
@@ -65,7 +69,7 @@ const PasswordResetForm = () => {
 							className={button}
 							style={{ color: 'white' }}
 						>
-							Send Reset Link
+							{t('auth.passwordReset.submit')}
 						</Button>
 					</Grid>
 				</Grid>

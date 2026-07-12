@@ -12,6 +12,7 @@ import {
 
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import { BLOOD_GROUP_OPTIONS } from '../../data/constants';
 import { useCreateEmergency } from '../../hooks';
 import { authStyles } from '../../styles/mainStyles';
@@ -28,6 +29,7 @@ interface EmergencyFormData {
 }
 
 const EmergencyForm = () => {
+	const { t } = useTranslation();
 	const { bar, button, signUp, form } = authStyles();
 
 	const {
@@ -66,14 +68,14 @@ const EmergencyForm = () => {
 					error.response.data.errorKeys.forEach(
 						(errorKey: keyof EmergencyFormData) => {
 							setError(errorKey, {
-								message: `${errorKey} is invalid`,
+								message: t('emergency.form.fieldInvalid', { field: errorKey }),
 							});
 						}
 					);
 				}
 
 				setErrorMessage(
-					error?.data?.message || 'An unexpected error occurred.'
+					error?.data?.message || t('emergency.form.genericError')
 				);
 				setIsFormSubmitted(true);
 				setIsErrorResponse(true);
@@ -98,7 +100,7 @@ const EmergencyForm = () => {
 	return (
 		<FormContainer>
 			<Typography variant='h4' align='center' gutterBottom className={signUp}>
-				Create Emergency
+				{t('emergency.form.title')}
 				<span className={bar} style={{ width: '150px', height: '5px' }}></span>
 			</Typography>
 
@@ -110,8 +112,8 @@ const EmergencyForm = () => {
 				<Grid container spacing={2} justifyContent='center' alignItems='center'>
 					{isFormSubmitted ? (
 						<ResponseAnimation
-							responseMessage='Emergency created successfully!'
-							actionMessage='Our team will do their best to find donors.'
+							responseMessage={t('emergency.form.successTitle')}
+							actionMessage={t('emergency.form.successBody')}
 							isSuccess={isSuccessResponse}
 							isError={isErrorResponse}
 							errorMessage={errorMessage}
@@ -123,13 +125,13 @@ const EmergencyForm = () => {
 									name='bloodGroup'
 									control={control}
 									defaultValue=''
-									rules={{ required: 'Blood group is required' }}
+									rules={{ required: t('emergency.form.bloodGroupRequired') }}
 									render={({ field }) => (
 										<FormControl fullWidth error={Boolean(errors.bloodGroup)}>
-											<InputLabel>Blood Group</InputLabel>
-											<Select {...field} label='Blood Group'>
+											<InputLabel>{t('emergency.form.bloodGroup')}</InputLabel>
+											<Select {...field} label={t('emergency.form.bloodGroup')}>
 												<MenuItem value=''>
-													<em>None</em>
+													<em>{t('emergency.form.none')}</em>
 												</MenuItem>
 												{BLOOD_GROUP_OPTIONS.map((option) => (
 													<MenuItem key={option.value} value={option.value}>
@@ -148,15 +150,15 @@ const EmergencyForm = () => {
 							<Grid item xs={12}>
 								<Controller
 									name='city'
-									rules={{ required: 'City is required' }}
+									rules={{ required: t('emergency.form.cityRequired') }}
 									control={control}
 									defaultValue=''
 									render={({ field }) => (
 										<FormControl fullWidth error={Boolean(errors.city)}>
-											<InputLabel>City</InputLabel>
+											<InputLabel>{t('emergency.form.city')}</InputLabel>
 											<Select {...field}>
 												<MenuItem value=''>
-													<em>None</em>
+													<em>{t('emergency.form.none')}</em>
 												</MenuItem>
 												{cities.map((city) => (
 													<MenuItem key={city} value={city}>
@@ -176,19 +178,18 @@ const EmergencyForm = () => {
 									control={control}
 									defaultValue=''
 									rules={{
-										required: 'Phone number is required',
+										required: t('emergency.form.phoneRequired'),
 										pattern: {
 											value: /^[0-9]+$/,
-											message: 'Phone number must contain only numbers',
+											message: t('emergency.form.phoneNumeric'),
 										},
 										validate: (value) =>
-											value.length === 10 ||
-											'Phone number must be exactly 10 numbers',
+											value.length === 10 || t('emergency.form.phoneLength'),
 									}}
 									render={({ field }) => (
 										<TextField
 											{...field}
-											label='Phone Number'
+											label={t('emergency.form.phone')}
 											fullWidth
 											error={Boolean(errors.phoneNumber)}
 											helperText={errors.phoneNumber?.message}
@@ -202,11 +203,11 @@ const EmergencyForm = () => {
 									name='details'
 									control={control}
 									defaultValue=''
-									rules={{ required: 'The details is required' }}
+									rules={{ required: t('emergency.form.detailsRequired') }}
 									render={({ field }) => (
 										<TextField
 											{...field}
-											label='Details'
+											label={t('emergency.form.details')}
 											multiline
 											rows={4}
 											fullWidth
@@ -225,7 +226,9 @@ const EmergencyForm = () => {
 									disabled={loading}
 									style={{ color: 'white' }}
 								>
-									{loading ? 'Creating...' : 'Create Emergency'}
+									{loading
+										? t('emergency.form.submitting')
+										: t('emergency.form.submit')}
 								</Button>
 							</Grid>
 						</>

@@ -3,6 +3,7 @@ import { makeStyles } from '@mui/styles';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import colors from '../styles/colors';
 import { authStyles, mainStyles } from '../styles/mainStyles';
@@ -29,6 +30,7 @@ const useResetPasswordFormStyles = makeStyles({
 });
 
 const ResetPasswordForm = () => {
+	const { t } = useTranslation();
 	const { resetToken } = useParams();
 	const navigate = useNavigate();
 	const [isTokenValid, setIsTokenValid] = useState(true);
@@ -48,14 +50,14 @@ const ResetPasswordForm = () => {
 	const { errorText, forgotPasswordText } = useResetPasswordFormStyles();
 
 	const validatePasswordsMatch = (value: string) => {
-		return value === getValues('password') || 'Passwords do not match';
+		return value === getValues('password') || t('auth.resetPassword.passwordsMismatch');
 	};
 
 	const onSubmit = async (formData: FormData) => {
 		if (formData.password !== formData.confirmPassword) {
 			setError('confirmPassword', {
 				type: 'manual',
-				message: 'Passwords do not match',
+				message: t('auth.resetPassword.passwordsMismatch'),
 			});
 			return;
 		}
@@ -93,7 +95,7 @@ const ResetPasswordForm = () => {
 		return (
 			<FormContainer>
 				<Typography variant='h6' align='center'>
-					Checking token validity...
+					{t('auth.resetPassword.checking')}
 				</Typography>
 			</FormContainer>
 		);
@@ -103,7 +105,7 @@ const ResetPasswordForm = () => {
 		return (
 			<FormContainer>
 				<Typography variant='h6' className={errorText}>
-					This password reset link is invalid or has expired.
+					{t('auth.resetPassword.invalidToken')}
 				</Typography>
 				<Grid container justifyContent='center'>
 					<Grid item className={forgotPasswordText}>
@@ -126,7 +128,7 @@ const ResetPasswordForm = () => {
 								zIndex: 10,
 							}}
 						>
-							Reset again?
+							{t('auth.resetPassword.resetAgain')}
 						</button>
 					</Grid>
 				</Grid>
@@ -137,7 +139,7 @@ const ResetPasswordForm = () => {
 	return (
 		<FormContainer>
 			<Typography variant='h2' align='center' gutterBottom className={signUp}>
-				Reset Password
+				{t('auth.resetPassword.title')}
 				<span className={bar}></span>
 			</Typography>
 			<form onSubmit={handleSubmit(onSubmit)} className={form}>
@@ -146,12 +148,12 @@ const ResetPasswordForm = () => {
 						<Controller
 							name='password'
 							control={control}
-							rules={{ required: 'Password is required' }}
+							rules={{ required: t('auth.resetPassword.newPasswordRequired') }}
 							render={({ field }) => (
 								<TextField
 									fullWidth
 									type='password'
-									label='New Password'
+									label={t('auth.resetPassword.newPassword')}
 									required
 									error={Boolean(errors.password)}
 									helperText={errors.password?.message}
@@ -165,14 +167,14 @@ const ResetPasswordForm = () => {
 							name='confirmPassword'
 							control={control}
 							rules={{
-								required: 'Please confirm your password',
+								required: t('auth.resetPassword.confirmPasswordRequired'),
 								validate: validatePasswordsMatch,
 							}}
 							render={({ field }) => (
 								<TextField
 									fullWidth
 									type='password'
-									label='Confirm New Password'
+									label={t('auth.resetPassword.confirmPassword')}
 									required
 									error={Boolean(errors.confirmPassword)}
 									helperText={errors.confirmPassword?.message}
@@ -188,7 +190,7 @@ const ResetPasswordForm = () => {
 							className={button}
 							style={{ color: 'white' }}
 						>
-							Reset Password
+							{t('auth.resetPassword.submit')}
 						</Button>
 					</Grid>
 				</Grid>

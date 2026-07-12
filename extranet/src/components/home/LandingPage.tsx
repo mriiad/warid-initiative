@@ -1,5 +1,6 @@
 import { Box } from '@mui/material';
 import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import API_CONFIG from '../../utils/apiConfig';
 import BloodDropsAnimation from './BloodDropsAnimation';
 import { useLandingPageStyles } from './LandingPageStyles';
@@ -8,6 +9,7 @@ import PartnersList from './PartnersList';
 import PhotoGallery from './PhotoGallery';
 
 const LandingPage = () => {
+	const { t } = useTranslation();
 	const {
 		landingContainer,
 		mainImageContainer,
@@ -81,17 +83,16 @@ const LandingPage = () => {
 				<img src='/landing-page/title3.png' alt='Title 3' />
 			</div>
 			<img src='/landing-page/title.png' alt='Title' className={blockImage} />
-			<p className={textParagraph}>
-				جمعية مغربية غرضها الرئيسي تحسيس الناس بأهمية التبرع الدوري وتزويد بنك
-				الدم المحلي بكميات كافية من أكياس الدم من أجل مساعدة مرضى السرطان
-			</p>
+			<p className={textParagraph}>{t('landing.intro')}</p>
 			<Box className={contentBox}>
 				<img
 					src='/landing-page/main1.png'
 					alt='Warid Team'
 					className={mainImage}
 				/>
-				<p className={`${textParagraph} ${highlightedText} ${title}`}>نحن</p>
+				<p className={`${textParagraph} ${highlightedText} ${title}`}>
+					{t('landing.weAre')}
+				</p>
 				<img
 					src='/landing-page/avatar.png'
 					alt='Main Visual'
@@ -99,16 +100,15 @@ const LandingPage = () => {
 				/>
 				<p className={`${textParagraph} ${bigNumber}`}>100</p>
 				<p className={`${textParagraph} ${highlightedText} ${noMargin}`}>
-					متطوع ومتطوعة
+					{t('landing.volunteers')}
 				</p>
 				<p className={textParagraph}>
-					تتراوح أعمارهم بين 18 و27 عاماً
+					{t('landing.ageRange')}
 					<br />
-					ذوو معرفة ومؤهلات عالية في مختلف المجالات والتخصصات، يجمعهم هدف مشترك
-					وهو خدمتكم
+					{t('landing.qualifications')}
 				</p>
 				<p className={`${textParagraph} ${highlightedText} ${title}`}>
-					وأنتم الآن
+					{t('landing.andYouAreNow')}
 				</p>
 				<div className={mainImageContainer}>
 					<img
@@ -138,20 +138,20 @@ const LandingPage = () => {
 						alt='Heart with background'
 					/>
 					<div>
-						<p>متبرع دوري</p>
+						<p>{t('landing.regularDonor')}</p>
 					</div>
 				</div>
 				<NumbersContainer animatedNumber={animatedNumber} ref={numbersRef} />
 				<div className={gallery}>
 					<p className={`${textParagraph} ${highlightedText} ${title}`}>
-						معرض الصور
+						{t('landing.gallery')}
 					</p>
 					<PhotoGallery />
 					<img src='/landing-page/heart.png' alt='Heart' />
 				</div>
 				<div className={partnersContainer}>
 					<p className={`${textParagraph} ${highlightedText} ${title}`}>
-						شركاؤنا
+						{t('landing.partners')}
 					</p>
 					<PartnersList />
 				</div>
@@ -172,10 +172,10 @@ const LandingPage = () => {
 						target='_blank'
 						rel='noopener noreferrer'
 					>
-						Privacy Policy
+						{t('landing.privacyPolicy')}
 					</a>
 
-					<p>© 2024 WARID</p>
+					<p>{t('landing.copyright')}</p>
 				</div>
 			</div>
 		</Box>

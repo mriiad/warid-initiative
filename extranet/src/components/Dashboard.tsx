@@ -8,7 +8,7 @@ import OpacityIcon from '@mui/icons-material/Opacity';
 import { Box, Button, Card, CardContent, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { motion } from 'framer-motion';
-import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../auth/AuthContext';
 import colors from '../styles/colors';
 
@@ -100,41 +100,31 @@ export default function Dashboard() {
 		donationCard,
 		emptyState,
 	} = useStyles();
+	const { t } = useTranslation();
 	const { userId } = useAuth();
 	const { data, isLoading, isError, error } = useDashboard(userId);
 
-	useEffect(() => {
-		if (data) {
-			console.log('Dashboard data:', data);
-		}
-	}, [data]);
-
-	if (isLoading) return <Typography p={2}>Loading dashboard...</Typography>;
+	if (isLoading) return <Typography p={2}>{t('dashboard.loading')}</Typography>;
 	if (isError)
 		return (
 			<Typography p={2} color='error'>
-				Error loading dashboard: {error?.message || 'Unknown error'}
+				{t('dashboard.errorPrefix')} {error?.message || t('dashboard.unknownError')}
 			</Typography>
 		);
 
 	const stats = data?.stats ?? { total: 0, lastDonation: '-', eligibleIn: '-' };
 	const donations = data?.donations ?? [];
 
-	return (
-		<Box p={2} display='flex' flexDirection='column' gap={3}>
-			{donations.length === 0 ? (
+	if (donations.length === 0) {
+		return (
+			<Box p={2} display='flex' flexDirection='column' gap={3}>
 				<Box className={emptyState} sx={{ borderRadius: '24px' }}>
-					<FavoriteBorderIcon
-						color='disabled'
-						fontSize='large'
-						sx={{ mb: 1 }}
-					/>
+					<FavoriteBorderIcon color='disabled' fontSize='large' sx={{ mb: 1 }} />
 					<Typography variant='h6' color='textSecondary' gutterBottom>
-						You haven't made any donations yet!
+						{t('dashboard.noDonationsTitle')}
 					</Typography>
 					<Typography variant='body2' color='textSecondary'>
-						Join our community of heroes and start saving lives today. Explore
-						upcoming events and make your first donation!
+						{t('dashboard.noDonationsBody')}
 					</Typography>
 					<Button
 						variant='contained'
@@ -142,40 +132,41 @@ export default function Dashboard() {
 						href='/events?page=1'
 						sx={{ mt: 2 }}
 					>
-						See Upcoming Events
+						{t('dashboard.seeUpcomingEvents')}
 					</Button>
 				</Box>
+			</Box>
+		);
+	}
 
-			) : (
-                <>
-				<motion.div
-					initial={{ y: -30, opacity: 0 }}
-					animate={{ y: 0, opacity: 1 }}
-					transition={{ duration: 0.6 }}
-				>
-					<Card className={heroCard} sx={{ borderRadius: '24px' }}>
-						<Box className={heroContent}>
-							<Typography variant='h6' sx={{ color: 'white' }}>
-								Welcome
-							</Typography>
-							<Typography variant='body2' sx={{ color: 'white' }}>
-								Thanks you for being part of the warid community and helping
-								saving live
-							</Typography>
-							<Button
-								variant='contained'
-								color='inherit'
-								href='/events?page=1'
-								className={heroButton}
-							>
-								Explore Events
-							</Button>
-						</Box>
-						<Box className={heroOverlay} />
-					</Card>
-				</motion.div>
-			
-            
+	return (
+		<Box p={2} display='flex' flexDirection='column' gap={3}>
+			<motion.div
+				initial={{ y: -30, opacity: 0 }}
+				animate={{ y: 0, opacity: 1 }}
+				transition={{ duration: 0.6 }}
+			>
+				<Card className={heroCard} sx={{ borderRadius: '24px' }}>
+					<Box className={heroContent}>
+						<Typography variant='h6' sx={{ color: 'white' }}>
+							{t('dashboard.welcome')}
+						</Typography>
+						<Typography variant='body2' sx={{ color: 'white' }}>
+							{t('dashboard.welcomeMessage')}
+						</Typography>
+						<Button
+							variant='contained'
+							color='inherit'
+							href='/events?page=1'
+							className={heroButton}
+						>
+							{t('dashboard.exploreEvents')}
+						</Button>
+					</Box>
+					<Box className={heroOverlay} />
+				</Card>
+			</motion.div>
+
 			<Box display='flex' gap={2} flexWrap='wrap'>
 				<motion.div
 					whileHover={{ y: -6 }}
@@ -185,7 +176,7 @@ export default function Dashboard() {
 					<Card className={statCard} sx={{ borderRadius: '24px' }}>
 						<FavoriteIcon sx={{ color: colors.rose }} fontSize='large' />
 						<Typography variant='subtitle2' color='text.secondary'>
-							Total Donations
+							{t('dashboard.totalDonations')}
 						</Typography>
 						<Typography variant='h6'>{stats.total}</Typography>
 					</Card>
@@ -199,7 +190,7 @@ export default function Dashboard() {
 					<Card className={statCard} sx={{ borderRadius: '24px' }}>
 						<AccessTimeIcon sx={{ color: colors.purple }} fontSize='large' />
 						<Typography variant='subtitle2' color='text.secondary'>
-							Next Donation
+							{t('dashboard.nextDonation')}
 						</Typography>
 						<Typography variant='h6'>{stats.eligibleIn}</Typography>
 					</Card>
@@ -213,7 +204,7 @@ export default function Dashboard() {
 					<Card className={statCard} sx={{ borderRadius: '24px' }}>
 						<CalendarMonthIcon sx={{ color: colors.purple }} fontSize='large' />
 						<Typography variant='subtitle2' color='text.secondary'>
-							Last donation
+							{t('dashboard.lastDonation')}
 						</Typography>
 						<Typography variant='h6'>{stats.lastDonation}</Typography>
 					</Card>
@@ -221,43 +212,35 @@ export default function Dashboard() {
 			</Box>
 
 			<Box display='flex' flexDirection='column' gap={2}>
-				
-					
-						<Typography variant='h5'>Your donations history</Typography>
-						{donations.map((d) => (
+				<Typography variant='h5'>{t('dashboard.donationHistory')}</Typography>
+				{donations.map((d) => (
+					<motion.div
+						key={d.id}
+						initial={{ opacity: 0, y: 20 }}
+						animate={{ opacity: 1, y: 0 }}
+						transition={{ duration: 0.4 }}
+					>
+						<Box className={donationCard} sx={{ borderRadius: '24px' }}>
+							<CardContent>
+								<Typography variant='h6'>{d.event}</Typography>
 
-							<motion.div
-								key={d.id}
-								initial={{ opacity: 0, y: 20 }}
-								animate={{ opacity: 1, y: 0 }}
-								transition={{ duration: 0.4 }}
-							>
-
-								<Box className={donationCard} sx={{ borderRadius: '24px' }}>
-									<CardContent>
-										<Typography variant='h6'>{d.event}</Typography>
-
-										<Box display='flex' alignItems='center' gap={1} mb={0.5}>
-											<CalendarTodayIcon
-												fontSize='small'
-												sx={{ color: colors.purple }}
-											/>
-											<Typography variant='body2'>{d.date}</Typography>
-										</Box>
-
-										<Box display='flex' alignItems='center' gap={1}>
-											<OpacityIcon fontSize='small' sx={{ color: colors.rose }} />
-											<Typography variant='body2'>{d.type}</Typography>
-										</Box>
-									</CardContent>
+								<Box display='flex' alignItems='center' gap={1} mb={0.5}>
+									<CalendarTodayIcon
+										fontSize='small'
+										sx={{ color: colors.purple }}
+									/>
+									<Typography variant='body2'>{d.date}</Typography>
 								</Box>
-							</motion.div>
-						))}
-					
-				
+
+								<Box display='flex' alignItems='center' gap={1}>
+									<OpacityIcon fontSize='small' sx={{ color: colors.rose }} />
+									<Typography variant='body2'>{d.type}</Typography>
+								</Box>
+							</CardContent>
+						</Box>
+					</motion.div>
+				))}
 			</Box>
-			</>
-			)}
 		</Box>
 	);
 }
