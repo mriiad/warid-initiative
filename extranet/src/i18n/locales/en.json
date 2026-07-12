@@ -257,7 +257,8 @@
       "qrScanTitle": "Scan the QR code to donate",
       "participationConfirmed": "You have been successfully registered as a participant!",
       "shareFallbackTitle": "Event",
-      "shareFallbackText": "Check out this event"
+      "shareFallbackText": "Check out this event",
+      "eventDateHeading": "Event Date"
     },
     "confirmation": {
       "confirming": "Confirming your attendance...",

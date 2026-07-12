@@ -14,10 +14,10 @@ interface EventOverviewCardProps {
 	date: string;
 	createdAt?: string;
 	mapLink?: string;
-	primaryActionLabel: string;
+	primaryActionLabel?: string;
 	primaryActionIcon?: ReactNode;
-	onPrimaryAction: () => void;
-	onViewDetails: () => void;
+	onPrimaryAction?: () => void;
+	onViewDetails?: () => void;
 }
 
 const EventOverviewCard = ({
@@ -108,31 +108,37 @@ const EventOverviewCard = ({
 					);
 				})}
 			</div>
-			<div className={actionsRow}>
-				<button type='button' className={primaryActionButton} onClick={onPrimaryAction}>
-					{primaryActionLabel}
-					{primaryActionIcon}
-				</button>
-				{mapLink && (
-					<IconButton
-						className={iconSquareButton}
-						aria-label={t('admin.viewLocation')}
-						component='a'
-						href={mapLink}
-						target='_blank'
-						rel='noopener noreferrer'
-					>
-						<LocationOnIcon />
-					</IconButton>
-				)}
-				<IconButton
-					className={iconSquareButtonNeutral}
-					aria-label={t('admin.viewDetails')}
-					onClick={onViewDetails}
-				>
-					<ArrowForwardIcon />
-				</IconButton>
-			</div>
+			{(primaryActionLabel || onViewDetails) && (
+				<div className={actionsRow}>
+					{primaryActionLabel && onPrimaryAction && (
+						<button type='button' className={primaryActionButton} onClick={onPrimaryAction}>
+							{primaryActionLabel}
+							{primaryActionIcon}
+						</button>
+					)}
+					{mapLink && (
+						<IconButton
+							className={iconSquareButton}
+							aria-label={t('admin.viewLocation')}
+							component='a'
+							href={mapLink}
+							target='_blank'
+							rel='noopener noreferrer'
+						>
+							<LocationOnIcon />
+						</IconButton>
+					)}
+					{onViewDetails && (
+						<IconButton
+							className={iconSquareButtonNeutral}
+							aria-label={t('admin.viewDetails')}
+							onClick={onViewDetails}
+						>
+							<ArrowForwardIcon />
+						</IconButton>
+					)}
+				</div>
+			)}
 		</div>
 	);
 };

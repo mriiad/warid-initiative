@@ -257,7 +257,8 @@
       "qrScanTitle": "مسح رمز الاستجابة السريعة للتبرع",
       "participationConfirmed": "!تم تسجيلك بنجاح في قائمة المشاركين",
       "shareFallbackTitle": "فعالية",
-      "shareFallbackText": "اطّلع على هذه الفعالية"
+      "shareFallbackText": "اطّلع على هذه الفعالية",
+      "eventDateHeading": "تاريخ الفعالية"
     },
     "confirmation": {
       "confirming": "...يتم تأكيد حضورك",

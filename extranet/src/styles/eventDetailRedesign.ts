@@ -1,0 +1,193 @@
+import { makeStyles } from '@mui/styles';
+import { redesignColors } from './authRedesign';
+
+export const eventDetailRedesignStyles = makeStyles({
+	screen: {
+		minHeight: '100vh',
+		width: '100%',
+		display: 'flex',
+		flexDirection: 'column',
+		backgroundColor: '#F4F3F6',
+		paddingBottom: '160px',
+	},
+	topBar: {
+		display: 'flex',
+		alignItems: 'center',
+		gap: '14px',
+		padding: '16px 20px',
+		backgroundColor: '#FFFFFF',
+	},
+	topBarDivider: {
+		width: '1px',
+		height: '20px',
+		backgroundColor: redesignColors.inputBorder,
+	},
+	topBarTitle: {
+		flexGrow: 1,
+		'&.MuiTypography-root': {
+			textAlign: 'center',
+			fontWeight: 700,
+			fontSize: '16px',
+			color: '#1F1B24',
+			overflow: 'hidden',
+			textOverflow: 'ellipsis',
+			whiteSpace: 'nowrap',
+		},
+	},
+	content: {
+		padding: '20px 20px 0',
+		display: 'flex',
+		flexDirection: 'column',
+		gap: '16px',
+	},
+	hero: {
+		position: 'relative',
+		backgroundColor: redesignColors.headerRose,
+		borderRadius: '24px',
+		padding: '22px',
+		color: '#FFFFFF',
+	},
+	heroIcon: {
+		width: '48px',
+		height: '48px',
+		borderRadius: '16px',
+		backgroundColor: 'rgba(255, 255, 255, 0.25)',
+		display: 'flex',
+		alignItems: 'center',
+		justifyContent: 'center',
+		marginBottom: '18px',
+	},
+	heroActions: {
+		position: 'absolute',
+		top: '18px',
+		insetInlineEnd: '18px',
+		display: 'flex',
+		gap: '8px',
+	},
+	heroEditButton: {
+		'&.MuiIconButton-root': {
+			width: '40px',
+			height: '40px',
+			borderRadius: '12px',
+			backgroundColor: 'rgba(255, 255, 255, 0.25)',
+			color: '#FFFFFF',
+		},
+	},
+	heroDeleteButton: {
+		'&.MuiIconButton-root': {
+			width: '40px',
+			height: '40px',
+			borderRadius: '12px',
+			backgroundColor: 'rgba(220, 53, 69, 0.35)',
+			color: '#FFFFFF',
+		},
+	},
+	heroTitle: {
+		'&.MuiTypography-root': {
+			fontWeight: 700,
+			fontSize: '22px',
+			color: '#FFFFFF',
+		},
+	},
+	heroSubtitle: {
+		'&.MuiTypography-root': {
+			fontSize: '13px',
+			color: 'rgba(255, 255, 255, 0.75)',
+			marginTop: '4px',
+		},
+	},
+	sectionTitle: {
+		'&.MuiTypography-root': {
+			fontWeight: 700,
+			fontSize: '15px',
+			color: '#1F1B24',
+		},
+	},
+	locationCard: {
+		backgroundColor: '#FFFFFF',
+		borderRadius: '18px',
+		padding: '14px 16px',
+		display: 'flex',
+		alignItems: 'center',
+		gap: '14px',
+		boxShadow: '0 4px 16px rgba(0, 0, 0, 0.05)',
+	},
+	locationIcon: {
+		width: '40px',
+		height: '40px',
+		borderRadius: '12px',
+		backgroundColor: '#DCEFC9',
+		color: '#5C8A2B',
+		display: 'flex',
+		alignItems: 'center',
+		justifyContent: 'center',
+		flexShrink: 0,
+	},
+	locationName: {
+		flexGrow: 1,
+		'&.MuiTypography-root': {
+			fontWeight: 600,
+			fontSize: '14px',
+			color: '#1F1B24',
+		},
+	},
+	mapLinkButton: {
+		'&.MuiIconButton-root': {
+			width: '40px',
+			height: '40px',
+			borderRadius: '12px',
+			backgroundColor: '#F1EFF4',
+			color: '#1F1B24',
+			flexShrink: 0,
+		},
+	},
+	statRow: {
+		backgroundColor: '#FFFFFF',
+		borderRadius: '18px',
+		padding: '14px 16px',
+		display: 'flex',
+		alignItems: 'center',
+		gap: '14px',
+		boxShadow: '0 4px 16px rgba(0, 0, 0, 0.05)',
+	},
+	statRowIcon: {
+		width: '40px',
+		height: '40px',
+		borderRadius: '12px',
+		display: 'flex',
+		alignItems: 'center',
+		justifyContent: 'center',
+		flexShrink: 0,
+	},
+	statRowLabel: {
+		flexGrow: 1,
+		'&.MuiTypography-root': {
+			fontWeight: 500,
+			fontSize: '14px',
+			color: '#1F1B24',
+		},
+	},
+	statRowValue: {
+		backgroundColor: '#F1EFF4',
+		borderRadius: '10px',
+		padding: '6px 14px',
+		fontWeight: 700,
+		fontSize: '14px',
+		color: '#1F1B24',
+	},
+	qrCard: {
+		backgroundColor: '#FFFFFF',
+		borderRadius: '18px',
+		padding: '20px',
+		display: 'flex',
+		flexDirection: 'column',
+		alignItems: 'center',
+		gap: '12px',
+		boxShadow: '0 4px 16px rgba(0, 0, 0, 0.05)',
+	},
+	qrImage: {
+		width: '180px',
+		height: '180px',
+		borderRadius: '12px',
+	},
+});

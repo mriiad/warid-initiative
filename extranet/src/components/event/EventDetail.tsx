@@ -23,6 +23,7 @@ import { formatDate, formatDateForDisplay } from '../../utils/utils';
 import CanDonate from '../CanDonate';
 import ConfirmationDialog from '../shared/ConfirmationDialog';
 import SnackbarComponent from '../shared/SnackbarComponent';
+import AdminEventDetailView from './AdminEventDetailView';
 import EventConfirmation from './EventConfirmation';
 
 
@@ -643,6 +644,8 @@ const EventDetail: React.FC = () => {
 						{t('events.detail.loading')}
 					</Typography>
 				</LoadingContainer>
+			) : isAdmin && initialRoute ? (
+				<AdminEventDetailView event={event} participantStats={participantStats} onDelete={handleDelete} />
 			) : (
 				<EventContainer>
 					{isAdmin && (

@@ -10,4 +10,5 @@ export interface Event {
 	description: string;
 	isGeneric: boolean;
 	createdAt?: string;
+	qrCode?: string;
 }

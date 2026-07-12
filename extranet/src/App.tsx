@@ -75,9 +75,14 @@ const MobileNavContainer = styled.div`
 // screens) skip the app chrome below instead of sitting inside the padded
 // ContentContainer with a NavBar/MobileHeader above and MobileNavbar below.
 const FULL_SCREEN_ROUTES = ['/login', '/signup', '/admin'];
-// '/events' only goes full-screen for admins -- its redesign is admin-only
-// so far (see EventsComponent), and non-admins still need the old chrome.
+// '/events' and an event's own detail page only go full-screen for admins --
+// their redesign is admin-only so far (see EventsComponent/EventDetail),
+// and non-admins still need the old chrome. The detail-page pattern
+// excludes '/events/create' (a distinct, not-yet-redesigned route) and
+// anything with a further path segment (the can-donate/confirmation
+// sub-routes nested under EventDetail, which are donor-only flows).
 const ADMIN_ONLY_FULL_SCREEN_ROUTES = ['/events'];
+const ADMIN_ONLY_FULL_SCREEN_ROUTE_PATTERN = /^\/events\/(?!create$)[^/]+$/;
 
 const App = () => {
 	const isMobile = useIsMobile();
@@ -87,7 +92,9 @@ const App = () => {
 		new URLSearchParams(location.search).get('forceDesktop') === '1';
 	const isFullScreenRoute =
 		FULL_SCREEN_ROUTES.includes(location.pathname) ||
-		(isAdmin && ADMIN_ONLY_FULL_SCREEN_ROUTES.includes(location.pathname));
+		(isAdmin &&
+			(ADMIN_ONLY_FULL_SCREEN_ROUTES.includes(location.pathname) ||
+				ADMIN_ONLY_FULL_SCREEN_ROUTE_PATTERN.test(location.pathname)));
 
 	const routes = (
 		<Routes>
