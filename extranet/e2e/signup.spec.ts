@@ -29,7 +29,7 @@ test.describe('Signup', () => {
 		await page.goto('/signup');
 		await page.getByLabel('رقم الهوية الوطنية').fill('CIN123456');
 		await page.getByLabel('البريد الإلكتروني').fill('not-an-email');
-		await page.getByLabel('كلمة المرور').fill('password123');
+		await page.getByRole('textbox', { name: 'كلمة المرور' }).fill('password123');
 		await page.getByLabel('رقم الهاتف').fill('0600000000');
 		await page.getByLabel('ذكر').check();
 		await page.getByRole('button', { name: 'إرسال' }).click();
@@ -42,7 +42,7 @@ test.describe('Signup', () => {
 		await page.goto('/signup');
 		await page.getByLabel('رقم الهوية الوطنية').fill('CIN123456');
 		await page.getByLabel('البريد الإلكتروني').fill('newuser@example.com');
-		await page.getByLabel('كلمة المرور').fill('password123');
+		await page.getByRole('textbox', { name: 'كلمة المرور' }).fill('password123');
 		await page.getByLabel('رقم الهاتف').fill('0600000000');
 		await page.getByLabel('ذكر').check();
 		await page.getByRole('button', { name: 'إرسال' }).click();
@@ -61,7 +61,7 @@ test.describe('Signup', () => {
 		await page.goto('/signup');
 		await page.getByLabel('رقم الهوية الوطنية').fill('CIN123456');
 		await page.getByLabel('البريد الإلكتروني').fill('taken@example.com');
-		await page.getByLabel('كلمة المرور').fill('password123');
+		await page.getByRole('textbox', { name: 'كلمة المرور' }).fill('password123');
 		await page.getByLabel('رقم الهاتف').fill('0600000000');
 		await page.getByLabel('ذكر').check();
 		await page.getByRole('button', { name: 'إرسال' }).click();

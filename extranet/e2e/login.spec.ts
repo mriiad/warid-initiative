@@ -16,7 +16,7 @@ test.describe('Login', () => {
 		await mockJson(page, '**/api/auth/login', { message: 'Wrong password.' }, { status: 401, method: 'POST' });
 		await page.goto('/login');
 		await page.getByLabel('اسم المستخدم').fill('CIN123456');
-		await page.getByLabel('كلمة المرور').fill('wrongpassword');
+		await page.getByRole('textbox', { name: 'كلمة المرور' }).fill('wrongpassword');
 		await page.locator('button[type=submit]').click();
 		await page.waitForTimeout(500);
 		await expect(page).toHaveURL(/\/login/);
@@ -33,7 +33,7 @@ test.describe('Login', () => {
 
 		await page.goto('/login');
 		await page.getByLabel('اسم المستخدم').fill('CIN123456');
-		await page.getByLabel('كلمة المرور').fill('password123');
+		await page.getByRole('textbox', { name: 'كلمة المرور' }).fill('password123');
 		await page.locator('button[type=submit]').click();
 
 		await expect(page).toHaveURL(/\/dashboard/, { timeout: 10000 });
@@ -70,7 +70,7 @@ test.describe('Login', () => {
 
 		await page.goto('/login');
 		await page.getByLabel('اسم المستخدم').fill('CIN123456');
-		await page.getByLabel('كلمة المرور').fill('password123');
+		await page.getByRole('textbox', { name: 'كلمة المرور' }).fill('password123');
 		await page.locator('button[type=submit]').click();
 
 		await expect(page).toHaveURL(/\/update-profile/, { timeout: 3000 });

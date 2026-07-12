@@ -1,5 +1,6 @@
 const User = require('../models/user');
 const Donation = require('../models/donation')
+const Event = require('../models/event');
 const ApiError = require('../utils/errors/ApiError');
 const { STATUS_CODE } = require('../utils/errors/httpStatusCode');
 const Profile = require('../models/profile');
@@ -458,6 +459,8 @@ exports.getUserById = async (req, res, next) => {
 				.json({ message: 'User not found' });
 		}
 
+		const { canDonate } = await checkDonationEligibility(userId);
+
 		// Return user data with profile information
 		const userData = {
 			_id: user._id,
@@ -466,6 +469,7 @@ exports.getUserById = async (req, res, next) => {
 			phoneNumber: user.phoneNumber,
 			isAdmin: user.isAdmin,
 			gender: user.gender,
+			canDonate,
 			...(user.profile && {
 				firstname: user.profile.firstname,
 				lastname: user.profile.lastname,
@@ -647,4 +651,24 @@ exports.getDashboard = async (req, res, next) => {
         : { errorMessage: err.message }
     );
   }
+};
+
+// Site-wide counts for the admin dashboard overview.
+exports.getAdminStats = async (req, res, next) => {
+	try {
+		const [totalUsers, totalEvents, totalDonations] = await Promise.all([
+			User.countDocuments(),
+			Event.countDocuments(),
+			Donation.countDocuments(),
+		]);
+
+		res.status(STATUS_CODE.OK).json({
+			totalUsers,
+			totalEvents,
+			totalDonations,
+		});
+	} catch (err) {
+		if (!err.statusCode) err.statusCode = STATUS_CODE.INTERNAL_SERVER;
+		next(err);
+	}
 };

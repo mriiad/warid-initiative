@@ -1,8 +1,10 @@
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import SearchIcon from '@mui/icons-material/Search';
 import {
 	Button,
 	FormControl,
 	FormHelperText,
-	Grid,
+	IconButton,
 	InputLabel,
 	MenuItem,
 	Select,
@@ -13,11 +15,13 @@ import {
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { BLOOD_GROUP_OPTIONS } from '../../data/constants';
 import { useCreateEmergency } from '../../hooks';
-import { authStyles } from '../../styles/mainStyles';
+import { authRedesignStyles } from '../../styles/authRedesign';
+import { eventsListRedesignStyles } from '../../styles/eventsListRedesign';
 import { cities } from '../../utils/utils';
-import FormContainer from '../shared/FormContainer';
+import RedesignBottomNav from '../shared/RedesignBottomNav';
 import ResponseAnimation from '../shared/ResponseAnimation';
 
 // Form data interface for the form (with string phoneNumber for validation)
@@ -30,7 +34,10 @@ interface EmergencyFormData {
 
 const EmergencyForm = () => {
 	const { t } = useTranslation();
-	const { bar, button, signUp, form } = authStyles();
+	const navigate = useNavigate();
+	const { input, phoneRow, countryChip, primaryButton } = authRedesignStyles();
+	const { screen, topBar, topBarDivider, topBarTitle, content, hero, heroIcon, heroTitle } =
+		eventsListRedesignStyles();
 
 	const {
 		handleSubmit,
@@ -97,82 +104,95 @@ const EmergencyForm = () => {
 		handleFormSubmit(formData);
 	};
 
+	const todayLabel = new Date().toLocaleDateString(undefined, {
+		day: 'numeric',
+		month: 'short',
+		year: 'numeric',
+	});
+
 	return (
-		<FormContainer>
-			<Typography variant='h4' align='center' gutterBottom className={signUp}>
-				{t('emergency.form.title')}
-				<span className={bar} style={{ width: '150px', height: '5px' }}></span>
-			</Typography>
+		<div className={screen}>
+			<div className={topBar}>
+				<IconButton aria-label={t('common.back')} onClick={() => navigate(-1)}>
+					<ArrowBackIcon />
+				</IconButton>
+				<div className={topBarDivider} />
+				<Typography className={topBarTitle}>{t('emergency.form.title')}</Typography>
+				<IconButton aria-label={t('admin.searchPlaceholder')}>
+					<SearchIcon />
+				</IconButton>
+			</div>
 
-			<form
-				onSubmit={handleSubmit(onSubmit)}
-				className={form}
-				style={{ marginTop: '20px' }}
-			>
-				<Grid container spacing={2} justifyContent='center' alignItems='center'>
-					{isFormSubmitted ? (
-						<ResponseAnimation
-							responseMessage={t('emergency.form.successTitle')}
-							actionMessage={t('emergency.form.successBody')}
-							isSuccess={isSuccessResponse}
-							isError={isErrorResponse}
-							errorMessage={errorMessage}
-						/>
-					) : (
-						<>
-							<Grid item xs={12}>
-								<Controller
-									name='bloodGroup'
-									control={control}
-									defaultValue=''
-									rules={{ required: t('emergency.form.bloodGroupRequired') }}
-									render={({ field }) => (
-										<FormControl fullWidth error={Boolean(errors.bloodGroup)}>
-											<InputLabel>{t('emergency.form.bloodGroup')}</InputLabel>
-											<Select {...field} label={t('emergency.form.bloodGroup')}>
-												<MenuItem value=''>
-													<em>{t('emergency.form.none')}</em>
+			<div className={content}>
+				<div className={hero}>
+					<div className={heroIcon}>🚨</div>
+					<Typography className={heroTitle}>{t('emergency.form.title')}</Typography>
+					<Typography style={{ color: 'rgba(255,255,255,0.75)', fontSize: '13px', marginTop: '4px' }}>
+						{todayLabel}
+					</Typography>
+				</div>
+
+				{isFormSubmitted ? (
+					<ResponseAnimation
+						responseMessage={t('emergency.form.successTitle')}
+						actionMessage={t('emergency.form.successBody')}
+						isSuccess={isSuccessResponse}
+						isError={isErrorResponse}
+						errorMessage={errorMessage}
+					/>
+				) : (
+					<form onSubmit={handleSubmit(onSubmit)}>
+						<div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+							<Controller
+								name='bloodGroup'
+								control={control}
+								defaultValue=''
+								rules={{ required: t('emergency.form.bloodGroupRequired') }}
+								render={({ field }) => (
+									<FormControl fullWidth className={input} error={Boolean(errors.bloodGroup)}>
+										<InputLabel>{t('emergency.form.bloodGroup')}</InputLabel>
+										<Select {...field} label={t('emergency.form.bloodGroup')}>
+											<MenuItem value=''>
+												<em>{t('emergency.form.none')}</em>
+											</MenuItem>
+											{BLOOD_GROUP_OPTIONS.map((option) => (
+												<MenuItem key={option.value} value={option.value}>
+													{option.label}
 												</MenuItem>
-												{BLOOD_GROUP_OPTIONS.map((option) => (
-													<MenuItem key={option.value} value={option.value}>
-														{option.label}
-													</MenuItem>
-												))}
-											</Select>
-											<FormHelperText>
-												{errors.bloodGroup?.message}
-											</FormHelperText>
-										</FormControl>
-									)}
-								/>
-							</Grid>
+											))}
+										</Select>
+										<FormHelperText>{errors.bloodGroup?.message}</FormHelperText>
+									</FormControl>
+								)}
+							/>
 
-							<Grid item xs={12}>
-								<Controller
-									name='city'
-									rules={{ required: t('emergency.form.cityRequired') }}
-									control={control}
-									defaultValue=''
-									render={({ field }) => (
-										<FormControl fullWidth error={Boolean(errors.city)}>
-											<InputLabel>{t('emergency.form.city')}</InputLabel>
-											<Select {...field}>
-												<MenuItem value=''>
-													<em>{t('emergency.form.none')}</em>
+							<Controller
+								name='city'
+								rules={{ required: t('emergency.form.cityRequired') }}
+								control={control}
+								defaultValue=''
+								render={({ field }) => (
+									<FormControl fullWidth className={input} error={Boolean(errors.city)}>
+										<InputLabel>{t('emergency.form.city')}</InputLabel>
+										<Select {...field} label={t('emergency.form.city')}>
+											<MenuItem value=''>
+												<em>{t('emergency.form.none')}</em>
+											</MenuItem>
+											{cities.map((city) => (
+												<MenuItem key={city} value={city}>
+													{city}
 												</MenuItem>
-												{cities.map((city) => (
-													<MenuItem key={city} value={city}>
-														{city}
-													</MenuItem>
-												))}
-											</Select>
-											<FormHelperText>{errors.city?.message}</FormHelperText>
-										</FormControl>
-									)}
-								/>
-							</Grid>
+											))}
+										</Select>
+										<FormHelperText>{errors.city?.message}</FormHelperText>
+									</FormControl>
+								)}
+							/>
 
-							<Grid item xs={12}>
+							<div className={phoneRow}>
+								<div className={countryChip} aria-hidden='true'>
+									🇲🇦
+								</div>
 								<Controller
 									name='phoneNumber'
 									control={control}
@@ -189,53 +209,45 @@ const EmergencyForm = () => {
 									render={({ field }) => (
 										<TextField
 											{...field}
-											label={t('emergency.form.phone')}
 											fullWidth
+											className={input}
+											label={t('emergency.form.phone')}
 											error={Boolean(errors.phoneNumber)}
 											helperText={errors.phoneNumber?.message}
 										/>
 									)}
 								/>
-							</Grid>
+							</div>
 
-							<Grid item xs={12}>
-								<Controller
-									name='details'
-									control={control}
-									defaultValue=''
-									rules={{ required: t('emergency.form.detailsRequired') }}
-									render={({ field }) => (
-										<TextField
-											{...field}
-											label={t('emergency.form.details')}
-											multiline
-											rows={4}
-											fullWidth
-											error={Boolean(errors.details)}
-											helperText={errors.details?.message}
-										/>
-									)}
-								/>
-							</Grid>
+							<Controller
+								name='details'
+								control={control}
+								defaultValue=''
+								rules={{ required: t('emergency.form.detailsRequired') }}
+								render={({ field }) => (
+									<TextField
+										{...field}
+										fullWidth
+										className={input}
+										label={t('emergency.form.details')}
+										multiline
+										rows={4}
+										error={Boolean(errors.details)}
+										helperText={errors.details?.message}
+									/>
+								)}
+							/>
 
-							<Grid item xs={12}>
-								<Button
-									type='submit'
-									variant='contained'
-									className={button}
-									disabled={loading}
-									style={{ color: 'white' }}
-								>
-									{loading
-										? t('emergency.form.submitting')
-										: t('emergency.form.submit')}
-								</Button>
-							</Grid>
-						</>
-					)}
-				</Grid>
-			</form>
-		</FormContainer>
+							<Button type='submit' fullWidth className={primaryButton} disabled={loading}>
+								{loading ? t('emergency.form.submitting') : t('emergency.form.submit')}
+							</Button>
+						</div>
+					</form>
+				)}
+			</div>
+
+			<RedesignBottomNav />
+		</div>
 	);
 };
 

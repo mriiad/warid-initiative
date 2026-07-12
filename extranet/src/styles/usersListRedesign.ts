@@ -1,0 +1,143 @@
+import { makeStyles } from '@mui/styles';
+import { redesignColors } from './authRedesign';
+
+export const usersListRedesignStyles = makeStyles({
+	screen: {
+		minHeight: '100vh',
+		width: '100%',
+		display: 'flex',
+		flexDirection: 'column',
+		backgroundColor: '#F4F3F6',
+		paddingBottom: '160px',
+	},
+	topBar: {
+		display: 'flex',
+		alignItems: 'center',
+		gap: '14px',
+		padding: '16px 20px',
+		backgroundColor: '#FFFFFF',
+	},
+	topBarDivider: {
+		width: '1px',
+		height: '20px',
+		backgroundColor: redesignColors.inputBorder,
+	},
+	topBarTitle: {
+		flexGrow: 1,
+		'&.MuiTypography-root': {
+			textAlign: 'center',
+			fontWeight: 700,
+			fontSize: '16px',
+			color: '#1F1B24',
+		},
+	},
+	content: {
+		padding: '20px 20px 0',
+		display: 'flex',
+		flexDirection: 'column',
+		gap: '14px',
+	},
+	hero: {
+		backgroundColor: '#1F1B3A',
+		borderRadius: '20px',
+		padding: '18px 20px',
+		display: 'flex',
+		alignItems: 'center',
+		gap: '14px',
+	},
+	heroIcon: {
+		width: '44px',
+		height: '44px',
+		borderRadius: '14px',
+		backgroundColor: '#FBE4C9',
+		color: '#C97A2B',
+		display: 'flex',
+		alignItems: 'center',
+		justifyContent: 'center',
+		flexShrink: 0,
+	},
+	heroTitle: {
+		'&.MuiTypography-root': {
+			color: '#FFFFFF',
+			fontWeight: 700,
+			fontSize: '16px',
+		},
+	},
+	heroSubtitle: {
+		'&.MuiTypography-root': {
+			color: 'rgba(255, 255, 255, 0.6)',
+			fontSize: '13px',
+		},
+	},
+	heroCount: {
+		backgroundColor: '#3B2A82',
+		color: '#FFFFFF',
+		borderRadius: '14px',
+		padding: '6px 14px',
+		fontWeight: 700,
+		fontSize: '16px',
+		textAlign: 'center',
+	},
+	heroCountLabel: {
+		fontSize: '11px',
+		color: 'rgba(255, 255, 255, 0.7)',
+		textAlign: 'center',
+		marginTop: '2px',
+	},
+	userRow: {
+		backgroundColor: '#FFFFFF',
+		borderRadius: '18px',
+		padding: '12px 16px',
+		display: 'flex',
+		alignItems: 'center',
+		gap: '14px',
+		boxShadow: '0 4px 16px rgba(0, 0, 0, 0.05)',
+		textDecoration: 'none',
+		cursor: 'pointer',
+		border: 'none',
+		width: '100%',
+		textAlign: 'start',
+	},
+	userAvatar: {
+		width: '48px',
+		height: '48px',
+		borderRadius: '50%',
+		backgroundColor: '#FBE4C9',
+		color: '#C97A2B',
+		display: 'flex',
+		alignItems: 'center',
+		justifyContent: 'center',
+		fontWeight: 700,
+		fontSize: '18px',
+		flexShrink: 0,
+	},
+	userName: {
+		flexGrow: 1,
+		'&.MuiTypography-root': {
+			fontWeight: 600,
+			fontSize: '15px',
+			color: '#1F1B24',
+		},
+	},
+	userMeta: {
+		'&.MuiTypography-root': {
+			fontSize: '13px',
+			color: redesignColors.placeholder,
+			marginTop: '2px',
+		},
+	},
+	emptyState: {
+		backgroundColor: '#FFFFFF',
+		borderRadius: '20px',
+		padding: '24px',
+		textAlign: 'center',
+		color: redesignColors.placeholder,
+		fontSize: '14px',
+	},
+	paginationRow: {
+		display: 'flex',
+		justifyContent: 'center',
+		gap: '12px',
+		marginTop: '4px',
+	},
+});
