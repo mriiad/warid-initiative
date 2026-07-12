@@ -1,6 +1,5 @@
 import { Alert, Button, CircularProgress, Snackbar } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
@@ -38,10 +37,6 @@ const useStyles = makeStyles({
 		gap: '10px',
 	},
 });
-interface EmergenciesResponse {
-	emergencies: Emergency[];
-	totalItems: number;
-}
 
 const EmergencyComponent = () => {
 	const { t } = useTranslation();
@@ -51,7 +46,6 @@ const EmergencyComponent = () => {
 	const [snackbarMessage, setSnackbarMessage] = useState('');
 	const [searchParams, setSearchParams] = useSearchParams();
 	const page = parseInt(searchParams.get('page') || '1', 10);
-	const queryClient = useQueryClient();
 
 	const [totalPages, setTotalPages] = useState(0);
 
@@ -74,25 +68,10 @@ const EmergencyComponent = () => {
 	const handleConfirmEmergency = (emergencyId: string) => {
 		mutation.mutate(emergencyId, {
 			onSuccess: () => {
-				// Remove confirmed emergency from local cache
-				queryClient.setQueryData<EmergenciesResponse>(
-					['emergencies', 'unconfirmed', page],
-					(oldData) => {
-						if (!oldData) return oldData;
-						return {
-							...oldData,
-							emergencies: oldData.emergencies.filter(
-								(e) => e._id !== emergencyId
-							),
-							totalItems: oldData.totalItems - 1,
-						};
-					}
-				);
 				setSnackbarMessage(t('emergency.list.confirmSuccess'));
 				setSnackbarOpen(true);
 			},
 			onError: (error) => {
-				console.error('Error confirming emergency:', error);
 				setSnackbarMessage(t('emergency.list.confirmError'));
 				setSnackbarOpen(true);
 			},
