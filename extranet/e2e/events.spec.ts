@@ -74,25 +74,21 @@ test.describe('Event creation (admin only)', () => {
 	});
 });
 
-test.describe('Event update (admin only, BUG regression for issue #205)', () => {
-	test('BUG: the page crashes with "Invalid time value" when opened, because eventsService returns the raw Axios response', async ({ page }) => {
-		// UpdateEvent.tsx does `useEvent(reference)` and then, on load, calls
-		// `new Date(eventData.date).toISOString()`. eventsService.getByReference
-		// returns `apiClient.get(...)` directly (the raw AxiosResponse), never
-		// unwrapping `.data` -- so `eventData` is `{ data: { message, event } }`,
-		// and `eventData.date` is `undefined`. `new Date(undefined)` is an
-		// "Invalid Date", and calling `.toISOString()` on it throws
-		// `RangeError: Invalid time value`, crashing the whole page (matches
-		// issue #205's reported crash) instead of showing the update form
-		// pre-filled with the event's current data.
+test.describe('Event update (admin only, regression test for issue #205)', () => {
+	test('the update form loads pre-filled with the event\'s current data, without crashing', async ({ page }) => {
+		// UpdateEvent.tsx used to call `new Date(eventData.date).toISOString()`
+		// directly on the raw AxiosResponse (eventData.date was undefined,
+		// since the real payload is nested at eventData.data.event.date),
+		// throwing `RangeError: Invalid time value` and crashing the page.
+		// Fixed to read `eventData.data.event` correctly.
 		const errors: string[] = [];
 		page.on('pageerror', (err) => errors.push(err.message));
 		await seedAuth(page, { isAdmin: true });
 		await mockJson(page, '**/api/events/WEVENT20990101', eventDetailResponse());
 		await page.goto('/events/update/WEVENT20990101');
-		await page.waitForTimeout(1500);
 
-		expect(errors.some((e) => /Invalid time value/.test(e))).toBe(true);
+		await expect(page.getByLabel('العنوان', { exact: true })).toHaveValue('Collecte de sang - Casablanca');
+		expect(errors.some((e) => /Invalid time value/.test(e))).toBe(false);
 	});
 });
 

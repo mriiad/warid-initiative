@@ -2,26 +2,26 @@ import { test, expect } from '@playwright/test';
 import { mockJson } from './support/mockApi';
 
 test.describe('Signup', () => {
-	test('BUG: the custom Arabic "required" messages never appear, because the native HTML required attribute blocks submission first', async ({ page }) => {
+	test('the custom Arabic "required" message appears on submit (fixed: form has noValidate)', async ({ page }) => {
 		// Every TextField in SignupForm.tsx has both a `required` prop (which
 		// MUI forwards to the underlying <input required>) AND a react-hook-form
-		// `rules: { required: 'اسم المستخدم مطلوب' }` custom message. The browser's
-		// native constraint validation intercepts form submission before
-		// react-hook-form's JS handler ever runs, popping up a plain English
+		// custom message. Without `noValidate` on the <form>, the browser's
+		// native constraint validation intercepted submission before
+		// react-hook-form's JS handler ever ran, popping up a plain English
 		// "Please fill out this field" bubble instead of the localized Arabic
-		// message the app was clearly built to show. The custom messages are
-		// dead code for every required field in this form.
+		// message. Fixed by adding `noValidate` to the form.
 		await page.goto('/signup');
 		await page.getByRole('button', { name: 'إرسال' }).click();
-		await expect(page.getByText('اسم المستخدم مطلوب')).toBeVisible();
+		await expect(page.getByText('رقم الهوية الوطنية مطلوب')).toBeVisible();
 	});
 
-	test('BUG: invalid-email custom validation is unreachable while any earlier required field is empty', async ({ page }) => {
+	test('invalid-email custom validation still runs even with an earlier required field empty (fixed: form has noValidate)', async ({ page }) => {
 		await page.goto('/signup');
 		await page.getByLabel('البريد الإلكتروني').fill('not-an-email');
 		await page.getByRole('button', { name: 'إرسال' }).click();
-		// Native validation stops at the empty CIN field (earlier in DOM order)
-		// before react-hook-form's email regex ever runs.
+		// With noValidate, native constraint validation no longer stops at the
+		// empty CIN field (earlier in DOM order) before react-hook-form
+		// validates every field, including the email regex.
 		await expect(page.getByText(/عنوان بريد إلكتروني صالح/)).toBeVisible();
 	});
 

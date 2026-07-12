@@ -14,6 +14,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
 import { useEvent } from '../../hooks';
 import { authStyles, mainStyles } from '../../styles/mainStyles';
+import NotFoundPage from '../NotFoundPage';
 import FormContainer from '../shared/FormContainer';
 import ResponseAnimation from '../shared/ResponseAnimation';
 import SnackbarComponent from '../shared/SnackbarComponent';
@@ -45,7 +46,7 @@ const UpdateEvent: React.FC = () => {
 	const { formWrapper, fileInput } = useStyles();
 	const navigate = useNavigate();
 	const { reference } = useParams<{ reference: string }>();
-	const { token } = useAuth();
+	const { token, isAdmin } = useAuth();
 
 	const {
 		control,
@@ -87,6 +88,10 @@ const UpdateEvent: React.FC = () => {
 			setMessage(t('events.form.loadError'));
 		}
 	}, [isError, t]);
+
+	if (!isAdmin) {
+		return <NotFoundPage />;
+	}
 
 	const onSubmit = async (data: IFormInput) => {
 		try {

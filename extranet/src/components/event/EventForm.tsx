@@ -11,9 +11,11 @@ import React, { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../auth/AuthContext';
 import { useCreateEvent } from '../../hooks';
 import { authStyles, mainStyles } from '../../styles/mainStyles';
 import FormContainer from '../shared/FormContainer';
+import NotFoundPage from '../NotFoundPage';
 import ResponseAnimation from '../shared/ResponseAnimation';
 
 interface IFormInput {
@@ -38,6 +40,7 @@ const useStyles = makeStyles({
 
 const EventForm: React.FC = () => {
 	const { t } = useTranslation();
+	const { isAdmin } = useAuth();
 	const { bar, button, form } = authStyles();
 	const { subTitle } = mainStyles();
 	const { formWrapper, fileInput } = useStyles();
@@ -62,6 +65,10 @@ const EventForm: React.FC = () => {
 	const [errorMessage, setErrorMessage] = useState<string>('');
 
 	const createEventMutation = useCreateEvent();
+
+	if (!isAdmin) {
+		return <NotFoundPage />;
+	}
 
 	const onSubmit = async (data: IFormInput) => {
 		try {

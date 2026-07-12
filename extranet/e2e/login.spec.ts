@@ -2,7 +2,7 @@ import { test, expect, Route } from '@playwright/test';
 import { mockJson } from './support/mockApi';
 
 test.describe('Login', () => {
-	test('BUG: native required popup pre-empts the custom Arabic "username required" message', async ({ page }) => {
+	test('the custom Arabic "username required" message appears on submit (fixed: form has noValidate)', async ({ page }) => {
 		await page.goto('/login');
 		await page.getByRole('button', { name: 'دخول' }).click().catch(async () => {
 			// Fall back to a more permissive submit button match if the exact
