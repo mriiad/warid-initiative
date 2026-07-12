@@ -34,7 +34,10 @@ app.use(participantRouter);
 
 app.use(express.static(path.join(__dirname, '../extranet/build')));
 
-app.get('*', (req, res) => {
+// Express 5's path-to-regexp requires wildcard route params to be named
+// (bare '*' throws at registration time); '/*splat' matches the same set
+// of paths the bare '*' did under Express 4.
+app.get('/*splat', (req, res) => {
 	res.sendFile(path.join(__dirname, '../extranet/build', 'index.html'));
 });
 
