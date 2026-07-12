@@ -103,8 +103,8 @@ const UsersComponent: React.FC = () => {
 		open: false,
 		title: '',
 		message: '',
-		confirmText: t('common.confirm'),
-		cancelText: t('common.cancel'),
+		confirmText: 'Confirm',
+		cancelText: 'Cancel',
 		onConfirm: () => {},
 		warning: false,
 	});
@@ -269,10 +269,10 @@ const UsersComponent: React.FC = () => {
 		console.log(`Deleting user with name ${username}`);
 		setConfirmationDialog({
 			open: true,
-			title: t('users.list.deleteTitle'),
-			message: t('users.list.deleteConfirm', { username }),
-			confirmText: t('common.delete'),
-			cancelText: t('common.cancel'),
+			title: 'Delete User',
+			message: `Are you sure you want to delete the user "${username}"? This action cannot be undone.`,
+			confirmText: 'Delete',
+			cancelText: 'Cancel',
 			onConfirm: async () => {
 				try {
 					setIsLoading(true);
@@ -320,10 +320,10 @@ const UsersComponent: React.FC = () => {
 		console.log(`Making user with ID ${userId} as admin`);
 		setConfirmationDialog({
 			open: true,
-			title: t('users.list.makeAdminTitle'),
-			message: t('users.list.makeAdminConfirm', { username }),
-			confirmText: t('users.card.makeAdmin'),
-			cancelText: t('common.cancel'),
+			title: 'Make User Admin',
+			message: `Are you sure you want to make "${username}" an admin? This will give them full administrative privileges.`,
+			confirmText: 'Make Admin',
+			cancelText: 'Cancel',
 			onConfirm: async () => {
 				try {
 					setIsLoading(true);
