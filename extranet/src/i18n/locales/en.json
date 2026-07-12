@@ -13,7 +13,8 @@
     "required": "This field is required",
     "none": "None",
     "yes": "Yes",
-    "edit": "Edit"
+    "edit": "Edit",
+    "back": "Back"
   },
   "nav": {
     "home": "Home",

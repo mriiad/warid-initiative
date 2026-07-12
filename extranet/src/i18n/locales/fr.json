@@ -13,7 +13,8 @@
     "required": "Ce champ est requis",
     "none": "Aucun",
     "yes": "Oui",
-    "edit": "Modifier"
+    "edit": "Modifier",
+    "back": "Retour"
   },
   "nav": {
     "home": "Accueil",

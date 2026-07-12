@@ -92,10 +92,11 @@ test.describe('Event update (admin only, regression test for issue #205)', () =>
 	});
 });
 
-test.describe('Event deletion (admin only)', () => {
-	test('confirms and deletes an event', async ({ page }) => {
+test.describe('Event deletion (admin only, regression test for the redesigned events list)', () => {
+	test('the admin events list no longer has an inline delete action (dropped to match the new mockup); deletion now happens from the event detail page', async ({ page }) => {
 		await seedAuth(page, { isAdmin: true });
 		await mockJson(page, '**/api/events*', eventListResponse([sampleEvent({ reference: 'WEVENT20990101', title: 'To Delete' })]));
+		await mockJson(page, '**/api/events/WEVENT20990101', eventDetailResponse({ reference: 'WEVENT20990101', title: 'To Delete' }));
 		let deleteCalled = false;
 		await page.route('**/api/event', async (route) => {
 			if (route.request().method() === 'DELETE') {
@@ -104,12 +105,16 @@ test.describe('Event deletion (admin only)', () => {
 			}
 			return route.fallback();
 		});
+
 		await page.goto('/events');
 		await expect(page.getByText('To Delete')).toBeVisible();
-		await page.getByRole('button', { name: 'حذف' }).click();
+		expect(await page.getByRole('button', { name: 'حذف' }).count()).toBe(0);
+
+		await page.getByRole('button', { name: 'عرض التفاصيل' }).click();
+		await expect(page).toHaveURL(/\/events\/WEVENT20990101/);
+		await page.getByRole('button', { name: 'Delete Event' }).click();
 		await page.getByRole('button', { name: 'Delete' }).click();
 		await page.waitForTimeout(500);
 		expect(deleteCalled).toBe(true);
-		await expect(page.getByText('To Delete')).toHaveCount(0);
 	});
 });

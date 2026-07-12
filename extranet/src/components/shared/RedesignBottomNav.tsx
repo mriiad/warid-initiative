@@ -6,6 +6,7 @@ import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import { makeStyles } from '@mui/styles';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth as useAuthContext } from '../../auth/AuthContext';
 import { redesignColors } from '../../styles/authRedesign';
 
 const useStyles = makeStyles({
@@ -64,20 +65,25 @@ const useStyles = makeStyles({
 });
 
 const NAV_ITEMS = [
-	{ path: '/admin', icon: HomeIcon, labelKey: 'nav.home' },
-	{ path: '/events?page=1', icon: CalendarMonthIcon, labelKey: 'nav.calendar', matchPath: '/events' },
-	{ path: '/emergencies?page=1', icon: HealthAndSafetyIcon, labelKey: 'nav.emergencies', matchPath: '/emergencies' },
-	{ path: '/users?page=1', icon: PersonOutlineIcon, labelKey: 'nav.admin', matchPath: '/users' },
+	{ path: '/admin', icon: HomeIcon, labelKey: 'nav.home', adminOnly: true },
+	{ path: '/events?page=1', icon: CalendarMonthIcon, labelKey: 'nav.calendar', matchPath: '/events', adminOnly: false },
+	{ path: '/emergencies?page=1', icon: HealthAndSafetyIcon, labelKey: 'nav.emergencies', matchPath: '/emergencies', adminOnly: true },
+	{ path: '/users?page=1', icon: PersonOutlineIcon, labelKey: 'nav.admin', matchPath: '/users', adminOnly: true },
 ];
 
-const AdminBottomNav = () => {
+// The bottom nav for redesigned screens. Home/emergencies/users are
+// admin-only routes (guarded server- and route-side elsewhere), so a
+// non-admin only gets the events tab plus a home fallback -- there's no
+// mockup yet for what a donor's version of this nav should show, so this
+// is a conservative default rather than a hidden nav bar.
+const RedesignBottomNav = () => {
 	const { wrapper, bar, item, itemActive, fab } = useStyles();
 	const { t } = useTranslation();
 	const location = useLocation();
 	const navigate = useNavigate();
+	const { isAdmin } = useAuthContext();
 
-	const firstHalf = NAV_ITEMS.slice(0, 2);
-	const secondHalf = NAV_ITEMS.slice(2);
+	const visibleItems = NAV_ITEMS.filter((navItem) => isAdmin || !navItem.adminOnly);
 
 	const renderItem = (navItem: (typeof NAV_ITEMS)[number]) => {
 		const Icon = navItem.icon;
@@ -94,20 +100,26 @@ const AdminBottomNav = () => {
 		);
 	};
 
+	const midpoint = Math.ceil(visibleItems.length / 2);
+	const firstHalf = visibleItems.slice(0, midpoint);
+	const secondHalf = visibleItems.slice(midpoint);
+
 	return (
 		<>
-			<button
-				type='button'
-				className={fab}
-				aria-label={t('admin.addEvent')}
-				onClick={() => navigate('/events/create')}
-			>
-				<AddIcon />
-			</button>
+			{isAdmin && (
+				<button
+					type='button'
+					className={fab}
+					aria-label={t('admin.addEvent')}
+					onClick={() => navigate('/events/create')}
+				>
+					<AddIcon />
+				</button>
+			)}
 			<div className={wrapper}>
 				<div className={bar}>
 					{firstHalf.map(renderItem)}
-					<div style={{ width: '56px' }} />
+					{isAdmin && <div style={{ width: '56px' }} />}
 					{secondHalf.map(renderItem)}
 				</div>
 			</div>
@@ -115,4 +127,4 @@ const AdminBottomNav = () => {
 	);
 };
 
-export default AdminBottomNav;
+export default RedesignBottomNav;

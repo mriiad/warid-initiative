@@ -9,4 +9,5 @@ export interface Event {
 	mapLink: string;
 	description: string;
 	isGeneric: boolean;
+	createdAt?: string;
 }

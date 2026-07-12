@@ -71,10 +71,13 @@ const MobileNavContainer = styled.div`
 	z-index: 101;
 `;
 
-// Routes that ship their own full-bleed header/layout (the redesigned auth
+// Routes that ship their own full-bleed header/layout (the redesigned
 // screens) skip the app chrome below instead of sitting inside the padded
 // ContentContainer with a NavBar/MobileHeader above and MobileNavbar below.
 const FULL_SCREEN_ROUTES = ['/login', '/signup', '/admin'];
+// '/events' only goes full-screen for admins -- its redesign is admin-only
+// so far (see EventsComponent), and non-admins still need the old chrome.
+const ADMIN_ONLY_FULL_SCREEN_ROUTES = ['/events'];
 
 const App = () => {
 	const isMobile = useIsMobile();
@@ -82,7 +85,9 @@ const App = () => {
 	const location = useLocation();
 	const forceDesktop =
 		new URLSearchParams(location.search).get('forceDesktop') === '1';
-	const isFullScreenRoute = FULL_SCREEN_ROUTES.includes(location.pathname);
+	const isFullScreenRoute =
+		FULL_SCREEN_ROUTES.includes(location.pathname) ||
+		(isAdmin && ADMIN_ONLY_FULL_SCREEN_ROUTES.includes(location.pathname));
 
 	const routes = (
 		<Routes>
