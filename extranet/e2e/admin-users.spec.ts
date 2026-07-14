@@ -19,6 +19,22 @@ test.describe('Admin users list', () => {
 		await expect(page.getByText('Amine Bennani')).toBeVisible({ timeout: 5000 });
 	});
 
+	test('regression: /users renders full-screen, not wrapped in the old app chrome on top of the new one', async ({ page }) => {
+		await seedAuth(page, { isAdmin: true });
+		await mockJson(page, '**/api/users?*', {
+			message: 'Fetched users successfully.',
+			users: [sampleUser({ username: 'CIN000111', profile: { firstname: 'Amine', lastname: 'Bennani' } })],
+			totalItems: 1,
+		});
+		await page.goto('/users');
+		await expect(page.getByText('Amine Bennani')).toBeVisible({ timeout: 5000 });
+		// The old MobileHeader (with the app logo) was still wrapping this
+		// already-redesigned screen, stacking on top of its own top bar and
+		// bottom nav -- '/users' was missing from App.tsx's full-screen route
+		// list. Confirm the old chrome is gone now.
+		await expect(page.locator('img[alt="Logo"]')).toHaveCount(0);
+	});
+
 	test('admin can promote a user to admin from the user detail page', async ({ page }) => {
 		await seedAuth(page, { isAdmin: true });
 		await mockJson(page, '**/api/users?*', {
