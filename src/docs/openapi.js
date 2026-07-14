@@ -589,16 +589,16 @@ module.exports = {
 				},
 			},
 			UserProfileUpdate: {
-				allOf: [
-					ref('ProfileInput'),
-					{
-						type: 'object',
-						properties: {
-							phoneNumber: { type: 'string', example: '0612345678' },
-							email: { type: 'string', format: 'email' },
-						},
-					},
-				],
+				type: 'object',
+				properties: {
+					firstname: { type: 'string', example: 'Amine' },
+					lastname: { type: 'string', example: 'Bennani' },
+					birthdate: { type: 'string', format: 'date', example: '1995-05-20' },
+					bloodGroup: { type: 'string', enum: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] },
+					city: { type: 'string', example: 'Casablanca' },
+					phoneNumber: { type: 'string', example: '0612345678' },
+					email: { type: 'string', format: 'email' },
+				},
 			},
 			UserProfile: {
 				allOf: [
