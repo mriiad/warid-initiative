@@ -2,6 +2,11 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Mobile-only gate (App.tsx)', () => {
 	test('desktop viewport shows the "unsupported" page instead of the app', async ({ browser }) => {
+		// See the timeout note on the forceDesktop test below: creating a
+		// fresh browser context is measurably slower under CI's shared/
+		// contended runners than locally, so the default 30s timeout is too
+		// tight here too.
+		test.setTimeout(60000);
 		const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
 		const page = await context.newPage();
 		await page.goto('/home');
