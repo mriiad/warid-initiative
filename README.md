@@ -37,6 +37,15 @@ The Warid Initiative Blood Donation Application is a project aimed at facilitati
 
 ## API Testing
 
+## Swagger / OpenAPI
+
+After starting the backend, the API documentation is available at:
+
+- Swagger UI: `http://localhost:<port>/api-docs`
+- OpenAPI JSON: `http://localhost:<port>/api-docs.json`
+
+Use the **Authorize** button in Swagger UI to provide the JWT access token returned by `POST /api/auth/login` when testing protected endpoints.
+
 In order to the the routes you can already use POSTMAN to make API calls.
 API automated tests will be created later, but as of now, our API can be tests using a REST caller.
 
