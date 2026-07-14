@@ -1,59 +1,42 @@
-import { Alert, Button, CircularProgress, Snackbar } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import SearchIcon from '@mui/icons-material/Search';
+import { Button, CircularProgress, IconButton, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useSearchParams } from 'react-router-dom';
-import styled from 'styled-components';
-import { useAuth } from '../../auth/AuthContext';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Emergency } from '../../data/Emergency';
 import { useConfirmEmergency, useUnconfirmedEmergencies } from '../../hooks';
-import API_CONFIG from '../../utils/apiConfig';
+import { emergencyListRedesignStyles } from '../../styles/emergencyListRedesign';
+import RedesignBottomNav from '../shared/RedesignBottomNav';
+import SnackbarComponent from '../shared/SnackbarComponent';
 import EmergencyCard from './EmergencyCard';
-
-const EmergenciesContainer = styled.div`
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-`;
-
-const useStyles = makeStyles({
-	emergenciesList: {
-		display: 'flex',
-		flexDirection: 'row',
-		flexWrap: 'wrap',
-		gap: '20px',
-		justifyContent: 'center',
-	},
-	fallBack: {
-		display: 'flex',
-		justifyContent: 'center',
-		alignItems: 'center',
-		minHeight: '100vh',
-	},
-	pagination: {
-		marginBottom: '64px',
-		marginTop: '32px',
-		display: 'flex',
-		gap: '10px',
-	},
-});
 
 const EmergencyComponent = () => {
 	const { t } = useTranslation();
-	const classes = useStyles();
-	const { token } = useAuth();
-	const [snackbarOpen, setSnackbarOpen] = useState(false);
-	const [snackbarMessage, setSnackbarMessage] = useState('');
+	const navigate = useNavigate();
 	const [searchParams, setSearchParams] = useSearchParams();
 	const page = parseInt(searchParams.get('page') || '1', 10);
 
 	const [totalPages, setTotalPages] = useState(0);
+	const [message, setMessage] = useState<string | null>(null);
 
 	const {
-		data: emergenciesResponse,
-		isLoading,
-		error,
-	} = useUnconfirmedEmergencies(page);
+		screen,
+		topBar,
+		topBarDivider,
+		topBarTitle,
+		content,
+		hero,
+		heroIcon,
+		heroTitle,
+		heroSubtitle,
+		heroCount,
+		heroCountLabel,
+		emptyState,
+		paginationRow,
+	} = emergencyListRedesignStyles();
+
+	const { data: emergenciesResponse, isLoading } = useUnconfirmedEmergencies(page);
 
 	useEffect(() => {
 		if (emergenciesResponse?.data) {
@@ -62,87 +45,88 @@ const EmergencyComponent = () => {
 	}, [emergenciesResponse]);
 
 	const emergencies: Emergency[] = emergenciesResponse?.data?.emergencies || [];
+	const totalItems = emergenciesResponse?.data?.totalItems ?? 0;
 
 	const mutation = useConfirmEmergency();
 
 	const handleConfirmEmergency = (emergencyId: string) => {
 		mutation.mutate(emergencyId, {
-			onSuccess: () => {
-				setSnackbarMessage(t('emergency.list.confirmSuccess'));
-				setSnackbarOpen(true);
-			},
-			onError: (error) => {
-				setSnackbarMessage(t('emergency.list.confirmError'));
-				setSnackbarOpen(true);
-			},
+			onSuccess: () => setMessage(t('emergency.list.confirmSuccess')),
+			onError: () => setMessage(t('emergency.list.confirmError')),
 		});
 	};
 
-	const handleCloseSnackbar = () => {
-		setSnackbarOpen(false);
-	};
-
 	const handleNextPage = () => {
-		if (page < totalPages) {
-			setSearchParams({ page: String(page + 1) });
-		}
+		if (page < totalPages) setSearchParams({ page: String(page + 1) });
 	};
 
 	const handlePrevPage = () => {
-		if (page > 1) {
-			setSearchParams({ page: String(page - 1) });
-		}
+		if (page > 1) setSearchParams({ page: String(page - 1) });
 	};
 
 	return (
-		<EmergenciesContainer>
-			{isLoading || mutation.isPending ? (
-				<div className={classes.fallBack}>
-					<CircularProgress />
+		<div className={screen}>
+			<div className={topBar}>
+				<IconButton aria-label={t('common.back')} onClick={() => navigate(-1)}>
+					<ArrowBackIcon />
+				</IconButton>
+				<div className={topBarDivider} />
+				<Typography className={topBarTitle}>{t('emergency.list.title')}</Typography>
+				<IconButton aria-label={t('admin.searchPlaceholder')}>
+					<SearchIcon />
+				</IconButton>
+			</div>
+
+			<div className={content}>
+				<div className={hero}>
+					<div className={heroIcon}>🚨</div>
+					<div style={{ flexGrow: 1 }}>
+						<Typography className={heroTitle}>{t('emergency.list.title')}</Typography>
+						<Typography className={heroSubtitle}>{t('emergency.list.heroSubtitle')}</Typography>
+					</div>
+					<div>
+						<div className={heroCount}>{totalItems}</div>
+						<div className={heroCountLabel}>{t('emergency.list.countLabel')}</div>
+					</div>
 				</div>
-			) : (
-				<div className={classes.emergenciesList}>
-					{emergencies.map((emergency, index) => (
+
+				{isLoading ? (
+					<div style={{ display: 'flex', justifyContent: 'center', padding: '48px 0' }}>
+						<CircularProgress />
+					</div>
+				) : emergencies.length === 0 ? (
+					<div className={emptyState}>{t('emergency.list.empty')}</div>
+				) : (
+					emergencies.map((emergency) => (
 						<EmergencyCard
 							key={emergency._id}
 							emergency={emergency}
-							animationDelay={`${index * 0.2}s`}
 							onConfirm={() => handleConfirmEmergency(emergency._id)}
-							isConfirming={
-								mutation.isPending && mutation.variables === emergency._id
-							}
+							isConfirming={mutation.isPending && mutation.variables === emergency._id}
 						/>
-					))}
-				</div>
-			)}
+					))
+				)}
 
-			<div className={classes.pagination}>
-				<Button disabled={page === 1 || isLoading} onClick={handlePrevPage}>
-					{t('common.previous')}
-				</Button>
-				<Button
-					disabled={page >= totalPages || isLoading}
-					onClick={handleNextPage}
-				>
-					{t('common.next')}
-				</Button>
+				{totalPages > 1 && (
+					<div className={paginationRow}>
+						<Button disabled={page === 1 || isLoading} onClick={handlePrevPage}>
+							{t('common.previous')}
+						</Button>
+						<Button disabled={page >= totalPages || isLoading} onClick={handleNextPage}>
+							{t('common.next')}
+						</Button>
+					</div>
+				)}
 			</div>
 
-			<Snackbar
-				open={snackbarOpen}
-				autoHideDuration={API_CONFIG.ui.snackbarDuration}
-				onClose={handleCloseSnackbar}
-				anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-			>
-				<Alert
-					onClose={handleCloseSnackbar}
-					severity='success'
-					sx={{ width: '100%' }}
-				>
-					{snackbarMessage}
-				</Alert>
-			</Snackbar>
-		</EmergenciesContainer>
+			<RedesignBottomNav />
+
+			<SnackbarComponent
+				open={!!message}
+				message={message || ''}
+				handleClose={() => setMessage(null)}
+			/>
+		</div>
 	);
 };
 

@@ -265,6 +265,13 @@
       "confirmed": "!تم تأكيد حضورك بنجاح",
       "unexpectedError": "حدث خطأ غير متوقع"
     },
+    "qrModal": {
+      "title": "احفظ رمز الاستجابة السريعة الخاص بك",
+      "subtitle": "امسحه في الموقع لتأكيد حضورك",
+      "save": "حفظ",
+      "saved": "!تم الحفظ على جهازك",
+      "close": "إغلاق"
+    },
     "form": {
       "createTitle": "إنشاء حدث",
       "updateTitle": "تحديث الفعالية",
@@ -415,7 +422,11 @@
     },
     "list": {
       "confirmSuccess": "!تم تأكيد الحالة الطارئة بنجاح",
-      "confirmError": ".خطأ في تأكيد الحالة الطارئة. يرجى المحاولة مرة أخرى"
+      "confirmError": ".خطأ في تأكيد الحالة الطارئة. يرجى المحاولة مرة أخرى",
+      "title": "لائحة الحالات الطارئة",
+      "heroSubtitle": "!هيا بنا",
+      "countLabel": "حالة طارئة",
+      "empty": "لا توجد حالات طارئة حاليًا"
     },
     "card": {
       "confirm": "تأكيد الحالة الطارئة",
@@ -433,7 +444,14 @@
       "confirm": "تأكيد",
       "confirming": "...جاري التأكيد",
       "confirmSuccess": "!تم تأكيد المستخدم بنجاح",
-      "confirmError": ".فشل تأكيد المستخدم"
+      "confirmError": ".فشل تأكيد المستخدم",
+      "pageTitle": "قائمة المستخدمين",
+      "selectLabel": "تحديد",
+      "sendSms": "إرسال رسالة نصية",
+      "sendWhatsapp": "إرسال عبر واتساب",
+      "noSelection": ".يرجى تحديد مستخدم واحد على الأقل",
+      "bulkConfirmSuccess": ".تم تسجيل {{count}} مستخدم كتم التواصل معهم",
+      "bulkConfirmError": ".فشل تحديث بعض المستخدمين. يرجى المحاولة مرة أخرى"
     }
   },
   "admin": {
@@ -455,6 +473,12 @@
     "viewLocation": "عرض الموقع",
     "viewDetails": "عرض التفاصيل",
     "createdOn": "نُشرت",
+    "yourGift": "هديتك",
+    "emergencySectionTitle": "حالة طارئة",
+    "seeAll": "عرض الكل",
+    "noActiveEmergencies": "لا توجد حالات طارئة حاليًا",
+    "donationHistory": "سجل تبرعاتك",
+    "noDonationHistory": "لا توجد تبرعات بعد",
     "weekday": {
       "Mon": "إث",
       "Tue": "ثل",

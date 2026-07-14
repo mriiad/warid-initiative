@@ -265,6 +265,13 @@
       "confirmed": "Votre présence a été confirmée avec succès !",
       "unexpectedError": "Une erreur inattendue est survenue."
     },
+    "qrModal": {
+      "title": "Enregistrez votre code QR",
+      "subtitle": "Scannez-le sur place pour confirmer votre présence",
+      "save": "Enregistrer",
+      "saved": "Enregistré sur votre appareil !",
+      "close": "Fermer"
+    },
     "form": {
       "createTitle": "Créer un événement",
       "updateTitle": "Modifier l'événement",
@@ -415,7 +422,11 @@
     },
     "list": {
       "confirmSuccess": "Urgence confirmée avec succès !",
-      "confirmError": "Erreur lors de la confirmation de l'urgence. Veuillez réessayer."
+      "confirmError": "Erreur lors de la confirmation de l'urgence. Veuillez réessayer.",
+      "title": "Liste des urgences",
+      "heroSubtitle": "C'est parti !",
+      "countLabel": "Urgence",
+      "empty": "Aucune urgence pour le moment"
     },
     "card": {
       "confirm": "Confirmer l'urgence",
@@ -433,7 +444,14 @@
       "confirm": "Confirmer",
       "confirming": "Confirmation en cours...",
       "confirmSuccess": "Utilisateur confirmé avec succès !",
-      "confirmError": "Échec de la confirmation de l'utilisateur."
+      "confirmError": "Échec de la confirmation de l'utilisateur.",
+      "pageTitle": "Liste des utilisateurs",
+      "selectLabel": "Sélectionner",
+      "sendSms": "Envoyer un SMS",
+      "sendWhatsapp": "Envoyer via WhatsApp",
+      "noSelection": "Sélectionnez au moins un utilisateur.",
+      "bulkConfirmSuccess": "{{count}} utilisateur(s) marqué(s) comme contacté(s).",
+      "bulkConfirmError": "Échec de la mise à jour de certains utilisateurs. Veuillez réessayer."
     }
   },
   "admin": {
@@ -455,6 +473,12 @@
     "viewLocation": "Voir le lieu",
     "viewDetails": "Voir les détails",
     "createdOn": "Publié",
+    "yourGift": "Votre cadeau",
+    "emergencySectionTitle": "Urgence",
+    "seeAll": "Tout voir",
+    "noActiveEmergencies": "Aucune urgence active pour le moment",
+    "donationHistory": "Historique de vos dons",
+    "noDonationHistory": "Aucun don pour le moment",
     "weekday": {
       "Mon": "Lun",
       "Tue": "Mar",

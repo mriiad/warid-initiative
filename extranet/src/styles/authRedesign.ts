@@ -15,6 +15,8 @@ export const redesignColors = {
 	link: '#C56D86',
 	primaryButton: '#C56D86',
 	primaryButtonHover: '#B85D77',
+	successGreen: '#A9C97E',
+	successGreenHover: '#98BA6C',
 };
 
 export const authRedesignStyles = makeStyles({

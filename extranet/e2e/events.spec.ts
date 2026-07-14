@@ -21,7 +21,10 @@ test.describe('Event details (BUG regression for issue #196)', () => {
 	test('BUG: title is missing from the event details page', async ({ page }) => {
 		await mockJson(page, '**/api/events/WEVENT20990101', eventDetailResponse({ title: 'Collecte de sang - Casablanca' }));
 		await page.goto('/events/WEVENT20990101');
-		await expect(page.getByText('Collecte de sang - Casablanca')).toBeVisible({ timeout: 5000 });
+		// Redesigned donor detail page shows the title in both the top bar and
+		// the hero card, so target the first match (same pattern as the
+		// admin-dashboard stats test).
+		await expect(page.getByText('Collecte de sang - Casablanca').first()).toBeVisible({ timeout: 5000 });
 	});
 
 	test('BUG: description is missing from the event details page', async ({ page }) => {
@@ -41,6 +44,55 @@ test.describe('Event details (BUG regression for issue #196)', () => {
 		await mockJson(page, '**/api/events/WEVENT20990101', eventDetailResponse({ qrCode: 'data:image/png;base64,QRCODEDATA' }));
 		await page.goto('/events/WEVENT20990101?forceDesktop=1');
 		await expect(page.locator('img[src^="data:image/png;base64,QRCODEDATA"]')).toBeVisible({ timeout: 5000 });
+	});
+});
+
+test.describe('Donor event detail (redesigned)', () => {
+	test('a not-yet-participating donor can tap Participate to register', async ({ page }) => {
+		await seedAuth(page, { isAdmin: false });
+		await mockJson(page, '**/api/events/WEVENT20990101', eventDetailResponse({ title: 'Collecte de sang - Casablanca' }));
+		await mockJson(page, '**/api/check/WEVENT20990101', { hasParticipated: false });
+		let participateCalled = false;
+		await page.route('**/api/participate/WEVENT20990101', async (route) => {
+			participateCalled = true;
+			await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ message: 'Participant registered successfully.' }) });
+		});
+
+		await page.goto('/events/WEVENT20990101');
+		await page.getByRole('button', { name: 'شارك' }).click();
+		await page.waitForTimeout(500);
+		expect(participateCalled).toBe(true);
+	});
+
+	test('a donor who already participated sees a confirmation message instead of the button', async ({ page }) => {
+		await seedAuth(page, { isAdmin: false });
+		await mockJson(page, '**/api/events/WEVENT20990101', eventDetailResponse({ title: 'Collecte de sang - Casablanca' }));
+		await mockJson(page, '**/api/check/WEVENT20990101', { hasParticipated: true });
+
+		await page.goto('/events/WEVENT20990101');
+		await expect(page.getByText('تم تسجيلك بنجاح في قائمة المشاركين', { exact: false })).toBeVisible({ timeout: 5000 });
+		await expect(page.getByRole('button', { name: 'شارك' })).toHaveCount(0);
+	});
+
+	test('registering successfully opens the save-QR-code modal, and Save downloads it', async ({ page }) => {
+		await seedAuth(page, { isAdmin: false });
+		await mockJson(page, '**/api/events/WEVENT20990101', eventDetailResponse({ title: 'Collecte de sang - Casablanca' }));
+		await mockJson(page, '**/api/check/WEVENT20990101', { hasParticipated: false });
+		await mockJson(page, '**/api/user/profile', { firstname: 'Yassine', gender: 'male' });
+		await page.route('**/api/participate/WEVENT20990101', async (route) => {
+			await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ message: 'Participant registered successfully.' }) });
+		});
+
+		await page.goto('/events/WEVENT20990101');
+		await page.getByRole('button', { name: 'شارك' }).click();
+
+		await expect(page.getByText('احفظ رمز الاستجابة السريعة الخاص بك')).toBeVisible({ timeout: 5000 });
+		await expect(page.locator('img[alt="QR code"]')).toBeVisible({ timeout: 5000 });
+
+		const downloadPromise = page.waitForEvent('download');
+		await page.getByRole('button', { name: 'حفظ' }).click();
+		const download = await downloadPromise;
+		expect(download.suggestedFilename()).toBe('warid-event-WEVENT20990101-qr.png');
 	});
 });
 
