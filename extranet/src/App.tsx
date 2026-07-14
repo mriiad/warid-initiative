@@ -80,14 +80,16 @@ const MobileNavContainer = styled.div`
 // for admins, but it self-guards (like the other admin screens) and a
 // non-admin landing on it should see a bare NotFoundPage, not app chrome
 // wrapped around one. '/emergency' is public (no isAuth on that endpoint),
-// so it's here for every visitor, not just admins.
-const FULL_SCREEN_ROUTES = ['/login', '/signup', '/admin', '/emergency'];
-// '/home', '/events' (the list), '/events/create' and the emergencies admin
-// screens only go full-screen for admins -- their redesign is admin-only so
-// far (see AdminDashboard/EventsComponent/EventForm/EmergencyComponent), and
-// non-admins still need the old chrome (LandingPage for '/home', the
-// pre-existing EventsComponent for the events list).
-const ADMIN_ONLY_FULL_SCREEN_ROUTES = ['/home', '/events', '/events/create', '/emergencies'];
+// so it's here for every visitor, not just admins. '/home' is here
+// unconditionally too now that LandingPage (the non-admin destination) has
+// its own redesign -- AdminDashboard renders instead for admins, also
+// full-bleed.
+const FULL_SCREEN_ROUTES = ['/login', '/signup', '/admin', '/emergency', '/home'];
+// '/events' (the list), '/events/create' and the emergencies admin screens
+// only go full-screen for admins -- their redesign is admin-only so far (see
+// EventsComponent/EventForm/EmergencyComponent), and non-admins still need
+// the old chrome (the pre-existing EventsComponent for the events list).
+const ADMIN_ONLY_FULL_SCREEN_ROUTES = ['/events', '/events/create', '/emergencies'];
 const ADMIN_ONLY_FULL_SCREEN_ROUTE_PATTERN =
 	/^\/emergencies\/[^/]+\/matched-users\/?$/;
 // The event detail page (but not the '/events' list) now has a redesign for
