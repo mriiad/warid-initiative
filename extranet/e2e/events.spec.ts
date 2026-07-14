@@ -71,7 +71,28 @@ test.describe('Donor event detail (redesigned)', () => {
 
 		await page.goto('/events/WEVENT20990101');
 		await expect(page.getByText('تم تسجيلك بنجاح في قائمة المشاركين', { exact: false })).toBeVisible({ timeout: 5000 });
-		await expect(page.getByRole('button', { name: 'مشاركة' })).toHaveCount(0);
+		await expect(page.getByRole('button', { name: 'شارك' })).toHaveCount(0);
+	});
+
+	test('registering successfully opens the save-QR-code modal, and Save downloads it', async ({ page }) => {
+		await seedAuth(page, { isAdmin: false });
+		await mockJson(page, '**/api/events/WEVENT20990101', eventDetailResponse({ title: 'Collecte de sang - Casablanca' }));
+		await mockJson(page, '**/api/check/WEVENT20990101', { hasParticipated: false });
+		await mockJson(page, '**/api/user/profile', { firstname: 'Yassine', gender: 'male' });
+		await page.route('**/api/participate/WEVENT20990101', async (route) => {
+			await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ message: 'Participant registered successfully.' }) });
+		});
+
+		await page.goto('/events/WEVENT20990101');
+		await page.getByRole('button', { name: 'شارك' }).click();
+
+		await expect(page.getByText('احفظ رمز الاستجابة السريعة الخاص بك')).toBeVisible({ timeout: 5000 });
+		await expect(page.locator('img[alt="QR code"]')).toBeVisible({ timeout: 5000 });
+
+		const downloadPromise = page.waitForEvent('download');
+		await page.getByRole('button', { name: 'حفظ' }).click();
+		const download = await downloadPromise;
+		expect(download.suggestedFilename()).toBe('warid-event-WEVENT20990101-qr.png');
 	});
 });
 

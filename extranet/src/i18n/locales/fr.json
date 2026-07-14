@@ -265,6 +265,13 @@
       "confirmed": "Votre présence a été confirmée avec succès !",
       "unexpectedError": "Une erreur inattendue est survenue."
     },
+    "qrModal": {
+      "title": "Enregistrez votre code QR",
+      "subtitle": "Scannez-le sur place pour confirmer votre présence",
+      "save": "Enregistrer",
+      "saved": "Enregistré sur votre appareil !",
+      "close": "Fermer"
+    },
     "form": {
       "createTitle": "Créer un événement",
       "updateTitle": "Modifier l'événement",

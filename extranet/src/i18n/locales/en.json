@@ -265,6 +265,13 @@
       "confirmed": "Your attendance was confirmed successfully!",
       "unexpectedError": "An unexpected error occurred."
     },
+    "qrModal": {
+      "title": "Save your QR code",
+      "subtitle": "Scan it on-site to confirm your attendance",
+      "save": "Save",
+      "saved": "Saved to your device!",
+      "close": "Close"
+    },
     "form": {
       "createTitle": "Create Event",
       "updateTitle": "Update Event",

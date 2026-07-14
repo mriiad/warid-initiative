@@ -26,6 +26,7 @@ import SnackbarComponent from '../shared/SnackbarComponent';
 import AdminEventDetailView from './AdminEventDetailView';
 import DonorEventDetailView from './DonorEventDetailView';
 import EventConfirmation from './EventConfirmation';
+import SaveQrModal from './SaveQrModal';
 
 
 const EventContainer = styled.div`
@@ -520,6 +521,7 @@ const EventDetail: React.FC = () => {
 	});
 
 	const [message, setMessage] = useState<string | null>(null);
+	const [showQrModal, setShowQrModal] = useState(false);
 
 	const handleBackClick = () => {
 		navigate('/events');
@@ -551,9 +553,13 @@ const EventDetail: React.FC = () => {
 
 		createParticipant.mutate(reference, {
 			onSuccess: (response: any) => {
-				setMessage(
-					response.data.message || t('events.detail.participateSuccess')
-				);
+				if (isAdmin) {
+					setMessage(
+						response.data.message || t('events.detail.participateSuccess')
+					);
+				} else {
+					setShowQrModal(true);
+				}
 			},
 			onError: (error: any) => {
 				if (error.response && error.response.data?.message) {
@@ -806,6 +812,13 @@ const EventDetail: React.FC = () => {
 					open={!!message}
 					message={message}
 					handleClose={handleCloseSnackbar}
+				/>
+			)}
+			{!isAdmin && (
+				<SaveQrModal
+					open={showQrModal}
+					reference={reference || ''}
+					onClose={() => setShowQrModal(false)}
 				/>
 			)}
 			<ConfirmationDialog
