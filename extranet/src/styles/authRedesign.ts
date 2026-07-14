@@ -55,6 +55,17 @@ export const authRedesignStyles = makeStyles({
 			marginTop: '8px',
 		},
 	},
+	headerIcon: {
+		width: '56px',
+		height: '56px',
+		borderRadius: '50%',
+		backgroundColor: 'rgba(255, 255, 255, 0.22)',
+		color: redesignColors.textOnRose,
+		display: 'flex',
+		alignItems: 'center',
+		justifyContent: 'center',
+		margin: '0 auto 16px',
+	},
 	subtitleLink: {
 		color: redesignColors.textOnRose,
 		fontWeight: 600,

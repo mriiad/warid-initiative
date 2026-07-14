@@ -80,22 +80,37 @@ const MobileNavContainer = styled.div`
 // for admins, but it self-guards (like the other admin screens) and a
 // non-admin landing on it should see a bare NotFoundPage, not app chrome
 // wrapped around one. '/emergency' is public (no isAuth on that endpoint),
-// so it's here for every visitor, not just admins.
-const FULL_SCREEN_ROUTES = ['/login', '/signup', '/admin', '/emergency'];
+// so it's here for every visitor, not just admins. '/contact' and '/FAQ' are
+// reachable by anyone (logged in or not) and self-adjust their fields/nav
+// based on auth state, so they're unconditional too. '/request-reset-password'
+// is inherently pre-auth.
+const FULL_SCREEN_ROUTES = [
+	'/login',
+	'/signup',
+	'/admin',
+	'/emergency',
+	'/contact',
+	'/FAQ',
+	'/request-reset-password',
+];
 // '/home', '/events' (the list), '/events/create' and the emergencies admin
 // screens only go full-screen for admins -- their redesign is admin-only so
 // far (see AdminDashboard/EventsComponent/EventForm/EmergencyComponent), and
 // non-admins still need the old chrome (LandingPage for '/home', the
-// pre-existing EventsComponent for the events list).
+// pre-existing EventsComponent for the events list). '/users/update/:userId'
+// is an admin-only edit form, same pattern as the emergencies one.
 const ADMIN_ONLY_FULL_SCREEN_ROUTES = ['/home', '/events', '/events/create', '/emergencies'];
 const ADMIN_ONLY_FULL_SCREEN_ROUTE_PATTERN =
-	/^\/emergencies\/[^/]+\/matched-users\/?$/;
+	/^\/emergencies\/[^/]+\/matched-users\/?$|^\/users\/update\/[^/]+$/;
 // The event detail page (but not the '/events' list) now has a redesign for
 // BOTH admins and non-admins, so unlike the admin-only pattern above this one
 // applies regardless of role. Still excludes '/events/create' and the
 // can-donate/confirmation sub-routes nested under a reference (same reasons
 // as before).
 const EVENT_DETAIL_FULL_SCREEN_PATTERN = /^\/events\/(?!create$)[^/]+$/;
+// '/reset-password/:resetToken' is the other half of the pre-auth password
+// reset flow, also reachable by anyone (it's the link from the reset email).
+const RESET_PASSWORD_FULL_SCREEN_PATTERN = /^\/reset-password\/[^/]+$/;
 
 const App = () => {
 	const isMobile = useIsMobile();
@@ -106,6 +121,7 @@ const App = () => {
 	const isFullScreenRoute =
 		FULL_SCREEN_ROUTES.includes(location.pathname) ||
 		EVENT_DETAIL_FULL_SCREEN_PATTERN.test(location.pathname) ||
+		RESET_PASSWORD_FULL_SCREEN_PATTERN.test(location.pathname) ||
 		(isAdmin &&
 			(ADMIN_ONLY_FULL_SCREEN_ROUTES.includes(location.pathname) ||
 				ADMIN_ONLY_FULL_SCREEN_ROUTE_PATTERN.test(location.pathname)));

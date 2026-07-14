@@ -1,15 +1,17 @@
-import { Button, Grid, TextField, Typography } from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import { Button, IconButton, TextField, Typography } from '@mui/material';
 import axios from 'axios';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { authStyles } from '../styles/mainStyles';
+import { authRedesignStyles } from '../styles/authRedesign';
 import API_CONFIG, { buildApiUrl } from '../utils/apiConfig';
-import FormContainer from './shared/FormContainer';
 
 const PasswordResetForm = () => {
 	const { t } = useTranslation();
-	const { bar, button, signUp, form } = authStyles();
+	const { screen, header, backButton, title, subtitle, headerIcon, card, input, primaryButton } =
+		authRedesignStyles();
 
 	const {
 		handleSubmit,
@@ -36,14 +38,28 @@ const PasswordResetForm = () => {
 	};
 
 	return (
-		<FormContainer>
-			<Typography variant='h2' align='center' gutterBottom className={signUp}>
-				{t('auth.passwordReset.title')}
-				<span className={bar}></span>
-			</Typography>
-			<form onSubmit={handleSubmit(onSubmit)} className={form}>
-				<Grid container spacing={2}>
-					<Grid item xs={12}>
+		<div className={screen}>
+			<div className={header}>
+				<IconButton
+					className={backButton}
+					aria-label={t('auth.passwordReset.back')}
+					onClick={() => navigate(-1)}
+				>
+					<ArrowBackIcon />
+				</IconButton>
+				<div className={headerIcon}>
+					<LockOutlinedIcon />
+				</div>
+				<Typography variant='h1' className={title}>
+					{t('auth.passwordReset.title')}
+				</Typography>
+				<Typography variant='body2' className={subtitle}>
+					{t('auth.passwordReset.subtitle')}
+				</Typography>
+			</div>
+			<div className={card}>
+				<form onSubmit={handleSubmit(onSubmit)} noValidate>
+					<div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 						<Controller
 							name='email'
 							control={control}
@@ -51,30 +67,22 @@ const PasswordResetForm = () => {
 							render={({ field }) => (
 								<TextField
 									fullWidth
+									className={input}
 									label={t('auth.passwordReset.email')}
 									required
 									{...field}
 									error={Boolean(errors.email)}
-									helperText={
-										errors.email ? t('auth.passwordReset.emailRequired') : ''
-									}
+									helperText={errors.email ? t('auth.passwordReset.emailRequired') : ''}
 								/>
 							)}
 						/>
-					</Grid>
-					<Grid item xs={12}>
-						<Button
-							type='submit'
-							color='primary'
-							className={button}
-							style={{ color: 'white' }}
-						>
+						<Button type='submit' fullWidth className={primaryButton}>
 							{t('auth.passwordReset.submit')}
 						</Button>
-					</Grid>
-				</Grid>
-			</form>
-		</FormContainer>
+					</div>
+				</form>
+			</div>
+		</div>
 	);
 };
 
