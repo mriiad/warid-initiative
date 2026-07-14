@@ -30,6 +30,7 @@ describe('Swagger documentation', () => {
 
 		expect(response.status).toBe(200);
 		expect(response.headers['content-type']).toContain('text/html');
-		expect(response.text).toContain('Swagger UI');
+		expect(response.text).toContain('<title>Warid Initiative API</title>');
+		expect(response.text).toContain('id="swagger-ui"');
 	});
 });
