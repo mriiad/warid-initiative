@@ -190,4 +190,67 @@ export const eventDetailRedesignStyles = makeStyles({
 		height: '180px',
 		borderRadius: '12px',
 	},
+	heroTopRow: {
+		display: 'flex',
+		alignItems: 'center',
+		justifyContent: 'space-between',
+		marginBottom: '18px',
+	},
+	heroDayBadge: {
+		width: '40px',
+		height: '40px',
+		borderRadius: '12px',
+		backgroundColor: 'rgba(255, 255, 255, 0.25)',
+		color: '#FFFFFF',
+		display: 'flex',
+		alignItems: 'center',
+		justifyContent: 'center',
+		fontWeight: 700,
+		fontSize: '15px',
+		flexShrink: 0,
+	},
+	descriptionCard: {
+		backgroundColor: '#FFFFFF',
+		borderRadius: '18px',
+		padding: '16px',
+		boxShadow: '0 4px 16px rgba(0, 0, 0, 0.05)',
+	},
+	descriptionText: {
+		'&.MuiTypography-root': {
+			fontSize: '14px',
+			color: '#1F1B24',
+			lineHeight: 1.6,
+		},
+	},
+	participateButton: {
+		'&.MuiButton-root': {
+			backgroundColor: redesignColors.successGreen,
+			color: '#FFFFFF',
+			borderRadius: '16px',
+			padding: '14px',
+			fontSize: '15px',
+			fontWeight: 600,
+			textTransform: 'none',
+			boxShadow: 'none',
+			'&:hover': {
+				backgroundColor: redesignColors.successGreenHover,
+				boxShadow: 'none',
+			},
+			'&.Mui-disabled': {
+				backgroundColor: '#D8E5C4',
+				color: '#FFFFFF',
+			},
+		},
+	},
+	participatedBanner: {
+		backgroundColor: '#FFFFFF',
+		borderRadius: '16px',
+		padding: '16px',
+		textAlign: 'center',
+		'&.MuiTypography-root': {
+			color: redesignColors.successGreen,
+			fontWeight: 600,
+			fontSize: '14px',
+		},
+	},
 });

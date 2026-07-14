@@ -82,16 +82,20 @@ const MobileNavContainer = styled.div`
 // wrapped around one. '/emergency' is public (no isAuth on that endpoint),
 // so it's here for every visitor, not just admins.
 const FULL_SCREEN_ROUTES = ['/login', '/signup', '/admin', '/emergency'];
-// '/home', '/events', an event's own detail page, and '/events/create' only
-// go full-screen for admins -- their redesign is admin-only so far (see
-// AdminDashboard/EventsComponent/EventDetail/EventForm), and non-admins
-// still need the old chrome (LandingPage for '/home', the pre-existing
-// EventsComponent/EventDetail views for the rest). The detail-page pattern
-// excludes '/events/create' itself (matched separately below) and anything
-// with a further path segment (the can-donate/confirmation sub-routes
-// nested under EventDetail, which are donor-only flows).
-const ADMIN_ONLY_FULL_SCREEN_ROUTES = ['/home', '/events', '/events/create'];
-const ADMIN_ONLY_FULL_SCREEN_ROUTE_PATTERN = /^\/events\/(?!create$)[^/]+$/;
+// '/home', '/events' (the list), '/events/create' and the emergencies admin
+// screens only go full-screen for admins -- their redesign is admin-only so
+// far (see AdminDashboard/EventsComponent/EventForm/EmergencyComponent), and
+// non-admins still need the old chrome (LandingPage for '/home', the
+// pre-existing EventsComponent for the events list).
+const ADMIN_ONLY_FULL_SCREEN_ROUTES = ['/home', '/events', '/events/create', '/emergencies'];
+const ADMIN_ONLY_FULL_SCREEN_ROUTE_PATTERN =
+	/^\/emergencies\/[^/]+\/matched-users\/?$/;
+// The event detail page (but not the '/events' list) now has a redesign for
+// BOTH admins and non-admins, so unlike the admin-only pattern above this one
+// applies regardless of role. Still excludes '/events/create' and the
+// can-donate/confirmation sub-routes nested under a reference (same reasons
+// as before).
+const EVENT_DETAIL_FULL_SCREEN_PATTERN = /^\/events\/(?!create$)[^/]+$/;
 
 const App = () => {
 	const isMobile = useIsMobile();
@@ -101,6 +105,7 @@ const App = () => {
 		new URLSearchParams(location.search).get('forceDesktop') === '1';
 	const isFullScreenRoute =
 		FULL_SCREEN_ROUTES.includes(location.pathname) ||
+		EVENT_DETAIL_FULL_SCREEN_PATTERN.test(location.pathname) ||
 		(isAdmin &&
 			(ADMIN_ONLY_FULL_SCREEN_ROUTES.includes(location.pathname) ||
 				ADMIN_ONLY_FULL_SCREEN_ROUTE_PATTERN.test(location.pathname)));

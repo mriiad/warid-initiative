@@ -24,6 +24,7 @@ import CanDonate from '../CanDonate';
 import ConfirmationDialog from '../shared/ConfirmationDialog';
 import SnackbarComponent from '../shared/SnackbarComponent';
 import AdminEventDetailView from './AdminEventDetailView';
+import DonorEventDetailView from './DonorEventDetailView';
 import EventConfirmation from './EventConfirmation';
 
 
@@ -646,6 +647,13 @@ const EventDetail: React.FC = () => {
 				</LoadingContainer>
 			) : isAdmin && initialRoute ? (
 				<AdminEventDetailView event={event} participantStats={participantStats} onDelete={handleDelete} />
+			) : !isAdmin && initialRoute ? (
+				<DonorEventDetailView
+					event={event}
+					hasParticipated={hasParticipated}
+					isParticipating={createParticipant.isPending}
+					onParticipate={handleParticipateClick}
+				/>
 			) : (
 				<EventContainer>
 					{isAdmin && (

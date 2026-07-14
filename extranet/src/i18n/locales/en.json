@@ -415,7 +415,11 @@
     },
     "list": {
       "confirmSuccess": "Emergency confirmed successfully!",
-      "confirmError": "Error confirming emergency. Please try again."
+      "confirmError": "Error confirming emergency. Please try again.",
+      "title": "Emergency List",
+      "heroSubtitle": "Let's do it!",
+      "countLabel": "Emergency",
+      "empty": "No emergencies right now"
     },
     "card": {
       "confirm": "Confirm Emergency",
@@ -433,7 +437,14 @@
       "confirm": "Confirm",
       "confirming": "Confirming...",
       "confirmSuccess": "User confirmed successfully!",
-      "confirmError": "Failed to confirm user."
+      "confirmError": "Failed to confirm user.",
+      "pageTitle": "User List",
+      "selectLabel": "Select",
+      "sendSms": "Send SMS",
+      "sendWhatsapp": "Send via WhatsApp",
+      "noSelection": "Select at least one user first.",
+      "bulkConfirmSuccess": "Marked {{count}} user(s) as contacted.",
+      "bulkConfirmError": "Failed to update some users. Please try again."
     }
   },
   "admin": {
@@ -455,6 +466,12 @@
     "viewLocation": "View location",
     "viewDetails": "View details",
     "createdOn": "Posted",
+    "yourGift": "Your Gift",
+    "emergencySectionTitle": "Emergency",
+    "seeAll": "See all",
+    "noActiveEmergencies": "No active emergencies right now",
+    "donationHistory": "Your Donation History",
+    "noDonationHistory": "No donations yet",
     "weekday": {
       "Mon": "Mon",
       "Tue": "Tue",

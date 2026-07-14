@@ -28,6 +28,8 @@ test.describe('Admin dashboard', () => {
 			],
 			totalItems: 1,
 		});
+		await mockJson(page, '**/api/unconfirmedEmergencies*', { emergencies: [], totalItems: 0 });
+		await mockJson(page, '**/api/users/admin-1/dashboard', { donations: [] });
 
 		await page.goto('/home');
 
@@ -43,6 +45,8 @@ test.describe('Admin dashboard', () => {
 		await mockJson(page, '**/api/admin/stats', { totalUsers: 0, totalEvents: 0, totalDonations: 0 });
 		await mockJson(page, '**/api/user/profile', { gender: 'male' });
 		await mockJson(page, '**/api/events*', { events: [], totalItems: 0 });
+		await mockJson(page, '**/api/unconfirmedEmergencies*', { emergencies: [], totalItems: 0 });
+		await mockJson(page, '**/api/users/admin-1/dashboard', { donations: [] });
 
 		await page.goto('/home');
 
@@ -64,6 +68,8 @@ test.describe('Admin dashboard', () => {
 			totalItems: 1,
 		});
 		await mockJson(page, '**/api/events/WEVENTAGADIR', sampleEvent({ reference: 'WEVENTAGADIR', title: 'Agadir Event' }));
+		await mockJson(page, '**/api/unconfirmedEmergencies*', { emergencies: [], totalItems: 0 });
+		await mockJson(page, '**/api/users/admin-1/dashboard', { donations: [] });
 
 		await page.goto('/home');
 		await expect(page.getByText('Agadir Event')).toBeVisible({ timeout: 5000 });
@@ -76,9 +82,48 @@ test.describe('Admin dashboard', () => {
 		await mockJson(page, '**/api/admin/stats', { totalUsers: 0, totalEvents: 0, totalDonations: 0 });
 		await mockJson(page, '**/api/user/profile', { gender: 'male' });
 		await mockJson(page, '**/api/events*', { events: [], totalItems: 0 });
+		await mockJson(page, '**/api/unconfirmedEmergencies*', { emergencies: [], totalItems: 0 });
+		await mockJson(page, '**/api/users/admin-1/dashboard', { donations: [] });
 
 		await page.goto('/home');
 		await page.getByRole('button', { name: 'إضافة حدث' }).click();
 		await expect(page).toHaveURL(/\/events\/create/);
+	});
+
+	test('shows an active emergency in the carousel and confirming it calls the real confirm endpoint', async ({ page }) => {
+		await seedAuth(page, { isAdmin: true, userId: 'admin-1' });
+		await mockJson(page, '**/api/admin/stats', { totalUsers: 0, totalEvents: 0, totalDonations: 0 });
+		await mockJson(page, '**/api/user/profile', { gender: 'male' });
+		await mockJson(page, '**/api/events*', { events: [], totalItems: 0 });
+		await mockJson(page, '**/api/unconfirmedEmergencies*', {
+			emergencies: [{ _id: 'em-1', bloodGroup: 'O+', city: 'Casablanca', phoneNumber: 600000000, details: 'Urgent' }],
+			totalItems: 1,
+		});
+		await mockJson(page, '**/api/users/admin-1/dashboard', { donations: [] });
+		let confirmCalled = false;
+		await page.route('**/api/emergencies/em-1/confirm', async (route) => {
+			confirmCalled = true;
+			await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ message: 'The emergency is successfully confirmed' }) });
+		});
+
+		await page.goto('/home');
+		await expect(page.getByText('Urgent')).toBeVisible({ timeout: 5000 });
+		await page.getByRole('button', { name: 'تأكيد الحالة الطارئة' }).click();
+		await page.waitForTimeout(500);
+		expect(confirmCalled).toBe(true);
+	});
+
+	test('shows the donation history when the admin has past donations', async ({ page }) => {
+		await seedAuth(page, { isAdmin: true, userId: 'admin-1' });
+		await mockJson(page, '**/api/admin/stats', { totalUsers: 0, totalEvents: 0, totalDonations: 0 });
+		await mockJson(page, '**/api/user/profile', { gender: 'male' });
+		await mockJson(page, '**/api/events*', { events: [], totalItems: 0 });
+		await mockJson(page, '**/api/unconfirmedEmergencies*', { emergencies: [], totalItems: 0 });
+		await mockJson(page, '**/api/users/admin-1/dashboard', {
+			donations: [{ id: 'd1', date: '1 Jan 2026', type: 'BLOOD', event: 'Casablanca Event' }],
+		});
+
+		await page.goto('/home');
+		await expect(page.getByText('Casablanca Event')).toBeVisible({ timeout: 5000 });
 	});
 });
