@@ -80,16 +80,33 @@ const MobileNavContainer = styled.div`
 // for admins, but it self-guards (like the other admin screens) and a
 // non-admin landing on it should see a bare NotFoundPage, not app chrome
 // wrapped around one. '/emergency' is public (no isAuth on that endpoint),
-// so it's here for every visitor, not just admins.
-const FULL_SCREEN_ROUTES = ['/login', '/signup', '/admin', '/emergency'];
+// so it's here for every visitor, not just admins. '/update-profile',
+// '/profile' and '/dashboard' apply to any authenticated user regardless of
+// role (both admins and donors can view/edit their own profile or personal
+// donation history), so they're unconditional too rather than admin-only.
+const FULL_SCREEN_ROUTES = [
+	'/login',
+	'/signup',
+	'/admin',
+	'/emergency',
+	'/update-profile',
+	'/profile',
+	'/dashboard',
+];
 // '/home', '/events' (the list), '/events/create' and the emergencies admin
 // screens only go full-screen for admins -- their redesign is admin-only so
 // far (see AdminDashboard/EventsComponent/EventForm/EmergencyComponent), and
 // non-admins still need the old chrome (LandingPage for '/home', the
 // pre-existing EventsComponent for the events list).
-const ADMIN_ONLY_FULL_SCREEN_ROUTES = ['/home', '/events', '/events/create', '/emergencies'];
+const ADMIN_ONLY_FULL_SCREEN_ROUTES = ['/home', '/events', '/events/create', '/emergencies', '/users'];
+// Bug fix: UsersComponent and UserDetailView already ship their own
+// full-bleed top bar + RedesignBottomNav, but '/users' and '/users/:userId'
+// were never added here, so admins were getting the old chrome wrapped
+// around the new self-contained UI (two stacked bottom navs). Excludes
+// '/users/update/:userId', which still renders the legacy UpdateUser
+// component and still needs the old chrome around it.
 const ADMIN_ONLY_FULL_SCREEN_ROUTE_PATTERN =
-	/^\/emergencies\/[^/]+\/matched-users\/?$/;
+	/^\/emergencies\/[^/]+\/matched-users\/?$|^\/users\/(?!update\/)[^/]+$/;
 // The event detail page (but not the '/events' list) now has a redesign for
 // BOTH admins and non-admins, so unlike the admin-only pattern above this one
 // applies regardless of role. Still excludes '/events/create' and the

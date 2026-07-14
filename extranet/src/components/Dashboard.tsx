@@ -1,246 +1,135 @@
-import { useDashboard } from '@/hooks/useUsers';
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
-import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
-import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import OpacityIcon from '@mui/icons-material/Opacity';
-import { Box, Button, Card, CardContent, Typography } from '@mui/material';
-import { makeStyles } from '@mui/styles';
-import { motion } from 'framer-motion';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import { Typography } from '@mui/material';
+import Button from '@mui/material/Button';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
-import colors from '../styles/colors';
-
-const useStyles = makeStyles({
-	heroCard: {
-		background: `linear-gradient(135deg, ${colors.purple}, ${colors.darkPurple})`,
-		color: 'white',
-		borderRadius: '24px',
-		padding: '20px',
-		position: 'relative',
-		overflow: 'hidden',
-	},
-	heroContent: {
-		position: 'relative',
-		zIndex: 1,
-	},
-	heroOverlay: {
-		position: 'absolute',
-		inset: 0,
-		background:
-			'radial-gradient(800px 200px at 10% -10%, rgba(255,255,255,0.15), transparent), radial-gradient(600px 200px at 90% 110%, rgba(255,255,255,0.12), transparent)',
-		pointerEvents: 'none',
-		zIndex: 0,
-	},
-	heroButton: {
-		marginTop: '12px',
-		color: '#fff',
-		backgroundColor: 'rgba(255,255,255,0.18)',
-		backdropFilter: 'blur(6px)',
-		'&:hover': { backgroundColor: 'rgba(255,255,255,0.28)' },
-	},
-	statCard: {
-		borderRadius: '24px',
-		padding: '20px',
-		textAlign: 'center',
-		background:
-			'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.9) 100%)',
-		backdropFilter: 'blur(18px)',
-		border: '1px solid rgba(59, 42, 130, 0.12)',
-		boxShadow: '0 8px 24px rgba(59, 42, 130, 0.08)',
-		transition: 'all 0.3s ease',
-		'&:hover': {
-			transform: 'translateY(-2px)',
-			border: `1px solid ${colors.purple}30`,
-			boxShadow: '0 16px 40px rgba(59, 42, 130, 0.16)',
-		},
-	},
-	statIcon: {
-		width: 56,
-		height: 56,
-		backgroundColor: 'transparent',
-		background: `linear-gradient(135deg, ${colors.purple} 0%, ${colors.darkPurple} 100%)`,
-		color: 'white',
-		boxShadow: '0 6px 14px rgba(59, 42, 130, 0.25)',
-	},
-	donationCard: {
-		borderRadius: '24px',
-		padding: '20px',
-		background:
-			'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.9) 100%)',
-		backdropFilter: 'blur(18px)',
-		border: '1px solid rgba(59, 42, 130, 0.12)',
-		boxShadow: '0 8px 24px rgba(59, 42, 130, 0.08)',
-		transition: 'all 0.3s ease',
-		'&:hover': {
-			border: `1px solid ${colors.purple}30`,
-			boxShadow: '0 16px 40px rgba(59, 42, 130, 0.16)',
-		},
-	},
-	emptyState: {
-		borderRadius: '24px',
-		padding: '32px',
-		textAlign: 'center',
-		background:
-			'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.9) 100%)',
-		backdropFilter: 'blur(18px)',
-		border: '1px solid rgba(59, 42, 130, 0.1)',
-		boxShadow: '0 8px 32px rgba(59, 42, 130, 0.1)',
-	},
-});
+import { useDashboard } from '../hooks';
+import { authRedesignStyles } from '../styles/authRedesign';
+import { dashboardRedesignStyles, statCardColors } from '../styles/dashboardRedesign';
+import RedesignBottomNav from './shared/RedesignBottomNav';
 
 export default function Dashboard() {
-	const {
-		heroCard,
-		heroContent,
-		heroOverlay,
-		heroButton,
-		statCard,
-		donationCard,
-		emptyState,
-	} = useStyles();
 	const { t } = useTranslation();
+	const navigate = useNavigate();
 	const { userId } = useAuth();
 	const { data, isLoading, isError, error } = useDashboard(userId);
+	const { primaryButton } = authRedesignStyles();
+	const {
+		screen,
+		header,
+		greetingTitle,
+		greetingSubtitle,
+		content,
+		sectionTitle,
+		statGrid,
+		statCard,
+		statIcon,
+		statLabel,
+		statValue,
+		historyRow,
+		historyIcon,
+		historyTitle,
+		historyMeta,
+		emptyState,
+	} = dashboardRedesignStyles();
 
-	if (isLoading) return <Typography p={2}>{t('dashboard.loading')}</Typography>;
-	if (isError)
+	if (isLoading) {
 		return (
-			<Typography p={2} color='error'>
-				{t('dashboard.errorPrefix')} {error?.message || t('dashboard.unknownError')}
-			</Typography>
+			<div className={screen}>
+				<div className={header}>
+					<Typography className={greetingTitle}>{t('dashboard.loading')}</Typography>
+				</div>
+			</div>
 		);
+	}
+
+	if (isError) {
+		return (
+			<div className={screen}>
+				<div className={content} style={{ marginTop: '20px' }}>
+					<div className={emptyState} style={{ color: '#B3261E' }}>
+						{t('dashboard.errorPrefix')} {error?.message || t('dashboard.unknownError')}
+					</div>
+				</div>
+			</div>
+		);
+	}
 
 	const stats = data?.stats ?? { total: 0, lastDonation: '-', eligibleIn: '-' };
 	const donations = data?.donations ?? [];
 
-	if (donations.length === 0) {
-		return (
-			<Box p={2} display='flex' flexDirection='column' gap={3}>
-				<Box className={emptyState} sx={{ borderRadius: '24px' }}>
-					<FavoriteBorderIcon color='disabled' fontSize='large' sx={{ mb: 1 }} />
-					<Typography variant='h6' color='textSecondary' gutterBottom>
-						{t('dashboard.noDonationsTitle')}
-					</Typography>
-					<Typography variant='body2' color='textSecondary'>
-						{t('dashboard.noDonationsBody')}
-					</Typography>
-					<Button
-						variant='contained'
-						color='error'
-						href='/events?page=1'
-						sx={{ mt: 2 }}
-					>
-						{t('dashboard.seeUpcomingEvents')}
-					</Button>
-				</Box>
-			</Box>
-		);
-	}
+	const statCards = [
+		{ key: 'totalDonations', icon: OpacityIcon, value: stats.total, colors: statCardColors.donationsAlt },
+		{ key: 'nextDonation', icon: AccessTimeIcon, value: stats.eligibleIn, colors: statCardColors.events },
+		{ key: 'lastDonation', icon: CalendarMonthIcon, value: stats.lastDonation, colors: statCardColors.donations },
+	];
 
 	return (
-		<Box p={2} display='flex' flexDirection='column' gap={3}>
-			<motion.div
-				initial={{ y: -30, opacity: 0 }}
-				animate={{ y: 0, opacity: 1 }}
-				transition={{ duration: 0.6 }}
-			>
-				<Card className={heroCard} sx={{ borderRadius: '24px' }}>
-					<Box className={heroContent}>
-						<Typography variant='h6' sx={{ color: 'white' }}>
-							{t('dashboard.welcome')}
-						</Typography>
-						<Typography variant='body2' sx={{ color: 'white' }}>
-							{t('dashboard.welcomeMessage')}
-						</Typography>
+		<div className={screen}>
+			<div className={header}>
+				<Typography className={greetingTitle}>{t('dashboard.welcome')}</Typography>
+				<Typography className={greetingSubtitle}>{t('dashboard.welcomeMessage')}</Typography>
+			</div>
+
+			<div className={content}>
+				{donations.length === 0 ? (
+					<div className={emptyState} style={{ padding: '32px 20px' }}>
+						<FavoriteBorderIcon style={{ color: '#8A8690', marginBottom: '10px' }} fontSize='large' />
+						<div style={{ fontWeight: 700, color: '#1F1B24', marginBottom: '6px' }}>
+							{t('dashboard.noDonationsTitle')}
+						</div>
+						<div style={{ marginBottom: '16px' }}>{t('dashboard.noDonationsBody')}</div>
 						<Button
-							variant='contained'
-							color='inherit'
-							href='/events?page=1'
-							className={heroButton}
+							type='button'
+							className={primaryButton}
+							onClick={() => navigate('/events?page=1')}
 						>
-							{t('dashboard.exploreEvents')}
+							{t('dashboard.seeUpcomingEvents')}
 						</Button>
-					</Box>
-					<Box className={heroOverlay} />
-				</Card>
-			</motion.div>
+					</div>
+				) : (
+					<>
+						<div className={statGrid}>
+							{statCards.map((card) => {
+								const Icon = card.icon;
+								return (
+									<div className={statCard} key={card.key}>
+										<div
+											className={statIcon}
+											style={{ backgroundColor: card.colors.bg, color: card.colors.fg }}
+										>
+											<Icon />
+										</div>
+										<Typography className={statLabel}>{t(`dashboard.${card.key}`)}</Typography>
+										<Typography className={statValue}>{card.value}</Typography>
+									</div>
+								);
+							})}
+						</div>
 
-			<Box display='flex' gap={2} flexWrap='wrap'>
-				<motion.div
-					whileHover={{ y: -6 }}
-					transition={{ type: 'spring', stiffness: 200 }}
-					style={{ flex: '1 1 30%' }}
-				>
-					<Card className={statCard} sx={{ borderRadius: '24px' }}>
-						<FavoriteIcon sx={{ color: colors.rose }} fontSize='large' />
-						<Typography variant='subtitle2' color='text.secondary'>
-							{t('dashboard.totalDonations')}
-						</Typography>
-						<Typography variant='h6'>{stats.total}</Typography>
-					</Card>
-				</motion.div>
+						<Typography className={sectionTitle}>{t('dashboard.donationHistory')}</Typography>
+						{donations.map((d) => (
+							<div className={historyRow} key={d.id}>
+								<div className={historyIcon}>
+									<OpacityIcon fontSize='small' />
+								</div>
+								<div>
+									<Typography className={historyTitle}>{d.event}</Typography>
+									<Typography className={historyMeta}>
+										{d.date} · {d.type}
+									</Typography>
+								</div>
+							</div>
+						))}
+					</>
+				)}
+			</div>
 
-				<motion.div
-					whileHover={{ y: -6 }}
-					transition={{ type: 'spring', stiffness: 200 }}
-					style={{ flex: '1 1 30%' }}
-				>
-					<Card className={statCard} sx={{ borderRadius: '24px' }}>
-						<AccessTimeIcon sx={{ color: colors.purple }} fontSize='large' />
-						<Typography variant='subtitle2' color='text.secondary'>
-							{t('dashboard.nextDonation')}
-						</Typography>
-						<Typography variant='h6'>{stats.eligibleIn}</Typography>
-					</Card>
-				</motion.div>
-
-				<motion.div
-					whileHover={{ y: -6 }}
-					transition={{ type: 'spring', stiffness: 200 }}
-					style={{ flex: '1 1 30%' }}
-				>
-					<Card className={statCard} sx={{ borderRadius: '24px' }}>
-						<CalendarMonthIcon sx={{ color: colors.purple }} fontSize='large' />
-						<Typography variant='subtitle2' color='text.secondary'>
-							{t('dashboard.lastDonation')}
-						</Typography>
-						<Typography variant='h6'>{stats.lastDonation}</Typography>
-					</Card>
-				</motion.div>
-			</Box>
-
-			<Box display='flex' flexDirection='column' gap={2}>
-				<Typography variant='h5'>{t('dashboard.donationHistory')}</Typography>
-				{donations.map((d) => (
-					<motion.div
-						key={d.id}
-						initial={{ opacity: 0, y: 20 }}
-						animate={{ opacity: 1, y: 0 }}
-						transition={{ duration: 0.4 }}
-					>
-						<Box className={donationCard} sx={{ borderRadius: '24px' }}>
-							<CardContent>
-								<Typography variant='h6'>{d.event}</Typography>
-
-								<Box display='flex' alignItems='center' gap={1} mb={0.5}>
-									<CalendarTodayIcon
-										fontSize='small'
-										sx={{ color: colors.purple }}
-									/>
-									<Typography variant='body2'>{d.date}</Typography>
-								</Box>
-
-								<Box display='flex' alignItems='center' gap={1}>
-									<OpacityIcon fontSize='small' sx={{ color: colors.rose }} />
-									<Typography variant='body2'>{d.type}</Typography>
-								</Box>
-							</CardContent>
-						</Box>
-					</motion.div>
-				))}
-			</Box>
-		</Box>
+			<RedesignBottomNav />
+		</div>
 	);
 }
