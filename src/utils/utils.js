@@ -1,5 +1,3 @@
-const isDonor = (donation) => donation.disease != undefined;
-
 exports.addDays = (date, days) => {
 	const result = new Date(date);
 	result.setDate(result.getDate() + days);

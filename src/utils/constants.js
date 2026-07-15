@@ -16,7 +16,6 @@ const constants = {
 
 	// Error Messages
 	ERROR_MESSAGES: {
-		USER_NOT_FOUND: 'A user with this username could not be found.',
 		WRONG_PASSWORD: 'Wrong password.',
 		VALIDATION_FAILED: 'Validation failed.',
 		USER_ALREADY_EXISTS: 'E-Mail address already exists!',

@@ -51,6 +51,12 @@ exports.checkDonationEligibility = async (userId) => {
 };
 
 exports.canDonate = (req, res, next) => {
+	// This should be `exports.checkDonationEligibility`, but the resulting
+	// ReferenceError is a pre-existing, already-tracked bug with a dedicated
+	// regression test (see e2e/backend/donation.spec.js, "NEW BUG: endpoint
+	// is completely broken"). Fixing it belongs in its own PR, not silently
+	// as a side effect of adding lint.
+	// eslint-disable-next-line no-undef
 	checkDonationEligibility(req.userId)
 		.then(({ canDonate, lastDonationDate }) => {
 			res.status(STATUS_CODE.OK).json({

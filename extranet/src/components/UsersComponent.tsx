@@ -61,7 +61,6 @@ const UsersComponent: React.FC = () => {
 		userAvatar,
 		userName,
 		userMeta,
-		emptyState,
 		paginationRow,
 	} = usersListRedesignStyles();
 

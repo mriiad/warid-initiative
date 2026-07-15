@@ -7,7 +7,6 @@ jest.mock('../../src/models/donation', () => require('./support/mongooseMock').m
 jest.mock('../../src/models/event', () => require('./support/mongooseMock').makeModelMock());
 
 const User = require('../../src/models/user');
-const Profile = require('../../src/models/profile');
 const Donation = require('../../src/models/donation');
 const Event = require('../../src/models/event');
 const { buildApp } = require('./support/testApp');

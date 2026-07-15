@@ -14,8 +14,6 @@ import type {
 } from '../types';
 
 export const useSignup = () => {
-	const queryClient = useQueryClient();
-
 	return useMutation({
 		mutationFn: (data: SignupData) => authService.signup(data),
 		onSuccess: (response) => {},

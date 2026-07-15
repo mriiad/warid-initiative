@@ -5,7 +5,6 @@ import SearchIcon from '@mui/icons-material/Search';
 import {
 	CircularProgress,
 	FormControl,
-	FormHelperText,
 	IconButton,
 	MenuItem,
 	Select,

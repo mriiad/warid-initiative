@@ -8,7 +8,6 @@ const User = require('../models/user');
 const { validationResult } = require('express-validator');
 const config = require('../utils/config');
 const constants = require('../utils/constants');
-const { STATUS_CODE } = require('../utils/errors/httpStatusCode');
 
 const createTransporter = () => {
 	if (!config.email.enabled) {

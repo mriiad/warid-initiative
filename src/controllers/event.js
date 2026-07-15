@@ -64,7 +64,7 @@ exports.getEvent = async (req, res, next) => {
 							includeQRCode = true;
 						}
 					}
-				} catch (tokenError) {
+				} catch {
 					// Token is invalid, continue without QR code
 				}
 			}

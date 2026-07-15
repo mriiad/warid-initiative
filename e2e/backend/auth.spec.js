@@ -1,5 +1,5 @@
 const request = require('supertest');
-const { makeModelMock, resolveTo } = require('./support/mongooseMock');
+const { resolveTo } = require('./support/mongooseMock');
 
 jest.mock('../../src/models/user', () => require('./support/mongooseMock').makeModelMock());
 

@@ -27,6 +27,9 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Lint
+        run: npm run lint
+
       - name: Create test config.json
         # config.json is intentionally gitignored (it normally holds
         # per-environment secrets); src/middleware/token-check.js requires
@@ -78,6 +81,9 @@ jobs:
 
       - name: Install dependencies
         run: npm install
+
+      - name: Lint
+        run: npm run lint
 
       - name: Type-check
         run: npx tsc --noEmit
