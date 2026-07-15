@@ -88,3 +88,6 @@ temp/
 /extranet/test-results/
 /extranet/playwright-report/
 /extranet/playwright/.cache/
+
+# Local agent tooling (git worktrees for isolated background tasks)
+/.claude/
