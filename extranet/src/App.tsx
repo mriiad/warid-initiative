@@ -91,7 +91,13 @@ const MobileNavContainer = styled.div`
 // unconditional too. '/request-reset-password' is inherently pre-auth.
 // '/home' is here unconditionally too now that LandingPage (the non-admin
 // destination) has its own redesign -- AdminDashboard renders instead for
-// admins, also full-bleed.
+// admins, also full-bleed. '/events' (the list) is here unconditionally too:
+// EventsComponent now renders a full-bleed view for both roles
+// (AdminEventsListView / DonorEventsListView, each with their own top bar +
+// RedesignBottomNav) -- it was previously admin-gated from before the donor
+// view existed, which left non-admins with the old chrome stacked on top of
+// the new self-contained UI (the same double-chrome bug fixed for '/users'
+// below).
 const FULL_SCREEN_ROUTES = [
 	'/login',
 	'/signup',
@@ -105,13 +111,13 @@ const FULL_SCREEN_ROUTES = [
 	'/FAQ',
 	'/request-reset-password',
 	'/home',
+	'/events',
 ];
-// '/events' (the list), '/events/create' and the emergencies admin screens
-// only go full-screen for admins -- their redesign is admin-only so far (see
-// EventsComponent/EventForm/EmergencyComponent), and non-admins still need
-// the old chrome (the pre-existing EventsComponent for the events list).
-// '/users' is here too -- see the bug-fix note below.
-const ADMIN_ONLY_FULL_SCREEN_ROUTES = ['/events', '/events/create', '/emergencies', '/users'];
+// '/events/create' and the emergencies admin screens only go full-screen for
+// admins -- their redesign is admin-only so far (see
+// EventForm/EmergencyComponent). '/users' is here too -- see the bug-fix
+// note below.
+const ADMIN_ONLY_FULL_SCREEN_ROUTES = ['/events/create', '/emergencies', '/users'];
 // Bug fix: UsersComponent and UserDetailView already ship their own
 // full-bleed top bar + RedesignBottomNav, but '/users' and '/users/:userId'
 // were never added here, so admins were getting the old chrome wrapped
@@ -123,9 +129,9 @@ const ADMIN_ONLY_FULL_SCREEN_ROUTES = ['/events', '/events/create', '/emergencie
 // self-guards non-admins to NotFoundPage).
 const ADMIN_ONLY_FULL_SCREEN_ROUTE_PATTERN =
 	/^\/emergencies\/[^/]+\/matched-users\/?$|^\/users\/(?!update\/)[^/]+$|^\/users\/update\/[^/]+$|^\/events\/update\/[^/]+$/;
-// The event detail page (but not the '/events' list) now has a redesign for
-// BOTH admins and non-admins, so unlike the admin-only pattern above this one
-// applies regardless of role. Still excludes '/events/create' and
+// The event detail page also has a redesign for BOTH admins and non-admins
+// (like the '/events' list above), so unlike the admin-only pattern above
+// this one applies regardless of role. Still excludes '/events/create' and
 // '/events/update/:reference' (matched separately above). The nested
 // can-donate/confirmation donor sub-routes are also redesigned now, with
 // their own minimal chrome (no bottom nav, since they're transient steps).

@@ -8,6 +8,19 @@ test.describe('Events list', () => {
 		await expect(page.getByText('Collecte A')).toBeVisible();
 		await expect(page.getByText('Collecte B')).toBeVisible();
 	});
+
+	test('regression: /events renders full-screen for non-admins too, not wrapped in the old app chrome on top of the new one', async ({ page }) => {
+		// DonorEventsListView ships its own full-bleed top bar + RedesignBottomNav,
+		// but '/events' was only added to App.tsx's full-screen route list for
+		// admins (from before the donor view existed) -- so non-admins were
+		// getting the old MobileHeader (with the app logo) and MobileNavbar
+		// wrapped around the already-redesigned screen. Confirm the old chrome
+		// is gone now.
+		await mockJson(page, '**/api/events*', eventListResponse([sampleEvent({ title: 'Collecte A' })]));
+		await page.goto('/events');
+		await expect(page.getByText('Collecte A')).toBeVisible();
+		await expect(page.locator('img[alt="Logo"]')).toHaveCount(0);
+	});
 });
 
 test.describe('Event details (BUG regression for issue #196)', () => {
