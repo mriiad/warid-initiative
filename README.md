@@ -35,6 +35,21 @@ The Warid Initiative Blood Donation Application is a project aimed at facilitati
 - Run `npm start`
 - If everything above was done as mentioned, you must see the following message in the logs: "Connected successfully to MongoDB server"
 
+### First administrator bootstrap
+
+After registering the user who should become the first administrator, run the
+one-time bootstrap command from a trusted environment configured with the same
+database variables as the application:
+
+```sh
+npm run bootstrap:admin -- --username <registered-username>
+```
+
+The command refuses to run if an administrator already exists or if the
+username does not match a registered user. After the first administrator has
+been created, use the protected `PATCH /api/users/:userId/admin` endpoint for
+all subsequent promotions.
+
 ## API Testing
 
 ## Swagger / OpenAPI
