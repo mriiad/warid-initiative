@@ -22,7 +22,7 @@ const config = {
 		host: process.env.DB_HOST || 'mongodb+srv',
 		name: process.env.DB_NAME || 'warid',
 		user: process.env.DB_USER || 'mriad',
-		password: process.env.DB_PASSWORD || 'cmpzlqxwU8l7hkuF',
+		password: process.env.DB_PASSWORD || '',
 		sample: process.env.DB_SAMPLE || 'j7pzkfb',
 	},
 
@@ -44,8 +44,8 @@ const config = {
 			port: parseInt(process.env.SMTP_PORT) || 465,
 			secure: process.env.SMTP_SECURE === 'true',
 			auth: {
-				user: process.env.SMTP_USER || 'contactwarid@gmail.com',
-				pass: process.env.SMTP_PASS || 'ohoe tavz ksgq jadt',
+				user: process.env.SMTP_USER || '',
+				pass: process.env.SMTP_PASS || '',
 			},
 			tls: {
 				ciphers: process.env.SMTP_CIPHERS || 'SSLv3',
