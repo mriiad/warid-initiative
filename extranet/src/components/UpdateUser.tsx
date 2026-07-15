@@ -21,6 +21,7 @@ import { BLOOD_GROUP_OPTIONS } from '../data/constants';
 import { authRedesignStyles } from '../styles/authRedesign';
 import { eventDetailRedesignStyles } from '../styles/eventDetailRedesign';
 import { userDetailRedesignStyles } from '../styles/userDetailRedesign';
+import API_CONFIG, { buildApiUrl } from '../utils/apiConfig';
 import { cities } from '../utils/utils';
 import RedesignBottomNav from './shared/RedesignBottomNav';
 import SnackbarComponent from './shared/SnackbarComponent';
@@ -68,7 +69,7 @@ const UpdateUser = () => {
 		queryFn: async () => {
 			const token = localStorage.getItem('token');
 			const response = await axios.get(
-				`http://localhost:3000/api/users/profile/${userId}`,
+				buildApiUrl(API_CONFIG.endpoints.users.profile(userId)),
 				{
 					headers: {
 						Authorization: `Bearer ${token}`,
@@ -100,7 +101,7 @@ const UpdateUser = () => {
 	const onSubmit = async (data: UpdateUserFormData) => {
 		try {
 			const token = localStorage.getItem('token');
-			await axios.put(`http://localhost:3000/api/users/${userId}`, data, {
+			await axios.put(buildApiUrl(API_CONFIG.endpoints.users.update(userId)), data, {
 				headers: {
 					Authorization: `Bearer ${token}`,
 				},

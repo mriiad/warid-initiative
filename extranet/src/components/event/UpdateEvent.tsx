@@ -18,6 +18,7 @@ import { useAuth } from '../../auth/AuthContext';
 import { useEvent } from '../../hooks';
 import { authRedesignStyles } from '../../styles/authRedesign';
 import { eventsListRedesignStyles } from '../../styles/eventsListRedesign';
+import API_CONFIG, { buildApiUrl } from '../../utils/apiConfig';
 import NotFoundPage from '../NotFoundPage';
 import RedesignBottomNav from '../shared/RedesignBottomNav';
 import ResponseAnimation from '../shared/ResponseAnimation';
@@ -93,7 +94,7 @@ const UpdateEvent: React.FC = () => {
 				formData.append('image', image);
 			}
 
-			const response = await fetch(`http://localhost:3000/api/event/${reference}`, {
+			const response = await fetch(buildApiUrl(API_CONFIG.endpoints.events.update(reference)), {
 				method: 'PUT',
 				headers: {
 					Authorization: `Bearer ${token}`,
