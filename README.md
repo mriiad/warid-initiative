@@ -64,6 +64,10 @@ Here are some functionalities to test (please replace the port by the one set vi
 }
 ```
 
+## Deployment
+
+See `DEPLOYMENT.md` for how this app ships to production (a single Docker image, deployed via a Render Blueprint).
+
 ## Contributing
 
 We welcome contributions to improve and enhance the application. Please feel free to open issues for bugs, enhancements, or feature requests. Stay tuned for issues created by the maintainers for specific tasks and improvements.

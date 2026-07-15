@@ -92,12 +92,26 @@ jobs:
           path: extranet/playwright-report/
           retention-days: 7
 
+  docker-build:
+    name: Docker image builds
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build image (no push -- validates the Dockerfile only)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          tags: warid-app:ci-check
+
   # Single aggregate check so branch protection only needs to require one
   # status ("CI / all-checks-passed") instead of tracking each job by name.
   all-checks-passed:
     name: All checks passed
     runs-on: ubuntu-latest
-    needs: [backend-tests, frontend-checks, frontend-e2e]
+    needs: [backend-tests, frontend-checks, frontend-e2e, docker-build]
     if: always()
     steps:
       - name: Fail if any required job failed
