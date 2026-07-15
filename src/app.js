@@ -17,6 +17,7 @@ const eventRouter = require('./routes/event');
 const contactRouter = require('./routes/contact');
 const emergencyRouter = require('./routes/emergency');
 const participantRouter = require('./routes/participant');
+const swaggerRouter = require('./docs/swagger');
 
 const app = express();
 
@@ -24,6 +25,7 @@ app.use(cors());
 
 app.use(bodyParser.json());
 
+app.use(swaggerRouter);
 app.use(authRouter);
 app.use(userRouter);
 app.use(donationRouter);

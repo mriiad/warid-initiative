@@ -7,7 +7,9 @@ test.describe('Profile page', () => {
 		await mockJson(page, '**/api/user/profile', fullProfileResponse({ firstname: 'Yassine', lastname: 'Alaoui' }));
 		await page.goto('/profile');
 		await expect(page.getByText('Yassine', { exact: true })).toBeVisible();
-		await expect(page.getByText('Alaoui')).toBeVisible();
+		// The redesigned page shows the last name in both the combined
+		// "Yassine Alaoui" header and its own info row, so target the info row.
+		await expect(page.getByText('Alaoui', { exact: true })).toBeVisible();
 	});
 
 	test('FIXED (issue #204): saving profile edits hits the self-service PATCH /api/user/profile endpoint, not the admin-only /api/users/:userId route', async ({ page }) => {
@@ -52,11 +54,7 @@ test.describe('Profile page', () => {
 
 		await page.goto('/profile');
 		await expect(page.getByText('المعلومات الشخصية')).toBeVisible();
-		await page
-			.locator('h5', { hasText: 'المعلومات الشخصية' })
-			.locator('xpath=ancestor::*[contains(@class,"MuiBox-root")][1]')
-			.getByRole('button')
-			.click();
+		await page.getByRole('button', { name: 'تعديل' }).click();
 
 		const saveButton = page.getByRole('button', { name: 'حفظ التغييرات' });
 		await saveButton.click({ timeout: 5000 });

@@ -144,6 +144,7 @@
     }
   },
   "profile": {
+    "pageTitle": "My Profile",
     "personalInformation": "Personal Information",
     "firstName": "First Name",
     "lastName": "Last Name",

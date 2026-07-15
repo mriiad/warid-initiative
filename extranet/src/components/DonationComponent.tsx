@@ -1,16 +1,17 @@
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import OpacityIcon from '@mui/icons-material/Opacity';
+import SearchIcon from '@mui/icons-material/Search';
 import {
-	Button,
 	FormControl,
 	FormHelperText,
-	Grid,
+	IconButton,
 	InputLabel,
 	MenuItem,
 	Select,
 	TextField,
 	Typography,
 } from '@mui/material';
-import { makeStyles } from '@mui/styles';
-import clsx from 'clsx';
+import Button from '@mui/material/Button';
 import { useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
@@ -25,56 +26,23 @@ import {
 	useEvents,
 	useUserProfile,
 } from '../hooks';
-import colors from '../styles/colors';
-import { authStyles, mainStyles } from '../styles/mainStyles';
+import { authRedesignStyles } from '../styles/authRedesign';
+import { eventsListRedesignStyles } from '../styles/eventsListRedesign';
 import { formatDate, formatDateForDisplay } from '../utils/utils';
-import FormContainer from './shared/FormContainer';
+import RedesignBottomNav from './shared/RedesignBottomNav';
 import ResponseAnimation from './shared/ResponseAnimation';
 import SnackbarComponent from './shared/SnackbarComponent';
-
-const useStyles = makeStyles({
-	wrapper: {
-		display: 'grid',
-		placeContent: 'center',
-		backgroundColor: 'var(--background-color)',
-		fontFamily: '"Oswald", sans-serif',
-		fontSize: '24px',
-		fontWeight: 700,
-		textTransform: 'uppercase',
-		color: colors.rose,
-	},
-	topBottom: {
-		gridArea: '1/1/-1/-1',
-	},
-	top: {
-		clipPath: 'polygon(0% 0%, 100% 0%, 100% 48%, 0% 58%)',
-	},
-	bottom: {
-		clipPath: 'polygon(0% 60%, 100% 50%, 100% 100%, 0% 100%)',
-		color: colors.purple,
-		background: 'linear-gradient(177deg, black 53%, colors.rose 65%)',
-		backgroundClip: 'text',
-		WebkitBackgroundClip: 'text',
-		transform: 'translateX(-0.02em)',
-	},
-	alert: {
-		backgroundColor: 'rgba(255, 255, 255, 0.35)',
-	},
-	separator: {
-		marginTop: '20px',
-	},
-});
 
 const DonationComponent = () => {
 	const { t } = useTranslation();
 	const { token } = useAuth();
-	const { wrapper, topBottom, top, bottom, separator } = useStyles();
-	const { bar, button, signUp, form } = authStyles();
-	const { subTitle } = mainStyles();
+	const { input, primaryButton } = authRedesignStyles();
+	const { screen, topBar, topBarDivider, topBarTitle, content, hero, heroIcon, heroTitle } =
+		eventsListRedesignStyles();
 
 	const navigate = useNavigate();
 	const location = useLocation();
-	
+
 	const queryParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
 	const eventReference = queryParams.get('eventRef');
 	const eventDateFromURL = queryParams.get('eventDate') || queryParams.get('event-Date');
@@ -103,9 +71,7 @@ const DonationComponent = () => {
 	// present), the date is derived from that event and must never be
 	// user-editable -- including in the brief window before the event
 	// details finish loading.
-	const [isDateDisabled, setIsDateDisabled] = useState<boolean>(() =>
-		Boolean(eventReference)
-	);
+	const [isDateDisabled, setIsDateDisabled] = useState<boolean>(() => Boolean(eventReference));
 	const donationType = watch('donationType');
 
 	const defaultDonationDate = useMemo(() => {
@@ -189,17 +155,12 @@ const DonationComponent = () => {
 
 	const [isFormSubmitted, setIsFormSubmitted] = useState<boolean>(false);
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
-	const [isSuccessResponse, setIsSuccessAnimationVisible] =
-		useState<boolean>(false);
-	const [isErrorResponse, setIsErrorAnimationVisible] =
-		useState<boolean>(false);
+	const [isSuccessResponse, setIsSuccessAnimationVisible] = useState<boolean>(false);
+	const [isErrorResponse, setIsErrorAnimationVisible] = useState<boolean>(false);
 
 	const onSubmit = (formData: any) => {
 		if (!token) {
-			sessionStorage.setItem(
-				'pendingDonationFormData',
-				JSON.stringify(formData)
-			);
+			sessionStorage.setItem('pendingDonationFormData', JSON.stringify(formData));
 
 			// For login redirect, maintain the same URL structure
 			const redirectUrl = eventReference
@@ -213,9 +174,7 @@ const DonationComponent = () => {
 		}
 
 		if (!formData.eventId && eventReference && events?.data?.events) {
-			const event = events.data.events.find(
-				(e: any) => e.reference === eventReference
-			);
+			const event = events.data.events.find((e: any) => e.reference === eventReference);
 			if (event) {
 				formData.eventId = event._id;
 			}
@@ -240,9 +199,7 @@ const DonationComponent = () => {
 				if (error.response?.data) {
 					const errorResponseData: ApiErrorResponse = error.response.data;
 					if (error.response.status !== 404 && error.response.status !== 400) {
-						setErrorMessage(
-							errorResponseData.errorMessage || t('donation.genericError')
-						);
+						setErrorMessage(errorResponseData.errorMessage || t('donation.genericError'));
 						setIsFormSubmitted(true);
 						setIsErrorAnimationVisible(true);
 					}
@@ -252,23 +209,27 @@ const DonationComponent = () => {
 	};
 
 	return (
-		<FormContainer>
-			<Typography variant='h2' align='center' gutterBottom className={signUp}>
-				{t('donation.title')}
-				<span className={bar}></span>
-			</Typography>
-			<Typography variant='h6' align='center' gutterBottom>
-				<span className={subTitle}>
-					<section className={wrapper}>
-						<div className={`${topBottom} ${top}`}>{t('donation.beTheHero')}</div>
-						<div className={`${topBottom} ${bottom}`} aria-hidden='true'>
-							{t('donation.beTheHero')}
-						</div>
-					</section>
-				</span>
-			</Typography>
-			<form onSubmit={handleSubmit(onSubmit)} className={clsx(form, separator)}>
-				<Grid container spacing={2}>
+		<div className={screen}>
+			<div className={topBar}>
+				<IconButton aria-label={t('common.back')} onClick={() => navigate(-1)}>
+					<ArrowBackIcon />
+				</IconButton>
+				<div className={topBarDivider} />
+				<Typography className={topBarTitle}>{t('donation.title')}</Typography>
+				<IconButton aria-label={t('admin.searchPlaceholder')}>
+					<SearchIcon />
+				</IconButton>
+			</div>
+
+			<div className={content}>
+				<div className={hero}>
+					<div className={heroIcon}>
+						<OpacityIcon />
+					</div>
+					<Typography className={heroTitle}>{t('donation.beTheHero')}</Typography>
+				</div>
+
+				<form onSubmit={handleSubmit(onSubmit)}>
 					{isFormSubmitted ? (
 						<ResponseAnimation
 							responseMessage={t('donation.successTitle')}
@@ -278,153 +239,127 @@ const DonationComponent = () => {
 							errorMessage={errorMessage}
 						/>
 					) : (
-						<>
-							<Grid container spacing={2}>
-								<Grid item xs={12}>
-									<Controller
-										name='bloodGroup'
-										control={control}
-										defaultValue=''
-										render={({ field }) => (
-											<FormControl
-												fullWidth
-												error={Boolean(errors.bloodGroup)}
-												disabled={!isBloodGroupEditable}
-											>
-												<InputLabel>{t('donation.bloodGroup')}</InputLabel>
-												<Select {...field}>
-													<MenuItem value=''>
-														<em>{t('common.none')}</em>
-													</MenuItem>
-													{BLOOD_GROUP_OPTIONS.map((option) => (
-														<MenuItem key={option.value} value={option.value}>
-															{option.label}
+						<div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+							<Controller
+								name='bloodGroup'
+								control={control}
+								defaultValue=''
+								render={({ field }) => (
+									<FormControl
+										fullWidth
+										className={input}
+										error={Boolean(errors.bloodGroup)}
+										disabled={!isBloodGroupEditable}
+									>
+										<InputLabel>{t('donation.bloodGroup')}</InputLabel>
+										<Select {...field} label={t('donation.bloodGroup')}>
+											<MenuItem value=''>
+												<em>{t('common.none')}</em>
+											</MenuItem>
+											{BLOOD_GROUP_OPTIONS.map((option) => (
+												<MenuItem key={option.value} value={option.value}>
+													{option.label}
+												</MenuItem>
+											))}
+										</Select>
+										<FormHelperText>
+											{errors.bloodGroup ? t('donation.bloodGroupRequired') : ''}
+										</FormHelperText>
+									</FormControl>
+								)}
+							/>
+
+							<Controller
+								name='donationDate'
+								control={control}
+								defaultValue=''
+								rules={{ required: t('donation.donationDateRequired') }}
+								render={({ field }) => (
+									<TextField
+										{...field}
+										fullWidth
+										className={input}
+										label={t('donation.donationDate')}
+										error={Boolean(errors.donationDate)}
+										helperText={errors.donationDate ? t('donation.donationDateRequired') : ''}
+										type='date'
+										InputLabelProps={{ shrink: true }}
+										disabled={isDateDisabled}
+									/>
+								)}
+							/>
+
+							<Controller
+								name='donationType'
+								control={control}
+								defaultValue=''
+								rules={{ required: t('donation.donationTypeRequired') }}
+								render={({ field }) => (
+									<FormControl fullWidth className={input} error={Boolean(errors.donationType)}>
+										<InputLabel>{t('donation.donationType')}</InputLabel>
+										<Select {...field} label={t('donation.donationType')}>
+											<MenuItem value=''>
+												<em>{t('donation.donationTypeNone')}</em>
+											</MenuItem>
+											<MenuItem value='Blood'>{t('donation.blood')}</MenuItem>
+											<MenuItem value='Plates'>{t('donation.plates')}</MenuItem>
+										</Select>
+										<FormHelperText>
+											{errors.donationType ? t('donation.donationTypeRequired') : ''}
+										</FormHelperText>
+									</FormControl>
+								)}
+							/>
+
+							{!eventReference && (
+								<Controller
+									name='eventId'
+									control={control}
+									defaultValue=''
+									render={({ field }) => (
+										<FormControl fullWidth className={input} error={Boolean(errors.eventId)}>
+											<InputLabel>{t('donation.event')}</InputLabel>
+											<Select {...field} label={t('donation.event')}>
+												<MenuItem value=''>
+													<em>{t('donation.eventNone')}</em>
+												</MenuItem>
+												{events?.data?.events &&
+													events.data.events.map((event: any) => (
+														<MenuItem key={event._id} value={event._id}>
+															{event.title} ({formatDateForDisplay(event.date)})
+															{event.isGeneric && t('donation.genericEventSuffix')}
 														</MenuItem>
 													))}
-												</Select>
-												<FormHelperText>
-													{errors.bloodGroup ? t('donation.bloodGroupRequired') : ''}
-												</FormHelperText>
-											</FormControl>
-										)}
-									/>
-								</Grid>
-								<Grid item xs={12}>
-									<Controller
-										name='donationDate'
-										control={control}
-										defaultValue=''
-										rules={{
-											required: t('donation.donationDateRequired'),
-										}}
-										render={({ field }) => (
-											<TextField
-												{...field}
-												label={t('donation.donationDate')}
-												error={Boolean(errors.donationDate)}
-												helperText={
-													errors.donationDate
-														? t('donation.donationDateRequired')
-														: ''
-												}
-												type='date'
-												fullWidth
-												InputLabelProps={{
-													shrink: true,
-												}}
-												disabled={isDateDisabled}
-											/>
-										)}
-									/>
-								</Grid>
-								<Grid item xs={12}>
-									<Controller
-										name='donationType'
-										control={control}
-										defaultValue=''
-										rules={{
-											required: t('donation.donationTypeRequired'),
-										}}
-										render={({ field }) => (
-											<FormControl
-												fullWidth
-												error={Boolean(errors.donationType)}
-											>
-												<InputLabel>{t('donation.donationType')}</InputLabel>
-												<Select {...field}>
-													<MenuItem value=''>
-														<em>{t('donation.donationTypeNone')}</em>
-													</MenuItem>
-													<MenuItem value='Blood'>{t('donation.blood')}</MenuItem>
-													<MenuItem value='Plates'>{t('donation.plates')}</MenuItem>
-												</Select>
-												<FormHelperText>
-													{errors.donationType
-														? t('donation.donationTypeRequired')
-														: ''}
-												</FormHelperText>
-											</FormControl>
-										)}
-									/>
-								</Grid>
+											</Select>
+											<FormHelperText>
+												{errors.eventId ? t('donation.eventRequired') : ''}
+											</FormHelperText>
+										</FormControl>
+									)}
+								/>
+							)}
 
-								{!eventReference && (
-									<Grid item xs={12}>
-										<Controller
-											name='eventId'
-											control={control}
-											defaultValue=''
-											render={({ field }) => (
-												<FormControl fullWidth error={Boolean(errors.eventId)}>
-													<InputLabel>{t('donation.event')}</InputLabel>
-													<Select {...field}>
-														<MenuItem value=''>
-															<em>{t('donation.eventNone')}</em>
-														</MenuItem>
-														{events?.data?.events &&
-															events.data.events.map((event: any) => (
-																<MenuItem key={event._id} value={event._id}>
-																	{event.title} (
-																	{formatDateForDisplay(event.date)})
-																	{event.isGeneric &&
-																		t('donation.genericEventSuffix')}
-																</MenuItem>
-															))}
-													</Select>
-													<FormHelperText>
-														{errors.eventId ? t('donation.eventRequired') : ''}
-													</FormHelperText>
-												</FormControl>
-											)}
-										/>
-									</Grid>
-								)}
-							</Grid>
-							<Button
-								type='submit'
-								className={button}
-								style={{ marginTop: '20px' }}
-							>
+							<Button type='submit' fullWidth className={primaryButton}>
 								{t('donation.submit')}
 							</Button>
-						</>
+						</div>
 					)}
-				</Grid>
-			</form>
+				</form>
+			</div>
+
+			<RedesignBottomNav />
 
 			<SnackbarComponent
 				open={showSnackbar}
 				handleClose={() => setShowSnackbar(false)}
-				message={t('donation.lastDonationMessage', {
-					date: defaultDonationDateDisplay,
-				})}
+				message={t('donation.lastDonationMessage', { date: defaultDonationDateDisplay })}
 			/>
 			<SnackbarComponent
 				open={reviewSnackbarOpen}
 				handleClose={() => setReviewSnackbarOpen(false)}
 				message={t('donation.restoredMessage')}
 			/>
-		</FormContainer>
+		</div>
 	);
 };
 
