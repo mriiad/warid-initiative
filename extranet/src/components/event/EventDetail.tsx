@@ -13,6 +13,7 @@ import styled from 'styled-components';
 import { useAuth } from '../../auth/AuthContext';
 import { useEvent, useCheckParticipation, useEventParticipantsDetails, useCreateParticipant } from '../../hooks';
 import colors from '../../styles/colors';
+import API_CONFIG, { buildApiUrl } from '../../utils/apiConfig';
 import CanDonate from '../CanDonate';
 import ConfirmationDialog from '../shared/ConfirmationDialog';
 import SnackbarComponent from '../shared/SnackbarComponent';
@@ -110,7 +111,7 @@ const EventDetail: React.FC = () => {
 				try {
 					setConfirmationDialog({ ...confirmationDialog, open: false });
 
-					const response = await fetch('http://localhost:3000/api/event', {
+					const response = await fetch(buildApiUrl(API_CONFIG.endpoints.events.details), {
 						method: 'DELETE',
 						headers: {
 							Authorization: `Bearer ${token}`,

@@ -11,6 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
 import { Event } from '../../data/Event';
 import { eventsListRedesignStyles } from '../../styles/eventsListRedesign';
+import API_CONFIG, { buildApiUrl } from '../../utils/apiConfig';
 import EventOverviewCard from '../shared/EventOverviewCard';
 import RedesignBottomNav from '../shared/RedesignBottomNav';
 
@@ -280,7 +281,7 @@ const EventsComponent = () => {
 			try {
 				setIsLoading(true);
 				const response = await axios.get(
-					`http://localhost:3000/api/events?page=${page}`
+					buildApiUrl(API_CONFIG.endpoints.events.list(page))
 				);
 				setEvents(response.data.events);
 				if (isAdmin) {

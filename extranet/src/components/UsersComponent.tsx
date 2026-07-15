@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import RedesignBottomNav from './shared/RedesignBottomNav';
 import { usersListRedesignStyles } from '../styles/usersListRedesign';
+import API_CONFIG, { buildApiUrl } from '../utils/apiConfig';
 import NoUserFound from './NoUserFound';
 import UserFilter from './UserFilter';
 
@@ -118,7 +119,7 @@ const UsersComponent: React.FC = () => {
 				setIsLoading(true);
 				setNoUsersFound(false);
 				const response = await axios.get(
-					`http://localhost:3000/api/users?page=${page}`
+					buildApiUrl(API_CONFIG.endpoints.users.list(page))
 				);
 				setUsers(response.data.users);
 				setTotalPages(Math.ceil(response.data.totalItems / 10));
@@ -149,7 +150,7 @@ const UsersComponent: React.FC = () => {
 			setIsLoading(true);
 			setNoUsersFound(false);
 			const response = await axios.post(
-				'http://localhost:3000/api/searchUsers',
+				buildApiUrl(API_CONFIG.endpoints.users.search),
 				{ ...Object.fromEntries(filters), page: currentPage, perPage: 10 }
 			);
 			setUsers(response.data.users || []);
