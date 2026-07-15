@@ -140,6 +140,7 @@
     }
   },
   "profile": {
+    "pageTitle": "ملفي الشخصي",
     "personalInformation": "المعلومات الشخصية",
     "firstName": "الاسم الشخصي",
     "lastName": "الاسم العائلي",

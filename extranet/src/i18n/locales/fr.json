@@ -140,6 +140,7 @@
     }
   },
   "profile": {
+    "pageTitle": "Mon profil",
     "personalInformation": "Informations personnelles",
     "firstName": "Prénom",
     "lastName": "Nom",
