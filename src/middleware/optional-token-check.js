@@ -21,7 +21,7 @@ exports.optionalAuth = (req, res, next) => {
 
 	try {
 		decodedToken = jwt.verify(token, config.auth.jwtSecretKey);
-	} catch (err) {
+	} catch {
 		const error = new Error(
 			'Unauthorized user, please verify your credentials'
 		);

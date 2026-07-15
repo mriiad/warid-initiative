@@ -53,10 +53,9 @@ const DonationComponent = () => {
 		control,
 		setValue,
 		setError,
-		watch,
 	} = useForm();
 
-	const { data: donation, error, isLoading, isError } = useDonationHistory();
+	const { data: donation, error, isLoading } = useDonationHistory();
 
 	const { data: profileData } = useUserProfile();
 
@@ -72,7 +71,6 @@ const DonationComponent = () => {
 	// user-editable -- including in the brief window before the event
 	// details finish loading.
 	const [isDateDisabled, setIsDateDisabled] = useState<boolean>(() => Boolean(eventReference));
-	const donationType = watch('donationType');
 
 	const defaultDonationDate = useMemo(() => {
 		if (isLoading) return '';

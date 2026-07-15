@@ -1,7 +1,6 @@
 const User = require('../models/user');
 const Donation = require('../models/donation')
 const Event = require('../models/event');
-const ApiError = require('../utils/errors/ApiError');
 const { STATUS_CODE } = require('../utils/errors/httpStatusCode');
 const Profile = require('../models/profile');
 const { calculateAge } = require('../utils/utils');

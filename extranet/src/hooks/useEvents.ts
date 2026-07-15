@@ -84,8 +84,6 @@ export const useDeleteEvent = () => {
 };
 
 export const useConfirmPresence = () => {
-	const queryClient = useQueryClient();
-
 	return useMutation({
 		mutationFn: (data: ConfirmPresenceData) =>
 			eventsService.confirmPresence(data),

@@ -27,9 +27,6 @@ const SnackbarComponent: React.FC<SnackbarComponentProps> = ({
 }) => {
 	const { alert } = useStyles();
 
-	// Minimum swipe distance
-	const minSwipeDistance = 50;
-
 	const reviewSnackbarHandlers = useSwipeable({
 		onSwipedUp: handleClose,
 		delta: 10,

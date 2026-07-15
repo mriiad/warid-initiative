@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const express = require('express');
 const bodyParser = require('body-parser');
 const nodemailer = require('nodemailer');
-const { makeModelMock, resolveTo, makeQuery } = require('./support/mongooseMock');
+const { resolveTo } = require('./support/mongooseMock');
 
 jest.mock('../../src/models/user', () => require('./support/mongooseMock').makeModelMock());
 
@@ -467,24 +467,17 @@ describe('email transporter disabled (EMAIL_ENABLED=false)', () => {
 	});
 });
 
-describe('BUG: createTransporter can never see "missing SMTP credentials" (auth.js:18-19)', () => {
+describe('fix: createTransporter correctly sees "missing SMTP credentials" (auth.js:18-19)', () => {
 	// auth.js's createTransporter() has a defensive branch:
 	//   if (!config.email.smtp.auth.user || !config.email.smtp.auth.pass) return null;
 	// intended to skip building a transporter when SMTP credentials are
-	// absent. But src/utils/config.js sources those values as
-	// `process.env.SMTP_USER || '<hardcoded fallback>'` and
-	// `process.env.SMTP_PASS || '<hardcoded fallback>'` -- non-empty
-	// fallback strings baked into source (see src/utils/config.js; not
-	// reproduced here since they read as real, live-looking credentials
-	// rather than obvious placeholders -- that hardcoding is itself a
-	// separate, higher-priority issue). Since `''` is falsy in JS, clearing
-	// the env vars just falls through to those hardcoded defaults, which
-	// are always truthy. There is no env configuration under which
-	// config.email.smtp.auth.user/pass can be falsy, so this branch is
-	// dead code, and in practice the app will always build a transporter
-	// using the hardcoded fallback credentials whenever SMTP_USER/PASS
-	// aren't set, rather than safely no-op'ing as the code implies.
-	it('BUG: clearing SMTP_USER/SMTP_PASS still yields truthy credentials via config.js hardcoded fallbacks', () => {
+	// absent. This used to be dead code: src/utils/config.js sourced those
+	// values as `process.env.SMTP_USER || '<hardcoded fallback>'`, and since
+	// the fallbacks were non-empty, clearing the env vars just fell through
+	// to them -- config.email.smtp.auth.user/pass could never be falsy. That
+	// hardcoding has since been removed (both fields now default to ''), so
+	// the guard works as intended.
+	it('fix: clearing SMTP_USER/SMTP_PASS yields empty credentials, so no transporter is built', () => {
 		let userValue;
 		let passValue;
 		jest.isolateModules(() => {
@@ -498,13 +491,7 @@ describe('BUG: createTransporter can never see "missing SMTP credentials" (auth.
 			process.env.SMTP_USER = previousUser;
 			process.env.SMTP_PASS = previousPass;
 		});
-		// Deliberately asserting truthiness rather than the exact fallback
-		// strings, to avoid embedding real-looking credential material in
-		// test source -- the defect under test is that these stay non-empty
-		// at all after clearing the env vars, not their specific value.
-		expect(typeof userValue).toBe('string');
-		expect(userValue.length).toBeGreaterThan(0);
-		expect(typeof passValue).toBe('string');
-		expect(passValue.length).toBeGreaterThan(0);
+		expect(userValue).toBe('');
+		expect(passValue).toBe('');
 	});
 });

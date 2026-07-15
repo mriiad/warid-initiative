@@ -6,6 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon ./src/app.js",
+    "lint": "eslint .",
     "test:e2e": "jest --config=jest.config.js",
     "test:e2e:backend": "jest --config=jest.backend.config.js"
   },
@@ -35,7 +36,10 @@
     "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/supertest": "^7.2.0",
+    "eslint": "^10.7.0",
+    "globals": "^17.7.0",
     "jest": "^30.4.2",
     "mongodb-memory-server": "^11.2.0",
     "nodemon": "^3.0.2",
