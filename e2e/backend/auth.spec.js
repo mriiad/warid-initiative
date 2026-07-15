@@ -472,11 +472,14 @@ describe('BUG: createTransporter can never see "missing SMTP credentials" (auth.
 	//   if (!config.email.smtp.auth.user || !config.email.smtp.auth.pass) return null;
 	// intended to skip building a transporter when SMTP credentials are
 	// absent. But src/utils/config.js sources those values as
-	// `process.env.SMTP_USER || 'contactwarid@gmail.com'` and
-	// `process.env.SMTP_PASS || 'ohoe tavz ksgq jadt'` -- hardcoded,
-	// non-empty fallback strings. Since `''` is falsy in JS, clearing the
-	// env vars just falls through to those hardcoded defaults, which are
-	// always truthy. There is no env configuration under which
+	// `process.env.SMTP_USER || '<hardcoded fallback>'` and
+	// `process.env.SMTP_PASS || '<hardcoded fallback>'` -- non-empty
+	// fallback strings baked into source (see src/utils/config.js; not
+	// reproduced here since they read as real, live-looking credentials
+	// rather than obvious placeholders -- that hardcoding is itself a
+	// separate, higher-priority issue). Since `''` is falsy in JS, clearing
+	// the env vars just falls through to those hardcoded defaults, which
+	// are always truthy. There is no env configuration under which
 	// config.email.smtp.auth.user/pass can be falsy, so this branch is
 	// dead code, and in practice the app will always build a transporter
 	// using the hardcoded fallback credentials whenever SMTP_USER/PASS
@@ -495,7 +498,13 @@ describe('BUG: createTransporter can never see "missing SMTP credentials" (auth.
 			process.env.SMTP_USER = previousUser;
 			process.env.SMTP_PASS = previousPass;
 		});
-		expect(userValue).toBe('contactwarid@gmail.com');
-		expect(passValue).toBe('ohoe tavz ksgq jadt');
+		// Deliberately asserting truthiness rather than the exact fallback
+		// strings, to avoid embedding real-looking credential material in
+		// test source -- the defect under test is that these stay non-empty
+		// at all after clearing the env vars, not their specific value.
+		expect(typeof userValue).toBe('string');
+		expect(userValue.length).toBeGreaterThan(0);
+		expect(typeof passValue).toBe('string');
+		expect(passValue.length).toBeGreaterThan(0);
 	});
 });
