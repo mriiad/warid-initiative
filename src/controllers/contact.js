@@ -1,23 +1,29 @@
 const nodemailer = require('nodemailer');
-const config = require('../../config.json');
+const config = require('../utils/config');
 const User = require('../models/user');
 
-const { email, password, host, secureConnection, port, ciphers, requireTLS } =
-	config.mailerConfig;
+const createTransporter = () => {
+	if (!config.email.enabled) {
+		return null;
+	}
 
-const transporter = nodemailer.createTransport({
-	host: host,
-	secureConnection: secureConnection,
-	port: port,
-	tls: {
-		ciphers: ciphers,
-	},
-	requireTLS: requireTLS,
-	auth: {
-		user: email,
-		pass: password,
-	},
-});
+	const { host, secure, port, tls, auth } = config.email.smtp;
+	return nodemailer.createTransport({
+		host: host,
+		secureConnection: secure,
+		port: port,
+		tls: {
+			ciphers: tls.ciphers,
+		},
+		requireTLS: tls.requireTLS,
+		auth: {
+			user: auth.user,
+			pass: auth.pass,
+		},
+	});
+};
+
+const transporter = createTransporter();
 
 exports.sendContactUs = async (req, res, next) => {
 	const { message } = req.body;
@@ -48,7 +54,9 @@ exports.sendContactUs = async (req, res, next) => {
 			html: `<h4>You have received a new message from the contact form:</h4><p><b>Name:</b> ${firstname} ${lastname}</p><p><b>Email:</b> ${email}</p><p><b>Phone:</b> ${phoneNumber}</p><p><b>Message:</b> ${message}</p>`,
 		};
 
-		await transporter.sendMail(mailOptions);
+		if (transporter) {
+			await transporter.sendMail(mailOptions);
+		}
 		res.status(200).json({ message: 'Email sent successfully' });
 	} catch (error) {
 		console.error('Error:', error);
