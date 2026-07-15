@@ -1,11 +1,16 @@
 const request = require('supertest');
-const { makeModelMock, resolveTo } = require('./support/mongooseMock');
+const jwt = require('jsonwebtoken');
+const express = require('express');
+const bodyParser = require('body-parser');
+const nodemailer = require('nodemailer');
+const { makeModelMock, resolveTo, makeQuery } = require('./support/mongooseMock');
 
 jest.mock('../../src/models/user', () => require('./support/mongooseMock').makeModelMock());
 
 const User = require('../../src/models/user');
 const { buildApp } = require('./support/testApp');
 const { authHeader } = require('./support/jwtHelper');
+const config = require('../../src/utils/config');
 
 const app = buildApp();
 
@@ -203,5 +208,303 @@ describe('PATCH /api/auth/update-password', () => {
 			.set('Authorization', authHeader('user-1'))
 			.send({ currentPassword: 'wrong', newPassword: 'newpassword123' });
 		expect(res.status).toBe(401);
+	});
+
+	it('returns 404 when the user no longer exists', async () => {
+		User.findById.mockReturnValue(resolveTo(null));
+		const res = await request(app)
+			.patch('/api/auth/update-password')
+			.set('Authorization', authHeader('ghost'))
+			.send({ currentPassword: 'a', newPassword: 'newpassword123' });
+		expect(res.status).toBe(404);
+	});
+
+	it('changes the password on a correct current password', async () => {
+		const bcrypt = require('bcrypt');
+		jest.spyOn(bcrypt, 'compare').mockResolvedValueOnce(true);
+		const save = jest.fn().mockResolvedValue(true);
+		User.findById.mockReturnValue(resolveTo({ password: 'hashed', save }));
+		const res = await request(app)
+			.patch('/api/auth/update-password')
+			.set('Authorization', authHeader('user-1'))
+			.send({ currentPassword: 'correct', newPassword: 'newpassword123' });
+		expect(res.status).toBe(200);
+		expect(save).toHaveBeenCalled();
+	});
+});
+
+describe('POST /api/auth/signup error handling', () => {
+	it('returns 500 when saving the new user fails', async () => {
+		User.findOne.mockReset().mockReturnValue(resolveTo(null));
+		User.mockImplementationOnce(function (data) {
+			Object.assign(this, data);
+			this._id = 'new-user';
+			this.save = jest.fn().mockRejectedValue(new Error('write failed'));
+			return this;
+		});
+		const res = await request(app).put('/api/auth/signup').send({
+			email: 'boom@example.com',
+			password: 'password123',
+			phoneNumber: '0600000000',
+			username: 'CIN500',
+		});
+		expect(res.status).toBe(500);
+	});
+});
+
+describe('POST /api/auth/login error handling', () => {
+	it('returns 500 when persisting the refresh token fails', async () => {
+		const bcrypt = require('bcrypt');
+		jest.spyOn(bcrypt, 'compare').mockResolvedValueOnce(true);
+		User.findOne.mockReturnValue(
+			resolveTo({
+				_id: 'user-1',
+				email: 'a@example.com',
+				password: 'hashed',
+				save: jest.fn().mockRejectedValue(new Error('db down')),
+			})
+		);
+		const res = await request(app)
+			.post('/api/auth/login')
+			.send({ username: 'bob', password: 'correct' });
+		expect(res.status).toBe(500);
+	});
+});
+
+describe('GET /api/auth/activation/:confirmationCode error handling', () => {
+	it('returns 500 when the lookup fails', async () => {
+		User.findOne.mockReturnValue(Promise.reject(new Error('db down')));
+		const res = await request(app).get('/api/auth/activation/some-code');
+		expect(res.status).toBe(500);
+	});
+});
+
+describe('POST /api/auth/logout', () => {
+	it('clears the cookie and confirms logout', async () => {
+		const res = await request(app).post('/api/auth/logout');
+		expect(res.status).toBe(200);
+		expect(res.body.message).toBeDefined();
+	});
+});
+
+describe('POST /api/auth/refresh-token', () => {
+	it('rejects a missing refresh token', async () => {
+		const res = await request(app).post('/api/auth/refresh-token').send({});
+		expect(res.status).toBe(400);
+	});
+
+	it('rejects a malformed/invalid refresh token', async () => {
+		const res = await request(app)
+			.post('/api/auth/refresh-token')
+			.send({ refreshToken: 'not-a-real-token' });
+		expect(res.status).toBe(401);
+	});
+
+	it('returns 404 when the token is valid but the user no longer exists', async () => {
+		const token = jwt.sign({ userId: 'ghost' }, config.auth.refreshSecretKey, {
+			expiresIn: config.auth.refreshTokenExpire,
+		});
+		User.findOne.mockReturnValue(resolveTo(null));
+		const res = await request(app)
+			.post('/api/auth/refresh-token')
+			.send({ refreshToken: token });
+		expect(res.status).toBe(404);
+	});
+
+	it('rejects a refresh token that does not match the one stored for the user', async () => {
+		const token = jwt.sign({ userId: 'user-1' }, config.auth.refreshSecretKey, {
+			expiresIn: config.auth.refreshTokenExpire,
+		});
+		User.findOne.mockReturnValue(
+			resolveTo({ _id: 'user-1', email: 'a@example.com', refreshToken: 'a-different-token' })
+		);
+		const res = await request(app)
+			.post('/api/auth/refresh-token')
+			.send({ refreshToken: token });
+		expect(res.status).toBe(401);
+	});
+
+	it('issues new tokens when the refresh token is valid and matches', async () => {
+		const token = jwt.sign({ userId: 'user-1' }, config.auth.refreshSecretKey, {
+			expiresIn: config.auth.refreshTokenExpire,
+		});
+		const save = jest.fn().mockResolvedValue(true);
+		User.findOne.mockReturnValue(
+			resolveTo({ _id: 'user-1', email: 'a@example.com', refreshToken: token, save })
+		);
+		const res = await request(app)
+			.post('/api/auth/refresh-token')
+			.send({ refreshToken: token });
+		expect(res.status).toBe(200);
+		expect(res.body.accessToken).toBeDefined();
+		expect(res.body.refreshToken).toBeDefined();
+		expect(save).toHaveBeenCalled();
+	});
+
+	it('returns 500 when persisting the new refresh token fails', async () => {
+		const token = jwt.sign({ userId: 'user-1' }, config.auth.refreshSecretKey, {
+			expiresIn: config.auth.refreshTokenExpire,
+		});
+		User.findOne.mockReturnValue(
+			resolveTo({
+				_id: 'user-1',
+				email: 'a@example.com',
+				refreshToken: token,
+				save: jest.fn().mockRejectedValue(new Error('db down')),
+			})
+		);
+		const res = await request(app)
+			.post('/api/auth/refresh-token')
+			.send({ refreshToken: token });
+		expect(res.status).toBe(500);
+	});
+});
+
+describe('Password reset flow error handling', () => {
+	it('request-reset returns 500 when saving the reset token fails', async () => {
+		User.findOne.mockReturnValue(
+			resolveTo({ email: 'known@example.com', save: jest.fn().mockRejectedValue(new Error('db down')) })
+		);
+		const res = await request(app)
+			.post('/api/auth/request-reset')
+			.send({ email: 'known@example.com' });
+		expect(res.status).toBe(500);
+	});
+
+	it('reset-password returns 500 when saving the new password fails', async () => {
+		User.findOne.mockReturnValue(
+			resolveTo({ email: 'known@example.com', save: jest.fn().mockRejectedValue(new Error('db down')) })
+		);
+		const res = await request(app)
+			.post('/api/auth/reset-password/good-token')
+			.send({ password: 'newpassword123' });
+		expect(res.status).toBe(500);
+	});
+
+	it('check-reset-token confirms a valid, unexpired token', async () => {
+		User.findOne.mockReturnValue(resolveTo({ email: 'known@example.com' }));
+		const res = await request(app).get('/api/auth/check-reset-token/good-token');
+		expect(res.status).toBe(200);
+		expect(res.body.message).toMatch(/valid/i);
+	});
+
+	it('check-reset-token returns 500 on a lookup failure', async () => {
+		User.findOne.mockReturnValue(Promise.reject(new Error('db down')));
+		const res = await request(app).get('/api/auth/check-reset-token/good-token');
+		expect(res.status).toBe(500);
+	});
+
+	it('logs but does not fail the request when the reset-success email fails to send', async () => {
+		const save = jest.fn().mockResolvedValue(true);
+		User.findOne.mockReturnValue(resolveTo({ email: 'known@example.com', save }));
+		nodemailer.__sendMail.mockImplementationOnce((options, callback) =>
+			callback(new Error('smtp unavailable'))
+		);
+		const res = await request(app)
+			.post('/api/auth/reset-password/good-token')
+			.send({ password: 'newpassword123' });
+		expect(res.status).toBe(200);
+	});
+});
+
+describe('email transporter disabled (EMAIL_ENABLED=false)', () => {
+	// auth.js builds its transporter once at module load time from
+	// src/utils/config.js. Exercising the "disabled" branch of
+	// createTransporter (and the downstream "skip sending" branches in
+	// signup/requestPasswordReset/sendPasswordResetSuccessEmail) requires a
+	// fresh copy of the controller loaded under a different env, hence the
+	// isolated module registry and mini app below rather than the shared
+	// `app` used everywhere else in this file.
+	let isolatedApp;
+	let IsolatedUser;
+
+	beforeAll(() => {
+		jest.isolateModules(() => {
+			process.env.EMAIL_ENABLED = 'false';
+			IsolatedUser = require('../../src/models/user');
+			const isolatedAuthRouter = require('../../src/routes/auth');
+			const errorHandler = require('../../src/middleware/error-handler');
+			isolatedApp = express();
+			isolatedApp.use(bodyParser.json());
+			isolatedApp.use(isolatedAuthRouter);
+			isolatedApp.use(errorHandler);
+		});
+	});
+
+	afterAll(() => {
+		process.env.EMAIL_ENABLED = 'true';
+	});
+
+	it('still creates the account and responds normally without sending an email', async () => {
+		IsolatedUser.findOne.mockReset().mockReturnValue(resolveTo(null));
+		const res = await request(isolatedApp).put('/api/auth/signup').send({
+			email: 'noemail@example.com',
+			password: 'password123',
+			phoneNumber: '0600000000',
+			username: 'CIN888',
+		});
+		expect(res.status).toBe(201);
+	});
+
+	it('still issues a reset token without sending an email', async () => {
+		IsolatedUser.findOne.mockReset().mockReturnValue(
+			resolveTo({ email: 'known@example.com', save: jest.fn().mockResolvedValue(true) })
+		);
+		const res = await request(isolatedApp)
+			.post('/api/auth/request-reset')
+			.send({ email: 'known@example.com' });
+		expect(res.status).toBe(200);
+	});
+
+	it('still completes a password reset without sending a confirmation email', async () => {
+		IsolatedUser.findOne.mockReset().mockReturnValue(
+			resolveTo({ email: 'known@example.com', save: jest.fn().mockResolvedValue(true) })
+		);
+		const res = await request(isolatedApp)
+			.post('/api/auth/reset-password/good-token')
+			.send({ password: 'newpassword123' });
+		expect(res.status).toBe(200);
+	});
+});
+
+describe('BUG: createTransporter can never see "missing SMTP credentials" (auth.js:18-19)', () => {
+	// auth.js's createTransporter() has a defensive branch:
+	//   if (!config.email.smtp.auth.user || !config.email.smtp.auth.pass) return null;
+	// intended to skip building a transporter when SMTP credentials are
+	// absent. But src/utils/config.js sources those values as
+	// `process.env.SMTP_USER || '<hardcoded fallback>'` and
+	// `process.env.SMTP_PASS || '<hardcoded fallback>'` -- non-empty
+	// fallback strings baked into source (see src/utils/config.js; not
+	// reproduced here since they read as real, live-looking credentials
+	// rather than obvious placeholders -- that hardcoding is itself a
+	// separate, higher-priority issue). Since `''` is falsy in JS, clearing
+	// the env vars just falls through to those hardcoded defaults, which
+	// are always truthy. There is no env configuration under which
+	// config.email.smtp.auth.user/pass can be falsy, so this branch is
+	// dead code, and in practice the app will always build a transporter
+	// using the hardcoded fallback credentials whenever SMTP_USER/PASS
+	// aren't set, rather than safely no-op'ing as the code implies.
+	it('BUG: clearing SMTP_USER/SMTP_PASS still yields truthy credentials via config.js hardcoded fallbacks', () => {
+		let userValue;
+		let passValue;
+		jest.isolateModules(() => {
+			const previousUser = process.env.SMTP_USER;
+			const previousPass = process.env.SMTP_PASS;
+			process.env.SMTP_USER = '';
+			process.env.SMTP_PASS = '';
+			const isolatedConfig = require('../../src/utils/config');
+			userValue = isolatedConfig.email.smtp.auth.user;
+			passValue = isolatedConfig.email.smtp.auth.pass;
+			process.env.SMTP_USER = previousUser;
+			process.env.SMTP_PASS = previousPass;
+		});
+		// Deliberately asserting truthiness rather than the exact fallback
+		// strings, to avoid embedding real-looking credential material in
+		// test source -- the defect under test is that these stay non-empty
+		// at all after clearing the env vars, not their specific value.
+		expect(typeof userValue).toBe('string');
+		expect(userValue.length).toBeGreaterThan(0);
+		expect(typeof passValue).toBe('string');
+		expect(passValue.length).toBeGreaterThan(0);
 	});
 });
