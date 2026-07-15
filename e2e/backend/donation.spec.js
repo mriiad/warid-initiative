@@ -27,16 +27,16 @@ describe('GET / (regression: dead handler previously hung every request to the s
 	});
 });
 
-describe('GET /api/donation/canDonate (NEW BUG: endpoint is completely broken)', () => {
-	it('BUG: 500s with ReferenceError instead of reporting eligibility (never-donated user)', async () => {
-		// src/controllers/donation.js `canDonate` calls the bare identifier
-		// `checkDonationEligibility(req.userId)` instead of
-		// `exports.checkDonationEligibility(...)` / `this.checkDonationEligibility(...)`.
-		// Only `exports.checkDonationEligibility` exists on the module -- there
-		// is no bare `checkDonationEligibility` in scope -- so this throws
+describe('GET /api/donation/canDonate (fix: endpoint used to be completely broken)', () => {
+	it('fix: reports eligibility instead of 500ing (never-donated user)', async () => {
+		// src/controllers/donation.js `canDonate` used to call the bare
+		// identifier `checkDonationEligibility(req.userId)` instead of
+		// `exports.checkDonationEligibility(...)`. Only
+		// `exports.checkDonationEligibility` exists on the module -- there was
+		// no bare `checkDonationEligibility` in scope -- so this threw
 		// `ReferenceError: checkDonationEligibility is not defined` on every
 		// single call, regardless of mocked data. This endpoint backs the
-		// eligibility badge/button shown to donors and is 100% broken.
+		// eligibility badge/button shown to donors.
 		User.findById.mockReturnValue(resolveTo({ _id: USER_ID, gender: 'male' }));
 		Donation.find.mockReturnValue(resolveTo([]));
 
@@ -44,11 +44,11 @@ describe('GET /api/donation/canDonate (NEW BUG: endpoint is completely broken)',
 			.get('/api/donation/canDonate')
 			.set('Authorization', authHeader(USER_ID));
 
-		expect(res.status).toBe(500);
-		expect(res.body.message).toContain('checkDonationEligibility is not defined');
+		expect(res.status).toBe(200);
+		expect(res.body.canDonate).toBe(true);
 	});
 
-	it('BUG: 500s regardless of the user\'s actual donation history', async () => {
+	it('fix: reports the real eligibility based on the user\'s donation history', async () => {
 		User.findById.mockReturnValue(resolveTo({ _id: USER_ID, gender: 'male' }));
 		Donation.find.mockReturnValue(resolveTo([{ donationDate: new Date() }]));
 
@@ -56,7 +56,9 @@ describe('GET /api/donation/canDonate (NEW BUG: endpoint is completely broken)',
 			.get('/api/donation/canDonate')
 			.set('Authorization', authHeader(USER_ID));
 
-		expect(res.status).toBe(500);
+		expect(res.status).toBe(200);
+		expect(res.body.canDonate).toBe(false);
+		expect(res.body.lastDonationDate).toBeTruthy();
 	});
 });
 

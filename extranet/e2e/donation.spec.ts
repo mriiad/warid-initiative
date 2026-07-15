@@ -28,11 +28,11 @@ test.describe('Donation form', () => {
 		await expect(page.getByText(/starting undefined/)).toBeVisible({ timeout: 5000 });
 	});
 
-	test('BUG: GET /api/donation/canDonate 500s, so the eligibility hint never loads', async ({ page }) => {
-		// Reproduces the ReferenceError bug in src/controllers/donation.js's
-		// canDonate handler (documented in e2e/backend/donation.spec.js): it
-		// calls the bare identifier `checkDonationEligibility` instead of
-		// `exports.checkDonationEligibility`, throwing on every single call.
+	test('defensive: a 500 from canDonate does not crash the donation form', async ({ page }) => {
+		// canDonate used to always 500 with a ReferenceError (fixed in
+		// src/controllers/donation.js, see e2e/backend/donation.spec.js). This
+		// test now only guards against a regression: if that endpoint ever
+		// errors again for any reason, the form should still render.
 		await seedAuth(page);
 		await mockJson(page, '**/api/user/profile', fullProfileResponse());
 		await mockJson(page, '**/api/donation/canDonate', { message: 'checkDonationEligibility is not defined', statusCode: 500 }, { status: 500 });
