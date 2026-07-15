@@ -42,22 +42,37 @@ describe('POST /api/contact-us', () => {
 		expect(sentOptions.text).not.toContain('Spoofed');
 	});
 
-	it('BUG: sends a real email regardless of EMAIL_ENABLED (no toggle respected, unlike auth.js)', async () => {
-		// contact.js builds its transporter unconditionally from
-		// config.email.smtp and never checks the config.email.enabled flag
-		// the way auth.js's createTransporter does -- there is no way to
-		// disable outbound email for the contact form short of removing SMTP
-		// credentials entirely. Still true after #240 (which only fixed
-		// contact.js's config *source*, not this separate missing check).
-		const res = await request(app).post('/api/contact-us').send({
-			firstname: 'Jane',
-			lastname: 'Doe',
-			email: 'jane@example.com',
-			phoneNumber: '0600000000',
-			subject: 'Question',
-			message: 'Hello there',
-		});
-		expect(res.status).toBe(200);
-		expect(nodemailer.__sendMail).toHaveBeenCalled();
+	it('fix: does not send an email when EMAIL_ENABLED=false', async () => {
+		// contact.js used to build its transporter unconditionally from
+		// config.email.smtp and never check the config.email.enabled flag the
+		// way auth.js's createTransporter does -- there was no way to disable
+		// outbound email for the contact form short of removing SMTP
+		// credentials entirely. contact.js now mirrors auth.js's pattern: no
+		// transporter is created (and sendMail is never called) when the flag
+		// is off. config.js reads EMAIL_ENABLED at module-load time, so this
+		// test resets the module registry and re-requires everything with the
+		// env var set, the same way authGuard.spec.js exercises config.json.
+		jest.resetModules();
+		process.env.EMAIL_ENABLED = 'false';
+		try {
+			const freshNodemailer = require('nodemailer');
+			const { buildApp: freshBuildApp } = require('./support/testApp');
+			const freshApp = freshBuildApp();
+
+			const res = await request(freshApp).post('/api/contact-us').send({
+				firstname: 'Jane',
+				lastname: 'Doe',
+				email: 'jane@example.com',
+				phoneNumber: '0600000000',
+				subject: 'Question',
+				message: 'Hello there',
+			});
+
+			expect(res.status).toBe(200);
+			expect(freshNodemailer.__sendMail).not.toHaveBeenCalled();
+		} finally {
+			delete process.env.EMAIL_ENABLED;
+			jest.resetModules();
+		}
 	});
 });
