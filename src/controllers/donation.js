@@ -51,7 +51,7 @@ exports.checkDonationEligibility = async (userId) => {
 };
 
 exports.canDonate = (req, res, next) => {
-	checkDonationEligibility(req.userId)
+	exports.checkDonationEligibility(req.userId)
 		.then(({ canDonate, lastDonationDate }) => {
 			res.status(STATUS_CODE.OK).json({
 				canDonate: canDonate,
