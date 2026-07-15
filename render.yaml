@@ -1,0 +1,54 @@
+# Render Blueprint (https://render.com/docs/blueprint-spec).
+# One service: the Express backend also serves the built frontend (see
+# src/app.js), so there's nothing to split into a separate static site.
+#
+# To deploy: in the Render dashboard, New > Blueprint, pick this repo. Render
+# reads this file and creates the service below. Env vars marked
+# `sync: false` are secrets -- Render will prompt for them and never stores
+# their values in this file or in git. See .env.example for what each one
+# does.
+services:
+  - type: web
+    name: warid-app
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free
+    healthCheckPath: /api-docs
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: FRONTEND_URL
+        sync: false # set to this service's own Render URL once known
+      - key: DB_HOST
+        value: mongodb+srv
+      - key: DB_NAME
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_SAMPLE
+        sync: false
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: REFRESH_SECRET_KEY
+        generateValue: true
+      - key: SECRET_KEY
+        generateValue: true
+      - key: EMAIL_ENABLED
+        value: true
+      - key: EMAIL_FROM
+        value: do-not-reply@warid.ma
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        sync: false
+      - key: SMTP_SECURE
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
