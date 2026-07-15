@@ -1,61 +1,33 @@
-import { Button, CircularProgress, Typography } from '@mui/material';
-import { makeStyles } from '@mui/styles';
-
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import HighlightOffIcon from '@mui/icons-material/HighlightOff';
+import { CircularProgress, IconButton, Typography } from '@mui/material';
+import Button from '@mui/material/Button';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useCanDonate, useEvent } from '../hooks';
-import colors from '../styles/colors';
+import { eventDetailRedesignStyles } from '../styles/eventDetailRedesign';
+import { flowRedesignStyles } from '../styles/flowRedesign';
 import { formatDate } from '../utils/utils';
-import CardComponent from './shared/CardComponent';
-
-const useStyles = makeStyles({
-	resultMessage: {
-		marginTop: '20px',
-		color: 'black',
-	},
-	confirmButton: {
-		padding: '10px 20px',
-		background: '#333',
-		color: 'white',
-		'&.MuiButtonBase-root': {
-			marginTop: '10px',
-			color: 'white',
-			backgroundColor: colors.purple,
-		},
-	},
-});
 
 const CanDonate: React.FC = () => {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const { reference } = useParams<{ reference: string }>();
 
-	const { resultMessage, confirmButton } = useStyles();
+	const { topBar, topBarDivider, topBarTitle } = eventDetailRedesignStyles();
+	const { flowCenter, flowIconCircle, flowTitle, flowButton } = flowRedesignStyles();
 
-	const {
-		data: canDonate,
-		isLoading: isLoadingCanDonate,
-		isError: hasDonationCheckError,
-	} = useCanDonate();
-
-	const {
-		data: event,
-		isLoading: isLoadingEvent,
-		isError,
-	} = useEvent(reference || '');
+	const { data: canDonate, isLoading: isLoadingCanDonate } = useCanDonate();
+	const { data: event } = useEvent(reference || '');
 
 	const handleConfirmClick = () => {
 		if (canDonate) {
 			if (event?.data && !event.data.isGeneric) {
-				// For non-generic events, include both the event reference and date
-				navigate(
-					`/donate?eventRef=${reference}&eventDate=${formatDate(
-						event.data.date
-					)}`
-				);
+				navigate(`/donate?eventRef=${reference}&eventDate=${formatDate(event.data.date)}`);
 			} else {
-				// For generic events, only include reference
 				navigate(`/donate?eventRef=${reference}`);
 			}
 		} else {
@@ -63,30 +35,59 @@ const CanDonate: React.FC = () => {
 		}
 	};
 
-	return (
-		<>
-			<CardComponent>
-				{isLoadingCanDonate ? (
-					<CircularProgress />
-				) : canDonate === null ? (
-					<Typography className={resultMessage}>
-						{t('canDonate.unableToDetermine')}
-					</Typography>
-				) : canDonate ? (
-					<Typography className={resultMessage}>
-						{t('canDonate.canDonate')}
-					</Typography>
-				) : (
-					<Typography className={resultMessage}>
-						{t('canDonate.cannotDonate')}
-					</Typography>
-				)}
-			</CardComponent>
+	const statusConfig = isLoadingCanDonate
+		? null
+		: canDonate === null
+		? {
+				icon: HelpOutlineIcon,
+				bg: '#F1EFF4',
+				fg: '#8A8690',
+				message: t('canDonate.unableToDetermine'),
+		  }
+		: canDonate
+		? {
+				icon: CheckCircleIcon,
+				bg: '#DCEFC9',
+				fg: '#5C8A2B',
+				message: t('canDonate.canDonate'),
+		  }
+		: {
+				icon: HighlightOffIcon,
+				bg: '#FBE4EA',
+				fg: '#C56D86',
+				message: t('canDonate.cannotDonate'),
+		  };
 
-			<Button className={confirmButton} onClick={handleConfirmClick}>
-				{t('canDonate.confirm')}
-			</Button>
-		</>
+	return (
+		<div>
+			<div className={topBar}>
+				<IconButton aria-label={t('common.back')} onClick={() => navigate(-1)}>
+					<ArrowBackIcon />
+				</IconButton>
+				<div className={topBarDivider} />
+				<Typography className={topBarTitle}>{t('donation.title')}</Typography>
+				<div style={{ width: '30px' }} />
+			</div>
+
+			<div className={flowCenter}>
+				{isLoadingCanDonate || !statusConfig ? (
+					<CircularProgress />
+				) : (
+					<>
+						<div
+							className={flowIconCircle}
+							style={{ backgroundColor: statusConfig.bg, color: statusConfig.fg }}
+						>
+							<statusConfig.icon fontSize='large' />
+						</div>
+						<Typography className={flowTitle}>{statusConfig.message}</Typography>
+						<Button type='button' fullWidth className={flowButton} onClick={handleConfirmClick}>
+							{t('canDonate.confirm')}
+						</Button>
+					</>
+				)}
+			</div>
+		</div>
 	);
 };
 

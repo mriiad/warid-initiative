@@ -109,13 +109,17 @@
       "hidePassword": "Hide password"
     },
     "passwordReset": {
-      "title": "Reset Password",
+      "title": "Forgot your password?",
+      "subtitle": "Enter your email to receive a reset link",
       "email": "Email",
       "emailRequired": "Email is required",
-      "submit": "Send Reset Link"
+      "submit": "Send Reset Link",
+      "back": "Back"
     },
     "resetPassword": {
       "title": "Reset Password",
+      "subtitle": "Choose a new, secure password",
+      "back": "Back",
       "checking": "Checking token validity...",
       "invalidToken": "This password reset link is invalid or has expired.",
       "resetAgain": "Reset again?",
@@ -148,6 +152,7 @@
     }
   },
   "profile": {
+    "pageTitle": "My Profile",
     "personalInformation": "Personal Information",
     "firstName": "First Name",
     "lastName": "Last Name",
@@ -335,9 +340,11 @@
     "successTitle": "Your message has been sent successfully!",
     "successBody": "We will get back to you soon.",
     "sendAnother": "Send Another Message",
-    "genericError": "Error submitting contact form"
+    "genericError": "Error submitting contact form",
+    "heroSubtitle": "We'll get back to you as soon as possible"
   },
   "faq": {
+    "pageTitle": "FAQ",
     "bloodTitle": "FAQ - Blood Donation",
     "bloodSubtitle": "Find quick answers to common questions",
     "appTitle": "FAQ - Warid App",

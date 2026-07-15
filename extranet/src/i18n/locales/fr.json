@@ -109,13 +109,17 @@
       "hidePassword": "Masquer le mot de passe"
     },
     "passwordReset": {
-      "title": "Réinitialiser le mot de passe",
+      "title": "Mot de passe oublié ?",
+      "subtitle": "Entrez votre e-mail pour recevoir un lien de réinitialisation",
       "email": "Adresse e-mail",
       "emailRequired": "L'adresse e-mail est requise",
-      "submit": "Envoyer le lien de réinitialisation"
+      "submit": "Envoyer le lien de réinitialisation",
+      "back": "Retour"
     },
     "resetPassword": {
       "title": "Réinitialiser le mot de passe",
+      "subtitle": "Choisissez un nouveau mot de passe sécurisé",
+      "back": "Retour",
       "checking": "Vérification du lien en cours...",
       "invalidToken": "Ce lien de réinitialisation du mot de passe est invalide ou a expiré.",
       "resetAgain": "Réinitialiser à nouveau ?",
@@ -148,6 +152,7 @@
     }
   },
   "profile": {
+    "pageTitle": "Mon profil",
     "personalInformation": "Informations personnelles",
     "firstName": "Prénom",
     "lastName": "Nom",
@@ -335,9 +340,11 @@
     "successTitle": "Votre message a été envoyé avec succès !",
     "successBody": "Nous vous répondrons bientôt.",
     "sendAnother": "Envoyer un autre message",
-    "genericError": "Erreur lors de l'envoi du formulaire de contact"
+    "genericError": "Erreur lors de l'envoi du formulaire de contact",
+    "heroSubtitle": "Nous vous répondrons dans les plus brefs délais"
   },
   "faq": {
+    "pageTitle": "FAQ",
     "bloodTitle": "FAQ - Don de sang",
     "bloodSubtitle": "Trouvez rapidement des réponses aux questions courantes",
     "appTitle": "FAQ - Application Warid",

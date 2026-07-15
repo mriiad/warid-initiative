@@ -1,10 +1,13 @@
-import { OpenInNew } from '@mui/icons-material';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import { CircularProgress, IconButton, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
-
 import { useConfirmPresence, useEvent } from '../../hooks';
+import { flowRedesignStyles } from '../../styles/flowRedesign';
 import API_CONFIG from '../../utils/apiConfig';
 
 const EventConfirmation: React.FC = () => {
@@ -14,20 +17,20 @@ const EventConfirmation: React.FC = () => {
 	const navigate = useNavigate();
 	const [isConfirmed, setIsConfirmed] = useState(false);
 
+	const { flowCenter, flowIconCircle, flowTitle } = flowRedesignStyles();
+
 	const handleNavigate = (ref: string) => () => navigate(`/events/${ref}`);
 
-	const {
-		data: eventData,
-		isLoading: isEventLoading,
-		isError: isEventError,
-	} = useEvent(reference || '');
+	const { data: eventData, isLoading: isEventLoading, isError: isEventError } = useEvent(
+		reference || ''
+	);
 	const confirmPresenceMutation = useConfirmPresence();
 
 	const handleConfirmPresence = (eventId: string) => {
 		confirmPresenceMutation.mutate(
 			{ eventId, token },
 			{
-				onSuccess: (response) => {
+				onSuccess: () => {
 					setIsConfirmed(true);
 					setTimeout(() => navigate('/events'), API_CONFIG.ui.redirectDelay);
 				},
@@ -44,23 +47,43 @@ const EventConfirmation: React.FC = () => {
 		}
 	}, [eventData, token]);
 
-	if (isEventLoading || confirmPresenceMutation.isPending)
-		return <div>{t('events.confirmation.confirming')}</div>;
-	if (isConfirmed) return <div>{t('events.confirmation.confirmed')}</div>;
+	if (isEventLoading || confirmPresenceMutation.isPending) {
+		return (
+			<div className={flowCenter}>
+				<CircularProgress />
+				<Typography className={flowTitle}>{t('events.confirmation.confirming')}</Typography>
+			</div>
+		);
+	}
+
+	if (isConfirmed) {
+		return (
+			<div className={flowCenter}>
+				<div className={flowIconCircle} style={{ backgroundColor: '#DCEFC9', color: '#5C8A2B' }}>
+					<CheckCircleIcon fontSize='large' />
+				</div>
+				<Typography className={flowTitle}>{t('events.confirmation.confirmed')}</Typography>
+			</div>
+		);
+	}
 
 	if (isEventError || confirmPresenceMutation.isError) {
 		const error = confirmPresenceMutation.error as any;
 		const errorMessage =
-			error?.response?.data?.errorMessage ||
-			t('events.confirmation.unexpectedError');
+			error?.response?.data?.errorMessage || t('events.confirmation.unexpectedError');
 		const details = error?.response?.data?.details;
 		const errorReference = details?.reference;
 
 		return (
-			<div>
-				{errorMessage}
+			<div className={flowCenter}>
+				<div className={flowIconCircle} style={{ backgroundColor: '#FBE4EA', color: '#C56D86' }}>
+					<ErrorOutlineIcon fontSize='large' />
+				</div>
+				<Typography className={flowTitle}>{errorMessage}</Typography>
 				{errorReference && (
-					<OpenInNew onClick={handleNavigate(errorReference)} />
+					<IconButton aria-label={t('admin.viewDetails')} onClick={handleNavigate(errorReference)}>
+						<OpenInNewIcon />
+					</IconButton>
 				)}
 			</div>
 		);
