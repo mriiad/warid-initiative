@@ -45,6 +45,14 @@
     "button": "Retour à l'accueil"
   },
   "landing": {
+    "heroTitle": "Association Warid pour le don de sang",
+    "heroSubtitle": "Chaque goutte fait la différence. Rejoignez la communauté des donneurs dès aujourd'hui.",
+    "donorsLabel": "Donneurs",
+    "eventsLabel": "Événements",
+    "exploreEvents": "Explorer les événements",
+    "aboutTitle": "Qui sommes-nous",
+    "myAccount": "Mon compte",
+    "noUpcomingEvents": "Aucun événement pour le moment, revenez bientôt",
     "intro": "Association marocaine dont le but principal est de sensibiliser les gens à l'importance du don périodique et de fournir à la banque de sang locale des quantités suffisantes de poches de sang afin d'aider les patients atteints de cancer",
     "weAre": "Nous sommes",
     "volunteers": "bénévoles",

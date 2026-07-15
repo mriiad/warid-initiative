@@ -89,6 +89,9 @@ const MobileNavContainer = styled.div`
 // form on submit). '/contact' and '/FAQ' are reachable by anyone (logged in
 // or not) and self-adjust their fields/nav based on auth state, so they're
 // unconditional too. '/request-reset-password' is inherently pre-auth.
+// '/home' is here unconditionally too now that LandingPage (the non-admin
+// destination) has its own redesign -- AdminDashboard renders instead for
+// admins, also full-bleed.
 const FULL_SCREEN_ROUTES = [
 	'/login',
 	'/signup',
@@ -101,22 +104,22 @@ const FULL_SCREEN_ROUTES = [
 	'/contact',
 	'/FAQ',
 	'/request-reset-password',
+	'/home',
 ];
-// '/home', '/events' (the list), '/events/create' and the emergencies admin
-// screens only go full-screen for admins -- their redesign is admin-only so
-// far (see AdminDashboard/EventsComponent/EventForm/EmergencyComponent), and
-// non-admins still need the old chrome (LandingPage for '/home', the
-// pre-existing EventsComponent for the events list). '/users' is here too --
-// see the bug-fix note below.
-const ADMIN_ONLY_FULL_SCREEN_ROUTES = ['/home', '/events', '/events/create', '/emergencies', '/users'];
+// '/events' (the list), '/events/create' and the emergencies admin screens
+// only go full-screen for admins -- their redesign is admin-only so far (see
+// EventsComponent/EventForm/EmergencyComponent), and non-admins still need
+// the old chrome (the pre-existing EventsComponent for the events list).
+// '/users' is here too -- see the bug-fix note below.
+const ADMIN_ONLY_FULL_SCREEN_ROUTES = ['/events', '/events/create', '/emergencies', '/users'];
 // Bug fix: UsersComponent and UserDetailView already ship their own
 // full-bleed top bar + RedesignBottomNav, but '/users' and '/users/:userId'
 // were never added here, so admins were getting the old chrome wrapped
-// around the new self-contained UI (two stacked bottom navs). Excludes
-// '/users/update/:userId' from the ':userId' branch of the pattern below,
-// matching it separately instead since it's also now redesigned (an
-// admin-only edit form, same pattern as the emergencies one).
-// '/events/update/:reference' is also an admin-only form (UpdateEvent
+// around the new self-contained UI (two stacked bottom navs). Both
+// '/users/:userId' (a single path segment) and '/users/update/:userId' (two
+// segments, so it needs its own branch) are covered below -- the latter is
+// redesigned too, an admin-only edit form, same pattern as the emergencies
+// one. '/events/update/:reference' is also an admin-only form (UpdateEvent
 // self-guards non-admins to NotFoundPage).
 const ADMIN_ONLY_FULL_SCREEN_ROUTE_PATTERN =
 	/^\/emergencies\/[^/]+\/matched-users\/?$|^\/users\/(?!update\/)[^/]+$|^\/users\/update\/[^/]+$|^\/events\/update\/[^/]+$/;

@@ -45,6 +45,14 @@
     "button": "Go Back Home"
   },
   "landing": {
+    "heroTitle": "Warid Blood Donation Association",
+    "heroSubtitle": "Every drop makes a difference. Join the donor community today.",
+    "donorsLabel": "Donors",
+    "eventsLabel": "Events",
+    "exploreEvents": "Explore events",
+    "aboutTitle": "About us",
+    "myAccount": "My account",
+    "noUpcomingEvents": "No events right now, check back soon",
     "intro": "A Moroccan association whose main goal is to raise awareness about the importance of periodic donation and to provide the local blood bank with sufficient quantities of blood bags to help cancer patients",
     "weAre": "We are",
     "volunteers": "volunteers",
