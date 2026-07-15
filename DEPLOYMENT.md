@@ -36,7 +36,24 @@ The Express backend serves the built frontend itself (see `src/app.js` --
    then trigger a redeploy. This is a chicken-and-egg step: the URL doesn't
    exist until after the first deploy.
 
-### 3. Frontend API base URL
+### 3. First administrator
+
+1. Register the user who should become the first administrator through the
+   deployed application.
+2. From a trusted shell or one-off process configured with the production
+   database environment variables, run:
+
+   ```sh
+   npm run bootstrap:admin -- --username <registered-username>
+   ```
+
+The command promotes that existing user only when the database has no
+administrator. It exits without changing data if an administrator already
+exists or the username is unknown. Do not expose this command through an HTTP
+endpoint; use the existing admin-protected promotion API for every later
+administrator.
+
+### 4. Frontend API base URL
 
 The frontend is built as part of the same Docker image (see the
 `frontend-build` stage in `Dockerfile`), and Vite inlines `VITE_`-prefixed
