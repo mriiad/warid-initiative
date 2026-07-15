@@ -86,7 +86,9 @@ const MobileNavContainer = styled.div`
 // donation history), so they're unconditional too rather than admin-only.
 // '/donate' applies to any user regardless of role (and even a
 // not-yet-logged-in visitor, who gets redirected to /login from inside the
-// form on submit).
+// form on submit). '/contact' and '/FAQ' are reachable by anyone (logged in
+// or not) and self-adjust their fields/nav based on auth state, so they're
+// unconditional too. '/request-reset-password' is inherently pre-auth.
 const FULL_SCREEN_ROUTES = [
 	'/login',
 	'/signup',
@@ -96,6 +98,9 @@ const FULL_SCREEN_ROUTES = [
 	'/profile',
 	'/dashboard',
 	'/donate',
+	'/contact',
+	'/FAQ',
+	'/request-reset-password',
 ];
 // '/home', '/events' (the list), '/events/create' and the emergencies admin
 // screens only go full-screen for admins -- their redesign is admin-only so
@@ -108,12 +113,13 @@ const ADMIN_ONLY_FULL_SCREEN_ROUTES = ['/home', '/events', '/events/create', '/e
 // full-bleed top bar + RedesignBottomNav, but '/users' and '/users/:userId'
 // were never added here, so admins were getting the old chrome wrapped
 // around the new self-contained UI (two stacked bottom navs). Excludes
-// '/users/update/:userId', which still renders the legacy UpdateUser
-// component and still needs the old chrome around it. '/events/update/:reference'
-// is also an admin-only form (UpdateEvent self-guards non-admins to
-// NotFoundPage).
+// '/users/update/:userId' from the ':userId' branch of the pattern below,
+// matching it separately instead since it's also now redesigned (an
+// admin-only edit form, same pattern as the emergencies one).
+// '/events/update/:reference' is also an admin-only form (UpdateEvent
+// self-guards non-admins to NotFoundPage).
 const ADMIN_ONLY_FULL_SCREEN_ROUTE_PATTERN =
-	/^\/emergencies\/[^/]+\/matched-users\/?$|^\/users\/(?!update\/)[^/]+$|^\/events\/update\/[^/]+$/;
+	/^\/emergencies\/[^/]+\/matched-users\/?$|^\/users\/(?!update\/)[^/]+$|^\/users\/update\/[^/]+$|^\/events\/update\/[^/]+$/;
 // The event detail page (but not the '/events' list) now has a redesign for
 // BOTH admins and non-admins, so unlike the admin-only pattern above this one
 // applies regardless of role. Still excludes '/events/create' and
@@ -122,6 +128,9 @@ const ADMIN_ONLY_FULL_SCREEN_ROUTE_PATTERN =
 // their own minimal chrome (no bottom nav, since they're transient steps).
 const EVENT_DETAIL_FULL_SCREEN_PATTERN = /^\/events\/(?!create$)[^/]+$/;
 const EVENT_SUBFLOW_FULL_SCREEN_PATTERN = /^\/events\/[^/]+\/(can-donate|confirmation)\/?$/;
+// '/reset-password/:resetToken' is the other half of the pre-auth password
+// reset flow, also reachable by anyone (it's the link from the reset email).
+const RESET_PASSWORD_FULL_SCREEN_PATTERN = /^\/reset-password\/[^/]+$/;
 
 const App = () => {
 	const isMobile = useIsMobile();
@@ -133,6 +142,7 @@ const App = () => {
 		FULL_SCREEN_ROUTES.includes(location.pathname) ||
 		EVENT_DETAIL_FULL_SCREEN_PATTERN.test(location.pathname) ||
 		EVENT_SUBFLOW_FULL_SCREEN_PATTERN.test(location.pathname) ||
+		RESET_PASSWORD_FULL_SCREEN_PATTERN.test(location.pathname) ||
 		(isAdmin &&
 			(ADMIN_ONLY_FULL_SCREEN_ROUTES.includes(location.pathname) ||
 				ADMIN_ONLY_FULL_SCREEN_ROUTE_PATTERN.test(location.pathname)));

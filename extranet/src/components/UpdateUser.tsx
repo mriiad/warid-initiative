@@ -1,15 +1,16 @@
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import {
 	Button,
+	CircularProgress,
 	FormControl,
 	FormHelperText,
-	Grid,
+	IconButton,
 	InputLabel,
 	MenuItem,
 	Select,
 	TextField,
 	Typography,
 } from '@mui/material';
-import { makeStyles } from '@mui/styles';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
@@ -17,16 +18,12 @@ import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { BLOOD_GROUP_OPTIONS } from '../data/constants';
-import { authStyles } from '../styles/mainStyles';
+import { authRedesignStyles } from '../styles/authRedesign';
+import { eventDetailRedesignStyles } from '../styles/eventDetailRedesign';
+import { userDetailRedesignStyles } from '../styles/userDetailRedesign';
 import { cities } from '../utils/utils';
-import FormContainer from './shared/FormContainer';
+import RedesignBottomNav from './shared/RedesignBottomNav';
 import SnackbarComponent from './shared/SnackbarComponent';
-
-const useStyles = makeStyles({
-	align: {
-		marginTop: '-20px',
-	},
-});
 
 interface UpdateUserFormData {
 	firstname: string;
@@ -42,8 +39,9 @@ const UpdateUser = () => {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const { userId } = useParams<{ userId: string }>();
-	const { align } = useStyles();
-	const { formField, button, signUp, form, bar } = authStyles();
+	const { input, primaryButton } = authRedesignStyles();
+	const { screen, topBar, topBarDivider, topBarTitle, content } = eventDetailRedesignStyles();
+	const { avatar } = userDetailRedesignStyles();
 	const [showSnackbar, setShowSnackbar] = useState(false);
 	const [message, setMessage] = useState('');
 
@@ -121,25 +119,45 @@ const UpdateUser = () => {
 		}
 	};
 
-	if (isLoading) {
-		return (
-			<FormContainer>
-				<Typography>{t('users.update.loading')}</Typography>
-			</FormContainer>
-		);
-	}
+	const fullName = userData
+		? [userData.firstname, userData.lastname].filter(Boolean).join(' ')
+		: '';
 
 	return (
-		<>
-			<FormContainer className={align}>
-				<Typography variant='h2' align='center' gutterBottom className={signUp}>
-					<b>{t('users.update.title')}</b>
-					<span className={bar}></span>
-				</Typography>
+		<div className={screen}>
+			<div className={topBar}>
+				<IconButton aria-label={t('common.back')} onClick={() => navigate(-1)}>
+					<ArrowBackIcon />
+				</IconButton>
+				<div className={topBarDivider} />
+				<Typography className={topBarTitle}>{t('users.update.title')}</Typography>
+				<div style={{ width: '40px' }} />
+			</div>
 
-				<form onSubmit={handleSubmit(onSubmit)} className={form}>
-					<Grid container spacing={2}>
-						<Grid item xs={12} sm={6}>
+			{isLoading ? (
+				<div style={{ display: 'flex', justifyContent: 'center', padding: '48px 0' }}>
+					<CircularProgress />
+				</div>
+			) : (
+				<div className={content}>
+					<div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+						<div className={avatar} style={{ width: '48px', height: '48px', fontSize: '18px', marginBottom: 0 }}>
+							{(fullName || userData?.username || '?').charAt(0).toUpperCase()}
+						</div>
+						<div>
+							<Typography style={{ fontWeight: 700, fontSize: '15px', color: '#1F1B24' }}>
+								{fullName || userData?.username}
+							</Typography>
+							{userData?.username && (
+								<Typography style={{ fontSize: '13px', color: '#8A8690' }}>
+									{userData.username}
+								</Typography>
+							)}
+						</div>
+					</div>
+
+					<form onSubmit={handleSubmit(onSubmit)}>
+						<div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 							<Controller
 								name='firstname'
 								control={control}
@@ -147,17 +165,14 @@ const UpdateUser = () => {
 								render={({ field }) => (
 									<TextField
 										{...field}
-										label={t('users.update.firstName')}
 										fullWidth
+										className={input}
+										label={t('users.update.firstName')}
 										error={Boolean(errors.firstname)}
 										helperText={errors.firstname?.message}
-										className={formField}
 									/>
 								)}
 							/>
-						</Grid>
-
-						<Grid item xs={12} sm={6}>
 							<Controller
 								name='lastname'
 								control={control}
@@ -165,17 +180,14 @@ const UpdateUser = () => {
 								render={({ field }) => (
 									<TextField
 										{...field}
-										label={t('users.update.lastName')}
 										fullWidth
+										className={input}
+										label={t('users.update.lastName')}
 										error={Boolean(errors.lastname)}
 										helperText={errors.lastname?.message}
-										className={formField}
 									/>
 								)}
 							/>
-						</Grid>
-
-						<Grid item xs={12} sm={6}>
 							<Controller
 								name='email'
 								control={control}
@@ -189,18 +201,15 @@ const UpdateUser = () => {
 								render={({ field }) => (
 									<TextField
 										{...field}
-										label={t('users.update.email')}
-										type='email'
 										fullWidth
+										type='email'
+										className={input}
+										label={t('users.update.email')}
 										error={Boolean(errors.email)}
 										helperText={errors.email?.message}
-										className={formField}
 									/>
 								)}
 							/>
-						</Grid>
-
-						<Grid item xs={12} sm={6}>
 							<Controller
 								name='phoneNumber'
 								control={control}
@@ -208,17 +217,14 @@ const UpdateUser = () => {
 								render={({ field }) => (
 									<TextField
 										{...field}
-										label={t('users.update.phone')}
 										fullWidth
+										className={input}
+										label={t('users.update.phone')}
 										error={Boolean(errors.phoneNumber)}
 										helperText={errors.phoneNumber?.message}
-										className={formField}
 									/>
 								)}
 							/>
-						</Grid>
-
-						<Grid item xs={12} sm={6}>
 							<Controller
 								name='birthdate'
 								control={control}
@@ -226,25 +232,22 @@ const UpdateUser = () => {
 								render={({ field }) => (
 									<TextField
 										{...field}
-										label={t('users.update.birthdate')}
-										type='date'
 										fullWidth
+										type='date'
+										className={input}
+										label={t('users.update.birthdate')}
 										error={Boolean(errors.birthdate)}
 										helperText={errors.birthdate?.message}
-										className={formField}
 										InputLabelProps={{ shrink: true }}
 									/>
 								)}
 							/>
-						</Grid>
-
-						<Grid item xs={12} sm={6}>
 							<Controller
 								name='city'
 								control={control}
 								rules={{ required: t('users.update.cityRequired') }}
 								render={({ field }) => (
-									<FormControl fullWidth error={Boolean(errors.city)}>
+									<FormControl fullWidth error={Boolean(errors.city)} className={input}>
 										<InputLabel>{t('users.update.city')}</InputLabel>
 										<Select {...field} label={t('users.update.city')}>
 											{cities.map((city) => (
@@ -253,21 +256,16 @@ const UpdateUser = () => {
 												</MenuItem>
 											))}
 										</Select>
-										{errors.city && (
-											<FormHelperText>{errors.city.message}</FormHelperText>
-										)}
+										{errors.city && <FormHelperText>{errors.city.message}</FormHelperText>}
 									</FormControl>
 								)}
 							/>
-						</Grid>
-
-						<Grid item xs={12}>
 							<Controller
 								name='bloodGroup'
 								control={control}
 								rules={{ required: t('users.update.bloodGroupRequired') }}
 								render={({ field }) => (
-									<FormControl fullWidth error={Boolean(errors.bloodGroup)}>
+									<FormControl fullWidth error={Boolean(errors.bloodGroup)} className={input}>
 										<InputLabel>{t('users.update.bloodGroup')}</InputLabel>
 										<Select {...field} label={t('users.update.bloodGroup')}>
 											{BLOOD_GROUP_OPTIONS.map((option) => (
@@ -277,45 +275,27 @@ const UpdateUser = () => {
 											))}
 										</Select>
 										{errors.bloodGroup && (
-											<FormHelperText>
-												{errors.bloodGroup.message}
-											</FormHelperText>
+											<FormHelperText>{errors.bloodGroup.message}</FormHelperText>
 										)}
 									</FormControl>
 								)}
 							/>
-						</Grid>
-
-						<Grid item xs={12} className={align}>
-							<Button
-								type='submit'
-								variant='contained'
-								color='primary'
-								className={button}
-								fullWidth
-							>
+							<Button type='submit' fullWidth className={primaryButton}>
 								{t('users.update.submit')}
 							</Button>
-						</Grid>
-					</Grid>
-				</form>
-			</FormContainer>
+						</div>
+					</form>
+				</div>
+			)}
 
-			<div
-				style={{
-					display: 'flex',
-					justifyContent: 'center',
-					marginTop: '30px',
-					marginBottom: '30px',
-				}}
-			></div>
+			<RedesignBottomNav />
 
 			<SnackbarComponent
 				open={showSnackbar}
 				message={message}
 				handleClose={() => setShowSnackbar(false)}
 			/>
-		</>
+		</div>
 	);
 };
 

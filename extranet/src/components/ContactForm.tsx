@@ -1,25 +1,19 @@
 // ContactForm.tsx
-import { Button, Grid, TextField, Typography } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import MailOutlineIcon from '@mui/icons-material/MailOutline';
+import { Button, IconButton, TextField, Typography } from '@mui/material';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { ProfileFormData } from '../data/ProfileFormData';
-import { authStyles } from '../styles/mainStyles';
+import { authRedesignStyles } from '../styles/authRedesign';
+import { eventsListRedesignStyles } from '../styles/eventsListRedesign';
 import API_CONFIG, { buildApiUrl } from '../utils/apiConfig';
-import FormContainer from './shared/FormContainer';
+import RedesignBottomNav from './shared/RedesignBottomNav';
 import ResponseAnimation from './shared/ResponseAnimation';
-
-const useStyles = makeStyles({
-	align: {
-		marginBottom: '80px',
-	},
-	formWrapper: {
-		marginBottom: '88px',
-	},
-});
 
 interface ContactFormData {
 	firstname: string;
@@ -33,8 +27,10 @@ interface ContactFormData {
 const ContactForm = () => {
 	const { t } = useTranslation();
 	const { token } = useAuth();
-	const { bar, button, signUp, form } = authStyles();
-	const { align, formWrapper } = useStyles();
+	const navigate = useNavigate();
+	const { input, primaryButton } = authRedesignStyles();
+	const { screen, topBar, topBarDivider, topBarTitle, content, hero, heroIcon, heroTitle, heroSubtitle } =
+		eventsListRedesignStyles();
 
 	const [isFormSubmitted, setIsFormSubmitted] = useState<boolean>(false);
 	const [isSuccessResponse, setIsSuccessResponse] = useState<boolean>(false);
@@ -109,155 +105,154 @@ const ContactForm = () => {
 		if (isSuccessResponse) reset();
 	};
 
-	if (isFormSubmitted) {
-		return (
-			<FormContainer className={formWrapper}>
-				<ResponseAnimation
-					responseMessage={t('contact.successTitle')}
-					actionMessage={t('contact.successBody')}
-					isSuccess={isSuccessResponse}
-					isError={isErrorResponse}
-					errorMessage={errorMessage}
-				/>
-				<Button
-					onClick={handleSendAnotherMessage}
-					className={button}
-					style={{ marginTop: '20px' }}
-				>
-					{t('contact.sendAnother')}
-				</Button>
-			</FormContainer>
-		);
-	}
-
 	return (
-		<FormContainer className={align}>
-			<Typography variant='h2' align='center' gutterBottom className={signUp}>
-				{t('contact.title')}
-				<span className={bar}></span>
-			</Typography>
-			<form onSubmit={handleSubmit(onSubmit)} className={form}>
-				<Grid container spacing={2}>
-					{!localUserProfile?.firstname && (
-						<Grid item xs={12}>
-							<Controller
-								name='firstname'
-								control={control}
-								render={({ field }) => (
-									<TextField
-										fullWidth
-										label={t('contact.firstName')}
-										required
-										{...field}
-										error={Boolean(errors.firstname)}
-										helperText={
-											errors.firstname ? t('contact.firstNameRequired') : ''
-										}
-									/>
-								)}
-							/>
-						</Grid>
-					)}
-					{!localUserProfile?.lastname && (
-						<Grid item xs={12}>
-							<Controller
-								name='lastname'
-								control={control}
-								render={({ field }) => (
-									<TextField
-										fullWidth
-										label={t('contact.lastName')}
-										required
-										{...field}
-										error={Boolean(errors.lastname)}
-										helperText={
-											errors.lastname ? t('contact.lastNameRequired') : ''
-										}
-									/>
-								)}
-							/>
-						</Grid>
-					)}
-					{!token && (
-						<Grid item xs={12}>
-							<Controller
-								name='email'
-								control={control}
-								render={({ field }) => (
-									<TextField
-										fullWidth
-										label={t('contact.email')}
-										required
-										{...field}
-										error={Boolean(errors.email)}
-										helperText={errors.email ? t('contact.emailRequired') : ''}
-									/>
-								)}
-							/>
-						</Grid>
-					)}
-					{!token && (
-						<Grid item xs={12}>
-							<Controller
-								name='phoneNumber'
-								control={control}
-								render={({ field }) => (
-									<TextField
-										fullWidth
-										label={t('contact.phone')}
-										required
-										{...field}
-										error={Boolean(errors.phoneNumber)}
-										helperText={
-											errors.phoneNumber ? t('contact.phoneRequired') : ''
-										}
-									/>
-								)}
-							/>
-						</Grid>
-					)}
-					<Grid item xs={12}>
-						<Controller
-							name='subject'
-							control={control}
-							render={({ field }) => (
-								<TextField
-									fullWidth
-									label={t('contact.subject')}
-									required
-									{...field}
-									error={Boolean(errors.subject)}
-									helperText={errors.subject ? t('contact.subjectRequired') : ''}
-								/>
-							)}
+		<div className={screen}>
+			<div className={topBar}>
+				<IconButton aria-label={t('common.back')} onClick={() => navigate(-1)}>
+					<ArrowBackIcon />
+				</IconButton>
+				<div className={topBarDivider} />
+				<Typography className={topBarTitle}>{t('contact.title')}</Typography>
+				<div style={{ width: '40px' }} />
+			</div>
+
+			<div className={content}>
+				{isFormSubmitted ? (
+					<div style={{ backgroundColor: '#FFFFFF', borderRadius: '20px', padding: '32px 24px', textAlign: 'center' }}>
+						<ResponseAnimation
+							responseMessage={t('contact.successTitle')}
+							actionMessage={t('contact.successBody')}
+							isSuccess={isSuccessResponse}
+							isError={isErrorResponse}
+							errorMessage={errorMessage}
 						/>
-					</Grid>
-					<Grid item xs={12}>
-						<Controller
-							name='message'
-							control={control}
-							render={({ field }) => (
-								<TextField
-									fullWidth
-									label={t('contact.message')}
-									required
-									multiline
-									rows={4}
-									{...field}
-									error={Boolean(errors.message)}
-									helperText={errors.message ? t('contact.messageRequired') : ''}
-								/>
-							)}
-						/>
-					</Grid>
-					<Grid item xs={12}>
-						<Button type='submit' className={button}>
-							{t('contact.submit')}
+						<Button onClick={handleSendAnotherMessage} className={primaryButton} fullWidth style={{ marginTop: '16px' }}>
+							{t('contact.sendAnother')}
 						</Button>
-					</Grid>
-				</Grid>
-			</form>
-		</FormContainer>
+					</div>
+				) : (
+					<>
+						<div className={hero}>
+							<div className={heroIcon}>
+								<MailOutlineIcon />
+							</div>
+							<Typography className={heroTitle}>{t('contact.title')}</Typography>
+							<Typography className={heroSubtitle}>{t('contact.heroSubtitle')}</Typography>
+						</div>
+
+						<form onSubmit={handleSubmit(onSubmit)}>
+							<div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+								{!localUserProfile?.firstname && (
+									<Controller
+										name='firstname'
+										control={control}
+										render={({ field }) => (
+											<TextField
+												fullWidth
+												className={input}
+												label={t('contact.firstName')}
+												required
+												{...field}
+												error={Boolean(errors.firstname)}
+												helperText={errors.firstname ? t('contact.firstNameRequired') : ''}
+											/>
+										)}
+									/>
+								)}
+								{!localUserProfile?.lastname && (
+									<Controller
+										name='lastname'
+										control={control}
+										render={({ field }) => (
+											<TextField
+												fullWidth
+												className={input}
+												label={t('contact.lastName')}
+												required
+												{...field}
+												error={Boolean(errors.lastname)}
+												helperText={errors.lastname ? t('contact.lastNameRequired') : ''}
+											/>
+										)}
+									/>
+								)}
+								{!token && (
+									<Controller
+										name='email'
+										control={control}
+										render={({ field }) => (
+											<TextField
+												fullWidth
+												className={input}
+												label={t('contact.email')}
+												required
+												{...field}
+												error={Boolean(errors.email)}
+												helperText={errors.email ? t('contact.emailRequired') : ''}
+											/>
+										)}
+									/>
+								)}
+								{!token && (
+									<Controller
+										name='phoneNumber'
+										control={control}
+										render={({ field }) => (
+											<TextField
+												fullWidth
+												className={input}
+												label={t('contact.phone')}
+												required
+												{...field}
+												error={Boolean(errors.phoneNumber)}
+												helperText={errors.phoneNumber ? t('contact.phoneRequired') : ''}
+											/>
+										)}
+									/>
+								)}
+								<Controller
+									name='subject'
+									control={control}
+									render={({ field }) => (
+										<TextField
+											fullWidth
+											className={input}
+											label={t('contact.subject')}
+											required
+											{...field}
+											error={Boolean(errors.subject)}
+											helperText={errors.subject ? t('contact.subjectRequired') : ''}
+										/>
+									)}
+								/>
+								<Controller
+									name='message'
+									control={control}
+									render={({ field }) => (
+										<TextField
+											fullWidth
+											className={input}
+											label={t('contact.message')}
+											required
+											multiline
+											rows={4}
+											{...field}
+											error={Boolean(errors.message)}
+											helperText={errors.message ? t('contact.messageRequired') : ''}
+										/>
+									)}
+								/>
+								<Button type='submit' fullWidth className={primaryButton}>
+									{t('contact.submit')}
+								</Button>
+							</div>
+						</form>
+					</>
+				)}
+			</div>
+
+			<RedesignBottomNav />
+		</div>
 	);
 };
 

@@ -1,33 +1,19 @@
-import { Button, Grid, TextField, Typography } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import { Button, IconButton, Typography } from '@mui/material';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
-import colors from '../styles/colors';
-import { authStyles, mainStyles } from '../styles/mainStyles';
+import { authRedesignStyles } from '../styles/authRedesign';
 import API_CONFIG, { buildApiUrl } from '../utils/apiConfig';
-import FormContainer from './shared/FormContainer';
+import PasswordField from './shared/PasswordField';
 
 type FormData = {
 	password: string;
 	confirmPassword: string;
 };
-
-const useResetPasswordFormStyles = makeStyles({
-	errorText: {
-		textAlign: 'center',
-		color: '#d32f2f',
-		marginBottom: '16px',
-	},
-	forgotPasswordText: {
-		'&.MuiGrid-root': {
-			textAlign: 'center',
-			marginTop: '20px',
-		},
-	},
-});
 
 const ResetPasswordForm = () => {
 	const { t } = useTranslation();
@@ -45,9 +31,8 @@ const ResetPasswordForm = () => {
 		setError,
 		formState: { errors },
 	} = useForm<FormData>();
-	const { bar, button, signUp, form } = authStyles();
-	const { textButton } = mainStyles();
-	const { errorText, forgotPasswordText } = useResetPasswordFormStyles();
+	const { screen, header, backButton, title, subtitle, headerIcon, card, input, primaryButton, subtitleLink } =
+		authRedesignStyles();
 
 	const validatePasswordsMatch = (value: string) => {
 		return value === getValues('password') || t('auth.resetPassword.passwordsMismatch');
@@ -91,78 +76,99 @@ const ResetPasswordForm = () => {
 			});
 	}, [resetToken]);
 
+	const headerBlock = (
+		<div className={header}>
+			<IconButton
+				className={backButton}
+				aria-label={t('auth.resetPassword.back')}
+				onClick={() => navigate(-1)}
+			>
+				<ArrowBackIcon />
+			</IconButton>
+			<div className={headerIcon}>
+				<LockOutlinedIcon />
+			</div>
+			<Typography variant='h1' className={title}>
+				{t('auth.resetPassword.title')}
+			</Typography>
+		</div>
+	);
+
 	if (!isTokenChecked) {
 		return (
-			<FormContainer>
-				<Typography variant='h6' align='center'>
-					{t('auth.resetPassword.checking')}
-				</Typography>
-			</FormContainer>
+			<div className={screen}>
+				{headerBlock}
+				<div className={card}>
+					<Typography variant='h6' align='center'>
+						{t('auth.resetPassword.checking')}
+					</Typography>
+				</div>
+			</div>
 		);
 	}
 
 	if (!isTokenValid) {
 		return (
-			<FormContainer>
-				<Typography variant='h6' className={errorText}>
-					{t('auth.resetPassword.invalidToken')}
-				</Typography>
-				<Grid container justifyContent='center'>
-					<Grid item className={forgotPasswordText}>
-						<button
-							type='button'
-							className={textButton}
-							onClick={() => navigate('/request-reset-password')}
-							style={{
-								background: 'none',
-								border: 'none',
-								padding: '8px 12px',
-								font: 'inherit',
-								cursor: 'pointer',
-								textDecoration: 'underline',
-								color: colors.rose,
-								fontSize: 'inherit',
-								lineHeight: 'inherit',
-								display: 'inline-block',
-								position: 'relative',
-								zIndex: 10,
-							}}
-						>
-							{t('auth.resetPassword.resetAgain')}
-						</button>
-					</Grid>
-				</Grid>
-			</FormContainer>
+			<div className={screen}>
+				{headerBlock}
+				<div className={card} style={{ alignItems: 'center', textAlign: 'center' }}>
+					<Typography variant='h6' color='error'>
+						{t('auth.resetPassword.invalidToken')}
+					</Typography>
+					<button
+						type='button'
+						className={subtitleLink}
+						onClick={() => navigate('/request-reset-password')}
+						style={{ marginTop: '8px' }}
+					>
+						{t('auth.resetPassword.resetAgain')}
+					</button>
+				</div>
+			</div>
 		);
 	}
 
 	return (
-		<FormContainer>
-			<Typography variant='h2' align='center' gutterBottom className={signUp}>
-				{t('auth.resetPassword.title')}
-				<span className={bar}></span>
-			</Typography>
-			<form onSubmit={handleSubmit(onSubmit)} className={form}>
-				<Grid container spacing={2}>
-					<Grid item xs={12}>
+		<div className={screen}>
+			<div className={header}>
+				<IconButton
+					className={backButton}
+					aria-label={t('auth.resetPassword.back')}
+					onClick={() => navigate(-1)}
+				>
+					<ArrowBackIcon />
+				</IconButton>
+				<div className={headerIcon}>
+					<LockOutlinedIcon />
+				</div>
+				<Typography variant='h1' className={title}>
+					{t('auth.resetPassword.title')}
+				</Typography>
+				<Typography variant='body2' className={subtitle}>
+					{t('auth.resetPassword.subtitle')}
+				</Typography>
+			</div>
+			<div className={card}>
+				<form onSubmit={handleSubmit(onSubmit)} noValidate>
+					<div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 						<Controller
 							name='password'
 							control={control}
 							rules={{ required: t('auth.resetPassword.newPasswordRequired') }}
 							render={({ field }) => (
-								<TextField
+								<PasswordField
 									fullWidth
-									type='password'
-									label={t('auth.resetPassword.newPassword')}
+									className={input}
 									required
+									label={t('auth.resetPassword.newPassword')}
+									showLabel={t('auth.login.showPassword')}
+									hideLabel={t('auth.login.hidePassword')}
+									{...field}
 									error={Boolean(errors.password)}
 									helperText={errors.password?.message}
-									{...field}
 								/>
 							)}
 						/>
-					</Grid>
-					<Grid item xs={12}>
 						<Controller
 							name='confirmPassword'
 							control={control}
@@ -171,31 +177,26 @@ const ResetPasswordForm = () => {
 								validate: validatePasswordsMatch,
 							}}
 							render={({ field }) => (
-								<TextField
+								<PasswordField
 									fullWidth
-									type='password'
-									label={t('auth.resetPassword.confirmPassword')}
+									className={input}
 									required
+									label={t('auth.resetPassword.confirmPassword')}
+									showLabel={t('auth.login.showPassword')}
+									hideLabel={t('auth.login.hidePassword')}
+									{...field}
 									error={Boolean(errors.confirmPassword)}
 									helperText={errors.confirmPassword?.message}
-									{...field}
 								/>
 							)}
 						/>
-					</Grid>
-					<Grid item xs={12}>
-						<Button
-							type='submit'
-							color='primary'
-							className={button}
-							style={{ color: 'white' }}
-						>
+						<Button type='submit' fullWidth className={primaryButton}>
 							{t('auth.resetPassword.submit')}
 						</Button>
-					</Grid>
-				</Grid>
-			</form>
-		</FormContainer>
+					</div>
+				</form>
+			</div>
+		</div>
 	);
 };
 
