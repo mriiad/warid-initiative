@@ -84,6 +84,9 @@ const MobileNavContainer = styled.div`
 // '/profile' and '/dashboard' apply to any authenticated user regardless of
 // role (both admins and donors can view/edit their own profile or personal
 // donation history), so they're unconditional too rather than admin-only.
+// '/donate' applies to any user regardless of role (and even a
+// not-yet-logged-in visitor, who gets redirected to /login from inside the
+// form on submit).
 const FULL_SCREEN_ROUTES = [
 	'/login',
 	'/signup',
@@ -92,27 +95,33 @@ const FULL_SCREEN_ROUTES = [
 	'/update-profile',
 	'/profile',
 	'/dashboard',
+	'/donate',
 ];
 // '/home', '/events' (the list), '/events/create' and the emergencies admin
 // screens only go full-screen for admins -- their redesign is admin-only so
 // far (see AdminDashboard/EventsComponent/EventForm/EmergencyComponent), and
 // non-admins still need the old chrome (LandingPage for '/home', the
-// pre-existing EventsComponent for the events list).
+// pre-existing EventsComponent for the events list). '/users' is here too --
+// see the bug-fix note below.
 const ADMIN_ONLY_FULL_SCREEN_ROUTES = ['/home', '/events', '/events/create', '/emergencies', '/users'];
 // Bug fix: UsersComponent and UserDetailView already ship their own
 // full-bleed top bar + RedesignBottomNav, but '/users' and '/users/:userId'
 // were never added here, so admins were getting the old chrome wrapped
 // around the new self-contained UI (two stacked bottom navs). Excludes
 // '/users/update/:userId', which still renders the legacy UpdateUser
-// component and still needs the old chrome around it.
+// component and still needs the old chrome around it. '/events/update/:reference'
+// is also an admin-only form (UpdateEvent self-guards non-admins to
+// NotFoundPage).
 const ADMIN_ONLY_FULL_SCREEN_ROUTE_PATTERN =
-	/^\/emergencies\/[^/]+\/matched-users\/?$|^\/users\/(?!update\/)[^/]+$/;
+	/^\/emergencies\/[^/]+\/matched-users\/?$|^\/users\/(?!update\/)[^/]+$|^\/events\/update\/[^/]+$/;
 // The event detail page (but not the '/events' list) now has a redesign for
 // BOTH admins and non-admins, so unlike the admin-only pattern above this one
-// applies regardless of role. Still excludes '/events/create' and the
-// can-donate/confirmation sub-routes nested under a reference (same reasons
-// as before).
+// applies regardless of role. Still excludes '/events/create' and
+// '/events/update/:reference' (matched separately above). The nested
+// can-donate/confirmation donor sub-routes are also redesigned now, with
+// their own minimal chrome (no bottom nav, since they're transient steps).
 const EVENT_DETAIL_FULL_SCREEN_PATTERN = /^\/events\/(?!create$)[^/]+$/;
+const EVENT_SUBFLOW_FULL_SCREEN_PATTERN = /^\/events\/[^/]+\/(can-donate|confirmation)\/?$/;
 
 const App = () => {
 	const isMobile = useIsMobile();
@@ -123,6 +132,7 @@ const App = () => {
 	const isFullScreenRoute =
 		FULL_SCREEN_ROUTES.includes(location.pathname) ||
 		EVENT_DETAIL_FULL_SCREEN_PATTERN.test(location.pathname) ||
+		EVENT_SUBFLOW_FULL_SCREEN_PATTERN.test(location.pathname) ||
 		(isAdmin &&
 			(ADMIN_ONLY_FULL_SCREEN_ROUTES.includes(location.pathname) ||
 				ADMIN_ONLY_FULL_SCREEN_ROUTE_PATTERN.test(location.pathname)));
