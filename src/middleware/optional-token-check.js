@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const config = require('../../config.json');
+const config = require('../utils/config');
 const { STATUS_CODE } = require('../utils/errors/httpStatusCode');
 
 /**
@@ -20,7 +20,7 @@ exports.optionalAuth = (req, res, next) => {
 	let decodedToken;
 
 	try {
-		decodedToken = jwt.verify(token, config.authConfig.SECRET_KEY);
+		decodedToken = jwt.verify(token, config.auth.jwtSecretKey);
 	} catch (err) {
 		const error = new Error(
 			'Unauthorized user, please verify your credentials'

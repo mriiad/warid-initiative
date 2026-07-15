@@ -1,21 +1,20 @@
 const nodemailer = require('nodemailer');
-const config = require('../../config.json');
+const config = require('../utils/config');
 const User = require('../models/user');
 
-const { email, password, host, secureConnection, port, ciphers, requireTLS } =
-	config.mailerConfig;
+const { host, secure, port, tls, auth } = config.email.smtp;
 
 const transporter = nodemailer.createTransport({
 	host: host,
-	secureConnection: secureConnection,
+	secureConnection: secure,
 	port: port,
 	tls: {
-		ciphers: ciphers,
+		ciphers: tls.ciphers,
 	},
-	requireTLS: requireTLS,
+	requireTLS: tls.requireTLS,
 	auth: {
-		user: email,
-		pass: password,
+		user: auth.user,
+		pass: auth.pass,
 	},
 });
 

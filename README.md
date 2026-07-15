@@ -29,7 +29,7 @@ The Warid Initiative Blood Donation Application is a project aimed at facilitati
 
 ## Node server
 
-- Go to "warid-app\config.json" and replace the password in the dbConfig with the same one used to connect to the database
+- Copy `.env.example` to `.env` in the repo root and fill in real values (at minimum `DB_USER`, `DB_PASSWORD`, and `JWT_SECRET_KEY`) -- see `.env.example` for what each variable does. The app boots with working defaults for everything even without a `.env` file, but don't rely on those past local development.
 - Go to the app's root "warid-app"
 - Run `npm install`
 - Run `npm start`
@@ -49,7 +49,7 @@ Use the **Authorize** button in Swagger UI to provide the JWT access token retur
 In order to the the routes you can already use POSTMAN to make API calls.
 API automated tests will be created later, but as of now, our API can be tests using a REST caller.
 
-Here are some functionalities to test (please replace the port by the one mentioned in the config.json, by default it's 3000):
+Here are some functionalities to test (please replace the port by the one set via the `PORT` env var, by default it's 3000):
 
 - Signup:
   URL: http://localhost:<port>/api/auth/signup
@@ -69,10 +69,7 @@ Here are some functionalities to test (please replace the port by the one mentio
 We welcome contributions to improve and enhance the application. Please feel free to open issues for bugs, enhancements, or feature requests. Stay tuned for issues created by the maintainers for specific tasks and improvements.
 
 ## Note
-Ensure that config.json is ignored in your Git repository to protect sensitive information. Use the following commands as needed:
-
-To ignore changes: git update-index --assume-unchanged ./config.json
-To track changes: git update-index --no-assume-unchanged ./config.json
+Configuration lives in environment variables (see `.env.example`), read via `src/utils/config.js`. `.env` is gitignored -- never commit real secrets.
 
 ## Contact
 
@@ -80,6 +77,6 @@ For any inquiries or issues, please open an issue on the GitHub repository.
 
 Enjoy contributing to the Warid Initiative Blood Donation Application!
 
-Please make sure to replace <port> in the API call example with the actual port number specified in your config.json file. Additionally, ensure that all the information is accurate and relevant to your project.
+Please make sure to replace <port> in the API call example with the actual port number specified in your `.env` file (`PORT`). Additionally, ensure that all the information is accurate and relevant to your project.
 
 Enjoy!

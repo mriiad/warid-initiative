@@ -43,10 +43,12 @@ describe('POST /api/contact-us', () => {
 	});
 
 	it('BUG: sends a real email regardless of EMAIL_ENABLED (no toggle respected, unlike auth.js)', async () => {
-		// contact.js builds its transporter unconditionally from config.json's
-		// mailerConfig and never checks an enabled flag the way auth.js checks
-		// config.email.enabled -- there is no way to disable outbound email for
-		// the contact form short of removing SMTP credentials entirely.
+		// contact.js builds its transporter unconditionally from
+		// config.email.smtp and never checks the config.email.enabled flag
+		// the way auth.js's createTransporter does -- there is no way to
+		// disable outbound email for the contact form short of removing SMTP
+		// credentials entirely. Still true after #240 (which only fixed
+		// contact.js's config *source*, not this separate missing check).
 		const res = await request(app).post('/api/contact-us').send({
 			firstname: 'Jane',
 			lastname: 'Doe',
