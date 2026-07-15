@@ -1,5 +1,5 @@
 const request = require('supertest');
-const { resolveTo } = require('./support/mongooseMock');
+const { resolveTo, makeQuery } = require('./support/mongooseMock');
 
 jest.mock('../../src/models/user', () => require('./support/mongooseMock').makeModelMock());
 jest.mock('../../src/models/profile', () => require('./support/mongooseMock').makeModelMock());
@@ -7,6 +7,7 @@ jest.mock('../../src/models/donation', () => require('./support/mongooseMock').m
 jest.mock('../../src/models/event', () => require('./support/mongooseMock').makeModelMock());
 
 const User = require('../../src/models/user');
+const Profile = require('../../src/models/profile');
 const Donation = require('../../src/models/donation');
 const Event = require('../../src/models/event');
 const { buildApp } = require('./support/testApp');
@@ -268,5 +269,500 @@ describe('GET /api/admin/stats', () => {
 			totalEvents: 3,
 			totalDonations: 27,
 		});
+	});
+
+	it('returns 500 on a database error', async () => {
+		User.findById.mockReturnValue(resolveTo({ _id: ADMIN_ID, isAdmin: true }));
+		User.countDocuments.mockReturnValue(
+			makeQuery(() => {
+				throw new Error('db down');
+			})
+		);
+		const res = await request(app)
+			.get('/api/admin/stats')
+			.set('Authorization', authHeader(ADMIN_ID));
+		expect(res.status).toBe(500);
+	});
+});
+
+describe('GET /api/users', () => {
+	it('returns paginated users with gender falling back to profile.gender', async () => {
+		User.countDocuments.mockReturnValue(resolveTo(2));
+		User.find.mockReturnValue(
+			resolveTo([
+				{
+					toObject: () => ({ _id: 'u1', username: 'bob', gender: null }),
+					gender: null,
+					profile: { gender: 'male' },
+				},
+				{
+					toObject: () => ({ _id: 'u2', username: 'ann', gender: 'female' }),
+					gender: 'female',
+					profile: null,
+				},
+			])
+		);
+		const res = await request(app).get('/api/users');
+		expect(res.status).toBe(200);
+		expect(res.body.totalItems).toBe(2);
+		expect(res.body.users[0].gender).toBe('male');
+		expect(res.body.users[1].gender).toBe('female');
+	});
+
+	it('returns 500 on a database error', async () => {
+		User.countDocuments.mockReturnValue(
+			makeQuery(() => {
+				throw new Error('db down');
+			})
+		);
+		const res = await request(app).get('/api/users');
+		expect(res.status).toBe(500);
+	});
+});
+
+describe('PUT /api/user/update', () => {
+	it('returns 404 when the user does not exist', async () => {
+		User.findById.mockReturnValue(resolveTo(null));
+		const res = await request(app)
+			.put('/api/user/update')
+			.set('Authorization', authHeader(USER_ID))
+			.send({ firstname: 'A', lastname: 'B', birthdate: '2000-01-01', bloodGroup: 'O+', city: 'Rabat' });
+		expect(res.status).toBe(404);
+	});
+
+	it('updates an existing profile', async () => {
+		User.findById.mockReturnValue(resolveTo({ _id: USER_ID }));
+		const profileSave = jest.fn().mockResolvedValue(true);
+		Profile.findOne.mockReturnValue(resolveTo({ save: profileSave }));
+		const res = await request(app)
+			.put('/api/user/update')
+			.set('Authorization', authHeader(USER_ID))
+			.send({ firstname: 'A', lastname: 'B', birthdate: '2000-01-01', bloodGroup: 'O+', city: 'Rabat' });
+		expect(res.status).toBe(200);
+		expect(profileSave).toHaveBeenCalled();
+	});
+
+	it('creates a new profile and links it to the user when none exists', async () => {
+		const userSave = jest.fn().mockResolvedValue(true);
+		User.findById.mockReturnValue(resolveTo({ _id: USER_ID, save: userSave }));
+		Profile.findOne.mockReturnValue(resolveTo(null));
+		const res = await request(app)
+			.put('/api/user/update')
+			.set('Authorization', authHeader(USER_ID))
+			.send({ firstname: 'A', lastname: 'B', birthdate: '2000-01-01', bloodGroup: 'O+', city: 'Rabat' });
+		expect(res.status).toBe(200);
+		expect(userSave).toHaveBeenCalled();
+	});
+
+	it('returns 500 on a database error', async () => {
+		User.findById.mockReturnValue(
+			makeQuery(() => {
+				throw new Error('db down');
+			})
+		);
+		const res = await request(app)
+			.put('/api/user/update')
+			.set('Authorization', authHeader(USER_ID))
+			.send({});
+		expect(res.status).toBe(500);
+	});
+});
+
+describe('PATCH /api/user/profile', () => {
+	it('returns 404 when the user does not exist', async () => {
+		User.findById.mockReturnValue(resolveTo(null));
+		const res = await request(app)
+			.patch('/api/user/profile')
+			.set('Authorization', authHeader(USER_ID))
+			.send({ firstname: 'A' });
+		expect(res.status).toBe(404);
+	});
+
+	it('returns 404 when the user has no profile yet', async () => {
+		User.findById.mockReturnValue(resolveTo({ _id: USER_ID, profile: null }));
+		const res = await request(app)
+			.patch('/api/user/profile')
+			.set('Authorization', authHeader(USER_ID))
+			.send({ firstname: 'A' });
+		expect(res.status).toBe(404);
+	});
+
+	it('updates only the fields provided', async () => {
+		const profileSave = jest.fn().mockResolvedValue(true);
+		const userSave = jest.fn().mockResolvedValue(true);
+		User.findById.mockReturnValue(
+			resolveTo({
+				_id: USER_ID,
+				save: userSave,
+				profile: { firstname: 'Old', lastname: 'Name', save: profileSave },
+			})
+		);
+		const res = await request(app)
+			.patch('/api/user/profile')
+			.set('Authorization', authHeader(USER_ID))
+			.send({ firstname: 'New', phoneNumber: '0600000001' });
+		expect(res.status).toBe(200);
+		expect(profileSave).toHaveBeenCalled();
+		expect(userSave).toHaveBeenCalled();
+	});
+
+	it('returns 500 on a database error', async () => {
+		User.findById.mockReturnValue(
+			makeQuery(() => {
+				throw new Error('db down');
+			})
+		);
+		const res = await request(app)
+			.patch('/api/user/profile')
+			.set('Authorization', authHeader(USER_ID))
+			.send({ firstname: 'A' });
+		expect(res.status).toBe(500);
+	});
+});
+
+describe('GET /api/user/check-profile additional branches', () => {
+	it('returns 404 when the user does not exist', async () => {
+		User.findById.mockReturnValue(resolveTo(null));
+		const res = await request(app)
+			.get('/api/user/check-profile')
+			.set('Authorization', authHeader(USER_ID));
+		expect(res.status).toBe(404);
+	});
+
+	it('returns 500 on a database error', async () => {
+		User.findById.mockReturnValue(
+			makeQuery(() => {
+				throw new Error('db down');
+			})
+		);
+		const res = await request(app)
+			.get('/api/user/check-profile')
+			.set('Authorization', authHeader(USER_ID));
+		expect(res.status).toBe(500);
+	});
+});
+
+describe('GET /api/user/profile additional branches', () => {
+	it('returns 404 when the user does not exist', async () => {
+		User.findById.mockReturnValue(resolveTo(null));
+		const res = await request(app)
+			.get('/api/user/profile')
+			.set('Authorization', authHeader(USER_ID));
+		expect(res.status).toBe(404);
+	});
+
+	it('returns 500 on a database error', async () => {
+		User.findById.mockReturnValue(
+			makeQuery(() => {
+				throw new Error('db down');
+			})
+		);
+		const res = await request(app)
+			.get('/api/user/profile')
+			.set('Authorization', authHeader(USER_ID));
+		expect(res.status).toBe(500);
+	});
+});
+
+describe('POST /api/searchUsers additional branches', () => {
+	beforeEach(() => {
+		User.findById.mockImplementation((id) => resolveTo({ _id: id, isAdmin: true }));
+	});
+
+	it('filters by email, isAdmin and phoneNumber', async () => {
+		User.find.mockReturnValue({
+			populate: () => ({
+				select: () =>
+					Promise.resolve([
+						{ toObject: () => ({ _id: 'u1', email: 'a@example.com', isAdmin: true }), _id: 'u1' },
+					]),
+			}),
+		});
+		const res = await request(app)
+			.post('/api/searchUsers')
+			.set('Authorization', authHeader(ADMIN_ID))
+			.send({ email: 'a@example.com', isAdmin: 'true', phoneNumber: '0600' });
+		expect(res.status).toBe(200);
+		expect(res.body.users).toHaveLength(1);
+	});
+
+	it('resolves an age range provided as a two-item array and includes users within range', async () => {
+		User.find.mockReturnValue({
+			populate: () => ({
+				select: () =>
+					Promise.resolve([
+						{
+							toObject: () => ({ _id: 'u1' }),
+							_id: 'u1',
+							profile: { birthdate: '1990-01-01' },
+						},
+					]),
+			}),
+		});
+		const res = await request(app)
+			.post('/api/searchUsers')
+			.set('Authorization', authHeader(ADMIN_ID))
+			.send({ age: ['18', '99'] });
+		expect(res.status).toBe(200);
+		expect(res.body.users).toHaveLength(1);
+	});
+
+	it('returns 404 when firstname/lastname/bloodGroup filters match no profiles', async () => {
+		Profile.find.mockReturnValue(resolveTo([]));
+		const res = await request(app)
+			.post('/api/searchUsers')
+			.set('Authorization', authHeader(ADMIN_ID))
+			.send({ firstname: 'Nobody' });
+		expect(res.status).toBe(404);
+	});
+
+	it('filters by gender across user and profile records', async () => {
+		Profile.find.mockReturnValue(resolveTo([{ user: 'u1' }]));
+		User.find.mockReturnValue({
+			populate: () => ({
+				select: () => Promise.resolve([{ toObject: () => ({ _id: 'u1' }), _id: 'u1' }]),
+			}),
+		});
+		const res = await request(app)
+			.post('/api/searchUsers')
+			.set('Authorization', authHeader(ADMIN_ID))
+			.send({ gender: 'female' });
+		expect(res.status).toBe(200);
+	});
+
+	it('excludes users who are not eligible for donation when availableForDonation is requested', async () => {
+		User.find.mockReturnValue({
+			populate: () => ({
+				select: () =>
+					Promise.resolve([{ toObject: () => ({ _id: 'u1' }), _id: 'u1', profile: null }]),
+			}),
+		});
+		Donation.find.mockReturnValue(resolveTo([{ donationDate: new Date() }]));
+		const res = await request(app)
+			.post('/api/searchUsers')
+			.set('Authorization', authHeader(ADMIN_ID))
+			.send({ availableForDonation: 'true' });
+		expect(res.status).toBe(404);
+	});
+
+	it('returns 404 when the age post-filter removes every result', async () => {
+		User.find.mockReturnValue({
+			populate: () => ({
+				select: () =>
+					Promise.resolve([{ toObject: () => ({ _id: 'u1' }), _id: 'u1', profile: null }]),
+			}),
+		});
+		const res = await request(app)
+			.post('/api/searchUsers')
+			.set('Authorization', authHeader(ADMIN_ID))
+			.send({ minAge: 18 });
+		expect(res.status).toBe(404);
+	});
+
+	it('returns 500 on a database error', async () => {
+		User.find.mockReturnValue(
+			makeQuery(() => {
+				throw new Error('db down');
+			})
+		);
+		const res = await request(app)
+			.post('/api/searchUsers')
+			.set('Authorization', authHeader(ADMIN_ID))
+			.send({ username: 'bob' });
+		expect(res.status).toBe(500);
+	});
+});
+
+describe('DELETE /api/deleteUser/:username additional branches', () => {
+	beforeEach(() => {
+		User.findById.mockReturnValue(resolveTo({ _id: ADMIN_ID, isAdmin: true }));
+	});
+
+	it('returns 404 when the user does not exist', async () => {
+		User.findOneAndDelete.mockReturnValue(resolveTo(null));
+		const res = await request(app)
+			.delete('/api/deleteUser/ghost')
+			.set('Authorization', authHeader(ADMIN_ID));
+		expect(res.status).toBe(404);
+	});
+
+	it('deletes an existing user', async () => {
+		User.findOneAndDelete.mockReturnValue(resolveTo({ username: 'bob' }));
+		const res = await request(app)
+			.delete('/api/deleteUser/bob')
+			.set('Authorization', authHeader(ADMIN_ID));
+		expect(res.status).toBe(200);
+	});
+
+	it('returns 500 on a database error', async () => {
+		User.findOneAndDelete.mockReturnValue(
+			makeQuery(() => {
+				throw new Error('db down');
+			})
+		);
+		const res = await request(app)
+			.delete('/api/deleteUser/bob')
+			.set('Authorization', authHeader(ADMIN_ID));
+		expect(res.status).toBe(500);
+	});
+});
+
+describe('GET /api/users/profile/:userId additional branches', () => {
+	it('returns 404 when the target user does not exist', async () => {
+		User.findById.mockImplementation((id) =>
+			id === ADMIN_ID ? resolveTo({ _id: ADMIN_ID, isAdmin: true }) : resolveTo(null)
+		);
+		const res = await request(app)
+			.get(`/api/users/profile/${USER_ID}`)
+			.set('Authorization', authHeader(ADMIN_ID));
+		expect(res.status).toBe(404);
+	});
+
+	it('returns 500 on a database error', async () => {
+		User.findById.mockImplementation((id) =>
+			id === ADMIN_ID
+				? resolveTo({ _id: ADMIN_ID, isAdmin: true })
+				: makeQuery(() => {
+						throw new Error('db down');
+				  })
+		);
+		const res = await request(app)
+			.get(`/api/users/profile/${USER_ID}`)
+			.set('Authorization', authHeader(ADMIN_ID));
+		expect(res.status).toBe(500);
+	});
+});
+
+describe('PUT /api/users/:userId (admin only)', () => {
+	it('returns 404 when the target user does not exist', async () => {
+		User.findById.mockImplementation((id) =>
+			id === ADMIN_ID ? resolveTo({ _id: ADMIN_ID, isAdmin: true }) : resolveTo(null)
+		);
+		const res = await request(app)
+			.put(`/api/users/${USER_ID}`)
+			.set('Authorization', authHeader(ADMIN_ID))
+			.send({ firstname: 'A' });
+		expect(res.status).toBe(404);
+	});
+
+	it('updates an existing profile', async () => {
+		User.findById.mockImplementation((id) =>
+			id === ADMIN_ID
+				? resolveTo({ _id: ADMIN_ID, isAdmin: true })
+				: resolveTo({ _id: id, save: jest.fn().mockResolvedValue(true) })
+		);
+		const profileSave = jest.fn().mockResolvedValue(true);
+		Profile.findOne.mockReturnValue(resolveTo({ firstname: 'Old', save: profileSave }));
+		const res = await request(app)
+			.put(`/api/users/${USER_ID}`)
+			.set('Authorization', authHeader(ADMIN_ID))
+			.send({ firstname: 'New', phoneNumber: '0600000001' });
+		expect(res.status).toBe(200);
+		expect(profileSave).toHaveBeenCalled();
+	});
+
+	it('creates a new profile when none exists and profile fields are provided', async () => {
+		User.findById.mockImplementation((id) =>
+			id === ADMIN_ID
+				? resolveTo({ _id: ADMIN_ID, isAdmin: true })
+				: resolveTo({ _id: id, save: jest.fn().mockResolvedValue(true) })
+		);
+		Profile.findOne.mockReturnValue(resolveTo(null));
+		const res = await request(app)
+			.put(`/api/users/${USER_ID}`)
+			.set('Authorization', authHeader(ADMIN_ID))
+			.send({ firstname: 'New' });
+		expect(res.status).toBe(200);
+	});
+
+	it('skips profile creation when none exists and no profile fields are provided', async () => {
+		User.findById.mockImplementation((id) =>
+			id === ADMIN_ID
+				? resolveTo({ _id: ADMIN_ID, isAdmin: true })
+				: resolveTo({ _id: id, save: jest.fn().mockResolvedValue(true) })
+		);
+		Profile.findOne.mockReturnValue(resolveTo(null));
+		const res = await request(app)
+			.put(`/api/users/${USER_ID}`)
+			.set('Authorization', authHeader(ADMIN_ID))
+			.send({ phoneNumber: '0600000009' });
+		expect(res.status).toBe(200);
+	});
+
+	it('returns 500 on a database error', async () => {
+		User.findById.mockImplementation((id) =>
+			id === ADMIN_ID
+				? resolveTo({ _id: ADMIN_ID, isAdmin: true })
+				: makeQuery(() => {
+						throw new Error('db down');
+				  })
+		);
+		const res = await request(app)
+			.put(`/api/users/${USER_ID}`)
+			.set('Authorization', authHeader(ADMIN_ID))
+			.send({ firstname: 'A' });
+		expect(res.status).toBe(500);
+	});
+});
+
+describe('PATCH /api/users/:userId/admin additional branches', () => {
+	it('returns 404 when the target user does not exist', async () => {
+		User.findById.mockImplementation((id) =>
+			id === ADMIN_ID ? resolveTo({ _id: ADMIN_ID, isAdmin: true }) : resolveTo(null)
+		);
+		const res = await request(app)
+			.patch(`/api/users/${USER_ID}/admin`)
+			.set('Authorization', authHeader(ADMIN_ID));
+		expect(res.status).toBe(404);
+	});
+
+	it('promotes a non-admin user', async () => {
+		const save = jest.fn().mockResolvedValue(true);
+		User.findById.mockImplementation((id) =>
+			id === ADMIN_ID
+				? resolveTo({ _id: ADMIN_ID, isAdmin: true })
+				: resolveTo({ _id: id, isAdmin: false, save })
+		);
+		const res = await request(app)
+			.patch(`/api/users/${USER_ID}/admin`)
+			.set('Authorization', authHeader(ADMIN_ID));
+		expect(res.status).toBe(200);
+		expect(save).toHaveBeenCalled();
+	});
+
+	it('returns 500 on a database error', async () => {
+		User.findById.mockImplementation((id) =>
+			id === ADMIN_ID
+				? resolveTo({ _id: ADMIN_ID, isAdmin: true })
+				: makeQuery(() => {
+						throw new Error('db down');
+				  })
+		);
+		const res = await request(app)
+			.patch(`/api/users/${USER_ID}/admin`)
+			.set('Authorization', authHeader(ADMIN_ID));
+		expect(res.status).toBe(500);
+	});
+});
+
+describe('GET /api/users/:userId/dashboard additional branches', () => {
+	it('returns 404 when the user does not exist', async () => {
+		User.findById.mockReturnValue(resolveTo(null));
+		const res = await request(app)
+			.get(`/api/users/${USER_ID}/dashboard`)
+			.set('Authorization', authHeader(USER_ID));
+		expect(res.status).toBe(404);
+	});
+
+	it('returns an error response when the lookup fails', async () => {
+		User.findById.mockReturnValue(
+			makeQuery(() => {
+				throw new Error('db down');
+			})
+		);
+		const res = await request(app)
+			.get(`/api/users/${USER_ID}/dashboard`)
+			.set('Authorization', authHeader(USER_ID));
+		expect(res.status).toBe(500);
 	});
 });

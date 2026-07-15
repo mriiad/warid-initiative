@@ -2,21 +2,14 @@ const request = require('supertest');
 const jwt = require('jsonwebtoken');
 const User = require('../src/models/user');
 const Event = require('../src/models/event');
-
-const config = (() => {
-	try {
-		return require('../config.json');
-	} catch {
-		return { authConfig: { SECRET_KEY: 'testsecret', JWT_EXPIRE: '1h' } };
-	}
-})();
+const config = require('../src/utils/config');
 
 function signToken(userId, email = 'user@test.com') {
 	return jwt.sign(
 		{ email, userId: userId.toString() },
-		config.authConfig.SECRET_KEY,
+		config.auth.jwtSecretKey,
 		{
-			expiresIn: config.authConfig.JWT_EXPIRE,
+			expiresIn: config.auth.jwtExpire,
 		}
 	);
 }

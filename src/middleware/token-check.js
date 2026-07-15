@@ -1,4 +1,4 @@
-const config = require('../../config.json');
+const config = require('../utils/config');
 const { STATUS_CODE } = require('../utils/errors/httpStatusCode');
 
 const jwt = require('jsonwebtoken');
@@ -13,7 +13,7 @@ exports.isAuth = (req, res, next) => {
 	const token = authHeader.split(' ')[1];
 	let decodedToken;
 	try {
-		decodedToken = jwt.verify(token, config.authConfig.SECRET_KEY);
+		decodedToken = jwt.verify(token, config.auth.jwtSecretKey);
 	} catch {
 		const error = new Error(
 			'Unauthorized user, please verify your credentials'

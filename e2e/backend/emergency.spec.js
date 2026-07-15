@@ -1,5 +1,5 @@
 const request = require('supertest');
-const { resolveTo } = require('./support/mongooseMock');
+const { resolveTo, makeQuery } = require('./support/mongooseMock');
 
 jest.mock('../../src/models/user', () => require('./support/mongooseMock').makeModelMock());
 jest.mock('../../src/models/emergency', () => require('./support/mongooseMock').makeModelMock());
@@ -7,6 +7,7 @@ jest.mock('../../src/models/donation', () => require('./support/mongooseMock').m
 
 const User = require('../../src/models/user');
 const Emergency = require('../../src/models/emergency');
+const Donation = require('../../src/models/donation');
 const { buildApp } = require('./support/testApp');
 const { authHeader } = require('./support/jwtHelper');
 
@@ -75,5 +76,176 @@ describe('PATCH /api/emergencies/:emergencyId/matchedUsers/:userId/confirm (admi
 			.patch('/api/emergencies/em-1/matchedUsers/ghost/confirm')
 			.set('Authorization', authHeader(ADMIN_ID));
 		expect(res.status).toBe(404);
+	});
+
+	it('returns 404 when the emergency does not exist', async () => {
+		User.findById.mockReturnValue(resolveTo({ _id: ADMIN_ID, isAdmin: true }));
+		Emergency.findById.mockReturnValue(resolveTo(null));
+		const res = await request(app)
+			.patch('/api/emergencies/does-not-exist/matchedUsers/user-1/confirm')
+			.set('Authorization', authHeader(ADMIN_ID));
+		expect(res.status).toBe(404);
+	});
+
+	it('adds a not-yet-contacted user to contactedUsers', async () => {
+		const save = jest.fn().mockResolvedValue(true);
+		User.findById.mockImplementation((id) =>
+			id === ADMIN_ID ? resolveTo({ _id: ADMIN_ID, isAdmin: true }) : resolveTo({ _id: id })
+		);
+		const emergency = { contactedUsers: [], save };
+		Emergency.findById.mockReturnValue(resolveTo(emergency));
+		const res = await request(app)
+			.patch('/api/emergencies/em-1/matchedUsers/user-1/confirm')
+			.set('Authorization', authHeader(ADMIN_ID));
+		expect(res.status).toBe(200);
+		expect(emergency.contactedUsers).toContain('user-1');
+		expect(save).toHaveBeenCalled();
+	});
+
+	it('does not duplicate an already-contacted user', async () => {
+		const save = jest.fn().mockResolvedValue(true);
+		User.findById.mockImplementation((id) =>
+			id === ADMIN_ID ? resolveTo({ _id: ADMIN_ID, isAdmin: true }) : resolveTo({ _id: id })
+		);
+		const emergency = { contactedUsers: ['user-1'], save };
+		Emergency.findById.mockReturnValue(resolveTo(emergency));
+		const res = await request(app)
+			.patch('/api/emergencies/em-1/matchedUsers/user-1/confirm')
+			.set('Authorization', authHeader(ADMIN_ID));
+		expect(res.status).toBe(200);
+		expect(emergency.contactedUsers).toEqual(['user-1']);
+	});
+
+	it('returns 500 when saving fails', async () => {
+		User.findById.mockImplementation((id) =>
+			id === ADMIN_ID ? resolveTo({ _id: ADMIN_ID, isAdmin: true }) : resolveTo({ _id: id })
+		);
+		Emergency.findById.mockReturnValue(
+			resolveTo({ contactedUsers: [], save: jest.fn().mockRejectedValue(new Error('db down')) })
+		);
+		const res = await request(app)
+			.patch('/api/emergencies/em-1/matchedUsers/user-1/confirm')
+			.set('Authorization', authHeader(ADMIN_ID));
+		expect(res.status).toBe(500);
+	});
+});
+
+describe('GET /api/emergencies/:id/matchingUsers (admin only)', () => {
+	beforeEach(() => {
+		Donation.find.mockReturnValue(resolveTo([]));
+	});
+
+	it('returns 404 when the emergency does not exist', async () => {
+		User.findById.mockReturnValue(resolveTo({ _id: ADMIN_ID, isAdmin: true }));
+		Emergency.findById.mockReturnValue(resolveTo(null));
+		const res = await request(app)
+			.get('/api/emergencies/does-not-exist/matchingUsers')
+			.set('Authorization', authHeader(ADMIN_ID));
+		expect(res.status).toBe(404);
+	});
+
+	it('matches users by blood group and city, excludes already-contacted users, and checks donation eligibility', async () => {
+		Emergency.findById.mockReturnValue(
+			resolveTo({
+				_id: 'em-1',
+				bloodGroup: 'O+',
+				city: 'Casablanca',
+				contactedUsers: ['already-contacted'],
+			})
+		);
+		User.find.mockReturnValue(
+			resolveTo([
+				{
+					_id: 'match-1',
+					phoneNumber: '0600000001',
+					gender: 'male',
+					profile: { bloodGroup: 'O+', city: 'Casablanca', firstname: 'A', lastname: 'B' },
+				},
+				{
+					_id: 'wrong-blood-group',
+					phoneNumber: '0600000002',
+					gender: 'male',
+					profile: { bloodGroup: 'A+', city: 'Casablanca', firstname: 'C', lastname: 'D' },
+				},
+				{
+					_id: 'already-contacted',
+					phoneNumber: '0600000003',
+					gender: 'male',
+					profile: { bloodGroup: 'O+', city: 'Casablanca', firstname: 'E', lastname: 'F' },
+				},
+			])
+		);
+		User.findById.mockImplementation((id) =>
+			resolveTo(id === ADMIN_ID ? { _id: ADMIN_ID, isAdmin: true } : { _id: id, gender: 'male' })
+		);
+		const res = await request(app)
+			.get('/api/emergencies/em-1/matchingUsers')
+			.set('Authorization', authHeader(ADMIN_ID));
+		expect(res.status).toBe(200);
+		expect(res.body.totalItems).toBe(1);
+		expect(res.body.matchingUsers[0]._id).toBe('match-1');
+	});
+
+	it('excludes users who are not currently eligible to donate', async () => {
+		Emergency.findById.mockReturnValue(
+			resolveTo({ _id: 'em-1', bloodGroup: 'O+', city: 'Casablanca', contactedUsers: [] })
+		);
+		User.find.mockReturnValue(
+			resolveTo([
+				{
+					_id: 'not-eligible',
+					phoneNumber: '0600000001',
+					gender: 'male',
+					profile: { bloodGroup: 'O+', city: 'Casablanca', firstname: 'A', lastname: 'B' },
+				},
+			])
+		);
+		User.findById.mockImplementation((id) =>
+			resolveTo(id === ADMIN_ID ? { _id: ADMIN_ID, isAdmin: true } : { _id: id, gender: 'male' })
+		);
+		Donation.find.mockReturnValue(resolveTo([{ donationDate: new Date() }]));
+		const res = await request(app)
+			.get('/api/emergencies/em-1/matchingUsers')
+			.set('Authorization', authHeader(ADMIN_ID));
+		expect(res.status).toBe(200);
+		expect(res.body.totalItems).toBe(0);
+	});
+});
+
+describe('error handling', () => {
+	it('getUnconfirmedEmergencies returns 500 on a database error', async () => {
+		User.findById.mockReturnValue(resolveTo({ _id: ADMIN_ID, isAdmin: true }));
+		Emergency.find.mockReturnValue(
+			makeQuery(() => {
+				throw new Error('db down');
+			})
+		);
+		const res = await request(app)
+			.get('/api/unconfirmedEmergencies')
+			.set('Authorization', authHeader(ADMIN_ID));
+		expect(res.status).toBe(500);
+	});
+
+	it('createEmergency returns 500 when saving fails', async () => {
+		Emergency.mockImplementationOnce(function (data) {
+			Object.assign(this, data);
+			this.save = jest.fn().mockRejectedValue(new Error('db down'));
+			return this;
+		});
+		const res = await request(app)
+			.post('/api/emergency')
+			.send({ bloodGroup: 'O+', city: 'Casablanca', phoneNumber: '0600000000', details: 'Urgent' });
+		expect(res.status).toBe(500);
+	});
+
+	it('confirmEmergency returns 500 when saving fails', async () => {
+		User.findById.mockReturnValue(resolveTo({ _id: ADMIN_ID, isAdmin: true }));
+		Emergency.findById.mockReturnValue(
+			resolveTo({ isConfirmed: false, save: jest.fn().mockRejectedValue(new Error('db down')) })
+		);
+		const res = await request(app)
+			.patch('/api/emergencies/em-1/confirm')
+			.set('Authorization', authHeader(ADMIN_ID));
+		expect(res.status).toBe(500);
 	});
 });

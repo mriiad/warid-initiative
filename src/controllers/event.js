@@ -55,8 +55,8 @@ exports.getEvent = async (req, res, next) => {
 			if (token) {
 				try {
 					const jwt = require('jsonwebtoken');
-					const config = require('../../config.json');
-					const decodedToken = jwt.verify(token, config.authConfig.SECRET_KEY);
+					const config = require('../utils/config');
+					const decodedToken = jwt.verify(token, config.auth.jwtSecretKey);
 					if (decodedToken && decodedToken.userId) {
 						const User = require('../models/user');
 						const user = await User.findById(decodedToken.userId).lean();
