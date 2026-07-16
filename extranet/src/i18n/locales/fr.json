@@ -8,6 +8,7 @@
     "loading": "Chargement...",
     "previous": "Précédent",
     "next": "Suivant",
+    "pageOf": "Page {{page}} sur {{totalPages}}",
     "close": "Fermer",
     "error": "Une erreur est survenue.",
     "required": "Ce champ est requis",
