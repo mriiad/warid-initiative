@@ -8,6 +8,7 @@
     "loading": "Loading...",
     "previous": "Previous",
     "next": "Next",
+    "pageOf": "Page {{page}} of {{totalPages}}",
     "close": "Close",
     "error": "An error occurred.",
     "required": "This field is required",
