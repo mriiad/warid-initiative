@@ -31,7 +31,7 @@ describe('GET /api/user/profile', () => {
 		User.findById.mockReturnValue(
 			resolveTo({
 				gender: 'female',
-				phoneNumber: 600000000,
+				phoneNumber: '+212600000000',
 				email: 'a@example.com',
 				profile: { firstname: 'A', lastname: 'B', birthdate: '2000-01-01', bloodGroup: 'O+', city: 'Casablanca' },
 			})
@@ -210,7 +210,7 @@ describe('GET /api/users/profile/:userId (admin only)', () => {
 				_id: USER_ID,
 				username: 'CIN000111',
 				email: 'donor@example.com',
-				phoneNumber: 600000000,
+				phoneNumber: '+212600000000',
 				isAdmin: false,
 				gender: 'male',
 				profile: { firstname: 'Amine', lastname: 'Bennani', bloodGroup: 'A+', city: 'Rabat' },

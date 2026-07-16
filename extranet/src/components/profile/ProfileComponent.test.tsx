@@ -11,6 +11,12 @@ const updateMyProfileMutate = vi.fn(
 	}
 );
 
+const logoutMutate = vi.fn(
+	(_data: undefined, opts?: { onSuccess?: () => void; onError?: (e: any) => void }) => {
+		opts?.onSuccess?.();
+	}
+);
+
 vi.mock('../../auth/AuthContext', () => ({
 	useAuth: () => ({
 		token: 'fake-token',
@@ -32,7 +38,7 @@ const USER_PROFILE_QUERY_RESULT = {
 			birthdate: '1995-05-20T00:00:00.000Z',
 			bloodGroup: 'O+',
 			city: 'Casablanca',
-			phoneNumber: 6123456789,
+			phoneNumber: '+212612345678',
 			email: 'yassine@example.com',
 		},
 	},
@@ -45,6 +51,7 @@ vi.mock('../../hooks', () => ({
 	useUserProfile: () => USER_PROFILE_QUERY_RESULT,
 	useUpdateMyProfile: () => ({ mutate: updateMyProfileMutate }),
 	useUpdatePassword: () => ({ mutate: vi.fn() }),
+	useAuth: () => ({ logout: { mutate: logoutMutate } }),
 }));
 
 function renderComponent() {
@@ -60,6 +67,7 @@ function renderComponent() {
 
 beforeEach(() => {
 	updateMyProfileMutate.mockClear();
+	logoutMutate.mockClear();
 });
 
 describe('ProfileComponent - save profile (issue #204)', () => {
@@ -84,7 +92,7 @@ describe('ProfileComponent - save profile (issue #204)', () => {
 		expect(submittedArg.email).toBe('yassine@example.com');
 	});
 
-	it('sends the phone number as a number, matching the User schema', async () => {
+	it('sends the phone number as a string, matching the User schema', async () => {
 		const user = userEvent.setup();
 		renderComponent();
 
@@ -94,8 +102,8 @@ describe('ProfileComponent - save profile (issue #204)', () => {
 
 		await waitFor(() => expect(updateMyProfileMutate).toHaveBeenCalledTimes(1));
 		const [submittedArg] = updateMyProfileMutate.mock.calls[0];
-		expect(submittedArg.phoneNumber).toBe(6123456789);
-		expect(typeof submittedArg.phoneNumber).toBe('number');
+		expect(submittedArg.phoneNumber).toBe('+212612345678');
+		expect(typeof submittedArg.phoneNumber).toBe('string');
 	});
 
 	it('shows a success message and exits edit mode on success', async () => {
@@ -128,5 +136,20 @@ describe('ProfileComponent - save profile (issue #204)', () => {
 			expect(screen.getByText('Failed to update profile.')).toBeInTheDocument()
 		);
 		expect(screen.getByRole('button', { name: /save changes/i })).toBeInTheDocument();
+	});
+});
+
+describe('ProfileComponent - logout', () => {
+	it('a logout button is reachable and triggers the logout mutation', async () => {
+		// Logout used to only exist in AdminDashboard and the legacy nav
+		// components, leaving non-admin users with no way to sign out from
+		// this, the actual "my account" screen they land on.
+		const user = userEvent.setup();
+		renderComponent();
+
+		await screen.findByText('Yassine', { exact: true });
+		await user.click(screen.getByRole('button', { name: /log out/i }));
+
+		expect(logoutMutate).toHaveBeenCalledTimes(1);
 	});
 });

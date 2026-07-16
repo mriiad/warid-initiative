@@ -18,7 +18,7 @@ const EmergencySchema = new Schema({
 		required: [true, 'City is required'],
 	},
 	phoneNumber: {
-		type: Number,
+		type: String,
 		required: [true, 'Phone Number is required'],
 	},
 	details: {

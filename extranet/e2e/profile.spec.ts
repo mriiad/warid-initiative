@@ -64,4 +64,25 @@ test.describe('Profile page', () => {
 		expect(capturedMethod).toBe('PATCH');
 		expect(adminRouteWasCalled).toBe(false);
 	});
+
+	test('the logout button signs the user out and redirects to /login', async ({ page }) => {
+		// Logout used to only be wired up in AdminDashboard and the legacy
+		// nav components (neither reachable from a redesigned donor screen),
+		// leaving non-admin users with no way to sign out at all.
+		await seedAuth(page, { isAdmin: false });
+		await mockJson(page, '**/api/user/profile', fullProfileResponse(), { method: 'GET' });
+
+		let logoutCalled = false;
+		await page.route('**/api/auth/logout', async (route) => {
+			logoutCalled = true;
+			await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ message: 'Logged out successfully!' }) });
+		});
+
+		await page.goto('/profile');
+		await expect(page.getByText('المعلومات الشخصية')).toBeVisible();
+		await page.getByRole('button', { name: 'تسجيل الخروج' }).click();
+
+		await expect(page).toHaveURL(/\/login/);
+		expect(logoutCalled).toBe(true);
+	});
 });

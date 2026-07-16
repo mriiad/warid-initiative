@@ -23,7 +23,7 @@ describe('POST /api/auth/signup', () => {
 		const res = await request(app).put('/api/auth/signup').send({
 			email: 'not-an-email',
 			password: 'password123',
-			phoneNumber: '0600000000',
+			phoneNumber: '+212600000000',
 			username: 'CIN123',
 		});
 		expect(res.status).toBe(400);
@@ -33,13 +33,13 @@ describe('POST /api/auth/signup', () => {
 		const res = await request(app).put('/api/auth/signup').send({
 			email: 'valid@example.com',
 			password: 'ab',
-			phoneNumber: '0600000000',
+			phoneNumber: '+212600000000',
 			username: 'CIN123',
 		});
 		expect(res.status).toBe(400);
 	});
 
-	it('rejects a phone number shorter than 10 digits', async () => {
+	it('rejects a phone number that is not a valid E.164 number', async () => {
 		const res = await request(app).put('/api/auth/signup').send({
 			email: 'valid@example.com',
 			password: 'password123',
@@ -56,7 +56,7 @@ describe('POST /api/auth/signup', () => {
 		const res = await request(app).put('/api/auth/signup').send({
 			email: 'taken@example.com',
 			password: 'password123',
-			phoneNumber: '0600000000',
+			phoneNumber: '+212600000000',
 			username: 'CIN123',
 		});
 		expect(res.status).toBe(400);
@@ -66,7 +66,7 @@ describe('POST /api/auth/signup', () => {
 		const res = await request(app).put('/api/auth/signup').send({
 			email: 'new@example.com',
 			password: 'password123',
-			phoneNumber: '0600000000',
+			phoneNumber: '+212600000000',
 			username: 'CIN123',
 			gender: 'male',
 		});
@@ -245,7 +245,7 @@ describe('POST /api/auth/signup error handling', () => {
 		const res = await request(app).put('/api/auth/signup').send({
 			email: 'boom@example.com',
 			password: 'password123',
-			phoneNumber: '0600000000',
+			phoneNumber: '+212600000000',
 			username: 'CIN500',
 		});
 		expect(res.status).toBe(500);
@@ -440,7 +440,7 @@ describe('email transporter disabled (EMAIL_ENABLED=false)', () => {
 		const res = await request(isolatedApp).put('/api/auth/signup').send({
 			email: 'noemail@example.com',
 			password: 'password123',
-			phoneNumber: '0600000000',
+			phoneNumber: '+212600000000',
 			username: 'CIN888',
 		});
 		expect(res.status).toBe(201);

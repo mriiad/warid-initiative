@@ -81,7 +81,7 @@ export const fullProfileResponse = (overrides: Record<string, unknown> = {}) => 
 	gender: 'male',
 	bloodGroup: 'O+',
 	city: 'Casablanca',
-	phoneNumber: 6123456789,
+	phoneNumber: '+212612345678',
 	email: 'yassine@example.com',
 	...overrides,
 });
@@ -106,7 +106,7 @@ export const sampleUser = (overrides: Record<string, unknown> = {}) => ({
 	_id: 'user-1',
 	username: 'CIN123456',
 	email: 'donor@example.com',
-	phoneNumber: 6123456780,
+	phoneNumber: '+212612345670',
 	isAdmin: false,
 	gender: 'male',
 	profile: { firstname: 'Amine', lastname: 'Bennani', bloodGroup: 'A+', city: 'Rabat' },

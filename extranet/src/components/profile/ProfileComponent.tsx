@@ -1,7 +1,7 @@
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import EditIcon from '@mui/icons-material/Edit';
 import LockIcon from '@mui/icons-material/Lock';
-import SearchIcon from '@mui/icons-material/Search';
+import LogoutIcon from '@mui/icons-material/Logout';
 import {
 	CircularProgress,
 	FormControl,
@@ -16,14 +16,16 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { BloodGroup } from '@/data/constants';
+import { useAuth as useAuthContext } from '../../auth/AuthContext';
 import { UserFormData } from '../../data/ProfileFormData';
-import { useUpdateMyProfile, useUpdatePassword, useUserProfile } from '../../hooks';
+import { useAuth, useUpdateMyProfile, useUpdatePassword, useUserProfile } from '../../hooks';
 import { authRedesignStyles } from '../../styles/authRedesign';
 import { eventDetailRedesignStyles } from '../../styles/eventDetailRedesign';
 import { profileRedesignStyles } from '../../styles/profileRedesign';
 import { userDetailRedesignStyles } from '../../styles/userDetailRedesign';
 import { cities, formatDateForDisplay } from '../../utils/utils';
 import PasswordField from '../shared/PasswordField';
+import PhoneNumberField from '../shared/PhoneNumberField';
 import RedesignBottomNav from '../shared/RedesignBottomNav';
 import SnackbarComponent from '../shared/SnackbarComponent';
 
@@ -40,6 +42,8 @@ const profileFields: { field: keyof UserFormData; labelKey: string }[] = [
 const ProfileComponent = () => {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
+	const { setToken, setUserId, setIsAdmin } = useAuthContext();
+	const { logout } = useAuth();
 
 	const { topBar, topBarDivider, topBarTitle, content } = eventDetailRedesignStyles();
 	const { profileCard, avatar, name, infoCard, infoCardLabel, infoCardValue } =
@@ -103,8 +107,7 @@ const ProfileComponent = () => {
 
 	const validatePhoneNumber = (value: string) => {
 		if (!value) return t('auth.signup.phoneRequired');
-		if (!/^[0-9]+$/.test(value)) return t('profile.phoneNumeric');
-		if (value.length !== 10) return t('profile.phoneInvalid');
+		if (!/^\+[1-9]\d{6,14}$/.test(value)) return t('profile.phoneInvalid');
 		return true;
 	};
 
@@ -127,13 +130,24 @@ const ProfileComponent = () => {
 			return;
 		}
 
-		const apiData = { ...editedUserInfo, phoneNumber: Number(editedUserInfo.phoneNumber) || 0 };
+		const apiData = { ...editedUserInfo };
 		updateProfileMutation.mutate(apiData, {
 			onSuccess: () => {
 				setMessage(t('profile.updateSuccess'));
 				setIsEditingInfo(false);
 			},
 			onError: () => setMessage(t('profile.updateError')),
+		});
+	};
+
+	const handleLogout = () => {
+		logout.mutate(undefined, {
+			onSuccess: () => {
+				setToken(null);
+				setUserId(null);
+				setIsAdmin(false);
+				navigate('/login');
+			},
 		});
 	};
 
@@ -217,6 +231,15 @@ const ProfileComponent = () => {
 				</FormControl>
 			);
 		}
+		if (field === 'phoneNumber') {
+			return (
+				<PhoneNumberField
+					label=''
+					value={editedUserInfo.phoneNumber}
+					onChange={(value) => setEditedUserInfo({ ...editedUserInfo, phoneNumber: value })}
+				/>
+			);
+		}
 		if (field === 'city') {
 			return (
 				<FormControl fullWidth className={input}>
@@ -253,8 +276,8 @@ const ProfileComponent = () => {
 				</IconButton>
 				<div className={topBarDivider} />
 				<Typography className={topBarTitle}>{t('profile.pageTitle')}</Typography>
-				<IconButton aria-label={t('admin.searchPlaceholder')}>
-					<SearchIcon />
+				<IconButton aria-label={t('profile.logout')} onClick={handleLogout}>
+					<LogoutIcon />
 				</IconButton>
 			</div>
 

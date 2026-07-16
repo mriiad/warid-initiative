@@ -23,8 +23,7 @@ export const useUpdateMyProfile = () => {
 	const queryClient = useQueryClient();
 
 	return useMutation({
-		mutationFn: (data: Partial<Omit<UserFormData, 'phoneNumber'>> & { phoneNumber?: number }) =>
-			usersService.updateMyProfile(data),
+		mutationFn: (data: Partial<UserFormData>) => usersService.updateMyProfile(data),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ['user', 'me'] });
 		},

@@ -12,7 +12,7 @@ export interface User {
 	_id: string;
 	username: string;
 	email: string;
-	phoneNumber: number;
+	phoneNumber: string;
 	gender?: Gender;
 	isAdmin: boolean;
 	profile?: UserProfile;

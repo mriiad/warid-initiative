@@ -21,6 +21,7 @@ import { useCreateEmergency } from '../../hooks';
 import { authRedesignStyles } from '../../styles/authRedesign';
 import { eventsListRedesignStyles } from '../../styles/eventsListRedesign';
 import { cities } from '../../utils/utils';
+import PhoneNumberField from '../shared/PhoneNumberField';
 import RedesignBottomNav from '../shared/RedesignBottomNav';
 import ResponseAnimation from '../shared/ResponseAnimation';
 
@@ -35,7 +36,7 @@ interface EmergencyFormData {
 const EmergencyForm = () => {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
-	const { input, phoneRow, countryChip, primaryButton } = authRedesignStyles();
+	const { input, primaryButton } = authRedesignStyles();
 	const { screen, topBar, topBarDivider, topBarTitle, content, hero, heroIcon, heroTitle } =
 		eventsListRedesignStyles();
 
@@ -189,35 +190,26 @@ const EmergencyForm = () => {
 								)}
 							/>
 
-							<div className={phoneRow}>
-								<div className={countryChip} aria-hidden='true'>
-									🇲🇦
-								</div>
-								<Controller
-									name='phoneNumber'
-									control={control}
-									defaultValue=''
-									rules={{
-										required: t('emergency.form.phoneRequired'),
-										pattern: {
-											value: /^[0-9]+$/,
-											message: t('emergency.form.phoneNumeric'),
-										},
-										validate: (value) =>
-											value.length === 10 || t('emergency.form.phoneLength'),
-									}}
-									render={({ field }) => (
-										<TextField
-											{...field}
-											fullWidth
-											className={input}
-											label={t('emergency.form.phone')}
-											error={Boolean(errors.phoneNumber)}
-											helperText={errors.phoneNumber?.message}
-										/>
-									)}
-								/>
-							</div>
+							<Controller
+								name='phoneNumber'
+								control={control}
+								defaultValue=''
+								rules={{
+									required: t('emergency.form.phoneRequired'),
+									pattern: {
+										value: /^\+[1-9]\d{6,14}$/,
+										message: t('emergency.form.phoneInvalid'),
+									},
+								}}
+								render={({ field: { ref: _ref, ...field } }) => (
+									<PhoneNumberField
+										label={t('emergency.form.phone')}
+										{...field}
+										error={Boolean(errors.phoneNumber)}
+										helperText={errors.phoneNumber?.message}
+									/>
+								)}
+							/>
 
 							<Controller
 								name='details'

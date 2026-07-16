@@ -19,10 +19,7 @@ export const usersService = {
 	// Self-service update of the logged-in user's own profile. Resolves the
 	// user from the auth token server-side (PATCH /api/user/profile), unlike
 	// updateUserInfo below which targets an admin-supplied :userId.
-	// phoneNumber is sent as a number to match the User schema's type.
-	updateMyProfile: (
-		data: Partial<Omit<UserFormData, 'phoneNumber'>> & { phoneNumber?: number }
-	) => {
+	updateMyProfile: (data: Partial<UserFormData>) => {
 		return apiClient.patch('/api/user/profile', data);
 	},
 

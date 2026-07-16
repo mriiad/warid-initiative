@@ -35,7 +35,10 @@ authRouter.put(
 			})
 			.normalizeEmail(),
 		body('password').trim().isLength({ min: 5 }),
-		body('phoneNumber').trim().isLength({ min: 10 }),
+		body('phoneNumber')
+			.trim()
+			.matches(/^\+[1-9]\d{6,14}$/)
+			.withMessage('Please enter a valid phone number, including country code.'),
 		body('username')
 			.trim()
 			.not()
