@@ -67,6 +67,45 @@ test.describe('Admin users list', () => {
 		await expect(page.getByText('Sara Idrissi')).toBeVisible({ timeout: 5000 });
 		expect(searchBody?.username).toBe('CIN000222');
 	});
+	test('the shared pagination control moves between pages of results', async ({ page }) => {
+		await seedAuth(page, { isAdmin: true });
+		// The initial page-1 load happens via GET /api/users, but as soon as
+		// `page` lands in the URL's search params (i.e. after any pagination
+		// click), UsersComponent switches to POST /api/searchUsers instead --
+		// this is pre-existing behaviour, not specific to the shared control.
+		await mockJson(page, '**/api/users?*', {
+			message: 'Fetched users successfully.',
+			users: [sampleUser({ username: 'CIN000111', profile: { firstname: 'Amine', lastname: 'Bennani' } })],
+			totalItems: 11,
+		});
+		let requestedPage: number | undefined;
+		await page.route('**/api/searchUsers', async (route) => {
+			requestedPage = route.request().postDataJSON()?.page;
+			const name = requestedPage === 2 ? 'Sara Idrissi' : 'Amine Bennani';
+			await route.fulfill({
+				status: 200,
+				contentType: 'application/json',
+				body: JSON.stringify({
+					message: 'Fetched users successfully.',
+					users: [sampleUser({ username: 'CIN000111', profile: { firstname: name.split(' ')[0], lastname: name.split(' ')[1] } })],
+					// 11 items at 10/page -> 2 pages, so the pagination control renders.
+					totalItems: 11,
+				}),
+			});
+		});
+
+		await page.goto('/users');
+		await expect(page.getByText('Amine Bennani')).toBeVisible({ timeout: 5000 });
+		await expect(page.getByText('صفحة 1 من 2')).toBeVisible();
+		await expect(page.getByRole('button', { name: 'السابق' })).toBeDisabled();
+
+		await page.getByRole('button', { name: 'التالي' }).click();
+
+		await expect(page.getByText('Sara Idrissi')).toBeVisible({ timeout: 5000 });
+		expect(requestedPage).toBe(2);
+		await expect(page.getByText('صفحة 2 من 2')).toBeVisible();
+		await expect(page.getByRole('button', { name: 'التالي' })).toBeDisabled();
+	});
 
 	test('admin can promote a user to admin from the user detail page', async ({ page }) => {
 		await seedAuth(page, { isAdmin: true });
