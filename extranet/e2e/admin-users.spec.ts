@@ -35,6 +35,39 @@ test.describe('Admin users list', () => {
 		await expect(page.locator('img[alt="Logo"]')).toHaveCount(0);
 	});
 
+	test('admin can filter the users list via the redesigned filter drawer', async ({ page }) => {
+		await seedAuth(page, { isAdmin: true });
+		await mockJson(page, '**/api/users?*', {
+			message: 'Fetched users successfully.',
+			users: [sampleUser({ username: 'CIN000111', profile: { firstname: 'Amine', lastname: 'Bennani' } })],
+			totalItems: 1,
+		});
+		let searchBody: any = null;
+		await page.route('**/api/searchUsers', async (route) => {
+			searchBody = route.request().postDataJSON();
+			await route.fulfill({
+				status: 200,
+				contentType: 'application/json',
+				body: JSON.stringify({
+					message: 'Fetched users successfully.',
+					users: [sampleUser({ username: 'CIN000222', profile: { firstname: 'Sara', lastname: 'Idrissi' } })],
+					totalItems: 1,
+				}),
+			});
+		});
+
+		await page.goto('/users');
+		await expect(page.getByText('Amine Bennani')).toBeVisible({ timeout: 5000 });
+
+		await page.getByRole('button', { name: 'تصفية متقدمة' }).click();
+		await expect(page.getByText('تصفية المستخدمين')).toBeVisible();
+		await page.getByLabel('اسم المستخدم', { exact: true }).fill('CIN000222');
+		await page.getByRole('button', { name: 'تطبيق عوامل التصفية' }).click();
+
+		await expect(page.getByText('Sara Idrissi')).toBeVisible({ timeout: 5000 });
+		expect(searchBody?.username).toBe('CIN000222');
+	});
+
 	test('admin can promote a user to admin from the user detail page', async ({ page }) => {
 		await seedAuth(page, { isAdmin: true });
 		await mockJson(page, '**/api/users?*', {
