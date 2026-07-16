@@ -94,4 +94,7 @@ const constants = {
 	},
 };
 
+const BLOOD_GROUP_VALUES = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+
 module.exports = constants;
+module.exports.BLOOD_GROUP_VALUES = BLOOD_GROUP_VALUES;

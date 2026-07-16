@@ -465,6 +465,7 @@
       "confirmSuccess": "!تم تأكيد المستخدم بنجاح",
       "confirmError": ".فشل تأكيد المستخدم",
       "pageTitle": "قائمة المستخدمين",
+      "requestedFor": "الفصيلة المطلوبة: {{bloodGroup}}",
       "selectLabel": "تحديد",
       "sendSms": "إرسال رسالة نصية",
       "sendWhatsapp": "إرسال عبر واتساب",

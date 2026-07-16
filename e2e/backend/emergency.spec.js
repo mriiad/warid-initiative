@@ -184,6 +184,75 @@ describe('GET /api/emergencies/:id/matchingUsers (admin only)', () => {
 		expect(res.status).toBe(200);
 		expect(res.body.totalItems).toBe(1);
 		expect(res.body.matchingUsers[0]._id).toBe('match-1');
+		expect(res.body.matchingUsers[0].bloodGroup).toBe('O+');
+	});
+
+	it('matches donors by ABO/Rh compatibility, not exact blood-group equality', async () => {
+		// AB+ is the universal recipient: every blood group is a compatible
+		// donor for it. O- is the universal donor: it must show up for any
+		// requested blood group, even blood groups it doesn't literally equal.
+		Emergency.findById.mockReturnValue(
+			resolveTo({ _id: 'em-1', bloodGroup: 'AB+', city: 'Casablanca', contactedUsers: [] })
+		);
+		User.find.mockReturnValue(
+			resolveTo([
+				{
+					_id: 'donor-o-negative',
+					phoneNumber: '0600000001',
+					gender: 'male',
+					profile: { bloodGroup: 'O-', city: 'Casablanca', firstname: 'A', lastname: 'B' },
+				},
+				{
+					_id: 'donor-b-positive',
+					phoneNumber: '0600000002',
+					gender: 'male',
+					profile: { bloodGroup: 'B+', city: 'Casablanca', firstname: 'C', lastname: 'D' },
+				},
+			])
+		);
+		User.findById.mockImplementation((id) =>
+			resolveTo(id === ADMIN_ID ? { _id: ADMIN_ID, isAdmin: true } : { _id: id, gender: 'male' })
+		);
+		const res = await request(app)
+			.get('/api/emergencies/em-1/matchingUsers')
+			.set('Authorization', authHeader(ADMIN_ID));
+		expect(res.status).toBe(200);
+		expect(res.body.totalItems).toBe(2);
+		expect(res.body.matchingUsers.map((u) => u._id).sort()).toEqual([
+			'donor-b-positive',
+			'donor-o-negative',
+		]);
+	});
+
+	it('only matches O- donors for an O- emergency (the most restrictive case)', async () => {
+		Emergency.findById.mockReturnValue(
+			resolveTo({ _id: 'em-1', bloodGroup: 'O-', city: 'Casablanca', contactedUsers: [] })
+		);
+		User.find.mockReturnValue(
+			resolveTo([
+				{
+					_id: 'donor-o-negative',
+					phoneNumber: '0600000001',
+					gender: 'male',
+					profile: { bloodGroup: 'O-', city: 'Casablanca', firstname: 'A', lastname: 'B' },
+				},
+				{
+					_id: 'donor-o-positive',
+					phoneNumber: '0600000002',
+					gender: 'male',
+					profile: { bloodGroup: 'O+', city: 'Casablanca', firstname: 'C', lastname: 'D' },
+				},
+			])
+		);
+		User.findById.mockImplementation((id) =>
+			resolveTo(id === ADMIN_ID ? { _id: ADMIN_ID, isAdmin: true } : { _id: id, gender: 'male' })
+		);
+		const res = await request(app)
+			.get('/api/emergencies/em-1/matchingUsers')
+			.set('Authorization', authHeader(ADMIN_ID));
+		expect(res.status).toBe(200);
+		expect(res.body.totalItems).toBe(1);
+		expect(res.body.matchingUsers[0]._id).toBe('donor-o-negative');
 	});
 
 	it('excludes users who are not currently eligible to donate', async () => {

@@ -13,8 +13,8 @@ test.describe('Matched users / User List (redesigned)', () => {
 		await mockJson(page, '**/api/emergencies/em-1/matchingUsers*', {
 			message: 'Fetched matching users successfully.',
 			matchingUsers: [
-				{ _id: 'u1', phoneNumber: '0600000001', firstname: 'Amine', lastname: 'Bennani' },
-				{ _id: 'u2', phoneNumber: '0600000002', firstname: 'Sara', lastname: 'Idrissi' },
+				{ _id: 'u1', phoneNumber: '0600000001', firstname: 'Amine', lastname: 'Bennani', bloodGroup: 'O-' },
+				{ _id: 'u2', phoneNumber: '0600000002', firstname: 'Sara', lastname: 'Idrissi', bloodGroup: 'AB+' },
 			],
 			totalItems: 2,
 		});
@@ -28,6 +28,12 @@ test.describe('Matched users / User List (redesigned)', () => {
 
 		await page.goto('/emergencies/em-1/matched-users');
 		await expect(page.getByText('Amine Bennani')).toBeVisible({ timeout: 5000 });
+
+		// Matched donors aren't necessarily the exact requested blood group
+		// (compatibility is broader than equality) -- each row must show the
+		// donor's own blood group, not the emergency's requested one.
+		await expect(page.getByText('O-', { exact: true })).toBeVisible();
+		await expect(page.getByText('AB+', { exact: true })).toBeVisible();
 
 		await page.getByText('Amine Bennani').click();
 		await page.getByRole('button', { name: 'إرسال رسالة نصية' }).click();
