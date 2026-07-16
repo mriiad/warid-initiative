@@ -8,6 +8,7 @@
     "loading": "...جاري التحميل",
     "previous": "السابق",
     "next": "التالي",
+    "pageOf": "صفحة {{page}} من {{totalPages}}",
     "close": "إغلاق",
     "error": ".حدث خطأ",
     "required": "هذا الحقل مطلوب",
