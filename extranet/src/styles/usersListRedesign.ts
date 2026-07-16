@@ -134,10 +134,4 @@ export const usersListRedesignStyles = makeStyles({
 		color: redesignColors.placeholder,
 		fontSize: '14px',
 	},
-	paginationRow: {
-		display: 'flex',
-		justifyContent: 'center',
-		gap: '12px',
-		marginTop: '4px',
-	},
 });
