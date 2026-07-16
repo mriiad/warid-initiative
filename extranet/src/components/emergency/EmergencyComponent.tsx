@@ -1,12 +1,13 @@
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SearchIcon from '@mui/icons-material/Search';
-import { Button, CircularProgress, IconButton, Typography } from '@mui/material';
+import { CircularProgress, IconButton, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Emergency } from '../../data/Emergency';
 import { useConfirmEmergency, useUnconfirmedEmergencies } from '../../hooks';
 import { emergencyListRedesignStyles } from '../../styles/emergencyListRedesign';
+import Pagination from '../shared/Pagination';
 import RedesignBottomNav from '../shared/RedesignBottomNav';
 import SnackbarComponent from '../shared/SnackbarComponent';
 import EmergencyCard from './EmergencyCard';
@@ -33,7 +34,6 @@ const EmergencyComponent = () => {
 		heroCount,
 		heroCountLabel,
 		emptyState,
-		paginationRow,
 	} = emergencyListRedesignStyles();
 
 	const { data: emergenciesResponse, isLoading } = useUnconfirmedEmergencies(page);
@@ -54,14 +54,6 @@ const EmergencyComponent = () => {
 			onSuccess: () => setMessage(t('emergency.list.confirmSuccess')),
 			onError: () => setMessage(t('emergency.list.confirmError')),
 		});
-	};
-
-	const handleNextPage = () => {
-		if (page < totalPages) setSearchParams({ page: String(page + 1) });
-	};
-
-	const handlePrevPage = () => {
-		if (page > 1) setSearchParams({ page: String(page - 1) });
 	};
 
 	return (
@@ -107,16 +99,12 @@ const EmergencyComponent = () => {
 					))
 				)}
 
-				{totalPages > 1 && (
-					<div className={paginationRow}>
-						<Button disabled={page === 1 || isLoading} onClick={handlePrevPage}>
-							{t('common.previous')}
-						</Button>
-						<Button disabled={page >= totalPages || isLoading} onClick={handleNextPage}>
-							{t('common.next')}
-						</Button>
-					</div>
-				)}
+				<Pagination
+					page={page}
+					totalPages={totalPages}
+					onPageChange={(newPage) => setSearchParams({ page: String(newPage) })}
+					disabled={isLoading}
+				/>
 			</div>
 
 			<RedesignBottomNav />
