@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useConfirmUserInEmergency, useEmergencyMatchUsers } from '../../hooks';
 import { matchedUsersRedesignStyles } from '../../styles/matchedUsersRedesign';
+import Pagination from '../shared/Pagination';
 import RedesignBottomNav from '../shared/RedesignBottomNav';
 import SnackbarComponent from '../shared/SnackbarComponent';
 
@@ -42,7 +43,6 @@ const MatchedUsers = () => {
 		sendButton,
 		whatsappButton,
 		emptyState,
-		paginationRow,
 	} = matchedUsersRedesignStyles();
 
 	const [searchParams, setSearchParams] = useSearchParams();
@@ -91,14 +91,6 @@ const MatchedUsers = () => {
 			setMessage(t('emergency.matchedUsers.bulkConfirmSuccess', { count: selected.size }));
 			setSelected(new Set());
 		}
-	};
-
-	const handleNextPage = () => {
-		if (page < totalPages) setSearchParams({ page: String(page + 1) });
-	};
-
-	const handlePrevPage = () => {
-		if (page > 1) setSearchParams({ page: String(page - 1) });
 	};
 
 	return (
@@ -155,16 +147,12 @@ const MatchedUsers = () => {
 							);
 						})}
 
-						{totalPages > 1 && (
-							<div className={paginationRow}>
-								<Button disabled={page === 1 || isLoading} onClick={handlePrevPage}>
-									{t('common.previous')}
-								</Button>
-								<Button disabled={page >= totalPages || isLoading} onClick={handleNextPage}>
-									{t('common.next')}
-								</Button>
-							</div>
-						)}
+						<Pagination
+							page={page}
+							totalPages={totalPages}
+							onPageChange={(newPage) => setSearchParams({ page: String(newPage) })}
+							disabled={isLoading}
+						/>
 					</>
 				)}
 			</div>
