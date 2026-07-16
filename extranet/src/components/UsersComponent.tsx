@@ -7,6 +7,7 @@ import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import Pagination from './shared/Pagination';
 import RedesignBottomNav from './shared/RedesignBottomNav';
 import { usersListRedesignStyles } from '../styles/usersListRedesign';
 import API_CONFIG, { buildApiUrl } from '../utils/apiConfig';
@@ -62,7 +63,6 @@ const UsersComponent: React.FC = () => {
 		userAvatar,
 		userName,
 		userMeta,
-		paginationRow,
 	} = usersListRedesignStyles();
 
 	// Get active filters for display
@@ -300,32 +300,16 @@ const UsersComponent: React.FC = () => {
 								</button>
 							);
 						})}
-						{totalPages > 1 && (
-							<div className={paginationRow}>
-								<button
-									disabled={page === 1}
-									onClick={() =>
-										setSearchParams({
-											...Object.fromEntries(searchParams),
-											page: (page - 1).toString(),
-										})
-									}
-								>
-									{t('common.previous')}
-								</button>
-								<button
-									disabled={page >= totalPages}
-									onClick={() =>
-										setSearchParams({
-											...Object.fromEntries(searchParams),
-											page: (page + 1).toString(),
-										})
-									}
-								>
-									{t('common.next')}
-								</button>
-							</div>
-						)}
+						<Pagination
+							page={page}
+							totalPages={totalPages}
+							onPageChange={(newPage) =>
+								setSearchParams({
+									...Object.fromEntries(searchParams),
+									page: newPage.toString(),
+								})
+							}
+						/>
 					</>
 				)}
 			</div>
