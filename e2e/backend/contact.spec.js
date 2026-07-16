@@ -30,7 +30,7 @@ describe('POST /api/contact-us', () => {
 
 	it('overrides name/email/phone from the authenticated user profile', async () => {
 		User.findById.mockReturnValue(
-			resolveTo({ email: 'real@example.com', phoneNumber: 700000000, profile: { firstname: 'Real', lastname: 'User' } })
+			resolveTo({ email: 'real@example.com', phoneNumber: '+212700000000', profile: { firstname: 'Real', lastname: 'User' } })
 		);
 		const res = await request(app)
 			.post('/api/contact-us')

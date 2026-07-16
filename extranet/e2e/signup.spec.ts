@@ -37,7 +37,15 @@ test.describe('Signup', () => {
 	});
 
 	test('successful signup redirects to the login page', async ({ page }) => {
-		await mockJson(page, '**/api/auth/signup', { message: 'User created!', userId: 'new-user-id' }, { status: 201, method: 'PUT' });
+		let requestBody: any = null;
+		await page.route('**/api/auth/signup', async (route) => {
+			requestBody = route.request().postDataJSON();
+			await route.fulfill({
+				status: 201,
+				contentType: 'application/json',
+				body: JSON.stringify({ message: 'User created!', userId: 'new-user-id' }),
+			});
+		});
 
 		await page.goto('/signup');
 		await page.getByLabel('رقم الهوية الوطنية').fill('CIN123456');
@@ -48,6 +56,34 @@ test.describe('Signup', () => {
 		await page.getByRole('button', { name: 'إرسال' }).click();
 
 		await expect(page).toHaveURL(/\/login/);
+		// A raw national-format Moroccan number (defaultCountry='MA') is
+		// normalized to full E.164 by PhoneNumberField before submit.
+		expect(requestBody?.phoneNumber).toBe('+212600000000');
+	});
+
+	test('a phone number for a country other than the Morocco default is accepted as-is', async ({ page }) => {
+		let requestBody: any = null;
+		await page.route('**/api/auth/signup', async (route) => {
+			requestBody = route.request().postDataJSON();
+			await route.fulfill({
+				status: 201,
+				contentType: 'application/json',
+				body: JSON.stringify({ message: 'User created!', userId: 'new-user-id' }),
+			});
+		});
+
+		await page.goto('/signup');
+		await page.getByLabel('رقم الهوية الوطنية').fill('CIN123456');
+		await page.getByLabel('البريد الإلكتروني').fill('newuser@example.com');
+		await page.getByRole('textbox', { name: 'كلمة المرور' }).fill('password123');
+		// Typing a full international number (leading "+" and a non-Morocco
+		// country code) is accepted -- signup is no longer Morocco-only.
+		await page.getByLabel('رقم الهاتف').fill('+33612345678');
+		await page.getByLabel('ذكر').check();
+		await page.getByRole('button', { name: 'إرسال' }).click();
+
+		await expect(page).toHaveURL(/\/login/);
+		expect(requestBody?.phoneNumber).toBe('+33612345678');
 	});
 
 	test('surfaces the backend "email already exists" error', async ({ page }) => {

@@ -17,6 +17,7 @@ import { authRedesignStyles } from '../styles/authRedesign';
 import AuthHeader from './shared/AuthHeader';
 import GoogleButton from './shared/GoogleButton';
 import PasswordField from './shared/PasswordField';
+import PhoneNumberField from './shared/PhoneNumberField';
 import SnackbarComponent from './shared/SnackbarComponent';
 
 const SignupForm = () => {
@@ -27,8 +28,6 @@ const SignupForm = () => {
 		input,
 		primaryButton,
 		divider,
-		phoneRow,
-		countryChip,
 		subtitleLink,
 	} = authRedesignStyles();
 	const {
@@ -58,8 +57,8 @@ const SignupForm = () => {
 		return emailRegex.test(value) || t('auth.signup.invalidEmail');
 	};
 
-	const validatePhoneDigits = (value: string) => {
-		return /^[0-9]+$/.test(value) || t('auth.signup.phoneRequired');
+	const validatePhoneNumber = (value: string) => {
+		return /^\+[1-9]\d{6,14}$/.test(value) || t('auth.signup.phoneInvalid');
 	};
 
 	return (
@@ -148,31 +147,22 @@ const SignupForm = () => {
 								/>
 							)}
 						/>
-						<div className={phoneRow}>
-							<div className={countryChip} aria-hidden='true'>
-								🇲🇦
-							</div>
-							<Controller
-								name='phoneNumber'
-								control={control}
-								rules={{
-									required: t('auth.signup.phoneRequired'),
-									validate: validatePhoneDigits,
-								}}
-								render={({ field }) => (
-									<TextField
-										fullWidth
-										className={input}
-										label={t('auth.signup.phone')}
-										type='tel'
-										required
-										{...field}
-										error={Boolean(errors.phoneNumber)}
-										helperText={errors.phoneNumber?.message || ''}
-									/>
-								)}
-							/>
-						</div>
+						<Controller
+							name='phoneNumber'
+							control={control}
+							rules={{
+								required: t('auth.signup.phoneRequired'),
+								validate: validatePhoneNumber,
+							}}
+							render={({ field: { ref: _ref, ...field } }) => (
+								<PhoneNumberField
+									label={t('auth.signup.phone')}
+									{...field}
+									error={Boolean(errors.phoneNumber)}
+									helperText={errors.phoneNumber?.message || ''}
+								/>
+							)}
+						/>
 						<Controller
 							name='gender'
 							control={control}

@@ -4,7 +4,7 @@ export interface Emergency {
 	_id: string;
 	bloodGroup: BloodGroup;
 	city: string;
-	phoneNumber: number;
+	phoneNumber: string;
 	details: string;
 	isConfirmed: boolean;
 }

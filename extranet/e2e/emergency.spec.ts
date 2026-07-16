@@ -27,6 +27,9 @@ test.describe('Emergency', () => {
 
 		expect(requestBody).not.toBeNull();
 		expect(requestBody.bloodGroup).toBe('O+');
+		// A raw national-format Moroccan number (defaultCountry='MA') is
+		// normalized to full E.164 by PhoneNumberField before submit.
+		expect(requestBody.phoneNumber).toBe('+212600000000');
 		await expect(page.getByText('تم إنشاء الحالة الطارئة بنجاح')).toBeVisible({ timeout: 5000 });
 	});
 
@@ -40,7 +43,7 @@ test.describe('Emergency', () => {
 		await seedAuth(page, { isAdmin: true });
 		await mockJson(page, '**/api/unconfirmedEmergencies*', {
 			message: 'Fetched emergencies successfully.',
-			emergencies: [{ _id: 'em-1', bloodGroup: 'O+', city: 'Casablanca', phoneNumber: 600000000, details: 'Urgent' }],
+			emergencies: [{ _id: 'em-1', bloodGroup: 'O+', city: 'Casablanca', phoneNumber: '+212600000000', details: 'Urgent' }],
 			totalItems: 1,
 		});
 		let confirmCalled = false;

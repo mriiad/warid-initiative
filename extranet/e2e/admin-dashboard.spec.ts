@@ -96,7 +96,7 @@ test.describe('Admin dashboard', () => {
 		await mockJson(page, '**/api/user/profile', { gender: 'male' });
 		await mockJson(page, '**/api/events*', { events: [], totalItems: 0 });
 		await mockJson(page, '**/api/unconfirmedEmergencies*', {
-			emergencies: [{ _id: 'em-1', bloodGroup: 'O+', city: 'Casablanca', phoneNumber: 600000000, details: 'Urgent' }],
+			emergencies: [{ _id: 'em-1', bloodGroup: 'O+', city: 'Casablanca', phoneNumber: '+212600000000', details: 'Urgent' }],
 			totalItems: 1,
 		});
 		await mockJson(page, '**/api/users/admin-1/dashboard', { donations: [] });

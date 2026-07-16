@@ -13,7 +13,7 @@ vi.mock('../utils/apiClient', () => ({
 
 describe('usersService.updateMyProfile (issue #204)', () => {
 	it('PATCHes the self-service /api/user/profile endpoint, not an admin :userId route', () => {
-		const data = { firstname: 'Yassine', phoneNumber: 612345678 };
+		const data = { firstname: 'Yassine', phoneNumber: '+212612345678' };
 		usersService.updateMyProfile(data);
 
 		expect(apiClient.patch).toHaveBeenCalledWith('/api/user/profile', data);
