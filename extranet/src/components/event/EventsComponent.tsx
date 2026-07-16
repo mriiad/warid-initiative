@@ -3,7 +3,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import EditIcon from '@mui/icons-material/Edit';
 import EventIcon from '@mui/icons-material/Event';
 import SearchIcon from '@mui/icons-material/Search';
-import { Button, CircularProgress, IconButton, TextField, Typography } from '@mui/material';
+import { CircularProgress, IconButton, TextField, Typography } from '@mui/material';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -13,6 +13,7 @@ import { Event } from '../../data/Event';
 import { eventsListRedesignStyles } from '../../styles/eventsListRedesign';
 import API_CONFIG, { buildApiUrl } from '../../utils/apiConfig';
 import EventOverviewCard from '../shared/EventOverviewCard';
+import Pagination from '../shared/Pagination';
 import RedesignBottomNav from '../shared/RedesignBottomNav';
 
 interface AdminEventsListViewProps {
@@ -55,7 +56,6 @@ const AdminEventsListView = ({
 		heroTitle,
 		heroSubtitle,
 		emptyState: emptyStateRedesign,
-		paginationRow,
 	} = eventsListRedesignStyles();
 
 	const todayLabel = new Date().toLocaleDateString(
@@ -125,16 +125,7 @@ const AdminEventsListView = ({
 								onViewDetails={() => navigate(`/events/${event.reference}`)}
 							/>
 						))}
-						{totalPages > 1 && (
-							<div className={paginationRow}>
-								<Button disabled={page === 1} onClick={() => setPage(page - 1)}>
-									{t('common.previous')}
-								</Button>
-								<Button disabled={page >= totalPages} onClick={() => setPage(page + 1)}>
-									{t('common.next')}
-								</Button>
-							</div>
-						)}
+						<Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
 					</>
 				) : (
 					<div className={emptyStateRedesign}>
@@ -186,7 +177,6 @@ const DonorEventsListView = ({
 		heroTitle,
 		heroSubtitle,
 		emptyState: emptyStateRedesign,
-		paginationRow,
 	} = eventsListRedesignStyles();
 
 	return (
@@ -241,16 +231,7 @@ const DonorEventsListView = ({
 								onPrimaryAction={() => navigate(`/events/${event.reference}`)}
 							/>
 						))}
-						{totalPages > 1 && (
-							<div className={paginationRow}>
-								<Button disabled={page === 1} onClick={() => setPage(page - 1)}>
-									{t('common.previous')}
-								</Button>
-								<Button disabled={page >= totalPages} onClick={() => setPage(page + 1)}>
-									{t('common.next')}
-								</Button>
-							</div>
-						)}
+						<Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
 					</>
 				) : (
 					<div className={emptyStateRedesign}>
