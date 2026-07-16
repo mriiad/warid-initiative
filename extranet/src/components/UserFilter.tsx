@@ -15,8 +15,8 @@ import {
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BLOOD_GROUP_OPTIONS } from '../data/constants';
-import colors from '../styles/colors';
-import { authStyles } from '../styles/mainStyles';
+import { authRedesignStyles } from '../styles/authRedesign';
+import { userFilterRedesignStyles } from '../styles/userFilterRedesign';
 
 const defaultFilters = {
 	username: '',
@@ -41,7 +41,21 @@ const filterFieldLabelKeys: Record<string, string> = {
 
 const UserFilter = ({ open, onClose, onApply }) => {
 	const { t } = useTranslation();
-	const { formField, bar, button, form } = authStyles();
+	const { input } = authRedesignStyles();
+	const {
+		paper,
+		container,
+		headerRow,
+		title,
+		closeButton,
+		body,
+		sectionLabel,
+		checkboxLabel,
+		slider,
+		actionsRow,
+		resetButton,
+		applyButton,
+	} = userFilterRedesignStyles();
 	const [filters, setFilters] = useState(defaultFilters);
 
 	const handleChange = (e) => {
@@ -71,56 +85,17 @@ const UserFilter = ({ open, onClose, onApply }) => {
 	};
 
 	return (
-		<Drawer
-			anchor='right'
-			open={open}
-			onClose={onClose}
-			PaperProps={{
-				sx: {
-					width: { xs: '100%', sm: '400px' },
-					borderRadius: '20px 0 0 20px',
-					boxShadow: '0 20px 60px rgba(255, 48, 103, 0.3)',
-				},
-			}}
-		>
-			<Box
-				sx={{ p: 3, height: '100%', display: 'flex', flexDirection: 'column' }}
-			>
-				<Box
-					sx={{
-						display: 'flex',
-						alignItems: 'center',
-						justifyContent: 'space-between',
-						mb: 3,
-					}}
-				>
-					<Typography
-						variant='h2'
-						className={formField}
-						sx={{
-							fontSize: '1.5rem',
-							fontWeight: 'bold',
-							color: colors.purple,
-						}}
-					>
-						{t('users.filter.title')}
-						<span className={bar}></span>
-					</Typography>
-					<IconButton
-						onClick={onClose}
-						sx={{
-							color: colors.rose,
-							'&:hover': {
-								backgroundColor: colors.rose + '20',
-							},
-						}}
-					>
-						<Close />
+		<Drawer anchor='right' open={open} onClose={onClose} PaperProps={{ className: paper }}>
+			<Box className={container}>
+				<Box className={headerRow}>
+					<Typography className={title}>{t('users.filter.title')}</Typography>
+					<IconButton className={closeButton} onClick={onClose} aria-label={t('common.close')}>
+						<Close fontSize='small' />
 					</IconButton>
 				</Box>
 
-				<Box sx={{ flex: 1, overflow: 'auto' }}>
-					<form onSubmit={handleApply} className={form}>
+				<Box className={body}>
+					<form onSubmit={handleApply} id='user-filter-form'>
 						<Grid container spacing={2}>
 							{[
 								'username',
@@ -136,12 +111,12 @@ const UserFilter = ({ open, onClose, onApply }) => {
 										value={filters[field]}
 										onChange={handleChange}
 										fullWidth
-										className={formField}
+										className={input}
 									/>
 								</Grid>
 							))}
 							<Grid item xs={12}>
-								<Typography gutterBottom>
+								<Typography className={sectionLabel}>
 									{t('users.filter.age')}: {filters.age[0]} - {filters.age[1]}
 								</Typography>
 								<Slider
@@ -150,11 +125,12 @@ const UserFilter = ({ open, onClose, onApply }) => {
 									valueLabelDisplay='auto'
 									min={18}
 									max={65}
-									className={formField}
+									className={slider}
 								/>
 							</Grid>
 							<Grid item xs={12}>
 								<FormControlLabel
+									className={checkboxLabel}
 									control={
 										<Checkbox
 											checked={filters.availableForDonation}
@@ -163,7 +139,6 @@ const UserFilter = ({ open, onClose, onApply }) => {
 										/>
 									}
 									label={t('users.filter.availableForDonation')}
-									className={formField}
 								/>
 							</Grid>
 							<Grid item xs={12}>
@@ -174,7 +149,7 @@ const UserFilter = ({ open, onClose, onApply }) => {
 									value={filters.gender}
 									onChange={handleChange}
 									fullWidth
-									className={formField}
+									className={input}
 								>
 									<MenuItem value='male'>{t('users.filter.male')}</MenuItem>
 									<MenuItem value='female'>{t('users.filter.female')}</MenuItem>
@@ -188,7 +163,7 @@ const UserFilter = ({ open, onClose, onApply }) => {
 									value={filters.bloodGroup}
 									onChange={handleChange}
 									fullWidth
-									className={formField}
+									className={input}
 								>
 									{BLOOD_GROUP_OPTIONS.map((option) => (
 										<MenuItem key={option.value} value={option.value}>
@@ -199,6 +174,7 @@ const UserFilter = ({ open, onClose, onApply }) => {
 							</Grid>
 							<Grid item xs={12}>
 								<FormControlLabel
+									className={checkboxLabel}
 									control={
 										<Checkbox
 											checked={filters.isAdmin}
@@ -207,39 +183,24 @@ const UserFilter = ({ open, onClose, onApply }) => {
 										/>
 									}
 									label={t('users.filter.isAdmin')}
-									className={formField}
 								/>
-							</Grid>
-
-							<Grid item xs={12} sx={{ mt: 2 }}>
-								<Grid container spacing={2}>
-									<Grid item xs={6}>
-										<Button
-											type='button'
-											onClick={handleReset}
-											variant='outlined'
-											color='secondary'
-											className={button}
-											fullWidth
-										>
-											{t('users.filter.reset')}
-										</Button>
-									</Grid>
-									<Grid item xs={6}>
-										<Button
-											type='submit'
-											variant='contained'
-											color='primary'
-											className={button}
-											fullWidth
-										>
-											{t('users.filter.apply')}
-										</Button>
-									</Grid>
-								</Grid>
 							</Grid>
 						</Grid>
 					</form>
+				</Box>
+
+				<Box className={actionsRow}>
+					<Button
+						type='button'
+						onClick={handleReset}
+						variant='outlined'
+						className={resetButton}
+					>
+						{t('users.filter.reset')}
+					</Button>
+					<Button type='submit' form='user-filter-form' variant='contained' className={applyButton}>
+						{t('users.filter.apply')}
+					</Button>
 				</Box>
 			</Box>
 		</Drawer>
