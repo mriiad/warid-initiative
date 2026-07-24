@@ -94,6 +94,59 @@ describe('POST /api/donation (regression test for issue #200)', () => {
 		expect(res.body.errorMessage).not.toContain('undefined');
 		expect(res.body.errorMessage).toMatch(/starting \d{2}\/\d{2}\/\d{4}/);
 	});
+
+	it('rejects a donation dated in the future', async () => {
+		User.findById.mockReturnValue(resolveTo({ _id: USER_ID, gender: 'male' }));
+		Donation.find.mockReturnValue(resolveTo([]));
+		const tomorrow = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000);
+
+		const res = await request(app)
+			.post('/api/donation')
+			.set('Authorization', authHeader(USER_ID))
+			.send({ bloodGroup: 'O+', donationDate: tomorrow.toISOString(), donationType: 'BLOOD' });
+
+		expect(res.status).toBe(400);
+		expect(res.body.errorMessage).toMatch(/future/i);
+	});
+
+	it('rejects a backdated donation that falls inside the rest period of the previous one, even if the donor is eligible again today', async () => {
+		// Male cooldown is 60 days. The donor's last donation was 65 days ago,
+		// so they're eligible to donate again as of today -- but they must
+		// not be able to register the *new* donation with a date that's still
+		// within 60 days of the *previous* one (e.g. backdating it to 5 days
+		// after their last donation).
+		const daysAgo = (n) => new Date(Date.now() - n * 24 * 60 * 60 * 1000);
+		const recentDonationDate = daysAgo(65);
+		User.findById.mockReturnValue(resolveTo({ _id: USER_ID, gender: 'male' }));
+		Donation.find.mockReturnValue(resolveTo([{ donationDate: recentDonationDate }]));
+		const backdatedWithinRestPeriod = new Date(recentDonationDate.getTime() + 5 * 24 * 60 * 60 * 1000);
+
+		const res = await request(app)
+			.post('/api/donation')
+			.set('Authorization', authHeader(USER_ID))
+			.send({
+				bloodGroup: 'O+',
+				donationDate: backdatedWithinRestPeriod.toISOString(),
+				donationType: 'BLOOD',
+			});
+
+		expect(res.status).toBe(403);
+		expect(res.body.errorMessage).toMatch(/rest period/i);
+	});
+
+	it('accepts a returning, eligible donor recording today\'s donation', async () => {
+		const daysAgo = (n) => new Date(Date.now() - n * 24 * 60 * 60 * 1000);
+		User.findById.mockReturnValue(resolveTo({ _id: USER_ID, gender: 'male' }));
+		Donation.find.mockReturnValue(resolveTo([{ donationDate: daysAgo(65) }]));
+		Event.findOne.mockReturnValue(resolveTo({ _id: 'event-1', isGeneric: true }));
+
+		const res = await request(app)
+			.post('/api/donation')
+			.set('Authorization', authHeader(USER_ID))
+			.send({ bloodGroup: 'O+', donationDate: new Date().toISOString(), donationType: 'BLOOD' });
+
+		expect(res.status).toBe(201);
+	});
 });
 
 describe('GET /api/donation', () => {

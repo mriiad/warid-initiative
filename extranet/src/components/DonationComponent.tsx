@@ -282,6 +282,7 @@ const DonationComponent = () => {
 										helperText={errors.donationDate ? t('donation.donationDateRequired') : ''}
 										type='date'
 										InputLabelProps={{ shrink: true }}
+										inputProps={{ max: formatDate(new Date()) }}
 										disabled={isDateDisabled}
 									/>
 								)}
