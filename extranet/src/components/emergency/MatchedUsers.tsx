@@ -16,6 +16,7 @@ interface MatchedUser {
 	phoneNumber: string;
 	firstname: string;
 	lastname: string;
+	bloodGroup: string;
 }
 
 const MatchedUsers = () => {
@@ -23,7 +24,7 @@ const MatchedUsers = () => {
 	const { emergencyId } = useParams<{ emergencyId: string }>();
 	const navigate = useNavigate();
 	const location = useLocation();
-	const bloodGroup = (location.state as { bloodGroup?: string } | null)?.bloodGroup;
+	const requestedBloodGroup = (location.state as { bloodGroup?: string } | null)?.bloodGroup;
 
 	const {
 		screen,
@@ -100,7 +101,14 @@ const MatchedUsers = () => {
 					<ArrowBackIcon />
 				</IconButton>
 				<div className={topBarDivider} />
-				<Typography className={topBarTitle}>{t('emergency.matchedUsers.pageTitle')}</Typography>
+				<div style={{ flexGrow: 1 }}>
+					<Typography className={topBarTitle}>{t('emergency.matchedUsers.pageTitle')}</Typography>
+					{requestedBloodGroup && (
+						<Typography className={userBloodGroup} style={{ textAlign: 'center' }}>
+							{t('emergency.matchedUsers.requestedFor', { bloodGroup: requestedBloodGroup })}
+						</Typography>
+					)}
+				</div>
 				<IconButton aria-label={t('admin.searchPlaceholder')}>
 					<SearchIcon />
 				</IconButton>
@@ -133,8 +141,8 @@ const MatchedUsers = () => {
 									</div>
 									<div className={userInfo}>
 										<Typography className={userName}>{fullName || user.phoneNumber}</Typography>
-										{bloodGroup && (
-											<Typography className={userBloodGroup}>{bloodGroup}</Typography>
+										{user.bloodGroup && (
+											<Typography className={userBloodGroup}>{user.bloodGroup}</Typography>
 										)}
 									</div>
 									<Checkbox

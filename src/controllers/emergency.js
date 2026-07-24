@@ -4,6 +4,7 @@ const { checkDonationEligibility } = require('./donation');
 const ApiError = require('../utils/errors/ApiError');
 const { STATUS_CODE } = require('../utils/errors/httpStatusCode');
 const constants = require('../utils/constants');
+const { getCompatibleDonorBloodGroups } = require('../utils/bloodCompatibility');
 
 // Get only unconfirmed emergencies
 exports.getUnconfirmedEmergencies = async (req, res, next) => {
@@ -52,10 +53,13 @@ exports.getEmergencyMatchUsers = async (req, res, next) => {
 				select: 'bloodGroup firstname lastname city',
 			});
 
-		// Filter users based on blood group , city and contactedUsers
+		// Filter users based on blood group compatibility, city and contactedUsers.
+		// Compatibility isn't exact-match: e.g. an O- donor can give to any
+		// recipient, and an AB+ recipient can receive from any donor.
+		const compatibleDonorBloodGroups = getCompatibleDonorBloodGroups(emergency.bloodGroup);
 		const filteredUsers = users.filter((user) => {
 			return (
-				user.profile.bloodGroup === emergency.bloodGroup &&
+				compatibleDonorBloodGroups.includes(user.profile.bloodGroup) &&
 				user.profile.city === emergency.city &&
 				!emergency.contactedUsers.includes(user._id)
 			);
@@ -70,6 +74,7 @@ exports.getEmergencyMatchUsers = async (req, res, next) => {
 					phoneNumber: user.phoneNumber,
 					firstname: user.profile.firstname,
 					lastname: user.profile.lastname,
+					bloodGroup: user.profile.bloodGroup,
 				};
 			}
 		});

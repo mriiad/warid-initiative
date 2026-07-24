@@ -465,6 +465,7 @@
       "confirmSuccess": "User confirmed successfully!",
       "confirmError": "Failed to confirm user.",
       "pageTitle": "User List",
+      "requestedFor": "Requested: {{bloodGroup}}",
       "selectLabel": "Select",
       "sendSms": "Send SMS",
       "sendWhatsapp": "Send via WhatsApp",
