@@ -12,6 +12,12 @@ exports.formatDate = (date) => {
 	return `${day}/${month}/${year}`;
 };
 
+exports.startOfDay = (date) => {
+	const d = new Date(date);
+	d.setHours(0, 0, 0, 0);
+	return d;
+};
+
 exports.calculateAge = (birthdate) => {
 	const birthDate = new Date(birthdate);
 	const today = new Date();

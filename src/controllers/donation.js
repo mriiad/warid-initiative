@@ -5,7 +5,7 @@ const Event = require('../models/event');
 const { STATUS_CODE } = require('../utils/errors/httpStatusCode');
 const ApiError = require('../utils/errors/ApiError');
 const mongoose = require('mongoose');
-const { addDays, formatDate } = require('../utils/utils');
+const { addDays, formatDate, startOfDay } = require('../utils/utils');
 
 /**
  * Utility function to check donation eligibility
@@ -28,15 +28,14 @@ exports.checkDonationEligibility = async (userId) => {
 			canDonate: true,
 			lastDonationDate: null,
 			nextDonationDate: null,
+			nextDonationDateRaw: null,
 		};
 	}
 	const donationDate = donation.donationDate;
 	const daysToAdd = user.gender === 'male' ? 60 : 90;
 	const nextDonationDate = addDays(donationDate, daysToAdd);
 	const timeDifference = currentDate - new Date(donationDate);
-	console.log('timeDifference', timeDifference);
 	const daysDifference = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
-	console.log('daysDifference', daysDifference);
 	if (
 		(user.gender === 'male' && daysDifference >= 60) ||
 		(user.gender === 'female' && daysDifference >= 90)
@@ -47,6 +46,7 @@ exports.checkDonationEligibility = async (userId) => {
 		canDonate: donationAvailability,
 		lastDonationDate: formatDate(donationDate),
 		nextDonationDate: formatDate(nextDonationDate),
+		nextDonationDateRaw: nextDonationDate,
 	};
 };
 
@@ -134,33 +134,29 @@ exports.donate = async (req, res, next) => {
 
 const checkExistingDonation = async (userId, userProvidedDate) => {
 	try {
-		// Use checkDonationEligibility to verify if the user is able to donate
-		const { canDonate, nextDonationDate } = await exports.checkDonationEligibility(
-			userId
-		);
+		const providedDay = startOfDay(userProvidedDate);
 
-		if (!canDonate) {
+		if (providedDay > startOfDay(new Date())) {
 			throw new ApiError(
-				`You are not eligible to donate at this time. You can register for a new donation starting ${nextDonationDate}`,
-				STATUS_CODE.FORBIDDEN
+				'The donation date cannot be in the future.',
+				STATUS_CODE.BAD_REQUEST,
+				['donationDate']
 			);
 		}
 
-		const [recentDonation] = await Donation.find({ userId: userId })
-			.sort({ donationDate: -1 })
-			.limit(1)
-			.exec();
+		// Validate the eligibility rest period against the date actually being
+		// recorded, not against today -- a donor whose cooldown has expired as
+		// of today could otherwise backdate a donation to fall inside the rest
+		// period of their previous one.
+		const { nextDonationDate, nextDonationDateRaw } =
+			await exports.checkDonationEligibility(userId);
 
-		if (recentDonation) {
-			const recentDate = recentDonation.donationDate;
-
-			if (userProvidedDate < new Date(recentDate)) {
-				throw new ApiError(
-					'The provided donation date is older than your most recent donation.',
-					STATUS_CODE.BAD_REQUEST,
-					['donationDate']
-				);
-			}
+		if (nextDonationDateRaw && providedDay < startOfDay(nextDonationDateRaw)) {
+			throw new ApiError(
+				`The provided donation date falls within your mandatory rest period. You can register a donation starting ${nextDonationDate}`,
+				STATUS_CODE.FORBIDDEN,
+				['donationDate']
+			);
 		}
 
 		// If all checks pass, return a resolved promise

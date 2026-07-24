@@ -28,6 +28,38 @@ test.describe('Donation form', () => {
 		await expect(page.getByText(/starting undefined/)).toBeVisible({ timeout: 5000 });
 	});
 
+	test('the donation date field cannot be set past today (fix: dates were previously unbounded, letting the rest-period check be bypassed by backdating)', async ({ page }) => {
+		await seedAuth(page);
+		await mockJson(page, '**/api/user/profile', fullProfileResponse());
+
+		await page.goto('/donate');
+
+		const todayIso = new Date().toISOString().slice(0, 10);
+		await expect(page.getByLabel('تاريخ التبرع')).toHaveAttribute('max', todayIso);
+	});
+
+	test('a backdated donation that falls inside the mandatory rest period is rejected with the real backend message', async ({ page }) => {
+		await seedAuth(page);
+		await mockJson(page, '**/api/user/profile', fullProfileResponse());
+		await mockJson(
+			page,
+			'**/api/donation',
+			{
+				errorMessage:
+					'The provided donation date falls within your mandatory rest period. You can register a donation starting 20/09/2026',
+				errorKeys: ['donationDate'],
+			},
+			{ status: 403, method: 'POST' }
+		);
+
+		await page.goto('/donate');
+		await page.getByRole('combobox').nth(1).click();
+		await page.getByRole('option', { name: 'الدم' }).click();
+		await page.locator('button[type=submit]').click();
+		await page.waitForTimeout(500);
+		await expect(page.getByText(/mandatory rest period/)).toBeVisible({ timeout: 5000 });
+	});
+
 	test('defensive: a 500 from canDonate does not crash the donation form', async ({ page }) => {
 		// canDonate used to always 500 with a ReferenceError (fixed in
 		// src/controllers/donation.js, see e2e/backend/donation.spec.js). This
