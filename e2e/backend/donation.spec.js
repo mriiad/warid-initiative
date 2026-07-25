@@ -16,6 +16,26 @@ const { authHeader } = require('./support/jwtHelper');
 const app = buildApp();
 const USER_ID = '507f1f77bcf86cd799439011';
 
+// Returns a birthdate that makes calculateAge() resolve to exactly `age`,
+// regardless of what today's date is (the birthday is placed a day in the
+// past relative to "age years ago today", so it's already occurred this year).
+const birthdateForAge = (age) => {
+	const d = new Date();
+	d.setFullYear(d.getFullYear() - age);
+	d.setDate(d.getDate() - 1);
+	return d;
+};
+const adultBirthdate = () => birthdateForAge(30);
+
+// A stand-in for an eligible donor's Profile document. donate() both reads
+// birthdate (age eligibility) and may write + save bloodGroup, so the mock
+// needs to carry all three the way a real Mongoose doc would.
+const eligibleProfile = (overrides = {}) => ({
+	birthdate: adultBirthdate(),
+	save: jest.fn().mockResolvedValue(true),
+	...overrides,
+});
+
 describe('GET / (regression: dead handler previously hung every request to the site root)', () => {
 	it('does not hang and does not swallow the request before later middleware/routes', async () => {
 		// donationRouter used to register `.get('/', (req, res, next) => {})`,
@@ -39,6 +59,7 @@ describe('GET /api/donation/canDonate (fix: endpoint used to be completely broke
 		// eligibility badge/button shown to donors.
 		User.findById.mockReturnValue(resolveTo({ _id: USER_ID, gender: 'male' }));
 		Donation.find.mockReturnValue(resolveTo([]));
+		Profile.findOne.mockReturnValue(resolveTo({ birthdate: adultBirthdate() }));
 
 		const res = await request(app)
 			.get('/api/donation/canDonate')
@@ -51,6 +72,7 @@ describe('GET /api/donation/canDonate (fix: endpoint used to be completely broke
 	it('fix: reports the real eligibility based on the user\'s donation history', async () => {
 		User.findById.mockReturnValue(resolveTo({ _id: USER_ID, gender: 'male' }));
 		Donation.find.mockReturnValue(resolveTo([{ donationDate: new Date() }]));
+		Profile.findOne.mockReturnValue(resolveTo({ birthdate: adultBirthdate() }));
 
 		const res = await request(app)
 			.get('/api/donation/canDonate')
@@ -59,6 +81,49 @@ describe('GET /api/donation/canDonate (fix: endpoint used to be completely broke
 		expect(res.status).toBe(200);
 		expect(res.body.canDonate).toBe(false);
 		expect(res.body.lastDonationDate).toBeTruthy();
+		expect(res.body.ineligibilityReason).toBe('COOLDOWN');
+	});
+
+	it('reports MISSING_BIRTHDATE when the donor has no birthdate on file', async () => {
+		User.findById.mockReturnValue(resolveTo({ _id: USER_ID, gender: 'male' }));
+		Donation.find.mockReturnValue(resolveTo([]));
+		Profile.findOne.mockReturnValue(resolveTo(null));
+
+		const res = await request(app)
+			.get('/api/donation/canDonate')
+			.set('Authorization', authHeader(USER_ID));
+
+		expect(res.status).toBe(200);
+		expect(res.body.canDonate).toBe(false);
+		expect(res.body.ineligibilityReason).toBe('MISSING_BIRTHDATE');
+	});
+
+	it('reports TOO_YOUNG for a donor under the minimum donation age', async () => {
+		User.findById.mockReturnValue(resolveTo({ _id: USER_ID, gender: 'male' }));
+		Donation.find.mockReturnValue(resolveTo([]));
+		Profile.findOne.mockReturnValue(resolveTo({ birthdate: birthdateForAge(17) }));
+
+		const res = await request(app)
+			.get('/api/donation/canDonate')
+			.set('Authorization', authHeader(USER_ID));
+
+		expect(res.status).toBe(200);
+		expect(res.body.canDonate).toBe(false);
+		expect(res.body.ineligibilityReason).toBe('TOO_YOUNG');
+	});
+
+	it('reports TOO_OLD for a donor over the maximum donation age', async () => {
+		User.findById.mockReturnValue(resolveTo({ _id: USER_ID, gender: 'male' }));
+		Donation.find.mockReturnValue(resolveTo([]));
+		Profile.findOne.mockReturnValue(resolveTo({ birthdate: birthdateForAge(66) }));
+
+		const res = await request(app)
+			.get('/api/donation/canDonate')
+			.set('Authorization', authHeader(USER_ID));
+
+		expect(res.status).toBe(200);
+		expect(res.body.canDonate).toBe(false);
+		expect(res.body.ineligibilityReason).toBe('TOO_OLD');
 	});
 });
 
@@ -70,6 +135,7 @@ describe('POST /api/donation (regression test for issue #200)', () => {
 		// await exports.checkDonationEligibility(...), so the request succeeds.
 		User.findById.mockReturnValue(resolveTo({ _id: USER_ID, gender: 'male' }));
 		Donation.find.mockReturnValue(resolveTo([]));
+		Profile.findOne.mockReturnValue(resolveTo(eligibleProfile()));
 		Event.findOne.mockReturnValue(resolveTo({ _id: 'event-1', isGeneric: true }));
 
 		const res = await request(app)
@@ -89,8 +155,8 @@ describe('POST /api/donation (regression test for issue #200)', () => {
 		User.findById.mockReturnValue(resolveTo({ _id: USER_ID, gender: 'male' }));
 		Donation.find.mockReturnValue(resolveTo([]));
 		Event.findOne.mockReturnValue(resolveTo({ _id: 'event-1', isGeneric: true }));
-		const save = jest.fn().mockResolvedValue(true);
-		const profile = { bloodGroup: undefined, save };
+		const profile = eligibleProfile({ bloodGroup: undefined });
+		const save = profile.save;
 		Profile.findOne.mockReturnValue(resolveTo(profile));
 
 		const res = await request(app)
@@ -107,8 +173,8 @@ describe('POST /api/donation (regression test for issue #200)', () => {
 		User.findById.mockReturnValue(resolveTo({ _id: USER_ID, gender: 'male' }));
 		Donation.find.mockReturnValue(resolveTo([]));
 		Event.findOne.mockReturnValue(resolveTo({ _id: 'event-1', isGeneric: true }));
-		const save = jest.fn().mockResolvedValue(true);
-		const profile = { bloodGroup: 'A+', save };
+		const profile = eligibleProfile({ bloodGroup: 'A+' });
+		const save = profile.save;
 		Profile.findOne.mockReturnValue(resolveTo(profile));
 
 		const res = await request(app)
@@ -127,8 +193,8 @@ describe('POST /api/donation (regression test for issue #200)', () => {
 		User.findById.mockReturnValue(resolveTo({ _id: USER_ID, gender: 'male' }));
 		Donation.find.mockReturnValue(resolveTo([]));
 		Event.findOne.mockReturnValue(resolveTo({ _id: 'event-1', isGeneric: true }));
-		const save = jest.fn().mockResolvedValue(true);
-		const profile = { bloodGroup: undefined, save };
+		const profile = eligibleProfile({ bloodGroup: undefined });
+		const save = profile.save;
 		Profile.findOne.mockReturnValue(resolveTo(profile));
 
 		const res = await request(app)
@@ -145,6 +211,7 @@ describe('POST /api/donation (regression test for issue #200)', () => {
 		const recentDonationDate = new Date();
 		User.findById.mockReturnValue(resolveTo({ _id: USER_ID, gender: 'male' }));
 		Donation.find.mockReturnValue(resolveTo([{ donationDate: recentDonationDate }]));
+		Profile.findOne.mockReturnValue(resolveTo({ birthdate: adultBirthdate() }));
 
 		const res = await request(app)
 			.post('/api/donation')
@@ -159,6 +226,7 @@ describe('POST /api/donation (regression test for issue #200)', () => {
 	it('rejects a donation dated in the future', async () => {
 		User.findById.mockReturnValue(resolveTo({ _id: USER_ID, gender: 'male' }));
 		Donation.find.mockReturnValue(resolveTo([]));
+		Profile.findOne.mockReturnValue(resolveTo({ birthdate: adultBirthdate() }));
 		const tomorrow = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000);
 
 		const res = await request(app)
@@ -180,6 +248,7 @@ describe('POST /api/donation (regression test for issue #200)', () => {
 		const recentDonationDate = daysAgo(65);
 		User.findById.mockReturnValue(resolveTo({ _id: USER_ID, gender: 'male' }));
 		Donation.find.mockReturnValue(resolveTo([{ donationDate: recentDonationDate }]));
+		Profile.findOne.mockReturnValue(resolveTo({ birthdate: adultBirthdate() }));
 		const backdatedWithinRestPeriod = new Date(recentDonationDate.getTime() + 5 * 24 * 60 * 60 * 1000);
 
 		const res = await request(app)
@@ -199,6 +268,7 @@ describe('POST /api/donation (regression test for issue #200)', () => {
 		const daysAgo = (n) => new Date(Date.now() - n * 24 * 60 * 60 * 1000);
 		User.findById.mockReturnValue(resolveTo({ _id: USER_ID, gender: 'male' }));
 		Donation.find.mockReturnValue(resolveTo([{ donationDate: daysAgo(65) }]));
+		Profile.findOne.mockReturnValue(resolveTo(eligibleProfile()));
 		Event.findOne.mockReturnValue(resolveTo({ _id: 'event-1', isGeneric: true }));
 
 		const res = await request(app)
@@ -207,6 +277,49 @@ describe('POST /api/donation (regression test for issue #200)', () => {
 			.send({ bloodGroup: 'O+', donationDate: new Date().toISOString(), donationType: 'BLOOD' });
 
 		expect(res.status).toBe(201);
+	});
+
+	it('rejects a donation from a donor with no birthdate on file, without flagging the date field', async () => {
+		User.findById.mockReturnValue(resolveTo({ _id: USER_ID, gender: 'male' }));
+		Donation.find.mockReturnValue(resolveTo([]));
+		Profile.findOne.mockReturnValue(resolveTo(null));
+
+		const res = await request(app)
+			.post('/api/donation')
+			.set('Authorization', authHeader(USER_ID))
+			.send({ bloodGroup: 'O+', donationDate: new Date().toISOString(), donationType: 'BLOOD' });
+
+		expect(res.status).toBe(403);
+		expect(res.body.errorMessage).toMatch(/complete your profile/i);
+		expect(res.body.errorKeys).toEqual([]);
+	});
+
+	it('rejects a donation from a donor under the minimum donation age', async () => {
+		User.findById.mockReturnValue(resolveTo({ _id: USER_ID, gender: 'male' }));
+		Donation.find.mockReturnValue(resolveTo([]));
+		Profile.findOne.mockReturnValue(resolveTo({ birthdate: birthdateForAge(17) }));
+
+		const res = await request(app)
+			.post('/api/donation')
+			.set('Authorization', authHeader(USER_ID))
+			.send({ bloodGroup: 'O+', donationDate: new Date().toISOString(), donationType: 'BLOOD' });
+
+		expect(res.status).toBe(403);
+		expect(res.body.errorMessage).toMatch(/at least 18 years old/i);
+	});
+
+	it('rejects a donation from a donor over the maximum donation age', async () => {
+		User.findById.mockReturnValue(resolveTo({ _id: USER_ID, gender: 'male' }));
+		Donation.find.mockReturnValue(resolveTo([]));
+		Profile.findOne.mockReturnValue(resolveTo({ birthdate: birthdateForAge(66) }));
+
+		const res = await request(app)
+			.post('/api/donation')
+			.set('Authorization', authHeader(USER_ID))
+			.send({ bloodGroup: 'O+', donationDate: new Date().toISOString(), donationType: 'BLOOD' });
+
+		expect(res.status).toBe(403);
+		expect(res.body.errorMessage).toMatch(/over 65 years old/i);
 	});
 });
 

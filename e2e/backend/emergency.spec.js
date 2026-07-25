@@ -4,15 +4,28 @@ const { resolveTo, makeQuery } = require('./support/mongooseMock');
 jest.mock('../../src/models/user', () => require('./support/mongooseMock').makeModelMock());
 jest.mock('../../src/models/emergency', () => require('./support/mongooseMock').makeModelMock());
 jest.mock('../../src/models/donation', () => require('./support/mongooseMock').makeModelMock());
+jest.mock('../../src/models/profile', () => require('./support/mongooseMock').makeModelMock());
 
 const User = require('../../src/models/user');
 const Emergency = require('../../src/models/emergency');
 const Donation = require('../../src/models/donation');
+const Profile = require('../../src/models/profile');
 const { buildApp } = require('./support/testApp');
 const { authHeader } = require('./support/jwtHelper');
 
 const app = buildApp();
 const ADMIN_ID = '507f1f77bcf86cd799439099';
+
+// checkDonationEligibility() (called per-candidate by getEmergencyMatchUsers)
+// now also checks the donor's age via their Profile, so every candidate
+// needs an eligible birthdate unless a test is specifically about age.
+const birthdateForAge = (age) => {
+	const d = new Date();
+	d.setFullYear(d.getFullYear() - age);
+	d.setDate(d.getDate() - 1);
+	return d;
+};
+const adultBirthdate = () => birthdateForAge(30);
 
 describe('POST /api/emergency (public)', () => {
 	it('creates an emergency without authentication', async () => {
@@ -133,6 +146,7 @@ describe('PATCH /api/emergencies/:emergencyId/matchedUsers/:userId/confirm (admi
 describe('GET /api/emergencies/:id/matchingUsers (admin only)', () => {
 	beforeEach(() => {
 		Donation.find.mockReturnValue(resolveTo([]));
+		Profile.findOne.mockReturnValue(resolveTo({ birthdate: adultBirthdate() }));
 	});
 
 	it('returns 404 when the emergency does not exist', async () => {
