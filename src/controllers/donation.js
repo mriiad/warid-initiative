@@ -6,7 +6,7 @@ const { STATUS_CODE } = require('../utils/errors/httpStatusCode');
 const ApiError = require('../utils/errors/ApiError');
 const mongoose = require('mongoose');
 const { addDays, formatDate, startOfDay, calculateAge } = require('../utils/utils');
-const { DONATION_AGE } = require('../utils/constants');
+const { BLOOD_GROUP_VALUES, DONATION_AGE } = require('../utils/constants');
 
 /**
  * Utility function to check donation eligibility
@@ -116,6 +116,19 @@ exports.donate = async (req, res, next) => {
 
 		await checkExistingDonation(req.userId, new Date(donationDate));
 
+		// The donation form's blood-group field only exists to let a donor
+		// whose profile doesn't have one yet declare it -- Profile.bloodGroup
+		// is the single source of truth read everywhere else (emergency
+		// matching, admin views, filters). If it's already set, a submitted
+		// value here is ignored rather than silently overwriting it.
+		if (bloodGroup && BLOOD_GROUP_VALUES.includes(bloodGroup)) {
+			const profile = await Profile.findOne({ user: req.userId });
+			if (profile && !profile.bloodGroup) {
+				profile.bloodGroup = bloodGroup;
+				await profile.save();
+			}
+		}
+
 		// Get event or find a generic event if not provided
 		let event;
 		if (eventId) {
@@ -135,7 +148,6 @@ exports.donate = async (req, res, next) => {
 		}
 
 		const donation = new Donation({
-			bloodGroup,
 			donationDate,
 			donationType,
 			userId: req.userId,

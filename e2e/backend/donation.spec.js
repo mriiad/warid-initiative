@@ -27,6 +27,15 @@ const birthdateForAge = (age) => {
 };
 const adultBirthdate = () => birthdateForAge(30);
 
+// A stand-in for an eligible donor's Profile document. donate() both reads
+// birthdate (age eligibility) and may write + save bloodGroup, so the mock
+// needs to carry all three the way a real Mongoose doc would.
+const eligibleProfile = (overrides = {}) => ({
+	birthdate: adultBirthdate(),
+	save: jest.fn().mockResolvedValue(true),
+	...overrides,
+});
+
 describe('GET / (regression: dead handler previously hung every request to the site root)', () => {
 	it('does not hang and does not swallow the request before later middleware/routes', async () => {
 		// donationRouter used to register `.get('/', (req, res, next) => {})`,
@@ -126,7 +135,7 @@ describe('POST /api/donation (regression test for issue #200)', () => {
 		// await exports.checkDonationEligibility(...), so the request succeeds.
 		User.findById.mockReturnValue(resolveTo({ _id: USER_ID, gender: 'male' }));
 		Donation.find.mockReturnValue(resolveTo([]));
-		Profile.findOne.mockReturnValue(resolveTo({ birthdate: adultBirthdate() }));
+		Profile.findOne.mockReturnValue(resolveTo(eligibleProfile()));
 		Event.findOne.mockReturnValue(resolveTo({ _id: 'event-1', isGeneric: true }));
 
 		const res = await request(app)
@@ -135,6 +144,67 @@ describe('POST /api/donation (regression test for issue #200)', () => {
 			.send({ bloodGroup: 'O+', donationDate: new Date().toISOString(), donationType: 'BLOOD' });
 
 		expect(res.status).toBe(201);
+	});
+
+	it('saves the submitted blood group to the donor\'s profile when it has none on file yet', async () => {
+		// The donation form's blood-group field is only meant to let a donor
+		// declare their type the first time (their Profile has none yet). The
+		// Donation schema itself has no bloodGroup field, so this value used
+		// to be silently dropped by Mongoose on save and never persisted
+		// anywhere -- the selector looked functional but did nothing.
+		User.findById.mockReturnValue(resolveTo({ _id: USER_ID, gender: 'male' }));
+		Donation.find.mockReturnValue(resolveTo([]));
+		Event.findOne.mockReturnValue(resolveTo({ _id: 'event-1', isGeneric: true }));
+		const profile = eligibleProfile({ bloodGroup: undefined });
+		const save = profile.save;
+		Profile.findOne.mockReturnValue(resolveTo(profile));
+
+		const res = await request(app)
+			.post('/api/donation')
+			.set('Authorization', authHeader(USER_ID))
+			.send({ bloodGroup: 'O+', donationDate: new Date().toISOString(), donationType: 'BLOOD' });
+
+		expect(res.status).toBe(201);
+		expect(profile.bloodGroup).toBe('O+');
+		expect(save).toHaveBeenCalled();
+	});
+
+	it('does not overwrite a blood group already on the donor\'s profile', async () => {
+		User.findById.mockReturnValue(resolveTo({ _id: USER_ID, gender: 'male' }));
+		Donation.find.mockReturnValue(resolveTo([]));
+		Event.findOne.mockReturnValue(resolveTo({ _id: 'event-1', isGeneric: true }));
+		const profile = eligibleProfile({ bloodGroup: 'A+' });
+		const save = profile.save;
+		Profile.findOne.mockReturnValue(resolveTo(profile));
+
+		const res = await request(app)
+			.post('/api/donation')
+			.set('Authorization', authHeader(USER_ID))
+			// A mismatched value here shouldn't be trusted over the donor's
+			// already-established blood type.
+			.send({ bloodGroup: 'O+', donationDate: new Date().toISOString(), donationType: 'BLOOD' });
+
+		expect(res.status).toBe(201);
+		expect(profile.bloodGroup).toBe('A+');
+		expect(save).not.toHaveBeenCalled();
+	});
+
+	it('ignores an invalid blood group value instead of saving it to the profile', async () => {
+		User.findById.mockReturnValue(resolveTo({ _id: USER_ID, gender: 'male' }));
+		Donation.find.mockReturnValue(resolveTo([]));
+		Event.findOne.mockReturnValue(resolveTo({ _id: 'event-1', isGeneric: true }));
+		const profile = eligibleProfile({ bloodGroup: undefined });
+		const save = profile.save;
+		Profile.findOne.mockReturnValue(resolveTo(profile));
+
+		const res = await request(app)
+			.post('/api/donation')
+			.set('Authorization', authHeader(USER_ID))
+			.send({ bloodGroup: 'not-a-real-group', donationDate: new Date().toISOString(), donationType: 'BLOOD' });
+
+		expect(res.status).toBe(201);
+		expect(profile.bloodGroup).toBeUndefined();
+		expect(save).not.toHaveBeenCalled();
 	});
 
 	it('rejects a not-yet-eligible existing user with the real next-eligible date (not "undefined")', async () => {
@@ -198,7 +268,7 @@ describe('POST /api/donation (regression test for issue #200)', () => {
 		const daysAgo = (n) => new Date(Date.now() - n * 24 * 60 * 60 * 1000);
 		User.findById.mockReturnValue(resolveTo({ _id: USER_ID, gender: 'male' }));
 		Donation.find.mockReturnValue(resolveTo([{ donationDate: daysAgo(65) }]));
-		Profile.findOne.mockReturnValue(resolveTo({ birthdate: adultBirthdate() }));
+		Profile.findOne.mockReturnValue(resolveTo(eligibleProfile()));
 		Event.findOne.mockReturnValue(resolveTo({ _id: 'event-1', isGeneric: true }));
 
 		const res = await request(app)
