@@ -5,7 +5,8 @@ const Event = require('../models/event');
 const { STATUS_CODE } = require('../utils/errors/httpStatusCode');
 const ApiError = require('../utils/errors/ApiError');
 const mongoose = require('mongoose');
-const { addDays, formatDate, startOfDay } = require('../utils/utils');
+const { addDays, formatDate, startOfDay, calculateAge } = require('../utils/utils');
+const { DONATION_AGE } = require('../utils/constants');
 
 /**
  * Utility function to check donation eligibility
@@ -17,45 +18,75 @@ exports.checkDonationEligibility = async (userId) => {
 		throw new ApiError('User not found.', STATUS_CODE.NOT_FOUND);
 	}
 	user = foundUser;
+
+	const profile = await Profile.findOne({ user: userId });
+	const age = profile?.birthdate ? calculateAge(profile.birthdate) : null;
+	let ineligibilityReason = null;
+	if (age === null) {
+		ineligibilityReason = 'MISSING_BIRTHDATE';
+	} else if (age < DONATION_AGE.MIN) {
+		ineligibilityReason = 'TOO_YOUNG';
+	} else if (age > DONATION_AGE.MAX) {
+		ineligibilityReason = 'TOO_OLD';
+	}
+
 	const donations = await Donation.find({ userId: userId })
 		.sort({ donationDate: -1 })
 		.limit(1);
 	const currentDate = new Date();
-	let donationAvailability = false;
+	let cooldownEligible = true;
 	const donation = donations[0];
-	if (!donation) {
-		return {
-			canDonate: true,
-			lastDonationDate: null,
-			nextDonationDate: null,
-			nextDonationDateRaw: null,
-		};
+	let lastDonationDate = null;
+	let nextDonationDate = null;
+	let nextDonationDateRaw = null;
+
+	if (donation) {
+		const donationDate = donation.donationDate;
+		const daysToAdd = user.gender === 'male' ? 60 : 90;
+		nextDonationDateRaw = addDays(donationDate, daysToAdd);
+		const timeDifference = currentDate - new Date(donationDate);
+		const daysDifference = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+		cooldownEligible =
+			(user.gender === 'male' && daysDifference >= 60) ||
+			(user.gender === 'female' && daysDifference >= 90);
+		lastDonationDate = formatDate(donationDate);
+		nextDonationDate = formatDate(nextDonationDateRaw);
 	}
-	const donationDate = donation.donationDate;
-	const daysToAdd = user.gender === 'male' ? 60 : 90;
-	const nextDonationDate = addDays(donationDate, daysToAdd);
-	const timeDifference = currentDate - new Date(donationDate);
-	const daysDifference = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
-	if (
-		(user.gender === 'male' && daysDifference >= 60) ||
-		(user.gender === 'female' && daysDifference >= 90)
-	) {
-		donationAvailability = true;
+
+	if (!cooldownEligible && !ineligibilityReason) {
+		ineligibilityReason = 'COOLDOWN';
 	}
+
 	return {
-		canDonate: donationAvailability,
-		lastDonationDate: formatDate(donationDate),
-		nextDonationDate: formatDate(nextDonationDate),
-		nextDonationDateRaw: nextDonationDate,
+		canDonate: ineligibilityReason === null,
+		lastDonationDate,
+		nextDonationDate,
+		nextDonationDateRaw,
+		ineligibilityReason,
 	};
+};
+
+const buildIneligibilityMessage = (ineligibilityReason, nextDonationDate) => {
+	switch (ineligibilityReason) {
+		case 'MISSING_BIRTHDATE':
+			return 'Please complete your profile with your birthdate before registering a donation.';
+		case 'TOO_YOUNG':
+			return `You must be at least ${DONATION_AGE.MIN} years old to donate.`;
+		case 'TOO_OLD':
+			return `Blood donation is not available for donors over ${DONATION_AGE.MAX} years old.`;
+		default:
+			return `Based on your last donation date, you are not eligible to donate at this time. You can register for a new donation starting ${nextDonationDate}`;
+	}
 };
 
 exports.canDonate = (req, res, next) => {
 	exports.checkDonationEligibility(req.userId)
-		.then(({ canDonate, lastDonationDate }) => {
+		.then(({ canDonate, lastDonationDate, nextDonationDate, ineligibilityReason }) => {
 			res.status(STATUS_CODE.OK).json({
 				canDonate: canDonate,
 				lastDonationDate: lastDonationDate,
+				nextDonationDate: nextDonationDate,
+				ineligibilityReason: ineligibilityReason,
 			});
 		})
 		.catch((err) => {
@@ -69,18 +100,17 @@ exports.canDonate = (req, res, next) => {
 exports.donate = async (req, res, next) => {
 	try {
 		const { bloodGroup, donationDate, donationType, eventId } = req.body;
-		const { canDonate, lastDonationDate, nextDonationDate } =
+		const { canDonate, nextDonationDate, ineligibilityReason } =
 			await this.checkDonationEligibility(req.userId);
 
-		console.log('canDonate', canDonate);
-		console.log('lastDonationDate', lastDonationDate);
-		console.log('nextDonationDate', nextDonationDate);
-
 		if (!canDonate) {
+			// Age/profile-completeness issues aren't a bad value in the
+			// donationDate field, so only flag that field for the cooldown case.
+			const errorKeys = ineligibilityReason === 'COOLDOWN' ? ['donationDate'] : [];
 			throw new ApiError(
-				`Based on your last donation date, you are not eligible to donate at this time. You can register for a new donation starting ${nextDonationDate}`,
+				buildIneligibilityMessage(ineligibilityReason, nextDonationDate),
 				STATUS_CODE.FORBIDDEN,
-				['donationDate']
+				errorKeys
 			);
 		}
 

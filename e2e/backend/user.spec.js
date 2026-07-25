@@ -17,6 +17,15 @@ const app = buildApp();
 const USER_ID = '507f1f77bcf86cd799439011';
 const ADMIN_ID = '507f1f77bcf86cd799439099';
 
+// checkDonationEligibility() also checks age via the donor's Profile now, so
+// an eligible donor in these tests needs an in-range birthdate on file.
+const adultBirthdate = () => {
+	const d = new Date();
+	d.setFullYear(d.getFullYear() - 30);
+	d.setDate(d.getDate() - 1);
+	return d;
+};
+
 describe('GET /api/user/profile', () => {
 	it('returns just gender when the user has no profile yet', async () => {
 		User.findById.mockReturnValue(resolveTo({ gender: 'male', profile: null }));
@@ -217,6 +226,7 @@ describe('GET /api/users/profile/:userId (admin only)', () => {
 			});
 		});
 		Donation.find.mockReturnValue(resolveTo([]));
+		Profile.findOne.mockReturnValue(resolveTo({ birthdate: adultBirthdate() }));
 		const res = await request(app)
 			.get(`/api/users/profile/${USER_ID}`)
 			.set('Authorization', authHeader(ADMIN_ID));
@@ -236,6 +246,7 @@ describe('GET /api/users/profile/:userId (admin only)', () => {
 			});
 		});
 		Donation.find.mockReturnValue(resolveTo([{ donationDate: new Date() }]));
+		Profile.findOne.mockReturnValue(resolveTo({ birthdate: adultBirthdate() }));
 		const res = await request(app)
 			.get(`/api/users/profile/${USER_ID}`)
 			.set('Authorization', authHeader(ADMIN_ID));

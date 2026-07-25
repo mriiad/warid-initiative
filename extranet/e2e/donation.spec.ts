@@ -60,6 +60,24 @@ test.describe('Donation form', () => {
 		await expect(page.getByText(/mandatory rest period/)).toBeVisible({ timeout: 5000 });
 	});
 
+	test('a donor under the minimum donation age is rejected with the real backend message', async ({ page }) => {
+		await seedAuth(page);
+		await mockJson(page, '**/api/user/profile', fullProfileResponse());
+		await mockJson(
+			page,
+			'**/api/donation',
+			{ errorMessage: 'You must be at least 18 years old to donate.', errorKeys: [] },
+			{ status: 403, method: 'POST' }
+		);
+
+		await page.goto('/donate');
+		await page.getByRole('combobox').nth(1).click();
+		await page.getByRole('option', { name: 'الدم' }).click();
+		await page.locator('button[type=submit]').click();
+		await page.waitForTimeout(500);
+		await expect(page.getByText(/at least 18 years old/)).toBeVisible({ timeout: 5000 });
+	});
+
 	test('defensive: a 500 from canDonate does not crash the donation form', async ({ page }) => {
 		// canDonate used to always 500 with a ReferenceError (fixed in
 		// src/controllers/donation.js, see e2e/backend/donation.spec.js). This
