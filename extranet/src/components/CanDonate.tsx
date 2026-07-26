@@ -20,13 +20,22 @@ const CanDonate: React.FC = () => {
 	const { topBar, topBarDivider, topBarTitle } = eventDetailRedesignStyles();
 	const { flowCenter, flowIconCircle, flowTitle, flowButton } = flowRedesignStyles();
 
-	const { data: canDonate, isLoading: isLoadingCanDonate } = useCanDonate();
+	const { data: canDonateResponse, isLoading: isLoadingCanDonate } = useCanDonate();
 	const { data: event } = useEvent(reference || '');
+
+	// These are Axios responses, so the payload lives under `.data`. Reading
+	// the response object itself is always truthy, which made this screen
+	// report "you can donate" no matter what the backend actually said.
+	const canDonate: boolean | null = canDonateResponse
+		? canDonateResponse.data?.canDonate ?? null
+		: null;
+	// GET /api/events/:reference responds with `{ message, event }`.
+	const eventDetails = event?.data?.event;
 
 	const handleConfirmClick = () => {
 		if (canDonate) {
-			if (event?.data && !event.data.isGeneric) {
-				navigate(`/donate?eventRef=${reference}&eventDate=${formatDate(event.data.date)}`);
+			if (eventDetails && !eventDetails.isGeneric) {
+				navigate(`/donate?eventRef=${reference}&eventDate=${formatDate(eventDetails.date)}`);
 			} else {
 				navigate(`/donate?eventRef=${reference}`);
 			}
