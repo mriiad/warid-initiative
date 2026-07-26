@@ -42,8 +42,11 @@ const EventConfirmation: React.FC = () => {
 	};
 
 	useEffect(() => {
-		if (eventData?.data && token) {
-			handleConfirmPresence(eventData.data._id);
+		// GET /api/events/:reference responds with `{ message, event }`, so the
+		// event's own fields live at `eventData.data.event` -- reading
+		// `eventData.data._id` sent eventId: undefined to the backend.
+		if (eventData?.data?.event && token) {
+			handleConfirmPresence(eventData.data.event._id);
 		}
 	}, [eventData, token]);
 
