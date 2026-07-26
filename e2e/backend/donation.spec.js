@@ -84,6 +84,25 @@ describe('GET /api/donation/canDonate (fix: endpoint used to be completely broke
 		expect(res.body.ineligibilityReason).toBe('COOLDOWN');
 	});
 
+	it('recovers a donor whose only donation on record has no usable date', async () => {
+		// Records written before donationDate was validated can have a
+		// missing/unparseable date. Comparing against one yields NaN, which
+		// reads as "not eligible" and used to lock the donor out forever with
+		// a NaN/NaN/NaN next-eligible date. Such a record is ignored for the
+		// cooldown instead.
+		User.findById.mockReturnValue(resolveTo({ _id: USER_ID, gender: 'male' }));
+		Donation.find.mockReturnValue(resolveTo([{ donationDate: undefined }]));
+		Profile.findOne.mockReturnValue(resolveTo({ birthdate: adultBirthdate() }));
+
+		const res = await request(app)
+			.get('/api/donation/canDonate')
+			.set('Authorization', authHeader(USER_ID));
+
+		expect(res.status).toBe(200);
+		expect(res.body.canDonate).toBe(true);
+		expect(JSON.stringify(res.body)).not.toContain('NaN');
+	});
+
 	it('reports MISSING_BIRTHDATE when the donor has no birthdate on file', async () => {
 		User.findById.mockReturnValue(resolveTo({ _id: USER_ID, gender: 'male' }));
 		Donation.find.mockReturnValue(resolveTo([]));
@@ -277,6 +296,46 @@ describe('POST /api/donation (regression test for issue #200)', () => {
 			.send({ bloodGroup: 'O+', donationDate: new Date().toISOString(), donationType: 'BLOOD' });
 
 		expect(res.status).toBe(201);
+	});
+
+	it('rejects a donation submitted with no donationDate at all', async () => {
+		// Without this validation the donation saved with donationDate
+		// undefined, and every later eligibility comparison against it went
+		// NaN -- which reads as "not eligible" and locked the donor out for
+		// good, showing NaN/NaN/NaN as their next eligible date.
+		User.findById.mockReturnValue(resolveTo({ _id: USER_ID, gender: 'male' }));
+		Donation.find.mockReturnValue(resolveTo([]));
+		Profile.findOne.mockReturnValue(resolveTo(eligibleProfile()));
+		Event.findOne.mockReturnValue(resolveTo({ _id: 'event-1', isGeneric: true }));
+		const donationsBefore = Donation.mock.calls.length;
+
+		const res = await request(app)
+			.post('/api/donation')
+			.set('Authorization', authHeader(USER_ID))
+			.send({ bloodGroup: 'O+', donationType: 'BLOOD' });
+
+		expect(res.status).toBe(400);
+		expect(res.body.errorMessage).toMatch(/donation date is required/i);
+		// Nothing was persisted (the model mock accumulates across this file,
+		// so compare against the count taken before the request).
+		expect(Donation.mock.calls.length).toBe(donationsBefore);
+	});
+
+	it('rejects a donation submitted with an unparseable donationDate', async () => {
+		User.findById.mockReturnValue(resolveTo({ _id: USER_ID, gender: 'male' }));
+		Donation.find.mockReturnValue(resolveTo([]));
+		Profile.findOne.mockReturnValue(resolveTo(eligibleProfile()));
+		Event.findOne.mockReturnValue(resolveTo({ _id: 'event-1', isGeneric: true }));
+		const donationsBefore = Donation.mock.calls.length;
+
+		const res = await request(app)
+			.post('/api/donation')
+			.set('Authorization', authHeader(USER_ID))
+			.send({ bloodGroup: 'O+', donationDate: 'not-a-date', donationType: 'BLOOD' });
+
+		expect(res.status).toBe(400);
+		expect(res.body.errorMessage).toMatch(/not a valid date/i);
+		expect(Donation.mock.calls.length).toBe(donationsBefore);
 	});
 
 	it('rejects a donation from a donor with no birthdate on file, without flagging the date field', async () => {

@@ -5,9 +5,11 @@ const Schema = mongoose.Schema;
  */
 
 const DonationSchema = new Schema({
+	// Required: a donation with no date can't be reasoned about by the
+	// eligibility rules -- the comparisons go NaN and lock the donor out.
 	donationDate: {
 		type: Date,
-		required: false,
+		required: true,
 	},
 	donationType: {
 		type: String,
