@@ -4,6 +4,7 @@ const Profile = require('../models/profile');
 const Event = require('../models/event');
 const { STATUS_CODE } = require('../utils/errors/httpStatusCode');
 const ApiError = require('../utils/errors/ApiError');
+const { validationResult } = require('express-validator');
 const mongoose = require('mongoose');
 const { addDays, formatDate, startOfDay, calculateAge } = require('../utils/utils');
 const { BLOOD_GROUP_VALUES, DONATION_AGE } = require('../utils/constants');
@@ -40,7 +41,15 @@ exports.checkDonationEligibility = async (userId) => {
 	let nextDonationDate = null;
 	let nextDonationDateRaw = null;
 
-	if (donation) {
+	// A donation whose date is missing or unparseable can't support any
+	// cooldown arithmetic -- every comparison against it yields NaN, which
+	// reads as "not eligible" and would lock the donor out permanently.
+	// Older records predating donationDate validation can be in this state,
+	// so ignore them for the cooldown rather than trapping the donor.
+	const hasUsableDate =
+		donation && !isNaN(new Date(donation.donationDate).getTime());
+
+	if (hasUsableDate) {
 		const donationDate = donation.donationDate;
 		const daysToAdd = user.gender === 'male' ? 60 : 90;
 		nextDonationDateRaw = addDays(donationDate, daysToAdd);
@@ -99,6 +108,15 @@ exports.canDonate = (req, res, next) => {
 
 exports.donate = async (req, res, next) => {
 	try {
+		const validationErrors = validationResult(req);
+		if (!validationErrors.isEmpty()) {
+			throw new ApiError(
+				validationErrors.array()[0].msg,
+				STATUS_CODE.BAD_REQUEST,
+				['donationDate']
+			);
+		}
+
 		const { bloodGroup, donationDate, donationType, eventId } = req.body;
 		const { canDonate, nextDonationDate, ineligibilityReason } =
 			await this.checkDonationEligibility(req.userId);
