@@ -85,7 +85,11 @@ eventRouter.put(
 	}
 );
 eventRouter.delete('/api/event', isAuth, checkIfAdmin, deleteEvent);
-eventRouter.put('/api/event/confirmPresence', isAuth, confirmPresence);
+// POST, matching what the frontend calls. It was registered as PUT, which
+// both 404'd the frontend's POST and was itself unreachable: the earlier
+// `PUT /api/event/:reference` matched first with reference="confirmPresence"
+// and rejected donors via its checkIfAdmin guard.
+eventRouter.post('/api/event/confirmPresence', isAuth, confirmPresence);
 eventRouter.get('/api/event/:reference/participants/details', isAuth, checkIfAdmin, getEventParticipantDetails);
 
 
