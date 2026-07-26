@@ -370,48 +370,57 @@ exports.deleteEvent = (req, res, next) => {
 		});
 };
 
-exports.confirmPresence = (req, res, next) => {
-	const { reference } = req.body;
-	let fetchedEvent;
-	Event.findOne({ reference })
-		.then((event) => {
-			if (!event) {
-				throw new ApiError(
-					`Event with reference ${reference} not found.`,
-					STATUS_CODE.NOT_FOUND,
-					['reference']
-				);
-			}
-			fetchedEvent = event;
-			return Donation.findOne({
-				userId: req.userId,
-				eventId: fetchedEvent._id,
-			});
-		})
-		.then((existingDonation) => {
-			if (existingDonation) {
-				throw new ApiError(
-					'User has already confirmed presence for this event.',
-					STATUS_CODE.CONFLICT
-				);
-			}
-			const donation = new Donation({
-				userId: req.userId,
-				eventId: fetchedEvent._id,
-				type: 'PRESENCE',
-				createdAt: new Date(),
-			});
-			return donation.save();
-		})
-		.then(() => {
-			res
-				.status(STATUS_CODE.OK)
-				.json({ message: 'Presence confirmed successfully.' });
-		})
-		.catch((err) => {
-			if (!err.statusCode) err.statusCode = STATUS_CODE.INTERNAL_SERVER;
-			next(err);
+// Records that a donor turned up at an event. This is deliberately a
+// Participant and not a Donation: the rest of the app treats a Donation as
+// "actually gave blood" (getEventParticipantDetails counts them as
+// allDonaters, and checkDonationEligibility starts a 60/90-day rest period
+// from one), whereas donors only reach this screen when they *can't* donate.
+// Writing a Donation here would inflate donor counts and lock the donor out
+// of a real donation later.
+exports.confirmPresence = async (req, res, next) => {
+	try {
+		const { eventId } = req.body;
+		if (!eventId) {
+			throw new ApiError(
+				'An event is required to confirm presence.',
+				STATUS_CODE.BAD_REQUEST,
+				['eventId']
+			);
+		}
+
+		const event = await Event.findById(eventId);
+		if (!event) {
+			throw new ApiError(
+				`Event with id ${eventId} not found.`,
+				STATUS_CODE.NOT_FOUND,
+				['eventId']
+			);
+		}
+
+		const existing = await Participant.findOne({
+			userId: req.userId,
+			eventId: event._id,
 		});
+		if (existing) {
+			throw new ApiError(
+				'User has already confirmed presence for this event.',
+				STATUS_CODE.CONFLICT
+			);
+		}
+
+		const participant = new Participant({
+			userId: req.userId,
+			eventId: event._id,
+		});
+		await participant.save();
+
+		res
+			.status(STATUS_CODE.OK)
+			.json({ message: 'Presence confirmed successfully.' });
+	} catch (err) {
+		if (!err.statusCode) err.statusCode = STATUS_CODE.INTERNAL_SERVER;
+		next(err);
+	}
 };
 
 exports.getEventParticipantDetails = async (req, res, next) => {
