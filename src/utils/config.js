@@ -20,6 +20,13 @@ const config = {
 			: false,
 	},
 
+	security: {
+		// HSTS is only meaningful over TLS, and enabling it while the
+		// deployment still answers on plain HTTP would pin browsers to a
+		// scheme that doesn't work. Opt in once TLS is terminated in front.
+		hstsEnabled: process.env.HSTS_ENABLED === 'true',
+	},
+
 	// Per-IP limits for the public endpoints. Disabled under test, where the
 	// suites deliberately hammer these same routes; rateLimit.spec.js turns
 	// them on explicitly to exercise the behaviour.

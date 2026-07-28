@@ -9,6 +9,7 @@ require('dotenv').config();
 
 // Import custom modules
 const errorHandler = require('./middleware/error-handler');
+const { securityHeaders } = require('./middleware/security-headers');
 const config = require('./utils/config');
 const authRouter = require('./routes/auth');
 const userRouter = require('./routes/user');
@@ -30,6 +31,8 @@ const app = express();
 if (config.server.trustProxy !== false) {
 	app.set('trust proxy', config.server.trustProxy);
 }
+
+app.use(securityHeaders());
 
 app.use(cors());
 
