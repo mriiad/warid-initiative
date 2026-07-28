@@ -39,6 +39,9 @@ const config = {
 	email: {
 		enabled: process.env.EMAIL_ENABLED !== 'false', // Default to enabled
 		from: process.env.EMAIL_FROM || 'do-not-reply@warid.ma',
+		// Where contact-form submissions are delivered. Configurable so a
+		// staging deploy doesn't mail the real team.
+		contactRecipient: process.env.CONTACT_EMAIL || 'team@warid.ma',
 		smtp: {
 			host: process.env.SMTP_HOST || 'smtp.gmail.com',
 			port: parseInt(process.env.SMTP_PORT) || 465,
