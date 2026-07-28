@@ -11,6 +11,7 @@ const User = require('../../src/models/user');
 const { buildApp } = require('./support/testApp');
 const { authHeader } = require('./support/jwtHelper');
 const config = require('../../src/utils/config');
+const { logger } = require('../../src/utils/logger');
 
 const app = buildApp();
 
@@ -87,7 +88,10 @@ describe('POST /api/auth/signup', () => {
 		nodemailer.__sendMail.mockImplementationOnce(() =>
 			Promise.reject(new Error('smtp down'))
 		);
-		const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+		// The mail failure has to reach the logger, not console -- and it must
+		// not surface as ERR_HTTP_HEADERS_SENT, which is what happened when the
+		// rejection fell through to the main chain after the response was sent.
+		const logSpy = jest.spyOn(logger, 'error').mockImplementation(() => {});
 
 		try {
 			const res = await request(app).put('/api/auth/signup').send({
@@ -103,11 +107,13 @@ describe('POST /api/auth/signup', () => {
 			// Let the post-response mail promise settle.
 			await new Promise((resolve) => setImmediate(resolve));
 
-			const logged = errorSpy.mock.calls.map((c) => String(c[0])).join(' | ');
+			const logged = logSpy.mock.calls
+				.map((call) => JSON.stringify(call))
+				.join(' | ');
 			expect(logged).toContain('Failed to send activation email');
 			expect(logged).not.toContain('ERR_HTTP_HEADERS_SENT');
 		} finally {
-			errorSpy.mockRestore();
+			logSpy.mockRestore();
 		}
 	});
 });

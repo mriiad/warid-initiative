@@ -2,6 +2,7 @@ const Participant = require('../models/participant');
 const Event = require('../models/event');
 const { STATUS_CODE } = require('../utils/errors/httpStatusCode');
 const { checkDonationEligibility } = require('./donation');
+const { logger } = require('../utils/logger');
 
 exports.createParticipant = async (req, res, next) => {
   try {
@@ -34,7 +35,7 @@ exports.createParticipant = async (req, res, next) => {
       message: 'User successfully registered as participant.',
     });
   } catch (error) {
-    console.error('Error creating participant:', error);
+    logger.error({ err: error }, 'Failed to create participant');
     return res
       .status(STATUS_CODE.INTERNAL_SERVER)
       .json({ message: 'Server error' });
@@ -64,7 +65,7 @@ exports.checkUserParticipation = async (req, res, next) => {
       message: participant ? "User has already participated" : "User has not participated yet"
     });
   } catch (err) {
-    console.error('Error checking participation:', err);
+    logger.error({ err }, 'Failed to check participation');
     return res
       .status(STATUS_CODE.INTERNAL_SERVER)
       .json({ message: 'Server error' });

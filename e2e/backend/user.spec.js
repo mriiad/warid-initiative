@@ -1,5 +1,8 @@
 const request = require('supertest');
 const { resolveTo, makeQuery } = require('./support/mongooseMock');
+const {
+	GENERIC_SERVER_ERROR,
+} = require('../../src/middleware/error-handler');
 
 jest.mock('../../src/models/user', () => require('./support/mongooseMock').makeModelMock());
 jest.mock('../../src/models/profile', () => require('./support/mongooseMock').makeModelMock());
@@ -102,7 +105,14 @@ describe('PATCH /api/users/:userId/admin (BUG regression for issue #204: Profile
 			.set('Authorization', authHeader(ADMIN_ID))
 			.send({ firstname: 'A' });
 		expect(res.status).toBe(500);
-		expect(res.body.message).toMatch(/Cast to ObjectId failed for value "me"/);
+		// The crash is the bug being documented here. The driver's own message
+		// naming the model and the path stays server-side -- the error handler
+		// logs it and returns a generic message, so probing this route doesn't
+		// map out the schema.
+		const body = JSON.stringify(res.body);
+		expect(body).not.toContain('Cast to ObjectId');
+		expect(body).not.toContain('model "User"');
+		expect(res.body.message).toBe(GENERIC_SERVER_ERROR);
 	});
 
 	it('BUG: a non-admin user gets 403 instead of updating their own profile', async () => {

@@ -1,6 +1,7 @@
 const nodemailer = require('nodemailer');
 const config = require('../utils/config');
 const User = require('../models/user');
+const { logger } = require('../utils/logger');
 
 const createTransporter = () => {
 	if (!config.email.enabled) {
@@ -76,7 +77,7 @@ exports.sendContactUs = async (req, res, next) => {
 		}
 		res.status(200).json({ message: 'Email sent successfully' });
 	} catch (error) {
-		console.error('Error sending contact email:', error);
+		logger.error({ err: error }, 'Failed to send contact email');
 		// Hand off to the error middleware rather than responding here as
 		// well -- doing both sent the client a body and then crashed the
 		// middleware with ERR_HTTP_HEADERS_SENT. Don't serialise the raw

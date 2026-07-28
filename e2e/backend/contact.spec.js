@@ -1,5 +1,8 @@
 const request = require('supertest');
 const { resolveTo } = require('./support/mongooseMock');
+const {
+	GENERIC_SERVER_ERROR,
+} = require('../../src/middleware/error-handler');
 
 jest.mock('../../src/models/user', () => require('./support/mongooseMock').makeModelMock());
 
@@ -107,7 +110,7 @@ describe('POST /api/contact-us', () => {
 			});
 
 			expect(res.status).toBe(500);
-			expect(res.body.message).toBe('Error sending email');
+			expect(res.body.message).toBe(GENERIC_SERVER_ERROR);
 			const body = JSON.stringify(res.body);
 			expect(body).not.toContain('smtp.example.com');
 			expect(body).not.toContain('ECONNECTION');
