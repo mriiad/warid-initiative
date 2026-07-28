@@ -8,6 +8,7 @@ const User = require('../models/user');
 const { validationResult } = require('express-validator');
 const config = require('../utils/config');
 const constants = require('../utils/constants');
+const { logger } = require('../utils/logger');
 
 const createTransporter = () => {
 	if (!config.email.enabled) {
@@ -86,7 +87,7 @@ exports.signup = (req, res, next) => {
 						),
 					})
 					.catch((mailErr) => {
-						console.error('Failed to send activation email:', mailErr);
+						logger.error({ err: mailErr }, 'Failed to send activation email');
 					});
 			} else {
 				return Promise.resolve();
@@ -180,7 +181,6 @@ exports.verifyUser = (req, res, next) => {
 			if (!err.statusCode) {
 				err.statusCode = constants.HTTP_STATUS.INTERNAL_SERVER;
 			}
-			console.log('error', err);
 			next(err);
 		});
 };
@@ -374,17 +374,15 @@ function sendPasswordResetSuccessEmail(email) {
 
 	transporter.sendMail(mailOptions, (error, info) => {
 		if (error) {
-			console.error('Error sending email:', error);
+			logger.error({ err: error }, 'Failed to send password reset confirmation');
 		} else {
-			console.log('Password reset success email sent: ' + info.response);
+			logger.info({ response: info.response }, 'Password reset confirmation sent');
 		}
 	});
 }
 
 exports.checkResetTokenValidity = (req, res, next) => {
 	const resetToken = req.params.token;
-
-	console.log('resetToken', resetToken);
 
 	User.findOne({
 		passwordResetToken: resetToken,

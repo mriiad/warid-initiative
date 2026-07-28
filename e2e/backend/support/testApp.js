@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 
 const errorHandler = require('../../../src/middleware/error-handler');
+const { requestLogger } = require('../../../src/middleware/request-logger');
 const {
 	securityHeaders,
 } = require('../../../src/middleware/security-headers');
@@ -17,6 +18,7 @@ const swaggerRouter = require('../../../src/docs/swagger');
 
 function buildApp() {
 	const app = express();
+	app.use(requestLogger());
 	app.use(securityHeaders());
 	app.use(cors());
 	app.use(bodyParser.json());

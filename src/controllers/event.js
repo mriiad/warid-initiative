@@ -7,6 +7,7 @@ const ApiError = require('../utils/errors/ApiError');
 const QRCode = require('qrcode');
 const Donation = require('../models/donation');
 const Participant = require('../models/participant');
+const { logger } = require('../utils/logger');
 
 exports.getEvents = async (req, res, next) => {
 	try {
@@ -170,7 +171,7 @@ exports.createEvent = async (req) => {
 	if (req.file && req.file.path) {
 		const filePath = path.join(__dirname, '../..', req.file.path);
 		fs.unlink(filePath, (err) => {
-			if (err) console.error('Failed to delete file:', err);
+			if (err) logger.error({ err }, 'Failed to delete uploaded file');
 		});
 	}
 
@@ -203,9 +204,6 @@ exports.updateEvent = async (req) => {
 	const { reference } = req.params;
 	const { title, subtitle, location, date, mapLink, description, isGeneric } =
 		req.body;
-
-	console.log('Request body:', req.body);
-	console.log('Date field:', date, typeof date);
 
 	let updateEventDate = date instanceof Date ? date : new Date(date);
 
@@ -269,11 +267,6 @@ exports.updateEvent = async (req) => {
 	const qrCode = await QRCode.toDataURL(eventUrl);
 
 	// Update the event
-	console.log(
-		'About to save date to DB:',
-		updateEventDate,
-		typeof updateEventDate
-	);
 	const updatedEvent = await Event.findOneAndUpdate(
 		{ reference },
 		{
@@ -289,17 +282,12 @@ exports.updateEvent = async (req) => {
 		},
 		{ new: true }
 	);
-	console.log(
-		'Saved event date:',
-		updatedEvent?.date,
-		typeof updatedEvent?.date
-	);
 
 	// Clean up uploaded file if it was processed
 	if (req.file && req.file.path) {
 		const filePath = path.join(__dirname, '../..', req.file.path);
 		fs.unlink(filePath, (err) => {
-			if (err) console.error('Failed to delete file:', err);
+			if (err) logger.error({ err }, 'Failed to delete uploaded file');
 		});
 	}
 

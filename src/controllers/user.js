@@ -170,7 +170,6 @@ exports.checkUserProfile = async (req, res, next) => {
 
 		res.status(200).json({ isProfileComplete });
 	} catch (err) {
-		console.error(err);
 		if (!err.statusCode) {
 			err.statusCode = 500;
 		}
@@ -209,7 +208,6 @@ exports.getProfile = (req, res, next) => {
 			});
 		})
 		.catch((err) => {
-			console.error(err);
 			if (!err.statusCode) {
 				err.statusCode = 500;
 			}
