@@ -90,6 +90,12 @@ jobs:
       - name: Run Playwright E2E tests
         run: npm run test:e2e
 
+      # The suite above runs against the dev server, which serves unbundled
+      # modules. This one builds and serves the real bundle, so a production
+      # -only failure (broken chunk split, minifier fallout) can't ship green.
+      - name: Run Playwright E2E tests against the production bundle
+        run: npm run test:e2e:production
+
       - name: Upload Playwright report
         if: always()
         uses: actions/upload-artifact@v4
