@@ -74,6 +74,42 @@ describe('POST /api/auth/signup', () => {
 		expect(res.body.userId).toBeDefined();
 		expect(JSON.stringify(res.body)).not.toMatch(/password123/);
 	});
+
+	it('handles an activation-email failure without responding twice', async () => {
+		// signup responds 201 and *then* sends the activation mail on the same
+		// promise chain. A rejection used to fall through to the shared
+		// .catch, which called next(err) after the response had gone out,
+		// crashing the error middleware with ERR_HTTP_HEADERS_SENT. The
+		// client-visible status is 201 either way, so this asserts on what
+		// actually differs: the failure is handled by signup's own mail
+		// handler and never reaches the shared error path.
+		const nodemailer = require('nodemailer');
+		nodemailer.__sendMail.mockImplementationOnce(() =>
+			Promise.reject(new Error('smtp down'))
+		);
+		const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+		try {
+			const res = await request(app).put('/api/auth/signup').send({
+				email: 'mailfail@example.com',
+				password: 'password123',
+				phoneNumber: '+212600000001',
+				username: 'CIN124',
+				gender: 'male',
+			});
+			expect(res.status).toBe(201);
+			expect(res.body.userId).toBeDefined();
+
+			// Let the post-response mail promise settle.
+			await new Promise((resolve) => setImmediate(resolve));
+
+			const logged = errorSpy.mock.calls.map((c) => String(c[0])).join(' | ');
+			expect(logged).toContain('Failed to send activation email');
+			expect(logged).not.toContain('ERR_HTTP_HEADERS_SENT');
+		} finally {
+			errorSpy.mockRestore();
+		}
+	});
 });
 
 describe('GET /api/auth/activation/:confirmationCode', () => {

@@ -70,16 +70,24 @@ exports.signup = (req, res, next) => {
 			});
 
 			if (transporter) {
-				return transporter.sendMail({
-					from: config.email.from,
-					to: email,
-					subject: constants.EMAIL_SUBJECTS.ACCOUNT_ACTIVATION,
-					text: constants.EMAIL_TEMPLATES.ACTIVATION.TEXT(username),
-					html: constants.EMAIL_TEMPLATES.ACTIVATION.HTML(
-						username,
-						activationLink
-					),
-				});
+				// The account already exists and the 201 has been sent, so a
+				// mail failure must not reach the shared .catch below -- that
+				// would call next(err) after the response, crashing the error
+				// middleware with ERR_HTTP_HEADERS_SENT. Log it instead.
+				return transporter
+					.sendMail({
+						from: config.email.from,
+						to: email,
+						subject: constants.EMAIL_SUBJECTS.ACCOUNT_ACTIVATION,
+						text: constants.EMAIL_TEMPLATES.ACTIVATION.TEXT(username),
+						html: constants.EMAIL_TEMPLATES.ACTIVATION.HTML(
+							username,
+							activationLink
+						),
+					})
+					.catch((mailErr) => {
+						console.error('Failed to send activation email:', mailErr);
+					});
 			} else {
 				return Promise.resolve();
 			}

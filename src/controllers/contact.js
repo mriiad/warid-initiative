@@ -25,6 +25,17 @@ const createTransporter = () => {
 
 const transporter = createTransporter();
 
+// This endpoint is public and unvalidated, so every field below is attacker
+// controlled. Escape before interpolating into the HTML body, otherwise a
+// submission can render as live markup in the team's inbox.
+const escapeHtml = (value) =>
+	String(value ?? '')
+		.replace(/&/g, '&amp;')
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;')
+		.replace(/"/g, '&quot;')
+		.replace(/'/g, '&#39;');
+
 exports.sendContactUs = async (req, res, next) => {
 	const { message } = req.body;
 	let { firstname, lastname, email, phoneNumber, subject } = req.body;
@@ -47,11 +58,17 @@ exports.sendContactUs = async (req, res, next) => {
 
 		// Define the email options
 		const mailOptions = {
-			from: 'do-not-reply@warid.ma',
-			to: 'team@warid.ma',
+			from: config.email.from,
+			to: config.email.contactRecipient,
 			subject: subject,
 			text: `You have received a new message from the contact form. Details:\nName: ${firstname} ${lastname}\nEmail: ${email}\nPhone: ${phoneNumber}\nMessage: ${message}`,
-			html: `<h4>You have received a new message from the contact form:</h4><p><b>Name:</b> ${firstname} ${lastname}</p><p><b>Email:</b> ${email}</p><p><b>Phone:</b> ${phoneNumber}</p><p><b>Message:</b> ${message}</p>`,
+			html: `<h4>You have received a new message from the contact form:</h4><p><b>Name:</b> ${escapeHtml(
+				firstname
+			)} ${escapeHtml(lastname)}</p><p><b>Email:</b> ${escapeHtml(
+				email
+			)}</p><p><b>Phone:</b> ${escapeHtml(
+				phoneNumber
+			)}</p><p><b>Message:</b> ${escapeHtml(message)}</p>`,
 		};
 
 		if (transporter) {
@@ -59,8 +76,14 @@ exports.sendContactUs = async (req, res, next) => {
 		}
 		res.status(200).json({ message: 'Email sent successfully' });
 	} catch (error) {
-		console.error('Error:', error);
-		res.status(500).json({ message: 'Error sending email', error: error });
+		console.error('Error sending contact email:', error);
+		// Hand off to the error middleware rather than responding here as
+		// well -- doing both sent the client a body and then crashed the
+		// middleware with ERR_HTTP_HEADERS_SENT. Don't serialise the raw
+		// error either: on an SMTP failure it carries host/port/command
+		// detail, and this endpoint is public.
+		if (!error.statusCode) error.statusCode = 500;
+		error.message = 'Error sending email';
 		next(error);
 	}
 };
