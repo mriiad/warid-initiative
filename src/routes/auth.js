@@ -14,6 +14,10 @@ const {
 } = require('../controllers/auth');
 const User = require('../models/user');
 const { isAuth } = require('../middleware/token-check');
+const {
+	authLimiter,
+	mailLimiter,
+} = require('../middleware/rate-limit');
 
 /**
  * Could contain news & other data from different resources (Event)
@@ -22,6 +26,7 @@ const authRouter = express.Router();
 
 authRouter.put(
 	'/api/auth/signup',
+	authLimiter,
 	[
 		body('email')
 			.isEmail()
@@ -54,17 +59,18 @@ authRouter.put(
 	signup
 );
 
-authRouter.post('/api/auth/login', login);
+authRouter.post('/api/auth/login', authLimiter, login);
 
 authRouter.post('/api/auth/logout', logout);
 
 authRouter.get('/api/auth/activation/:confirmationCode', verifyUser);
 
-authRouter.post('/api/auth/refresh-token', refreshToken);
+authRouter.post('/api/auth/refresh-token', authLimiter, refreshToken);
 
-authRouter.post('/api/auth/request-reset', requestPasswordReset);
+// Sends mail on every accepted request.
+authRouter.post('/api/auth/request-reset', mailLimiter, requestPasswordReset);
 
-authRouter.post('/api/auth/reset-password/:token', resetPassword);
+authRouter.post('/api/auth/reset-password/:token', authLimiter, resetPassword);
 
 authRouter.get('/api/auth/check-reset-token/:token', checkResetTokenValidity);
 

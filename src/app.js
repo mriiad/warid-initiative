@@ -21,6 +21,16 @@ const swaggerRouter = require('./docs/swagger');
 
 const app = express();
 
+// Rate limiting keys off req.ip. Behind a reverse proxy that resolves to the
+// proxy's address, so every client would share a single bucket and one
+// abuser would lock out everyone -- set TRUST_PROXY_HOPS to the number of
+// proxies in front of the app. Off by default on purpose: trusting
+// X-Forwarded-For when nothing sets it lets a caller spoof their IP and
+// bypass the limits.
+if (config.server.trustProxy !== false) {
+	app.set('trust proxy', config.server.trustProxy);
+}
+
 app.use(cors());
 
 app.use(bodyParser.json());

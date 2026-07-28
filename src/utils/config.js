@@ -9,6 +9,34 @@ const config = {
 	server: {
 		port: process.env.PORT || 3000,
 		nodeEnv: process.env.NODE_ENV || 'development',
+		// How many reverse proxies sit in front of the app. Express needs
+		// this to resolve the real client IP from X-Forwarded-For; without
+		// it every request behind a proxy looks like it came from the proxy
+		// and shares one rate-limit bucket. Left off by default: trusting
+		// the header on a directly-exposed deployment lets anyone spoof
+		// their IP and sidestep the limits entirely.
+		trustProxy: process.env.TRUST_PROXY_HOPS
+			? parseInt(process.env.TRUST_PROXY_HOPS, 10)
+			: false,
+	},
+
+	// Per-IP limits for the public endpoints. Disabled under test, where the
+	// suites deliberately hammer these same routes; rateLimit.spec.js turns
+	// them on explicitly to exercise the behaviour.
+	rateLimit: {
+		enabled:
+			process.env.RATE_LIMIT_ENABLED === 'true' ||
+			(process.env.RATE_LIMIT_ENABLED !== 'false' &&
+				process.env.NODE_ENV !== 'test'),
+		windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000,
+		// Credential endpoints: brute-force surface.
+		authMax: parseInt(process.env.RATE_LIMIT_AUTH_MAX) || 10,
+		// Endpoints that send mail. Abuse here can get the SMTP account
+		// suspended by the provider, taking activation and password reset
+		// down for everyone, so these are the tightest.
+		mailMax: parseInt(process.env.RATE_LIMIT_MAIL_MAX) || 5,
+		// Public writes that don't send mail or check credentials.
+		publicWriteMax: parseInt(process.env.RATE_LIMIT_PUBLIC_WRITE_MAX) || 20,
 	},
 
 	frontend: {
