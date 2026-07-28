@@ -3,6 +3,9 @@ const express = require('express');
 const cors = require('cors');
 
 const errorHandler = require('../../../src/middleware/error-handler');
+const {
+	securityHeaders,
+} = require('../../../src/middleware/security-headers');
 const authRouter = require('../../../src/routes/auth');
 const userRouter = require('../../../src/routes/user');
 const donationRouter = require('../../../src/routes/donation');
@@ -14,6 +17,7 @@ const swaggerRouter = require('../../../src/docs/swagger');
 
 function buildApp() {
 	const app = express();
+	app.use(securityHeaders());
 	app.use(cors());
 	app.use(bodyParser.json());
 	app.use(swaggerRouter);

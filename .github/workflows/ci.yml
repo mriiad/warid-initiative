@@ -84,6 +84,12 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      # The production-bundle suite serves the built SPA through the project's
+      # own Express server, so it needs the backend's dependencies too.
+      - name: Install backend dependencies
+        run: npm install
+        working-directory: .
+
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
 
@@ -91,8 +97,9 @@ jobs:
         run: npm run test:e2e
 
       # The suite above runs against the dev server, which serves unbundled
-      # modules. This one builds and serves the real bundle, so a production
-      # -only failure (broken chunk split, minifier fallout) can't ship green.
+      # modules and none of Express's headers. This one builds the real bundle
+      # and serves it the way production does, so a production-only failure --
+      # a broken chunk split, a CSP that blocks an asset -- can't ship green.
       - name: Run Playwright E2E tests against the production bundle
         run: npm run test:e2e:production
 

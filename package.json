@@ -29,6 +29,7 @@
     "express": "^5.1.0",
     "express-rate-limit": "^8.6.1",
     "express-validator": "^7.0.1",
+    "helmet": "^8.3.0",
     "jsonwebtoken": "^9.0.2",
     "moment-timezone": "^0.6.0",
     "mongoose": "^9.7.4",
