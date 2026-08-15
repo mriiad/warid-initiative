@@ -108,7 +108,7 @@ test.describe('Login', () => {
 			isAdmin: true,
 		}, { status: 200, method: 'POST' });
 		await mockJson(page, '**/api/user/check-profile', { isProfileComplete: true }, { status: 200 });
-		await mockJson(page, '**/api/admin/stats', { totalUsers: 12, totalEvents: 3, totalDonations: 40 });
+		await mockJson(page, '**/api/admin/stats', { totalUsers: 12, totalEvents: 3, totalDonations: 40, totalEmergencies: 0 });
 		await mockJson(page, '**/api/user/profile', { firstname: 'Sara', lastname: 'Idrissi', gender: 'female' });
 		await mockJson(page, '**/api/events*', { events: [], totalItems: 0 });
 		await mockJson(page, '**/api/unconfirmedEmergencies*', { emergencies: [], totalItems: 0 });

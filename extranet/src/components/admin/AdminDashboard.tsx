@@ -2,6 +2,7 @@ import BloodtypeIcon from '@mui/icons-material/Bloodtype';
 import CardGiftcardIcon from '@mui/icons-material/CardGiftcard';
 import EditIcon from '@mui/icons-material/Edit';
 import EventIcon from '@mui/icons-material/Event';
+import HealthAndSafetyIcon from '@mui/icons-material/HealthAndSafety';
 import LogoutIcon from '@mui/icons-material/Logout';
 import OpacityIcon from '@mui/icons-material/Opacity';
 import PeopleIcon from '@mui/icons-material/People';
@@ -133,11 +134,14 @@ const AdminDashboard = () => {
 		});
 	};
 
+	// Issue #302: the 4th card used to duplicate totalDonations (same key,
+	// same value, only the icon/color differed) instead of showing a
+	// distinct metric.
 	const statCards = [
 		{ key: 'totalUsers', icon: PeopleIcon, value: stats?.totalUsers, colors: statCardColors.users },
 		{ key: 'totalDonations', icon: WaterDropIcon, value: stats?.totalDonations, colors: statCardColors.donations },
 		{ key: 'totalEvents', icon: EventIcon, value: stats?.totalEvents, colors: statCardColors.events },
-		{ key: 'totalDonations', icon: BloodtypeIcon, value: stats?.totalDonations, colors: statCardColors.donationsAlt },
+		{ key: 'totalEmergencies', icon: HealthAndSafetyIcon, value: stats?.totalEmergencies, colors: statCardColors.emergencies },
 	];
 
 	return (

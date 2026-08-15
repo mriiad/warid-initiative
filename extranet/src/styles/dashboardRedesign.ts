@@ -6,6 +6,9 @@ export const statCardColors = {
 	donations: { bg: '#DCE3F7', fg: '#4A5FA8' },
 	events: { bg: '#DCEFC9', fg: '#5C8A2B' },
 	donationsAlt: { bg: '#6B4A3A', fg: '#F3D9C9' },
+	// Same error-red used by Dashboard.tsx's error state, so "needs
+	// attention" reads consistently across the app.
+	emergencies: { bg: '#FADBD8', fg: '#B3261E' },
 };
 
 export const dashboardRedesignStyles = makeStyles({

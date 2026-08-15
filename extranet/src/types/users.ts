@@ -46,4 +46,5 @@ export interface AdminStats {
 	totalUsers: number;
 	totalEvents: number;
 	totalDonations: number;
+	totalEmergencies: number;
 }

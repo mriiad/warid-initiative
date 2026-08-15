@@ -8,11 +8,13 @@ jest.mock('../../src/models/user', () => require('./support/mongooseMock').makeM
 jest.mock('../../src/models/profile', () => require('./support/mongooseMock').makeModelMock());
 jest.mock('../../src/models/donation', () => require('./support/mongooseMock').makeModelMock());
 jest.mock('../../src/models/event', () => require('./support/mongooseMock').makeModelMock());
+jest.mock('../../src/models/emergency', () => require('./support/mongooseMock').makeModelMock());
 
 const User = require('../../src/models/user');
 const Profile = require('../../src/models/profile');
 const Donation = require('../../src/models/donation');
 const Event = require('../../src/models/event');
+const Emergency = require('../../src/models/emergency');
 const { buildApp } = require('./support/testApp');
 const { authHeader } = require('./support/jwtHelper');
 
@@ -274,11 +276,14 @@ describe('GET /api/admin/stats', () => {
 		expect(res.status).toBe(403);
 	});
 
-	it('returns site-wide counts for admins', async () => {
+	it('returns site-wide counts for admins, including total emergencies (issue #302)', async () => {
+		// The 4th admin-dashboard stat card used to duplicate totalDonations
+		// instead of showing a distinct metric -- this pins the fix.
 		User.findById.mockReturnValue(resolveTo({ _id: ADMIN_ID, isAdmin: true }));
 		User.countDocuments.mockReturnValue(resolveTo(12));
 		Event.countDocuments.mockReturnValue(resolveTo(3));
 		Donation.countDocuments.mockReturnValue(resolveTo(27));
+		Emergency.countDocuments.mockReturnValue(resolveTo(5));
 
 		const res = await request(app)
 			.get('/api/admin/stats')
@@ -289,7 +294,26 @@ describe('GET /api/admin/stats', () => {
 			totalUsers: 12,
 			totalEvents: 3,
 			totalDonations: 27,
+			totalEmergencies: 5,
 		});
+	});
+
+	it('counts every emergency, confirmed or not (issue #302)', async () => {
+		// Distinct from GET /api/unconfirmedEmergencies, which filters on
+		// isConfirmed: false -- this card is a running total, matching the
+		// other three (totalUsers/totalEvents/totalDonations).
+		User.findById.mockReturnValue(resolveTo({ _id: ADMIN_ID, isAdmin: true }));
+		User.countDocuments.mockReturnValue(resolveTo(0));
+		Event.countDocuments.mockReturnValue(resolveTo(0));
+		Donation.countDocuments.mockReturnValue(resolveTo(0));
+		Emergency.countDocuments.mockReturnValue(resolveTo(9));
+
+		const res = await request(app)
+			.get('/api/admin/stats')
+			.set('Authorization', authHeader(ADMIN_ID));
+
+		expect(res.body.totalEmergencies).toBe(9);
+		expect(Emergency.countDocuments).toHaveBeenCalledWith();
 	});
 
 	it('returns 500 on a database error', async () => {

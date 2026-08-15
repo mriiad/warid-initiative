@@ -31,7 +31,7 @@ test.describe('Emergency nav icon', () => {
 
 	test('an admin can also reach the emergency form from the bottom nav on /home', async ({ page }) => {
 		await seedAuth(page, { isAdmin: true, userId: 'admin-1' });
-		await mockJson(page, '**/api/admin/stats', { totalUsers: 0, totalEvents: 0, totalDonations: 0 });
+		await mockJson(page, '**/api/admin/stats', { totalUsers: 0, totalEvents: 0, totalDonations: 0, totalEmergencies: 0 });
 		await mockJson(page, '**/api/user/profile', { gender: 'male' });
 		await mockJson(page, '**/api/events*', { events: [], totalItems: 0 });
 		await mockJson(page, '**/api/unconfirmedEmergencies*', { emergencies: [], totalItems: 0 });
