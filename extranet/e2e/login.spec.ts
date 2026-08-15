@@ -125,25 +125,14 @@ test.describe('Login', () => {
 		await expect(page.getByText('!لم تقم بأي تبرع بعد')).toHaveCount(0);
 	});
 
-	test('BUG: a brand-new user with an INCOMPLETE profile is still redirected to /dashboard instead of /update-profile', async ({ page }) => {
-		// LoginForm calls useCheckProfileCompleteness() unconditionally on
-		// mount, i.e. before any auth token exists, so that first call 401s.
-		// useLogin's onSuccess handler then calls `queryClient.clear()`,
-		// wiping the (already-401'd) cached result right as the redirect
-		// effect needs to read it, and the freshly authenticated refetch
-		// hasn't resolved yet. The effect's guard
-		// `profileCompleteness.data?.data && !isProfileComplete` is falsy
-		// while data is undefined, so it always falls through to the `else`
-		// branch and navigates to /dashboard -- even for a user who has never
-		// filled in their profile.
+	test('a brand-new user with an INCOMPLETE profile is redirected to /update-profile, not /dashboard -- issue #195', async ({ page }) => {
+		// Simulate realistic network latency: on a real (especially mobile)
+		// connection this call can take anywhere from tens of milliseconds to
+		// a couple of seconds -- slow enough to still be in flight well after
+		// the login form has moved on.
 		let sawAuthenticatedRequest = false;
 		await page.route('**/api/user/check-profile', async (route: Route) => {
-			const hasAuth = !!route.request().headers()['authorization'];
-			if (!hasAuth) {
-				return route.fulfill({ status: 401, contentType: 'application/json', body: JSON.stringify({ message: 'Not authenticated.' }) });
-			}
 			sawAuthenticatedRequest = true;
-			// Simulate realistic network latency for the authenticated retry.
 			await new Promise((r) => setTimeout(r, 400));
 			return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ isProfileComplete: false }) });
 		});
@@ -161,5 +150,56 @@ test.describe('Login', () => {
 
 		await expect(page).toHaveURL(/\/update-profile/, { timeout: 3000 });
 		expect(sawAuthenticatedRequest).toBe(true);
+	});
+
+	test('a slow initial check-profile response never reaches the login page, doesn\'t wipe the session -- issue #195', async ({ page }) => {
+		// useCheckProfileCompleteness() used to fire unconditionally on
+		// mount -- before any token exists, guaranteeing a 401 from the
+		// isAuth-gated backend route on every single /login page load. That
+		// call isn't cancelled at the network level when login later succeeds
+		// (React Query drops its own bookkeeping, but the in-flight axios
+		// request keeps running); if it happens to resolve *after* the user
+		// has already been routed past /login, apiClient's global response
+		// interceptor treats that late 401 as "session expired" -- wiping the
+		// freshly-set token and hard-redirecting back to /login via
+		// window.location.href, discarding the just-completed login.
+		//
+		// Reproduced empirically: a login this fast combined with an
+		// unauthenticated check-profile response this slow used to leave the
+		// user routed correctly to /update-profile for a moment, then
+		// silently bounced back to /login with localStorage wiped a few
+		// seconds later.
+		let unauthenticatedCallCount = 0;
+		await page.route('**/api/user/check-profile', async (route: Route) => {
+			const hasAuth = !!route.request().headers()['authorization'];
+			if (!hasAuth) {
+				unauthenticatedCallCount += 1;
+				await new Promise((r) => setTimeout(r, 2000));
+				return route.fulfill({ status: 401, contentType: 'application/json', body: JSON.stringify({ message: 'Not authenticated.' }) });
+			}
+			await new Promise((r) => setTimeout(r, 100));
+			return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ isProfileComplete: false }) });
+		});
+		await mockJson(page, '**/api/auth/login', {
+			token: 'fake-token',
+			refreshToken: 'fake-refresh',
+			userId: 'new-user',
+			isAdmin: false,
+		}, { status: 200, method: 'POST' });
+
+		await page.goto('/login');
+		await page.getByLabel('اسم المستخدم').fill('CIN123456');
+		await page.getByRole('textbox', { name: 'كلمة المرور' }).fill('password123');
+		await page.locator('button[type=submit]').click();
+
+		await expect(page).toHaveURL(/\/update-profile/, { timeout: 3000 });
+
+		// Wait past the slow response's arrival time and confirm the user is
+		// still there, still logged in, and that no unauthenticated request
+		// was ever made in the first place.
+		await page.waitForTimeout(2500);
+		await expect(page).toHaveURL(/\/update-profile/);
+		expect(await page.evaluate(() => localStorage.getItem('token'))).toBe('fake-token');
+		expect(unauthenticatedCallCount).toBe(0);
 	});
 });
