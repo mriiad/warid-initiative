@@ -96,6 +96,35 @@ test.describe('Login', () => {
 		await expect(page).toHaveURL(/\/dashboard/, { timeout: 10000 });
 	});
 
+	test('an admin with a complete profile is redirected to /home (their overview), not /dashboard (the donor screen) -- issue #297', async ({ page }) => {
+		// '/dashboard' unconditionally renders the donor Dashboard component
+		// regardless of role, so an admin who landed there previously saw
+		// "you haven't donated yet, join our community of heroes" instead of
+		// their actual overview.
+		await mockJson(page, '**/api/auth/login', {
+			token: 'fake-token',
+			refreshToken: 'fake-refresh',
+			userId: 'admin-1',
+			isAdmin: true,
+		}, { status: 200, method: 'POST' });
+		await mockJson(page, '**/api/user/check-profile', { isProfileComplete: true }, { status: 200 });
+		await mockJson(page, '**/api/admin/stats', { totalUsers: 12, totalEvents: 3, totalDonations: 40 });
+		await mockJson(page, '**/api/user/profile', { firstname: 'Sara', lastname: 'Idrissi', gender: 'female' });
+		await mockJson(page, '**/api/events*', { events: [], totalItems: 0 });
+		await mockJson(page, '**/api/unconfirmedEmergencies*', { emergencies: [], totalItems: 0 });
+		await mockJson(page, '**/api/users/admin-1/dashboard', { donations: [] });
+
+		await page.goto('/login');
+		await page.getByLabel('اسم المستخدم').fill('CIN999999');
+		await page.getByRole('textbox', { name: 'كلمة المرور' }).fill('password123');
+		await page.locator('button[type=submit]').click();
+
+		await expect(page).toHaveURL(/\/home$/, { timeout: 10000 });
+		await expect(page.getByText('Sara', { exact: false })).toBeVisible({ timeout: 5000 });
+		// The donor empty-state Dashboard would show this exact string.
+		await expect(page.getByText('!لم تقم بأي تبرع بعد')).toHaveCount(0);
+	});
+
 	test('BUG: a brand-new user with an INCOMPLETE profile is still redirected to /dashboard instead of /update-profile', async ({ page }) => {
 		// LoginForm calls useCheckProfileCompleteness() unconditionally on
 		// mount, i.e. before any auth token exists, so that first call 401s.
