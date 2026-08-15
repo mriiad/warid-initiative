@@ -12,17 +12,16 @@ import {
 	Typography,
 } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
-import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { BLOOD_GROUP_OPTIONS } from '../data/constants';
+import { queryKeys } from '../hooks/queryKeys';
+import { usersService } from '../services';
 import { authRedesignStyles } from '../styles/authRedesign';
 import { eventDetailRedesignStyles } from '../styles/eventDetailRedesign';
 import { userDetailRedesignStyles } from '../styles/userDetailRedesign';
-import { queryKeys } from '../hooks/queryKeys';
-import API_CONFIG, { buildApiUrl } from '../utils/apiConfig';
 import { cities } from '../utils/utils';
 import RedesignBottomNav from './shared/RedesignBottomNav';
 import SnackbarComponent from './shared/SnackbarComponent';
@@ -68,15 +67,7 @@ const UpdateUser = () => {
 	const { data: userData, isLoading } = useQuery({
 		queryKey: queryKeys.user.detail(userId ?? ''),
 		queryFn: async () => {
-			const token = localStorage.getItem('token');
-			const response = await axios.get(
-				buildApiUrl(API_CONFIG.endpoints.users.profile(userId)),
-				{
-					headers: {
-						Authorization: `Bearer ${token}`,
-					},
-				}
-			);
+			const response = await usersService.getProfile(userId);
 			return response.data;
 		},
 		enabled: !!userId,
@@ -101,12 +92,7 @@ const UpdateUser = () => {
 
 	const onSubmit = async (data: UpdateUserFormData) => {
 		try {
-			const token = localStorage.getItem('token');
-			await axios.put(buildApiUrl(API_CONFIG.endpoints.users.update(userId)), data, {
-				headers: {
-					Authorization: `Bearer ${token}`,
-				},
-			});
+			await usersService.updateUserInfo(userId ?? '', data);
 
 			setMessage(t('users.update.success'));
 			setShowSnackbar(true);

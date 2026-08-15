@@ -34,7 +34,8 @@ export const queryKeys = {
 		/** Matches users.list()/users.search() too -- prefix invalidation. */
 		all: ['users'] as const,
 		list: (page: number) => ['users', page] as const,
-		search: (query: string) => ['users', 'search', query] as const,
+		search: (filters: Record<string, string | number | boolean>) =>
+			['users', 'search', filters] as const,
 	},
 
 	profileComplete: () => ['profileComplete'] as const,

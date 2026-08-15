@@ -1,12 +1,11 @@
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { Button, IconButton, TextField, Typography } from '@mui/material';
-import axios from 'axios';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { authService } from '../services';
 import { authRedesignStyles } from '../styles/authRedesign';
-import API_CONFIG, { buildApiUrl } from '../utils/apiConfig';
 
 const PasswordResetForm = () => {
 	const { t } = useTranslation();
@@ -22,8 +21,8 @@ const PasswordResetForm = () => {
 	const navigate = useNavigate();
 
 	const onSubmit = (formData) => {
-		axios
-			.post(buildApiUrl(API_CONFIG.endpoints.auth.requestReset), formData)
+		authService
+			.requestPasswordReset(formData)
 			.then((response) => {
 				console.log('Reset password request sent successfully!');
 				navigate('/login', {

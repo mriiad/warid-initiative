@@ -50,13 +50,22 @@ export const eventsService = {
 				}
 			}
 		});
-		return apiClient.put(`/api/events/${reference}`, formData, {
+		// Singular /api/event/:reference -- the only update route the backend
+		// actually registers (src/routes/event.js). This used to PUT the
+		// plural /api/events/:reference instead, which matches no route at
+		// all: every admin "edit event" save 404'd.
+		return apiClient.put(`/api/event/${reference}`, formData, {
 			headers: { 'Content-Type': 'multipart/form-data' },
 		});
 	},
 
 	delete: (reference: string) => {
-		return apiClient.delete(`/api/events/${reference}`);
+		// The backend's only delete route is DELETE /api/event with the
+		// reference in the body, not a /:reference URL segment (see
+		// src/routes/event.js). This used to DELETE the plural
+		// /api/events/:reference, which also matches no route: every admin
+		// "delete event" 404'd.
+		return apiClient.delete('/api/event', { data: { reference } });
 	},
 
 	confirmPresence: (data: ConfirmPresenceData) => {

@@ -155,6 +155,34 @@ test.describe('Event update (admin only, regression test for issue #205)', () =>
 		await expect(page.getByLabel('العنوان', { exact: true })).toHaveValue('Collecte de sang - Casablanca');
 		expect(errors.some((e) => /Invalid time value/.test(e))).toBe(false);
 	});
+
+	test('regression: submitting the form PUTs the singular /api/event/:reference, not the plural /api/events/:reference', async ({ page }) => {
+		// eventsService.update() used to PUT the plural /api/events/:reference,
+		// which matches no backend route at all (only /api/event/:reference is
+		// registered) -- every admin "save" 404'd. Confirm the real request
+		// lands on the route the backend actually has.
+		await seedAuth(page, { isAdmin: true });
+		await mockJson(page, '**/api/events/WEVENT20990101', eventDetailResponse());
+		let putCalled = false;
+		await page.route('**/api/event/WEVENT20990101', async (route) => {
+			if (route.request().method() === 'PUT') {
+				putCalled = true;
+				return route.fulfill({
+					status: 200,
+					contentType: 'application/json',
+					body: JSON.stringify({ message: 'Event updated successfully!', event: sampleEvent() }),
+				});
+			}
+			return route.fallback();
+		});
+
+		await page.goto('/events/update/WEVENT20990101');
+		await expect(page.getByLabel('العنوان', { exact: true })).toHaveValue('Collecte de sang - Casablanca');
+		await page.locator('button[type=submit]').click();
+		await page.waitForTimeout(500);
+
+		expect(putCalled).toBe(true);
+	});
 });
 
 test.describe('Event deletion (admin only, regression test for the redesigned events list/detail)', () => {

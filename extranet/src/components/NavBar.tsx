@@ -1,14 +1,13 @@
 import ArrowCircleLeftIcon from '@mui/icons-material/ArrowCircleLeft';
 import ArrowCircleRightIcon from '@mui/icons-material/ArrowCircleRight';
 import { makeStyles } from '@mui/styles';
-import axios from 'axios';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
+import { authService } from '../services';
 import colors from '../styles/colors';
 import { mainStyles } from '../styles/mainStyles';
-import API_CONFIG, { buildApiUrl } from '../utils/apiConfig';
 import ActionButton from './shared/ActionButton';
 import LanguageSwitcher from './shared/LanguageSwitcher';
 
@@ -104,8 +103,8 @@ const Navbar = () => {
 	const [selectedRoute, setSelectedRoute] = useState(location.pathname);
 
 	const handleLogout = () => {
-		axios
-			.post(buildApiUrl(API_CONFIG.endpoints.auth.logout))
+		authService
+			.logout()
 			.then((response) => {
 				localStorage.removeItem('token');
 				localStorage.removeItem('refreshToken');

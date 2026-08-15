@@ -3,14 +3,13 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import PeopleIcon from '@mui/icons-material/People';
 import TuneIcon from '@mui/icons-material/Tune';
 import { Chip, CircularProgress, IconButton, Typography } from '@mui/material';
-import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Pagination from './shared/Pagination';
 import RedesignBottomNav from './shared/RedesignBottomNav';
+import { usersService } from '../services';
 import { usersListRedesignStyles } from '../styles/usersListRedesign';
-import API_CONFIG, { buildApiUrl } from '../utils/apiConfig';
 import NoUserFound from './NoUserFound';
 import UserFilter from './UserFilter';
 
@@ -117,9 +116,7 @@ const UsersComponent: React.FC = () => {
 			try {
 				setIsLoading(true);
 				setNoUsersFound(false);
-				const response = await axios.get(
-					buildApiUrl(API_CONFIG.endpoints.users.list(page))
-				);
+				const response = await usersService.getAllUsers(page);
 				setUsers(response.data.users);
 				setTotalPages(Math.ceil(response.data.totalItems / 10));
 			} catch (error) {
@@ -148,10 +145,11 @@ const UsersComponent: React.FC = () => {
 		try {
 			setIsLoading(true);
 			setNoUsersFound(false);
-			const response = await axios.post(
-				buildApiUrl(API_CONFIG.endpoints.users.search),
-				{ ...Object.fromEntries(filters), page: currentPage, perPage: 10 }
-			);
+			const response = await usersService.searchUsers({
+				...Object.fromEntries(filters),
+				page: currentPage,
+				perPage: 10,
+			});
 			setUsers(response.data.users || []);
 			setTotalPages(Math.ceil(response.data.totalItems / 10));
 			filters.set('page', currentPage.toString());

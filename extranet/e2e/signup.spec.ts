@@ -91,7 +91,7 @@ test.describe('Signup', () => {
 			page,
 			'**/api/auth/signup',
 			{ errors: [{ msg: 'E-Mail address already exists!', param: 'email' }] },
-			{ status: 400, method: 'PUT' }
+			{ status: 400, method: 'POST' }
 		);
 
 		await page.goto('/signup');

@@ -188,9 +188,14 @@ describe('DELETE /api/event (admin only)', () => {
 	});
 });
 
-describe('PUT /api/event/confirmPresence', () => {
+describe('POST /api/event/confirmPresence', () => {
 	it('requires authentication', async () => {
-		const res = await request(app).put('/api/event/confirmPresence').send({ reference: 'WEVENT1' });
+		// Was asserting against .put(...) here, which never actually reached
+		// this route -- PUT /api/event/:reference (registered earlier) matched
+		// first with reference="confirmPresence" and 401'd from *its* isAuth
+		// check instead. Passed for the wrong reason; see the routing comment
+		// on POST /api/event/confirmPresence in src/routes/event.js.
+		const res = await request(app).post('/api/event/confirmPresence').send({ reference: 'WEVENT1' });
 		expect(res.status).toBe(401);
 	});
 });

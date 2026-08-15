@@ -12,8 +12,8 @@ import {
 import styled from 'styled-components';
 import { useAuth } from '../../auth/AuthContext';
 import { useEvent, useCheckParticipation, useEventParticipantsDetails, useCreateParticipant } from '../../hooks';
+import { eventsService } from '../../services';
 import colors from '../../styles/colors';
-import API_CONFIG, { buildApiUrl } from '../../utils/apiConfig';
 import CanDonate from '../CanDonate';
 import ConfirmationDialog from '../shared/ConfirmationDialog';
 import SnackbarComponent from '../shared/SnackbarComponent';
@@ -111,28 +111,18 @@ const EventDetail: React.FC = () => {
 				try {
 					setConfirmationDialog({ ...confirmationDialog, open: false });
 
-					const response = await fetch(buildApiUrl(API_CONFIG.endpoints.events.details), {
-						method: 'DELETE',
-						headers: {
-							Authorization: `Bearer ${token}`,
-							'Content-Type': 'application/json',
-						},
-						body: JSON.stringify({ reference }),
-					});
+					await eventsService.delete(reference ?? '');
 
-					if (response.ok) {
-						setMessage(t('events.detail.deleteSuccess'));
-						setTimeout(() => {
-							navigate('/events');
-						}, 2000);
-					} else {
-						const errorData = await response.json();
-						throw new Error(errorData.message || 'Error deleting event');
-					}
+					setMessage(t('events.detail.deleteSuccess'));
+					setTimeout(() => {
+						navigate('/events');
+					}, 2000);
 				} catch (error: any) {
 					console.error('Error deleting event:', error);
 					setMessage(
-						t('events.detail.deleteError', { message: error.message })
+						t('events.detail.deleteError', {
+							message: error.response?.data?.message || error.message,
+						})
 					);
 				}
 			},

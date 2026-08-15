@@ -4,14 +4,13 @@ import EditIcon from '@mui/icons-material/Edit';
 import EventIcon from '@mui/icons-material/Event';
 import SearchIcon from '@mui/icons-material/Search';
 import { CircularProgress, IconButton, TextField, Typography } from '@mui/material';
-import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
 import { Event } from '../../data/Event';
+import { eventsService } from '../../services';
 import { eventsListRedesignStyles } from '../../styles/eventsListRedesign';
-import API_CONFIG, { buildApiUrl } from '../../utils/apiConfig';
 import EventOverviewCard from '../shared/EventOverviewCard';
 import Pagination from '../shared/Pagination';
 import RedesignBottomNav from '../shared/RedesignBottomNav';
@@ -261,9 +260,7 @@ const EventsComponent = () => {
 		const fetchEvents = async () => {
 			try {
 				setIsLoading(true);
-				const response = await axios.get(
-					buildApiUrl(API_CONFIG.endpoints.events.list(page))
-				);
+				const response = await eventsService.getAll(page);
 				setEvents(response.data.events);
 				if (isAdmin) {
 					setTotalPages(Math.ceil(response.data.totalItems / 5));

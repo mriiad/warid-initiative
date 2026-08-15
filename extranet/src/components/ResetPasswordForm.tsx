@@ -1,13 +1,12 @@
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { Button, IconButton, Typography } from '@mui/material';
-import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
+import { authService } from '../services';
 import { authRedesignStyles } from '../styles/authRedesign';
-import API_CONFIG, { buildApiUrl } from '../utils/apiConfig';
 import PasswordField from './shared/PasswordField';
 
 type FormData = {
@@ -48,12 +47,9 @@ const ResetPasswordForm = () => {
 		}
 
 		try {
-			await axios.post(
-				buildApiUrl(API_CONFIG.endpoints.auth.resetPassword(resetToken)),
-				{
-					password: formData.password,
-				}
-			);
+			await authService.resetPassword(resetToken ?? '', {
+				password: formData.password,
+			});
 			navigate('/login', { state: { passwordReset: true } });
 		} catch (error) {
 			console.error('Error resetting password:', error);
@@ -61,8 +57,8 @@ const ResetPasswordForm = () => {
 	};
 
 	useEffect(() => {
-		axios
-			.get(buildApiUrl(API_CONFIG.endpoints.auth.checkResetToken(resetToken)))
+		authService
+			.checkResetToken(resetToken ?? '')
 			.then((response) => {
 				setIsTokenValid(true);
 				console.log(response.data.message);

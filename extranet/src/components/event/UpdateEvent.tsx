@@ -16,9 +16,10 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
 import { useEvent } from '../../hooks';
+import { apiClient } from '../../utils/apiClient';
 import { authRedesignStyles } from '../../styles/authRedesign';
 import { eventsListRedesignStyles } from '../../styles/eventsListRedesign';
-import API_CONFIG, { buildApiUrl } from '../../utils/apiConfig';
+import API_CONFIG from '../../utils/apiConfig';
 import NotFoundPage from '../NotFoundPage';
 import RedesignBottomNav from '../shared/RedesignBottomNav';
 import ResponseAnimation from '../shared/ResponseAnimation';
@@ -41,7 +42,7 @@ const UpdateEvent: React.FC = () => {
 		eventsListRedesignStyles();
 	const navigate = useNavigate();
 	const { reference } = useParams<{ reference: string }>();
-	const { token, isAdmin } = useAuth();
+	const { isAdmin } = useAuth();
 
 	const {
 		control,
@@ -94,29 +95,28 @@ const UpdateEvent: React.FC = () => {
 				formData.append('image', image);
 			}
 
-			const response = await fetch(buildApiUrl(API_CONFIG.endpoints.events.update(reference)), {
-				method: 'PUT',
-				headers: {
-					Authorization: `Bearer ${token}`,
-				},
-				body: formData,
+			// Singular /api/event/:reference, matching the backend's only
+			// registered update route (src/routes/event.js). apiClient already
+			// carries the base URL, so this is relative like every other call.
+			// Content-Type override matches eventsService's own multipart
+			// calls -- apiClient's default 'application/json' would otherwise
+			// stop the browser from setting the multipart boundary itself.
+			await apiClient.put(API_CONFIG.endpoints.events.update(reference), formData, {
+				headers: { 'Content-Type': 'multipart/form-data' },
 			});
 
-			if (response.ok) {
-				setIsFormSubmitted(true);
-				setIsSuccessResponse(true);
-				setTimeout(() => {
-					navigate('/events');
-				}, 2000);
-			} else {
-				const errorData = await response.json();
-				throw new Error(errorData.errorMessage || t('events.form.updateError'));
-			}
+			setIsFormSubmitted(true);
+			setIsSuccessResponse(true);
+			setTimeout(() => {
+				navigate('/events');
+			}, 2000);
 		} catch (error: any) {
 			setIsFormSubmitted(true);
 			setIsSuccessResponse(false);
 			setIsErrorResponse(true);
-			setErrorMessage(error.data?.errorMessage || error.message || t('events.form.updateError'));
+			setErrorMessage(
+				error.response?.data?.message || error.message || t('events.form.updateError')
+			);
 		}
 	};
 

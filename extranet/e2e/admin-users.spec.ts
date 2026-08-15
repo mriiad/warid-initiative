@@ -35,6 +35,53 @@ test.describe('Admin users list', () => {
 		await expect(page.locator('img[alt="Logo"]')).toHaveCount(0);
 	});
 
+	test('regression: both the list fetch and the filtered search carry the Authorization header', async ({ page }) => {
+		// UsersComponent used to call plain axios.get/axios.post directly
+		// instead of going through apiClient, which is the only instance
+		// carrying the request interceptor that attaches the token. Neither
+		// call ever sent Authorization, so both 401'd on every real request
+		// regardless of login state -- invisible to every other test here
+		// because page.route() fulfills mocks unconditionally, whether or not
+		// an Authorization header was actually sent.
+		await seedAuth(page, { isAdmin: true, token: 'fake-jwt-token' });
+		let listAuthHeader: string | undefined;
+		await page.route('**/api/users?*', async (route) => {
+			listAuthHeader = route.request().headers()['authorization'];
+			await route.fulfill({
+				status: 200,
+				contentType: 'application/json',
+				body: JSON.stringify({
+					message: 'Fetched users successfully.',
+					users: [sampleUser({ username: 'CIN000111', profile: { firstname: 'Amine', lastname: 'Bennani' } })],
+					totalItems: 1,
+				}),
+			});
+		});
+		let searchAuthHeader: string | undefined;
+		await page.route('**/api/searchUsers', async (route) => {
+			searchAuthHeader = route.request().headers()['authorization'];
+			await route.fulfill({
+				status: 200,
+				contentType: 'application/json',
+				body: JSON.stringify({
+					message: 'Fetched users successfully.',
+					users: [sampleUser({ username: 'CIN000222', profile: { firstname: 'Sara', lastname: 'Idrissi' } })],
+					totalItems: 1,
+				}),
+			});
+		});
+
+		await page.goto('/users');
+		await expect(page.getByText('Amine Bennani')).toBeVisible({ timeout: 5000 });
+		expect(listAuthHeader).toBe('Bearer fake-jwt-token');
+
+		await page.getByRole('button', { name: 'تصفية متقدمة' }).click();
+		await page.getByLabel('اسم المستخدم', { exact: true }).fill('CIN000222');
+		await page.getByRole('button', { name: 'تطبيق عوامل التصفية' }).click();
+		await expect(page.getByText('Sara Idrissi')).toBeVisible({ timeout: 5000 });
+		expect(searchAuthHeader).toBe('Bearer fake-jwt-token');
+	});
+
 	test('admin can filter the users list via the redesigned filter drawer', async ({ page }) => {
 		await seedAuth(page, { isAdmin: true });
 		await mockJson(page, '**/api/users?*', {
