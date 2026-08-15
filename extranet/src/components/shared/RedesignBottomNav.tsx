@@ -1,6 +1,7 @@
 import AddIcon from '@mui/icons-material/Add';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+import HealthAndSafetyIcon from '@mui/icons-material/HealthAndSafety';
 import HomeIcon from '@mui/icons-material/Home';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import { makeStyles } from '@mui/styles';
@@ -67,6 +68,7 @@ const useStyles = makeStyles({
 const NAV_ITEMS = [
 	{ path: '/home', icon: HomeIcon, labelKey: 'nav.home', adminOnly: false },
 	{ path: '/events?page=1', icon: CalendarMonthIcon, labelKey: 'nav.calendar', matchPath: '/events', adminOnly: false },
+	{ path: '/emergency', icon: HealthAndSafetyIcon, labelKey: 'nav.emergency', adminOnly: false },
 	{ path: '/admin', icon: AdminPanelSettingsIcon, labelKey: 'nav.admin', adminOnly: true },
 	{ path: '/users?page=1', icon: PersonOutlineIcon, labelKey: 'admin.usersList', matchPath: '/users', adminOnly: true },
 ];
@@ -74,8 +76,12 @@ const NAV_ITEMS = [
 // The bottom nav for redesigned screens. Home and events work for anyone
 // ('/home' shows LandingPage for non-admins, the redesigned dashboard for
 // admins; '/events' similarly falls back to the pre-existing page for
-// non-admins). Admin and users are admin-only routes, guarded server- and
-// route-side elsewhere too.
+// non-admins). '/emergency' is intentionally public (no isAuth on that
+// route -- see App.tsx) and reachable by anyone for that reason: this was
+// previously the only bottom nav in the redesigned screens, and it had no
+// entry for it at all, making the emergency blood-request form unreachable
+// from navigation for every user. Admin and users are admin-only routes,
+// guarded server- and route-side elsewhere too.
 const RedesignBottomNav = () => {
 	const { wrapper, bar, item, itemActive, fab } = useStyles();
 	const { t } = useTranslation();
