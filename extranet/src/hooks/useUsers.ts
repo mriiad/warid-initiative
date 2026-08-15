@@ -50,11 +50,17 @@ export const useUpdateUserInfo = () => {
 	});
 };
 
-export const useCheckProfileCompleteness = () => {
+// The backend route (isAuth-gated) always 401s without a token, so this
+// defaults to disabled -- LoginForm enables it only once login.isSuccess.
+// Firing it unconditionally used to mean every visit to /login sent a
+// doomed, unauthenticated request; see the enabled-gating note on that
+// component for the failure this caused (issue #195).
+export const useCheckProfileCompleteness = (enabled = false) => {
 	return useQuery({
 		queryKey: ['profileComplete'],
 		queryFn: () => usersService.checkProfileCompleteness(),
 		staleTime: 5 * 60 * 1000,
+		enabled,
 	});
 };
 

@@ -50,7 +50,11 @@ const LoginForm = () => {
 
 	const { login } = useAuth();
 	const { updateAuthState } = useAuthContext();
-	const profileCompleteness = useCheckProfileCompleteness();
+	// Gated on login.isSuccess: this hits an isAuth-gated backend route, so
+	// firing it before then (i.e. on every /login page load, unauthenticated)
+	// was a guaranteed 401. That request wasn't wasted so much as dangerous --
+	// see the note on the redirect effect below (issue #195).
+	const profileCompleteness = useCheckProfileCompleteness(login.isSuccess);
 
 	useEffect(() => {
 		if (new URLSearchParams(location.search).has('new-user')) {
