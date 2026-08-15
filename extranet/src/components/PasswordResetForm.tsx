@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../services';
 import { authRedesignStyles } from '../styles/authRedesign';
+import { useErrorToast } from './shared/ErrorToastProvider';
 
 const PasswordResetForm = () => {
 	const { t } = useTranslation();
@@ -19,6 +20,7 @@ const PasswordResetForm = () => {
 	} = useForm();
 
 	const navigate = useNavigate();
+	const { showError } = useErrorToast();
 
 	const onSubmit = (formData) => {
 		authService
@@ -33,6 +35,7 @@ const PasswordResetForm = () => {
 			})
 			.catch((error) => {
 				console.error('Error requesting password reset:', error);
+				showError(error);
 			});
 	};
 

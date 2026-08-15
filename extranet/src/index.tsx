@@ -5,6 +5,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { ThemeProvider } from 'styled-components';
 import App from './App';
 import { AuthProvider } from './auth/AuthContext';
+import { ErrorToastProvider } from './components/shared/ErrorToastProvider';
 import './i18n';
 import './index.css';
 import theme from './theme';
@@ -37,14 +38,16 @@ root.render(
 		<QueryClientProvider client={queryClient}>
 			<ThemeProvider theme={theme}>
 				<AuthProvider>
-					<BrowserRouter
-						future={{
-							v7_startTransition: true,
-							v7_relativeSplatPath: true,
-						}}
-					>
-						<App />
-					</BrowserRouter>
+					<ErrorToastProvider>
+						<BrowserRouter
+							future={{
+								v7_startTransition: true,
+								v7_relativeSplatPath: true,
+							}}
+						>
+							<App />
+						</BrowserRouter>
+					</ErrorToastProvider>
 				</AuthProvider>
 			</ThemeProvider>
 		</QueryClientProvider>

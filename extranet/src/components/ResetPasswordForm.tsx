@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { authService } from '../services';
 import { authRedesignStyles } from '../styles/authRedesign';
+import { useErrorToast } from './shared/ErrorToastProvider';
 import PasswordField from './shared/PasswordField';
 
 type FormData = {
@@ -32,6 +33,7 @@ const ResetPasswordForm = () => {
 	} = useForm<FormData>();
 	const { screen, header, backButton, title, subtitle, headerIcon, card, input, primaryButton, subtitleLink } =
 		authRedesignStyles();
+	const { showError } = useErrorToast();
 
 	const validatePasswordsMatch = (value: string) => {
 		return value === getValues('password') || t('auth.resetPassword.passwordsMismatch');
@@ -53,6 +55,7 @@ const ResetPasswordForm = () => {
 			navigate('/login', { state: { passwordReset: true } });
 		} catch (error) {
 			console.error('Error resetting password:', error);
+			showError(error);
 		}
 	};
 

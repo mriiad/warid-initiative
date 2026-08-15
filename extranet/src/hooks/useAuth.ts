@@ -4,6 +4,7 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useErrorToast } from '../components/shared/ErrorToastProvider';
 import { authService } from '../services';
 import type {
 	LoginData,
@@ -15,15 +16,23 @@ import type {
 import { queryKeys } from './queryKeys';
 
 export const useSignup = () => {
+	const { showError } = useErrorToast();
+
 	return useMutation({
 		mutationFn: (data: SignupData) => authService.signup(data),
 		onSuccess: (response) => {},
 		onError: (error) => {
 			console.error('Signup failed:', error);
+			showError(error);
 		},
 	});
 };
 
+// SignupForm.tsx / LoginForm.tsx handle their own errors, both reading the
+// backend message rather than the mutation's onError. useLogin specifically:
+// LoginForm reacts to login.isError/login.error to render its own inline
+// snackbar (issue #293) -- adding the shared toast here would duplicate that
+// message every time.
 export const useLogin = () => {
 	const queryClient = useQueryClient();
 
@@ -48,6 +57,7 @@ export const useLogin = () => {
 
 export const useLogout = () => {
 	const queryClient = useQueryClient();
+	const { showError } = useErrorToast();
 
 	return useMutation({
 		mutationFn: () => authService.logout(),
@@ -60,11 +70,19 @@ export const useLogout = () => {
 		},
 		onError: (error) => {
 			console.error('Logout failed:', error);
+			showError(error);
 		},
 	});
 };
 
+// Not currently wired to any component -- apiClient.ts's response
+// interceptor does the real silent-refresh-on-401 itself via a plain axios
+// call, deliberately outside React Query (it has to run from an interceptor,
+// not a hook). Kept consistent with the other 22 mutations regardless, in
+// case that ever changes.
 export const useRefreshToken = () => {
+	const { showError } = useErrorToast();
+
 	return useMutation({
 		mutationFn: (data: RefreshTokenData) => authService.refreshToken(data),
 		onSuccess: (response) => {
@@ -74,11 +92,14 @@ export const useRefreshToken = () => {
 		},
 		onError: (error) => {
 			console.error('Token refresh failed:', error);
+			showError(error);
 		},
 	});
 };
 
 export const useRequestPasswordReset = () => {
+	const { showError } = useErrorToast();
+
 	return useMutation({
 		mutationFn: (data: { email: string }) =>
 			authService.requestPasswordReset(data),
@@ -87,11 +108,14 @@ export const useRequestPasswordReset = () => {
 		},
 		onError: (error) => {
 			console.error('Password reset request failed:', error);
+			showError(error);
 		},
 	});
 };
 
 export const useResetPassword = () => {
+	const { showError } = useErrorToast();
+
 	return useMutation({
 		mutationFn: ({ token, data }: { token: string; data: ResetPasswordData }) =>
 			authService.resetPassword(token, data),
@@ -100,11 +124,14 @@ export const useResetPassword = () => {
 		},
 		onError: (error) => {
 			console.error('Password reset failed:', error);
+			showError(error);
 		},
 	});
 };
 
 export const useCheckResetToken = (token = '', enabled = true) => {
+	const { showError } = useErrorToast();
+
 	return useMutation({
 		mutationFn: () => authService.checkResetToken(token),
 		onSuccess: (response) => {
@@ -112,10 +139,13 @@ export const useCheckResetToken = (token = '', enabled = true) => {
 		},
 		onError: (error) => {
 			console.error('Token validation failed:', error);
+			showError(error);
 		},
 	});
 };
 
+// ProfileComponent.tsx already shows the backend's own message on failure
+// (see handlePasswordSave) -- the shared toast would just repeat it.
 export const useUpdatePassword = () => {
 	return useMutation({
 		mutationFn: (data: UpdatePasswordData) => authService.updatePassword(data),

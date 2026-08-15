@@ -13,11 +13,16 @@ test.describe('Password reset', () => {
 	});
 
 	test('request-reset surfaces a "no user found" error', async ({ page }) => {
+		// Regression (issue #307): this used to be console.error(...) and
+		// nothing else -- the form just sat there with no visible feedback,
+		// indistinguishable from a hang. Now goes through the shared error
+		// toast.
 		await mockJson(page, '**/api/auth/request-reset', { message: 'No user found with that email address.' }, { status: 404, method: 'POST' });
 		await page.goto('/request-reset-password');
 		await page.getByLabel('البريد الإلكتروني').fill('ghost@example.com');
 		await page.locator('button[type=submit]').click();
-		await page.waitForTimeout(300);
+
+		await expect(page.getByText('No user found with that email address.')).toBeVisible({ timeout: 5000 });
 		await expect(page).toHaveURL(/request-reset-password/);
 	});
 
@@ -30,6 +35,17 @@ test.describe('Password reset', () => {
 		await page.locator('button[type=submit]').click();
 		await page.waitForTimeout(300);
 		await expect(page.locator('body')).not.toContainText('Cannot GET');
+	});
+
+	test('regression (issue #307): a failed reset-password submission is shown via the shared error toast', async ({ page }) => {
+		await mockJson(page, '**/api/auth/check-reset-token/*', { message: 'Token is valid.' }, { status: 200, method: 'GET' });
+		await mockJson(page, '**/api/auth/reset-password/*', { message: 'This reset link has expired.' }, { status: 400, method: 'POST' });
+		await page.goto('/reset-password/valid-token-123');
+		await page.getByLabel(/^كلمة المرور الجديدة/).fill('newpassword123');
+		await page.getByLabel('تأكيد كلمة المرور الجديدة').fill('newpassword123');
+		await page.locator('button[type=submit]').click();
+
+		await expect(page.getByText('This reset link has expired.')).toBeVisible({ timeout: 5000 });
 	});
 
 	test('reset-password rejects a mismatched confirmation', async ({ page }) => {

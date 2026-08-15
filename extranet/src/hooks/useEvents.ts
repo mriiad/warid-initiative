@@ -4,6 +4,7 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useErrorToast } from '../components/shared/ErrorToastProvider';
 import { eventsService } from '../services';
 import type {
 	ConfirmPresenceData,
@@ -44,8 +45,12 @@ export const useCreateEvent = () => {
 	});
 };
 
+// Not currently wired to any component -- UpdateEvent.tsx calls apiClient
+// directly and has its own try/catch + error UI. Kept consistent with the
+// other mutations regardless.
 export const useUpdateEvent = () => {
 	const queryClient = useQueryClient();
+	const { showError } = useErrorToast();
 
 	return useMutation({
 		mutationFn: ({
@@ -62,12 +67,17 @@ export const useUpdateEvent = () => {
 		},
 		onError: (error) => {
 			console.error('Event update failed:', error);
+			showError(error);
 		},
 	});
 };
 
+// Not currently wired to any component -- EventDetail.tsx calls
+// eventsService.delete directly and has its own try/catch + message UI.
+// Kept consistent with the other mutations regardless.
 export const useDeleteEvent = () => {
 	const queryClient = useQueryClient();
+	const { showError } = useErrorToast();
 
 	return useMutation({
 		mutationFn: (reference: string) => eventsService.delete(reference),
@@ -78,6 +88,7 @@ export const useDeleteEvent = () => {
 		},
 		onError: (error) => {
 			console.error('Event deletion failed:', error);
+			showError(error);
 		},
 	});
 };
