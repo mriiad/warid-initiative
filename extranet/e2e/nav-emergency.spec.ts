@@ -12,11 +12,13 @@ import { mockJson, seedAuth } from './support/mockApi';
  */
 test.describe('Emergency nav icon', () => {
 	test('a donor can reach the emergency form from the bottom nav on /home', async ({ page }) => {
-		await seedAuth(page, { isAdmin: false });
-		await mockJson(page, '**/api/events*', { events: [], totalItems: 0 });
+		await seedAuth(page, { isAdmin: false, userId: 'user-1' });
+		// A logged-in donor's '/home' is their dashboard (issue #292), not the
+		// public landing page.
+		await mockJson(page, '**/api/users/user-1/dashboard', { donations: [] });
 
 		await page.goto('/home');
-		await expect(page.getByText('جمعية مغربية', { exact: false })).toBeVisible({ timeout: 5000 });
+		await expect(page.getByRole('link', { name: 'طوارئ' })).toBeVisible({ timeout: 5000 });
 
 		await page.getByRole('link', { name: 'طوارئ' }).click();
 		await expect(page).toHaveURL(/\/emergency$/);

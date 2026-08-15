@@ -5,8 +5,10 @@ test.describe('Admin dashboard', () => {
 	// The dashboard (greeting/stats/next-event) lives at '/home' for admins,
 	// matching the bottom nav's Home tab -- the '/admin' route now shows a
 	// separate admin menu screen instead (see admin-menu.spec.ts).
-	test('non-admin users visiting /home see the regular landing page, not the admin dashboard', async ({ page }) => {
-		await seedAuth(page, { isAdmin: false });
+	//
+	// A logged-in donor's equivalent is covered in home-routing.spec.ts (issue
+	// #292) -- this file stays admin-only.
+	test('a logged-out visitor sees the public landing page, not the admin dashboard', async ({ page }) => {
 		await page.goto('/home');
 		await expect(page.getByText('جمعية مغربية', { exact: false })).toBeVisible({ timeout: 5000 });
 		await expect(page.getByText('لا توجد فعاليات قادمة')).toHaveCount(0);
