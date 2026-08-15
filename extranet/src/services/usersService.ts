@@ -19,8 +19,20 @@ export const usersService = {
 	// Self-service update of the logged-in user's own profile. Resolves the
 	// user from the auth token server-side (PATCH /api/user/profile), unlike
 	// updateUserInfo below which targets an admin-supplied :userId.
+	//
+	// This 404s if the user has no Profile document yet, so it isn't safe
+	// for a brand-new user completing their profile for the first time --
+	// use completeMyProfile below for that screen instead.
 	updateMyProfile: (data: Partial<UserFormData>) => {
 		return apiClient.patch('/api/user/profile', data);
+	},
+
+	// The "complete your profile" screen a brand-new user is sent to right
+	// after signup (UserProfileForm). PUT /api/user/update creates the
+	// Profile document if it doesn't exist yet, unlike updateMyProfile above,
+	// which requires one to already be there.
+	completeMyProfile: (data: Partial<UserFormData>) => {
+		return apiClient.put('/api/user/update', data);
 	},
 
 	updateUserInfo: (userId: string, data: UpdateUserData) => {

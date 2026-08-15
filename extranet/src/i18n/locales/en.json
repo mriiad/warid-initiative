@@ -151,7 +151,8 @@
       "city": "City",
       "cityRequired": "City is required",
       "missingFields": "Could you please provide the required details below?",
-      "submit": "Update"
+      "submit": "Update",
+      "updateError": "Failed to save your profile. Please try again."
     }
   },
   "profile": {

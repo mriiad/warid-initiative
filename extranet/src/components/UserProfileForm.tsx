@@ -1,13 +1,11 @@
 import { FormControl, FormHelperText, InputLabel, MenuItem, Select, TextField, Button } from '@mui/material';
-import axios from 'axios';
 import { useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { useQueryClient } from '@tanstack/react-query';
 import { ProfileFormData } from '../data/ProfileFormData';
 import { BLOOD_GROUP_OPTIONS, BloodGroup } from '../data/constants';
-import { useUserProfile } from '../hooks';
+import { useCompleteMyProfile, useUserProfile } from '../hooks';
 import { authRedesignStyles } from '../styles/authRedesign';
 import { cities, formatDate } from '../utils/utils';
 import AuthHeader from './shared/AuthHeader';
@@ -28,7 +26,8 @@ const UserProfileForm = () => {
 	const { screen, card, input, primaryButton } = authRedesignStyles();
 	const [showSnackbar, setShowSnackbar] = useState(false);
 	const [incompleteFieldsMessage, setIncompleteFieldsMessage] = useState('');
-	const queryClient = useQueryClient();
+	const [errorMessage, setErrorMessage] = useState<string | null>(null);
+	const completeProfile = useCompleteMyProfile();
 
 	const { data: userProfile } = useUserProfile();
 
@@ -83,18 +82,14 @@ const UserProfileForm = () => {
 		}
 	}, [userProfile, setValue]);
 
-	const updateProfile = async (data: ProfileFormData) => {
-		try {
-			await axios.put('/api/user/update', data);
-			queryClient.invalidateQueries({ queryKey: ['user', 'me'] });
-			navigate('/events');
-		} catch (error) {
-			console.error('Error updating profile:', error);
-		}
-	};
-
 	const onSubmit = (formData: ProfileFormData) => {
-		updateProfile(formData);
+		setErrorMessage(null);
+		completeProfile.mutate(formData, {
+			onSuccess: () => {
+				navigate('/events');
+			},
+			onError: () => setErrorMessage(t('auth.completeProfile.updateError')),
+		});
 	};
 
 	return (
@@ -198,7 +193,12 @@ const UserProfileForm = () => {
 								</FormControl>
 							)}
 						/>
-						<Button type='submit' fullWidth className={primaryButton}>
+						<Button
+							type='submit'
+							fullWidth
+							className={primaryButton}
+							disabled={completeProfile.isPending}
+						>
 							{t('auth.completeProfile.submit')}
 						</Button>
 					</div>
@@ -212,6 +212,12 @@ const UserProfileForm = () => {
 				message={incompleteFieldsMessage}
 				handleClose={() => setShowSnackbar(false)}
 				autoHideDuration={5000}
+			/>
+			<SnackbarComponent
+				open={Boolean(errorMessage)}
+				message={errorMessage || ''}
+				handleClose={() => setErrorMessage(null)}
+				autoHideDuration={6000}
 			/>
 		</div>
 	);

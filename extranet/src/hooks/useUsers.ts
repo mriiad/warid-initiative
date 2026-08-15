@@ -33,6 +33,20 @@ export const useUpdateMyProfile = () => {
 	});
 };
 
+export const useCompleteMyProfile = () => {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: (data: Partial<UserFormData>) => usersService.completeMyProfile(data),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['user', 'me'] });
+		},
+		onError: (error) => {
+			console.error('Profile completion failed:', error);
+		},
+	});
+};
+
 export const useUpdateUserInfo = () => {
 	const queryClient = useQueryClient();
 
