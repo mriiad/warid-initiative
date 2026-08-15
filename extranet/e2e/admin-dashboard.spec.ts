@@ -16,7 +16,7 @@ test.describe('Admin dashboard', () => {
 
 	test('admin sees the greeting, overview stats and the next upcoming event', async ({ page }) => {
 		await seedAuth(page, { isAdmin: true, userId: 'admin-1' });
-		await mockJson(page, '**/api/admin/stats', { totalUsers: 55, totalEvents: 12, totalDonations: 340 });
+		await mockJson(page, '**/api/admin/stats', { totalUsers: 55, totalEvents: 12, totalDonations: 340, totalEmergencies: 8 });
 		await mockJson(page, '**/api/user/profile', { firstname: 'Mahmoud', lastname: 'Moumen', gender: 'male' });
 		await mockJson(page, '**/api/events*', {
 			events: [
@@ -38,13 +38,18 @@ test.describe('Admin dashboard', () => {
 		await expect(page.getByText('Mahmoud', { exact: false })).toBeVisible({ timeout: 5000 });
 		await expect(page.getByText('55')).toBeVisible();
 		await expect(page.getByText('12')).toBeVisible();
-		await expect(page.getByText('340').first()).toBeVisible();
+		// Regression test for issue #302: the 4th stat card used to duplicate
+		// this same totalDonations figure, so '340' rendered twice.
+		await expect(page.getByText('340')).toHaveCount(1);
+		// Exact match -- '8' otherwise also matches substrings of the event
+		// date text ('نُشرت 8 نوفمبر', '18 نوفمبر') and the calendar strip.
+		await expect(page.getByText('8', { exact: true })).toBeVisible();
 		await expect(page.getByText('Agadir Event')).toBeVisible();
 	});
 
 	test('a brand-new admin with no upcoming events sees the empty state, not a crash', async ({ page }) => {
 		await seedAuth(page, { isAdmin: true, userId: 'admin-1' });
-		await mockJson(page, '**/api/admin/stats', { totalUsers: 0, totalEvents: 0, totalDonations: 0 });
+		await mockJson(page, '**/api/admin/stats', { totalUsers: 0, totalEvents: 0, totalDonations: 0, totalEmergencies: 0 });
 		await mockJson(page, '**/api/user/profile', { gender: 'male' });
 		await mockJson(page, '**/api/events*', { events: [], totalItems: 0 });
 		await mockJson(page, '**/api/unconfirmedEmergencies*', { emergencies: [], totalItems: 0 });
@@ -57,7 +62,7 @@ test.describe('Admin dashboard', () => {
 
 	test('the edit button on the next event navigates to the update-event form', async ({ page }) => {
 		await seedAuth(page, { isAdmin: true, userId: 'admin-1' });
-		await mockJson(page, '**/api/admin/stats', { totalUsers: 1, totalEvents: 1, totalDonations: 1 });
+		await mockJson(page, '**/api/admin/stats', { totalUsers: 1, totalEvents: 1, totalDonations: 1, totalEmergencies: 0 });
 		await mockJson(page, '**/api/user/profile', { firstname: 'Mahmoud', gender: 'male' });
 		await mockJson(page, '**/api/events*', {
 			events: [
@@ -81,7 +86,7 @@ test.describe('Admin dashboard', () => {
 
 	test('the bottom nav "+" button navigates to the create-event form', async ({ page }) => {
 		await seedAuth(page, { isAdmin: true, userId: 'admin-1' });
-		await mockJson(page, '**/api/admin/stats', { totalUsers: 0, totalEvents: 0, totalDonations: 0 });
+		await mockJson(page, '**/api/admin/stats', { totalUsers: 0, totalEvents: 0, totalDonations: 0, totalEmergencies: 0 });
 		await mockJson(page, '**/api/user/profile', { gender: 'male' });
 		await mockJson(page, '**/api/events*', { events: [], totalItems: 0 });
 		await mockJson(page, '**/api/unconfirmedEmergencies*', { emergencies: [], totalItems: 0 });
@@ -94,7 +99,7 @@ test.describe('Admin dashboard', () => {
 
 	test('shows an active emergency in the carousel and confirming it calls the real confirm endpoint', async ({ page }) => {
 		await seedAuth(page, { isAdmin: true, userId: 'admin-1' });
-		await mockJson(page, '**/api/admin/stats', { totalUsers: 0, totalEvents: 0, totalDonations: 0 });
+		await mockJson(page, '**/api/admin/stats', { totalUsers: 0, totalEvents: 0, totalDonations: 0, totalEmergencies: 0 });
 		await mockJson(page, '**/api/user/profile', { gender: 'male' });
 		await mockJson(page, '**/api/events*', { events: [], totalItems: 0 });
 		await mockJson(page, '**/api/unconfirmedEmergencies*', {
@@ -117,7 +122,7 @@ test.describe('Admin dashboard', () => {
 
 	test('shows the donation history when the admin has past donations', async ({ page }) => {
 		await seedAuth(page, { isAdmin: true, userId: 'admin-1' });
-		await mockJson(page, '**/api/admin/stats', { totalUsers: 0, totalEvents: 0, totalDonations: 0 });
+		await mockJson(page, '**/api/admin/stats', { totalUsers: 0, totalEvents: 0, totalDonations: 0, totalEmergencies: 0 });
 		await mockJson(page, '**/api/user/profile', { gender: 'male' });
 		await mockJson(page, '**/api/events*', { events: [], totalItems: 0 });
 		await mockJson(page, '**/api/unconfirmedEmergencies*', { emergencies: [], totalItems: 0 });
