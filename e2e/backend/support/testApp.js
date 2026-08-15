@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 
 const errorHandler = require('../../../src/middleware/error-handler');
+const { noCacheApi } = require('../../../src/middleware/no-cache-api');
 const { requestLogger } = require('../../../src/middleware/request-logger');
 const {
 	securityHeaders,
@@ -18,10 +19,12 @@ const swaggerRouter = require('../../../src/docs/swagger');
 
 function buildApp() {
 	const app = express();
+	app.set('etag', false);
 	app.use(requestLogger());
 	app.use(securityHeaders());
 	app.use(cors());
 	app.use(bodyParser.json());
+	app.use('/api', noCacheApi());
 	app.use(swaggerRouter);
 	app.use(authRouter);
 	app.use(userRouter);

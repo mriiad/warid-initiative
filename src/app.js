@@ -9,6 +9,7 @@ require('dotenv').config();
 
 // Import custom modules
 const errorHandler = require('./middleware/error-handler');
+const { noCacheApi } = require('./middleware/no-cache-api');
 const { requestLogger } = require('./middleware/request-logger');
 const { securityHeaders } = require('./middleware/security-headers');
 const config = require('./utils/config');
@@ -34,6 +35,13 @@ if (config.server.trustProxy !== false) {
 	app.set('trust proxy', config.server.trustProxy);
 }
 
+// Express's default weak ETag on every res.json()/res.send() call makes
+// every API GET conditionally-cacheable, which fights the client-side
+// caching React Query already does. Scoped to app-level res.send() only --
+// express.static (the built SPA's own assets, below) keeps its own etag
+// setting and stays cacheable. See middleware/no-cache-api.js.
+app.set('etag', false);
+
 // First, so every request gets an id and a log line even when a later
 // middleware rejects it.
 app.use(requestLogger());
@@ -43,6 +51,8 @@ app.use(securityHeaders());
 app.use(cors());
 
 app.use(bodyParser.json());
+
+app.use('/api', noCacheApi());
 
 app.use(swaggerRouter);
 app.use(authRouter);
