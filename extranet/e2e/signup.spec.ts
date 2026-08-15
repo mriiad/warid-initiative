@@ -87,10 +87,13 @@ test.describe('Signup', () => {
 	});
 
 	test('surfaces the backend "email already exists" error', async ({ page }) => {
+		// Shaped like the real error-handler's response (src/middleware/
+		// error-handler.js always sends { message, statusCode }, never the
+		// raw express-validator { errors: [...] } array this used to mock).
 		await mockJson(
 			page,
 			'**/api/auth/signup',
-			{ errors: [{ msg: 'E-Mail address already exists!', param: 'email' }] },
+			{ message: 'E-Mail address already exists!', statusCode: 400 },
 			{ status: 400, method: 'POST' }
 		);
 
@@ -105,5 +108,27 @@ test.describe('Signup', () => {
 		// The form should stay on /signup and not silently pretend success.
 		await page.waitForTimeout(500);
 		await expect(page).toHaveURL(/\/signup/);
+	});
+
+	test('regression (issue #307): a signup failure is shown via the shared error toast, not silently dropped', async ({ page }) => {
+		// useSignup's onError used to be console.error(...) and nothing else --
+		// SignupForm has no error UI of its own, so a failed signup looked
+		// exactly like a hung page.
+		await mockJson(
+			page,
+			'**/api/auth/signup',
+			{ message: 'E-Mail address already exists!', statusCode: 400 },
+			{ status: 400, method: 'POST' }
+		);
+
+		await page.goto('/signup');
+		await page.getByLabel('رقم الهوية الوطنية').fill('CIN123456');
+		await page.getByLabel('البريد الإلكتروني').fill('taken@example.com');
+		await page.getByRole('textbox', { name: 'كلمة المرور' }).fill('password123');
+		await page.getByLabel('رقم الهاتف').fill('0600000000');
+		await page.getByLabel('ذكر').check();
+		await page.getByRole('button', { name: 'إرسال' }).click();
+
+		await expect(page.getByText('E-Mail address already exists!')).toBeVisible({ timeout: 5000 });
 	});
 });

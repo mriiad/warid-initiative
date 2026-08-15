@@ -85,4 +85,22 @@ test.describe('Profile page', () => {
 		await expect(page).toHaveURL(/\/login/);
 		expect(logoutCalled).toBe(true);
 	});
+
+	test('regression (issue #307): a failed logout is shown via the shared error toast', async ({ page }) => {
+		// useLogout's onError used to be console.error(...) and nothing else --
+		// a failed logout request left the user stuck on the page with zero
+		// indication anything had gone wrong.
+		await seedAuth(page, { isAdmin: false });
+		await mockJson(page, '**/api/user/profile', fullProfileResponse(), { method: 'GET' });
+		await mockJson(page, '**/api/auth/logout', { message: 'Could not reach the session store.' }, { status: 500, method: 'POST' });
+
+		await page.goto('/profile');
+		await expect(page.getByText('المعلومات الشخصية')).toBeVisible();
+		await page.getByRole('button', { name: 'تسجيل الخروج' }).click();
+
+		await expect(page.getByText('Could not reach the session store.')).toBeVisible({ timeout: 5000 });
+		// Still on /profile -- onSuccess (which clears the session and
+		// navigates) never ran.
+		await expect(page).toHaveURL(/\/profile/);
+	});
 });

@@ -4,6 +4,7 @@
  */
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useErrorToast } from '../components/shared/ErrorToastProvider';
 import type { UserFormData } from '../data/ProfileFormData';
 import { usersService } from '../services';
 import type { UpdateUserData } from '../types';
@@ -47,8 +48,12 @@ export const useCompleteMyProfile = () => {
 	});
 };
 
+// Not currently wired to any component -- UpdateUser.tsx calls
+// usersService.updateUserInfo directly and has its own try/catch + snackbar.
+// Kept consistent with the other mutations regardless.
 export const useUpdateUserInfo = () => {
 	const queryClient = useQueryClient();
+	const { showError } = useErrorToast();
 
 	return useMutation({
 		mutationFn: ({ userId, data }: { userId: string; data: UpdateUserData }) =>
@@ -60,6 +65,7 @@ export const useUpdateUserInfo = () => {
 		},
 		onError: (error) => {
 			console.error('User info update failed:', error);
+			showError(error);
 		},
 	});
 };
