@@ -46,6 +46,7 @@ const LoginForm = () => {
 	const [signUpSnackbarOpen, setSignUpSnackbarOpen] = useState(false);
 	const [googleSnackbarOpen, setGoogleSnackbarOpen] = useState(false);
 	const [rememberMeChecked, setRememberMeChecked] = useState(false);
+	const [loginErrorMessage, setLoginErrorMessage] = useState<string | null>(null);
 
 	const { login } = useAuth();
 	const { updateAuthState } = useAuthContext();
@@ -87,7 +88,23 @@ const LoginForm = () => {
 		updateAuthState,
 	]);
 
+	useEffect(() => {
+		// A wrong password or unknown username both come back as a plain 401
+		// with a specific message (see auth.js); nothing here ever read it, so
+		// a rejected login just left the form sitting there with the spinner
+		// gone and no explanation.
+		if (login.isError) {
+			const backendMessage = (
+				login.error as { response?: { data?: { message?: string } } }
+			)?.response?.data?.message;
+			setLoginErrorMessage(backendMessage || t('auth.login.invalidCredentials'));
+		}
+	}, [login.isError, login.error, t]);
+
 	const onSubmit = (formData: LoginFormData) => {
+		// Clear any previous failure so a retry doesn't sit next to a stale
+		// error, and so the snackbar re-opens even if the message is identical.
+		setLoginErrorMessage(null);
 		login.mutate(formData);
 	};
 
@@ -140,6 +157,12 @@ const LoginForm = () => {
 							handleClose={() => setGoogleSnackbarOpen(false)}
 							message={t('auth.login.continueWithGoogle')}
 							autoHideDuration={3000}
+						/>
+						<SnackbarComponent
+							open={Boolean(loginErrorMessage)}
+							handleClose={() => setLoginErrorMessage(null)}
+							message={loginErrorMessage || ''}
+							autoHideDuration={6000}
 						/>
 						<GoogleButton onClick={() => setGoogleSnackbarOpen(true)}>
 							{t('auth.login.continueWithGoogle')}

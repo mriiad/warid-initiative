@@ -102,6 +102,7 @@
       "passwordRequired": "كلمة المرور مطلوبة",
       "forgotPassword": "هل نسيت كلمة المرور؟",
       "passwordResetSuccess": "!تمت إعادة تعيين كلمة المرور بنجاح",
+      "invalidCredentials": "اسم المستخدم أو كلمة المرور غير صحيحة",
       "signupSuccess": ".تم إنشاء حسابك بنجاح. يمكنك الآن تسجيل الدخول",
       "rememberMe": "تذكرني",
       "orLoginWith": "أو سجل الدخول باستخدام",

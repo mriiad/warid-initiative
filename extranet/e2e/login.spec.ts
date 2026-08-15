@@ -13,13 +13,70 @@ test.describe('Login', () => {
 	});
 
 	test('wrong credentials show an error and keep the user on /login', async ({ page }) => {
+		// Regression test for issue #293: this test's own name was the bug --
+		// it asserted the URL stayed on /login and called that "shows an
+		// error", but never checked anything was actually rendered. Nothing
+		// was: useLogin's onError just logged to the console, and LoginForm
+		// never read login.isError/login.error, so a wrong password silently
+		// returned the user to an unchanged form with the spinner gone and no
+		// explanation.
 		await mockJson(page, '**/api/auth/login', { message: 'Wrong password.' }, { status: 401, method: 'POST' });
 		await page.goto('/login');
 		await page.getByLabel('اسم المستخدم').fill('CIN123456');
 		await page.getByRole('textbox', { name: 'كلمة المرور' }).fill('wrongpassword');
 		await page.locator('button[type=submit]').click();
-		await page.waitForTimeout(500);
+
+		// The backend's own message is surfaced as-is (same convention as
+		// ProfileComponent/EventForm elsewhere in the app).
+		await expect(page.getByText('Wrong password.')).toBeVisible({ timeout: 5000 });
 		await expect(page).toHaveURL(/\/login/);
+	});
+
+	test('a translated fallback message is shown when the backend response has no message field', async ({ page }) => {
+		await mockJson(page, '**/api/auth/login', {}, { status: 401, method: 'POST' });
+		await page.goto('/login');
+		await page.getByLabel('اسم المستخدم').fill('CIN123456');
+		await page.getByRole('textbox', { name: 'كلمة المرور' }).fill('wrongpassword');
+		await page.locator('button[type=submit]').click();
+
+		await expect(page.getByText('اسم المستخدم أو كلمة المرور غير صحيحة')).toBeVisible({ timeout: 5000 });
+	});
+
+	test('retrying after a failed login clears the previous error', async ({ page }) => {
+		let attempt = 0;
+		await page.route('**/api/auth/login', async (route: Route) => {
+			attempt += 1;
+			if (attempt === 1) {
+				return route.fulfill({
+					status: 401,
+					contentType: 'application/json',
+					body: JSON.stringify({ message: 'Wrong password.' }),
+				});
+			}
+			return route.fulfill({
+				status: 200,
+				contentType: 'application/json',
+				body: JSON.stringify({
+					token: 'fake-token',
+					refreshToken: 'fake-refresh',
+					userId: 'user-1',
+					isAdmin: false,
+				}),
+			});
+		});
+		await mockJson(page, '**/api/user/check-profile', { isProfileComplete: true }, { status: 200 });
+
+		await page.goto('/login');
+		await page.getByLabel('اسم المستخدم').fill('CIN123456');
+		await page.getByRole('textbox', { name: 'كلمة المرور' }).fill('wrongpassword');
+		await page.locator('button[type=submit]').click();
+		await expect(page.getByText('Wrong password.')).toBeVisible({ timeout: 5000 });
+
+		await page.getByRole('textbox', { name: 'كلمة المرور' }).fill('correctpassword');
+		await page.locator('button[type=submit]').click();
+
+		await expect(page).toHaveURL(/\/dashboard/, { timeout: 10000 });
+		await expect(page.getByText('Wrong password.')).toHaveCount(0);
 	});
 
 	test('a user with a complete profile is redirected to /dashboard', async ({ page }) => {

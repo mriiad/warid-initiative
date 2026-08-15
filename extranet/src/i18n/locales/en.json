@@ -102,6 +102,7 @@
       "passwordRequired": "Password is required",
       "forgotPassword": "Forgot your password?",
       "passwordResetSuccess": "Password reset successfully!",
+      "invalidCredentials": "Incorrect username or password.",
       "signupSuccess": "Your account has been successfully created. You can now log in.",
       "rememberMe": "Remember me",
       "orLoginWith": "Or login with",
