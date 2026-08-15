@@ -330,8 +330,22 @@ describe('GET /api/admin/stats', () => {
 	});
 });
 
-describe('GET /api/users', () => {
+describe('GET /api/users (admin only -- regression for issue #312: this route had no auth at all)', () => {
+	it('rejects an unauthenticated caller', async () => {
+		const res = await request(app).get('/api/users');
+		expect(res.status).toBe(401);
+	});
+
+	it('rejects a non-admin caller', async () => {
+		User.findById.mockReturnValue(resolveTo({ _id: USER_ID, isAdmin: false }));
+		const res = await request(app)
+			.get('/api/users')
+			.set('Authorization', authHeader(USER_ID));
+		expect(res.status).toBe(403);
+	});
+
 	it('returns paginated users with gender falling back to profile.gender', async () => {
+		User.findById.mockReturnValue(resolveTo({ _id: ADMIN_ID, isAdmin: true }));
 		User.countDocuments.mockReturnValue(resolveTo(2));
 		User.find.mockReturnValue(
 			resolveTo([
@@ -347,7 +361,9 @@ describe('GET /api/users', () => {
 				},
 			])
 		);
-		const res = await request(app).get('/api/users');
+		const res = await request(app)
+			.get('/api/users')
+			.set('Authorization', authHeader(ADMIN_ID));
 		expect(res.status).toBe(200);
 		expect(res.body.totalItems).toBe(2);
 		expect(res.body.users[0].gender).toBe('male');
@@ -355,12 +371,15 @@ describe('GET /api/users', () => {
 	});
 
 	it('returns 500 on a database error', async () => {
+		User.findById.mockReturnValue(resolveTo({ _id: ADMIN_ID, isAdmin: true }));
 		User.countDocuments.mockReturnValue(
 			makeQuery(() => {
 				throw new Error('db down');
 			})
 		);
-		const res = await request(app).get('/api/users');
+		const res = await request(app)
+			.get('/api/users')
+			.set('Authorization', authHeader(ADMIN_ID));
 		expect(res.status).toBe(500);
 	});
 });
