@@ -115,9 +115,14 @@ const routeFallback = (
 // form on submit). '/contact' and '/FAQ' are reachable by anyone (logged in
 // or not) and self-adjust their fields/nav based on auth state, so they're
 // unconditional too. '/request-reset-password' is inherently pre-auth.
-// '/home' is here unconditionally too now that LandingPage (the non-admin
+// '/home' is here unconditionally too now that LandingPage (the pre-auth
 // destination) has its own redesign -- AdminDashboard renders instead for
-// admins, also full-bleed. '/events' (the list) is here unconditionally too:
+// admins, and Dashboard for any other logged-in user, both also full-bleed
+// (see the route element below; bug fix, issue #292 -- Home used to always
+// render LandingPage for non-admins regardless of login state, so a donor's
+// dashboard was reachable only once, immediately after login, with no way
+// back to it short of typing /dashboard directly). '/events' (the list) is
+// here unconditionally too:
 // EventsComponent now renders a full-bleed view for both roles
 // (AdminEventsListView / DonorEventsListView, each with their own top bar +
 // RedesignBottomNav) -- it was previously admin-gated from before the donor
@@ -169,7 +174,7 @@ const RESET_PASSWORD_FULL_SCREEN_PATTERN = /^\/reset-password\/[^/]+$/;
 
 const App = () => {
 	const isMobile = useIsMobile();
-	const { isAdmin } = useAuth();
+	const { isAdmin, token } = useAuth();
 	const location = useLocation();
 	const forceDesktop =
 		new URLSearchParams(location.search).get('forceDesktop') === '1';
@@ -186,7 +191,18 @@ const App = () => {
 		<Suspense fallback={routeFallback}>
 			<Routes>
 				<Route path='/' element={<Navigate replace to='/home' />} />
-				<Route path='/home' element={isAdmin ? <AdminDashboard /> : <LandingPage />} />
+				<Route
+					path='/home'
+					element={
+						isAdmin ? (
+							<AdminDashboard />
+						) : token ? (
+							<Dashboard />
+						) : (
+							<LandingPage />
+						)
+					}
+				/>
 				<Route path='/signup' element={<SignupForm />} />
 				<Route path='/login' element={<LoginForm />} />
 				<Route path='/update-profile' element={<UserProfileForm />} />
