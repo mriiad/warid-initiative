@@ -14,16 +14,29 @@ import { Page, Route } from '@playwright/test';
 
 export async function seedAuth(
 	page: Page,
-	opts: { token?: string; userId?: string; isAdmin?: boolean } = {}
+	opts: {
+		token?: string;
+		userId?: string;
+		isAdmin?: boolean;
+		refreshToken?: string;
+	} = {}
 ) {
-	const { token = 'fake-jwt-token', userId = 'user-1', isAdmin = false } = opts;
+	const {
+		token = 'fake-jwt-token',
+		userId = 'user-1',
+		isAdmin = false,
+		// A real session always has both -- apiClient's response interceptor
+		// uses this to silently refresh an expired access token.
+		refreshToken = 'fake-refresh-token',
+	} = opts;
 	await page.addInitScript(
-		([t, u, a]) => {
+		([t, u, a, r]) => {
 			window.localStorage.setItem('token', t as string);
 			window.localStorage.setItem('userId', u as string);
 			window.localStorage.setItem('isAdmin', String(a));
+			window.localStorage.setItem('refreshToken', r as string);
 		},
-		[token, userId, isAdmin]
+		[token, userId, isAdmin, refreshToken]
 	);
 }
 

@@ -1,4 +1,3 @@
-import axios from 'axios';
 import React, {
 	createContext,
 	useCallback,
@@ -6,8 +5,6 @@ import React, {
 	useEffect,
 	useState,
 } from 'react';
-import API_CONFIG, { buildApiUrl } from '../utils/apiConfig';
-import { useAxiosInterceptor } from './useAxiosInterceptor';
 
 interface AuthContextProps {
 	token: string | null;
@@ -16,7 +13,6 @@ interface AuthContextProps {
 	setToken: React.Dispatch<React.SetStateAction<string | null>>;
 	setUserId: React.Dispatch<React.SetStateAction<string | null>>;
 	setIsAdmin: React.Dispatch<React.SetStateAction<boolean>>;
-	refreshToken: () => Promise<void>;
 	updateAuthState: (token: string, userId: string, isAdmin: boolean) => void;
 }
 
@@ -39,32 +35,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 		setIsAdmin(storedIsAdmin);
 	}, []);
 
-	const refreshToken = useCallback(async () => {
-		const currentToken = localStorage.getItem('token');
-		const currentRefreshToken = localStorage.getItem('refreshToken');
-
-		if (currentToken && currentRefreshToken) {
-			try {
-				const response = await axios.post(
-					buildApiUrl(API_CONFIG.endpoints.auth.refreshToken),
-					{ refreshToken: currentRefreshToken }
-				);
-
-				const newToken = response.data.accessToken;
-				const newRefreshToken = response.data.refreshToken;
-
-				setToken(newToken);
-				localStorage.setItem('token', newToken);
-				localStorage.setItem('refreshToken', newRefreshToken);
-				axios.defaults.headers['Authorization'] = `Bearer ${newToken}`;
-			} catch (error) {
-				console.error('Failed to refresh token:', error);
-				// Handle token refresh failure
-				// Optionally, redirect to login or logout the user
-			}
-		}
-	}, []);
-
 	const updateAuthState = useCallback(
 		(newToken: string, newUserId: string, newIsAdmin: boolean) => {
 			setToken(newToken);
@@ -73,8 +43,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 		},
 		[]
 	);
-
-	useAxiosInterceptor(refreshToken);
 
 	return (
 		<AuthContext.Provider
@@ -85,7 +53,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 				setUserId,
 				isAdmin,
 				setIsAdmin,
-				refreshToken,
 				updateAuthState,
 			}}
 		>

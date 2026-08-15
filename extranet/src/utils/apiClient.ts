@@ -17,24 +17,90 @@ apiClient.interceptors.request.use((config) => {
 	return config;
 });
 
+// Requests that can't be retried by refreshing: the login attempt itself has
+// no session to refresh, and retrying a failed refresh with another refresh
+// would recurse forever.
+const NON_REFRESHABLE_ENDPOINTS = [
+	API_CONFIG.endpoints.auth.login,
+	API_CONFIG.endpoints.auth.refreshToken,
+];
+
+/**
+ * Every real API call goes through this instance (see services/*.ts), so
+ * this is the one interceptor a 401 anywhere in the app actually hits.
+ *
+ * Used to just wipe the session and hard-redirect to /login on any 401 --
+ * there was a second, separate refresh-and-retry interceptor patched onto
+ * the *global* axios object (auth/useAxiosInterceptor.tsx), but since
+ * nothing routes real traffic through plain axios, that logic never ran for
+ * anything a user actually did. Every access-token expiry force-logged
+ * users out even though their still-valid refresh token could have kept
+ * them signed in silently. See issue #304.
+ */
+const attemptRefresh = async (): Promise<string | null> => {
+	const refreshToken = localStorage.getItem('refreshToken');
+	if (!refreshToken) {
+		return null;
+	}
+
+	const response = await axios.post(
+		`${API_CONFIG.baseURL}${API_CONFIG.endpoints.auth.refreshToken}`,
+		{ refreshToken }
+	);
+	const { accessToken, refreshToken: newRefreshToken } = response.data;
+
+	localStorage.setItem('token', accessToken);
+	localStorage.setItem('refreshToken', newRefreshToken);
+
+	return accessToken;
+};
+
+const clearSessionAndRedirectToLogin = () => {
+	localStorage.removeItem('token');
+	localStorage.removeItem('refreshToken');
+	localStorage.removeItem('userId');
+	localStorage.removeItem('isAdmin');
+
+	// Only redirect if not already on login page.
+	if (window.location.pathname !== '/login') {
+		window.location.href = '/login';
+	}
+};
+
 // Response interceptor for error handling
 apiClient.interceptors.response.use(
 	(response: AxiosResponse) => {
 		return response;
 	},
-	(error) => {
-		// Handle unauthorized errors (token expired)
-		if (error.response?.status === 401) {
-			// Clear local storage and redirect to login
-			localStorage.removeItem('token');
-			localStorage.removeItem('refreshToken');
-			localStorage.removeItem('userId');
-			localStorage.removeItem('isAdmin');
+	async (error) => {
+		const originalRequest = error.config;
 
-			// Only redirect if not already on login page
-			if (window.location.pathname !== '/login') {
-				window.location.href = '/login';
+		if (error.response?.status === 401) {
+			const canRetry =
+				originalRequest &&
+				!originalRequest._retry &&
+				!NON_REFRESHABLE_ENDPOINTS.includes(originalRequest.url);
+
+			if (canRetry) {
+				originalRequest._retry = true;
+				try {
+					const newToken = await attemptRefresh();
+					if (newToken) {
+						originalRequest.headers.Authorization = `Bearer ${newToken}`;
+						return apiClient(originalRequest);
+					}
+				} catch (refreshError) {
+					console.error('Token refresh failed:', refreshError);
+					// Fall through to the session-clearing branch below --
+					// the refresh token itself is no longer valid.
+				}
 			}
+
+			// Either this request can't be retried (it was the login or
+			// refresh call itself, or a retry already failed once), or the
+			// refresh attempt above didn't produce a usable token: the
+			// session is genuinely over.
+			clearSessionAndRedirectToLogin();
 		}
 
 		// Handle network errors
