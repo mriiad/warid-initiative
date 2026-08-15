@@ -8,13 +8,13 @@ import type { UserFormData } from '../data/ProfileFormData';
 import { usersService } from '../services';
 import type { UpdateUserData } from '../types';
 import type { AdminStats, DashboardData } from '../types/users';
+import { queryKeys } from './queryKeys';
 
 // Users hooks
 export const useUserProfile = (userId?: string) => {
 	return useQuery({
-		queryKey: ['user', userId || 'me'],
+		queryKey: userId ? queryKeys.user.detail(userId) : queryKeys.user.me(),
 		queryFn: () => usersService.getProfile(userId),
-		staleTime: 5 * 60 * 1000, // 5 minutes
 		enabled: true, // Always enabled, will fetch current user's profile if no userId
 	});
 };
@@ -25,7 +25,7 @@ export const useUpdateMyProfile = () => {
 	return useMutation({
 		mutationFn: (data: Partial<UserFormData>) => usersService.updateMyProfile(data),
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['user', 'me'] });
+			queryClient.invalidateQueries({ queryKey: queryKeys.user.me() });
 		},
 		onError: (error) => {
 			console.error('Profile update failed:', error);
@@ -39,7 +39,7 @@ export const useCompleteMyProfile = () => {
 	return useMutation({
 		mutationFn: (data: Partial<UserFormData>) => usersService.completeMyProfile(data),
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['user', 'me'] });
+			queryClient.invalidateQueries({ queryKey: queryKeys.user.me() });
 		},
 		onError: (error) => {
 			console.error('Profile completion failed:', error);
@@ -55,8 +55,8 @@ export const useUpdateUserInfo = () => {
 			usersService.updateUserInfo(userId, data),
 		onSuccess: (_, { userId }) => {
 			// Invalidate user data
-			queryClient.invalidateQueries({ queryKey: ['user', userId] });
-			queryClient.invalidateQueries({ queryKey: ['user', 'me'] });
+			queryClient.invalidateQueries({ queryKey: queryKeys.user.detail(userId) });
+			queryClient.invalidateQueries({ queryKey: queryKeys.user.me() });
 		},
 		onError: (error) => {
 			console.error('User info update failed:', error);
@@ -71,9 +71,8 @@ export const useUpdateUserInfo = () => {
 // component for the failure this caused (issue #195).
 export const useCheckProfileCompleteness = (enabled = false) => {
 	return useQuery({
-		queryKey: ['profileComplete'],
+		queryKey: queryKeys.profileComplete(),
 		queryFn: () => usersService.checkProfileCompleteness(),
-		staleTime: 5 * 60 * 1000,
 		enabled,
 	});
 };
@@ -81,15 +80,14 @@ export const useCheckProfileCompleteness = (enabled = false) => {
 // Admin hooks
 export const useUsers = (page = 1) => {
 	return useQuery({
-		queryKey: ['users', page],
+		queryKey: queryKeys.users.list(page),
 		queryFn: () => usersService.getAllUsers(page),
-		staleTime: 5 * 60 * 1000,
 	});
 };
 
 export const useSearchUsers = (query: string, enabled = true) => {
 	return useQuery({
-		queryKey: ['users', 'search', query],
+		queryKey: queryKeys.users.search(query),
 		queryFn: () => usersService.searchUsers(query),
 		enabled: enabled && !!query,
 		staleTime: 2 * 60 * 1000, // 2 minutes for search results
@@ -103,7 +101,7 @@ export const useDeleteUser = () => {
 		mutationFn: (username: string) => usersService.deleteUser(username),
 		onSuccess: (response, username) => {
 			// Invalidate users list
-			queryClient.invalidateQueries({ queryKey: ['users'] });
+			queryClient.invalidateQueries({ queryKey: queryKeys.users.all });
 		},
 		onError: (error) => {
 			console.error('User deletion failed:', error);
@@ -118,8 +116,8 @@ export const useToggleAdminStatus = () => {
 		mutationFn: (userId: string) => usersService.toggleAdminStatus(userId),
 		onSuccess: (response, userId) => {
 			// Invalidate users list and specific user
-			queryClient.invalidateQueries({ queryKey: ['users'] });
-			queryClient.invalidateQueries({ queryKey: ['user', userId] });
+			queryClient.invalidateQueries({ queryKey: queryKeys.users.all });
+			queryClient.invalidateQueries({ queryKey: queryKeys.user.detail(userId) });
 		},
 		onError: (error) => {
 			console.error('Admin status toggle failed:', error);
@@ -129,20 +127,14 @@ export const useToggleAdminStatus = () => {
 
 export const useDashboard = (userId: string) => {
   return useQuery<DashboardData>({
-    queryKey: ['dashboard'],
+    queryKey: queryKeys.dashboard(userId),
     queryFn: () => usersService.getDashboard(userId),
-    staleTime: 5 * 60 * 1000,
   });
 };
 
 export const useAdminStats = () => {
 	return useQuery<AdminStats>({
-		queryKey: ['adminStats'],
+		queryKey: queryKeys.adminStats(),
 		queryFn: () => usersService.getAdminStats(),
-		staleTime: 5 * 60 * 1000,
 	});
 };
-
-
-
-

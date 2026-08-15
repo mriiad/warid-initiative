@@ -6,10 +6,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { emergencyService } from '../services';
 import type { EmergencyData } from '../types';
+import { queryKeys } from './queryKeys';
 
 export const useUnconfirmedEmergencies = (page = 1) => {
 	return useQuery({
-		queryKey: ['emergencies', 'unconfirmed', page],
+		queryKey: queryKeys.emergencies.unconfirmed.list(page),
 		queryFn: () => emergencyService.getUnconfirmedEmergencies(page),
 		staleTime: 2 * 60 * 1000,
 		refetchInterval: 30 * 1000,
@@ -22,7 +23,7 @@ export const useEmergencyMatchUsers = (
 	enabled = true
 ) => {
 	return useQuery({
-		queryKey: ['emergencies', emergencyId, 'matches', page],
+		queryKey: queryKeys.emergencies.matches(emergencyId, page),
 		queryFn: () => emergencyService.getEmergencyMatchUsers(emergencyId, page),
 		enabled: enabled && !!emergencyId,
 		staleTime: 1 * 60 * 1000, // 1 minute
@@ -37,7 +38,7 @@ export const useCreateEmergency = () => {
 		onSuccess: (response) => {
 			// Invalidate unconfirmed emergencies list
 			queryClient.invalidateQueries({
-				queryKey: ['emergencies', 'unconfirmed'],
+				queryKey: queryKeys.emergencies.unconfirmed.all,
 			});
 		},
 		onError: (error) => {
@@ -55,9 +56,9 @@ export const useConfirmEmergency = () => {
 		onSuccess: (_, emergencyId) => {
 			// Remove from unconfirmed list and invalidate related queries
 			queryClient.invalidateQueries({
-				queryKey: ['emergencies', 'unconfirmed'],
+				queryKey: queryKeys.emergencies.unconfirmed.all,
 			});
-			queryClient.invalidateQueries({ queryKey: ['emergencies', emergencyId] });
+			queryClient.invalidateQueries({ queryKey: queryKeys.emergencies.detail(emergencyId) });
 		},
 		onError: (error) => {
 			console.error('Emergency confirmation failed:', error);
@@ -77,11 +78,14 @@ export const useConfirmUserInEmergency = () => {
 			userId: string;
 		}) => emergencyService.confirmUserInEmergency(emergencyId, userId),
 		onSuccess: (_, { emergencyId }) => {
-			// Invalidate emergency matches and user data
+			// Invalidate emergency matches (and detail) and user data --
+			// emergencies.detail(emergencyId) prefix-matches every matches()
+			// page for this emergency, same as the ['emergencies', emergencyId]
+			// literal this replaces.
 			queryClient.invalidateQueries({
-				queryKey: ['emergencies', emergencyId, 'matches'],
+				queryKey: queryKeys.emergencies.detail(emergencyId),
 			});
-			queryClient.invalidateQueries({ queryKey: ['user'] });
+			queryClient.invalidateQueries({ queryKey: queryKeys.user.all });
 		},
 		onError: (error) => {
 			console.error('User confirmation in emergency failed:', error);

@@ -21,6 +21,7 @@ import { BLOOD_GROUP_OPTIONS } from '../data/constants';
 import { authRedesignStyles } from '../styles/authRedesign';
 import { eventDetailRedesignStyles } from '../styles/eventDetailRedesign';
 import { userDetailRedesignStyles } from '../styles/userDetailRedesign';
+import { queryKeys } from '../hooks/queryKeys';
 import API_CONFIG, { buildApiUrl } from '../utils/apiConfig';
 import { cities } from '../utils/utils';
 import RedesignBottomNav from './shared/RedesignBottomNav';
@@ -65,7 +66,7 @@ const UpdateUser = () => {
 
 	// Fetch user data
 	const { data: userData, isLoading } = useQuery({
-		queryKey: ['user', userId],
+		queryKey: queryKeys.user.detail(userId ?? ''),
 		queryFn: async () => {
 			const token = localStorage.getItem('token');
 			const response = await axios.get(
