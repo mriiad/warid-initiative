@@ -151,7 +151,8 @@
       "city": "Ville",
       "cityRequired": "La ville est requise",
       "missingFields": "Merci de renseigner les informations requises ci-dessous.",
-      "submit": "Mettre à jour"
+      "submit": "Mettre à jour",
+      "updateError": "Échec de l'enregistrement de votre profil. Veuillez réessayer."
     }
   },
   "profile": {
