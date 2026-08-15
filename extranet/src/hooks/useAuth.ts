@@ -12,6 +12,7 @@ import type {
 	SignupData,
 	UpdatePasswordData,
 } from '../types';
+import { queryKeys } from './queryKeys';
 
 export const useSignup = () => {
 	return useMutation({
@@ -36,7 +37,7 @@ export const useLogin = () => {
 			localStorage.setItem('isAdmin', String(isAdmin));
 
 			// Force immediate update of queries and clear cache
-			queryClient.invalidateQueries({ queryKey: ['user'] });
+			queryClient.invalidateQueries({ queryKey: queryKeys.user.all });
 			queryClient.clear(); // Clear all cached data to ensure fresh state
 		},
 		onError: (error) => {

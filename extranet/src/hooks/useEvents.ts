@@ -10,23 +10,22 @@ import type {
 	DonationData,
 	EventFormData,
 } from '../types';
+import { queryKeys } from './queryKeys';
 
 // Events hooks
 export const useEvents = (page = 1) => {
 	return useQuery({
-		queryKey: ['events', page],
+		queryKey: queryKeys.events.list(page),
 		queryFn: () => eventsService.getAll(page),
-		staleTime: 5 * 60 * 1000, // 5 minutes
 		gcTime: 10 * 60 * 1000, // 10 minutes
 	});
 };
 
 export const useEvent = (reference: string, enabled = true) => {
 	return useQuery({
-		queryKey: ['event', reference],
+		queryKey: queryKeys.event.detail(reference),
 		queryFn: () => eventsService.getByReference(reference),
 		enabled: enabled && !!reference,
-		staleTime: 5 * 60 * 1000,
 	});
 };
 
@@ -37,7 +36,7 @@ export const useCreateEvent = () => {
 		mutationFn: (data: EventFormData) => eventsService.create(data),
 		onSuccess: (response) => {
 			// Invalidate and refetch events
-			queryClient.invalidateQueries({ queryKey: ['events'] });
+			queryClient.invalidateQueries({ queryKey: queryKeys.events.all });
 		},
 		onError: (error) => {
 			console.error('Event creation failed:', error);
@@ -58,8 +57,8 @@ export const useUpdateEvent = () => {
 		}) => eventsService.update(reference, data),
 		onSuccess: (_, { reference }) => {
 			// Invalidate specific event and events list
-			queryClient.invalidateQueries({ queryKey: ['event', reference] });
-			queryClient.invalidateQueries({ queryKey: ['events'] });
+			queryClient.invalidateQueries({ queryKey: queryKeys.event.detail(reference) });
+			queryClient.invalidateQueries({ queryKey: queryKeys.events.all });
 		},
 		onError: (error) => {
 			console.error('Event update failed:', error);
@@ -74,8 +73,8 @@ export const useDeleteEvent = () => {
 		mutationFn: (reference: string) => eventsService.delete(reference),
 		onSuccess: (_, reference) => {
 			// Remove from cache and invalidate list
-			queryClient.removeQueries({ queryKey: ['event', reference] });
-			queryClient.invalidateQueries({ queryKey: ['events'] });
+			queryClient.removeQueries({ queryKey: queryKeys.event.detail(reference) });
+			queryClient.invalidateQueries({ queryKey: queryKeys.events.all });
 		},
 		onError: (error) => {
 			console.error('Event deletion failed:', error);
@@ -104,8 +103,8 @@ export const useDonate = () => {
 		mutationFn: (data: DonationData) => eventsService.donate(data),
 		onSuccess: (response) => {
 			// Invalidate donation history and user profile
-			queryClient.invalidateQueries({ queryKey: ['donations'] });
-			queryClient.invalidateQueries({ queryKey: ['user'] });
+			queryClient.invalidateQueries({ queryKey: queryKeys.donations() });
+			queryClient.invalidateQueries({ queryKey: queryKeys.user.all });
 		},
 		onError: (error) => {
 			console.error('Donation failed:', error);
@@ -115,25 +114,22 @@ export const useDonate = () => {
 
 export const useCanDonate = () => {
 	return useQuery({
-		queryKey: ['canDonate'],
+		queryKey: queryKeys.canDonate(),
 		queryFn: () => eventsService.canDonate(),
-		staleTime: 5 * 60 * 1000, // 5 minutes
 	});
 };
 
 export const useDonationHistory = () => {
 	return useQuery({
-		queryKey: ['donations'],
+		queryKey: queryKeys.donations(),
 		queryFn: () => eventsService.getDonationHistory(),
-		staleTime: 5 * 60 * 1000,
 	});
 };
 
 export const useCheckParticipation = (reference: string) => {
 	return useQuery({
-		queryKey: ['checkParticipation', reference],
+		queryKey: queryKeys.checkParticipation(reference),
 		queryFn: () => eventsService.checkParticipation(reference),
-		staleTime: 5 * 60 * 1000,
 	});
 };
 
@@ -142,8 +138,8 @@ export const useCreateParticipant = () => {
 	return useMutation({
 		mutationFn: (reference: string) => eventsService.createParticipant(reference),
 		onSuccess: (_, reference) => {
-			queryClient.invalidateQueries({ queryKey: ['checkParticipation', reference] });
-			queryClient.invalidateQueries({ queryKey: ['eventParticipants', reference] });
+			queryClient.invalidateQueries({ queryKey: queryKeys.checkParticipation(reference) });
+			queryClient.invalidateQueries({ queryKey: queryKeys.eventParticipants(reference) });
 		},
 		onError: (error) => {
 			console.error('Participant registration failed:', error);
@@ -160,7 +156,7 @@ export interface ParticipantStats {
 
 export const useEventParticipantsDetails = (reference: string, enabled = true) => {
   return useQuery<ParticipantStats>({
-    queryKey: ['eventParticipants', reference],
+    queryKey: queryKeys.eventParticipants(reference),
     queryFn: async () => {
       const response = await eventsService.getEventParticipantsDetails(reference);
       const data = response.data;
@@ -180,6 +176,5 @@ export const useEventParticipantsDetails = (reference: string, enabled = true) =
       }
     },
     enabled,
-    staleTime: 5 * 60 * 1000,
   });
 };
