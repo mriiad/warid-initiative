@@ -19,7 +19,12 @@ const {
 	getAdminStats,
 } = require('../controllers/user');
 
-userRouter.get('/api/users', getUsers);
+// Was unauthenticated entirely -- returned every user's email, phone
+// number, isAdmin status and full profile (blood group, city, name) to
+// any anonymous request. Every sibling route that returns user data
+// (searchUsers, users/profile/:userId, admin/stats) is isAuth +
+// checkIfAdmin; this one was simply missed. See issue #312.
+userRouter.get('/api/users', isAuth, checkIfAdmin, getUsers);
 
 userRouter.put('/api/user/update', isAuth, updateUserInfo);
 
