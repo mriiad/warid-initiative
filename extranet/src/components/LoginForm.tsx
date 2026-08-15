@@ -76,6 +76,14 @@ const LoginForm = () => {
 			const isProfileComplete = profileCompleteness.data.data.isProfileComplete;
 			if (!isProfileComplete) {
 				navigate('/update-profile');
+			} else if (isAdmin) {
+				// '/dashboard' unconditionally renders the donor Dashboard --
+				// an admin landing there sees "you haven't donated yet, join
+				// our community of heroes" instead of their actual overview
+				// (stats, unconfirmed emergencies, next event). '/home'
+				// already resolves to AdminDashboard for an admin (see
+				// App.tsx), so send them there instead.
+				navigate('/home');
 			} else {
 				navigate('/dashboard');
 			}
