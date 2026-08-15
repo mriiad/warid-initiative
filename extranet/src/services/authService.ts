@@ -14,7 +14,7 @@ import { apiClient } from '../utils/apiClient';
 
 export const authService = {
 	signup: (data: SignupData) => {
-		return apiClient.put('/api/auth/signup', data);
+		return apiClient.post('/api/auth/signup', data);
 	},
 
 	login: (data: LoginData) => {

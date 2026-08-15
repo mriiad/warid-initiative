@@ -24,7 +24,9 @@ const {
  */
 const authRouter = express.Router();
 
-authRouter.put(
+// Creates a new User -- POST, not PUT: the client isn't naming the resource's
+// final URI (which PUT's semantics require), the server is.
+authRouter.post(
 	'/api/auth/signup',
 	authLimiter,
 	[

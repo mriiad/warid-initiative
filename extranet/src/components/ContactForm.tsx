@@ -2,16 +2,15 @@
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import MailOutlineIcon from '@mui/icons-material/MailOutline';
 import { Button, IconButton, TextField, Typography } from '@mui/material';
-import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { ProfileFormData } from '../data/ProfileFormData';
+import { contactService, usersService } from '../services';
 import { authRedesignStyles } from '../styles/authRedesign';
 import { eventsListRedesignStyles } from '../styles/eventsListRedesign';
-import API_CONFIG, { buildApiUrl } from '../utils/apiConfig';
 import RedesignBottomNav from './shared/RedesignBottomNav';
 import ResponseAnimation from './shared/ResponseAnimation';
 
@@ -44,8 +43,8 @@ const ContactForm = () => {
 	useEffect(() => {
 		if (token) {
 			setIsProfileLoading(true);
-			axios
-				.get('/api/user/profile')
+			usersService
+				.getProfile()
 				.then((response) => {
 					setLocalUserProfile(response.data);
 				})
@@ -88,7 +87,7 @@ const ContactForm = () => {
 	const onSubmit = async (formData: ContactFormData) => {
 		try {
 			setIsFormSubmitted(true);
-			await axios.post(buildApiUrl(API_CONFIG.endpoints.contact), formData);
+			await contactService.sendMessage(formData);
 			console.log('Contact form submitted successfully!');
 			setIsSuccessResponse(true);
 			setIsErrorResponse(false);

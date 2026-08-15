@@ -21,7 +21,7 @@ describe('POST /api/auth/signup', () => {
 	});
 
 	it('rejects an invalid email', async () => {
-		const res = await request(app).put('/api/auth/signup').send({
+		const res = await request(app).post('/api/auth/signup').send({
 			email: 'not-an-email',
 			password: 'password123',
 			phoneNumber: '+212600000000',
@@ -31,7 +31,7 @@ describe('POST /api/auth/signup', () => {
 	});
 
 	it('rejects a password shorter than 5 characters', async () => {
-		const res = await request(app).put('/api/auth/signup').send({
+		const res = await request(app).post('/api/auth/signup').send({
 			email: 'valid@example.com',
 			password: 'ab',
 			phoneNumber: '+212600000000',
@@ -41,7 +41,7 @@ describe('POST /api/auth/signup', () => {
 	});
 
 	it('rejects a phone number that is not a valid E.164 number', async () => {
-		const res = await request(app).put('/api/auth/signup').send({
+		const res = await request(app).post('/api/auth/signup').send({
 			email: 'valid@example.com',
 			password: 'password123',
 			phoneNumber: '123',
@@ -54,7 +54,7 @@ describe('POST /api/auth/signup', () => {
 		User.findOne.mockImplementation(({ email }) =>
 			resolveTo(email ? { _id: 'existing-user' } : null)
 		);
-		const res = await request(app).put('/api/auth/signup').send({
+		const res = await request(app).post('/api/auth/signup').send({
 			email: 'taken@example.com',
 			password: 'password123',
 			phoneNumber: '+212600000000',
@@ -64,7 +64,7 @@ describe('POST /api/auth/signup', () => {
 	});
 
 	it('creates a user on valid input and does not leak the password hash', async () => {
-		const res = await request(app).put('/api/auth/signup').send({
+		const res = await request(app).post('/api/auth/signup').send({
 			email: 'new@example.com',
 			password: 'password123',
 			phoneNumber: '+212600000000',
@@ -94,7 +94,7 @@ describe('POST /api/auth/signup', () => {
 		const logSpy = jest.spyOn(logger, 'error').mockImplementation(() => {});
 
 		try {
-			const res = await request(app).put('/api/auth/signup').send({
+			const res = await request(app).post('/api/auth/signup').send({
 				email: 'mailfail@example.com',
 				password: 'password123',
 				phoneNumber: '+212600000001',
@@ -284,7 +284,7 @@ describe('POST /api/auth/signup error handling', () => {
 			this.save = jest.fn().mockRejectedValue(new Error('write failed'));
 			return this;
 		});
-		const res = await request(app).put('/api/auth/signup').send({
+		const res = await request(app).post('/api/auth/signup').send({
 			email: 'boom@example.com',
 			password: 'password123',
 			phoneNumber: '+212600000000',
@@ -479,7 +479,7 @@ describe('email transporter disabled (EMAIL_ENABLED=false)', () => {
 
 	it('still creates the account and responds normally without sending an email', async () => {
 		IsolatedUser.findOne.mockReset().mockReturnValue(resolveTo(null));
-		const res = await request(isolatedApp).put('/api/auth/signup').send({
+		const res = await request(isolatedApp).post('/api/auth/signup').send({
 			email: 'noemail@example.com',
 			password: 'password123',
 			phoneNumber: '+212600000000',

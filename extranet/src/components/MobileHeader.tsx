@@ -3,13 +3,12 @@ import ArrowCircleRightIcon from '@mui/icons-material/ArrowCircleRight';
 import LogOutIcon from '@mui/icons-material/LogoutOutlined';
 import { IconButton } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import axios from 'axios';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { useAuth } from '../auth/AuthContext';
+import { authService } from '../services';
 import colors from '../styles/colors';
-import API_CONFIG, { buildApiUrl } from '../utils/apiConfig';
 import ActionButton from './shared/ActionButton';
 import LanguageSwitcher from './shared/LanguageSwitcher';
 
@@ -76,8 +75,8 @@ const MobileHeader = () => {
 	const currentRoute = location.pathname;
 
 	const handleLogout = () => {
-		axios
-			.post(buildApiUrl(API_CONFIG.endpoints.auth.logout))
+		authService
+			.logout()
 			.then((response) => {
 				localStorage.removeItem('token');
 				localStorage.removeItem('refreshToken');

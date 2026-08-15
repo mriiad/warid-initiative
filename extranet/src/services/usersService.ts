@@ -46,8 +46,12 @@ export const usersService = {
 		return apiClient.get(`/api/users?page=${page}`);
 	},
 
-	searchUsers: (query: string) => {
-		return apiClient.get(`/api/searchUsers?q=${query}`);
+	// POST, not GET: the backend route (isAuth + checkIfAdmin) takes its
+	// filters from req.body and is only ever registered as .post(...) --
+	// this used to GET with a single ?q= param, which matches no route at
+	// all (POST-only) and was never reachable.
+	searchUsers: (filters: Record<string, string | number | boolean>) => {
+		return apiClient.post('/api/searchUsers', filters);
 	},
 
 	deleteUser: (username: string) => {

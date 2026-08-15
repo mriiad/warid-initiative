@@ -85,11 +85,14 @@ export const useUsers = (page = 1) => {
 	});
 };
 
-export const useSearchUsers = (query: string, enabled = true) => {
+export const useSearchUsers = (
+	filters: Record<string, string | number | boolean>,
+	enabled = true
+) => {
 	return useQuery({
-		queryKey: queryKeys.users.search(query),
-		queryFn: () => usersService.searchUsers(query),
-		enabled: enabled && !!query,
+		queryKey: queryKeys.users.search(filters),
+		queryFn: () => usersService.searchUsers(filters),
+		enabled: enabled && Object.keys(filters).length > 0,
 		staleTime: 2 * 60 * 1000, // 2 minutes for search results
 	});
 };
