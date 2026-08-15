@@ -130,10 +130,19 @@ const UsersComponent: React.FC = () => {
 			}
 		};
 
-		if (!searchParams.toString()) {
-			fetchUsers();
-		} else {
+		// `page` alone doesn't count as a filter -- it's present on every
+		// paginated request, including the plain unfiltered list. Checking
+		// searchParams.toString() directly (including page) meant paging past
+		// page 1 always switched to POST /api/searchUsers, even with zero
+		// actual filters applied.
+		const filterParams = new URLSearchParams(searchParams);
+		filterParams.delete('page');
+		const hasActiveFilters = filterParams.toString().length > 0;
+
+		if (hasActiveFilters) {
 			handleFilterApply(searchParams, page);
+		} else {
+			fetchUsers();
 		}
 		navigate(`/users?${searchParams.toString()}`);
 	}, [page, searchParams]);

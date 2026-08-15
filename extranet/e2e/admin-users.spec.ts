@@ -114,21 +114,21 @@ test.describe('Admin users list', () => {
 		await expect(page.getByText('Sara Idrissi')).toBeVisible({ timeout: 5000 });
 		expect(searchBody?.username).toBe('CIN000222');
 	});
-	test('the shared pagination control moves between pages of results', async ({ page }) => {
-		await seedAuth(page, { isAdmin: true });
-		// The initial page-1 load happens via GET /api/users, but as soon as
-		// `page` lands in the URL's search params (i.e. after any pagination
-		// click), UsersComponent switches to POST /api/searchUsers instead --
-		// this is pre-existing behaviour, not specific to the shared control.
-		await mockJson(page, '**/api/users?*', {
-			message: 'Fetched users successfully.',
-			users: [sampleUser({ username: 'CIN000111', profile: { firstname: 'Amine', lastname: 'Bennani' } })],
-			totalItems: 11,
-		});
-		let requestedPage: number | undefined;
+	test('the shared pagination control moves between pages of results, staying on GET /api/users', async ({ page }) => {
+		// Regression: `page` landing in the URL's search params used to be
+		// enough on its own to make UsersComponent switch to POST
+		// /api/searchUsers, even with zero actual filters applied -- every
+		// paginated request beyond page 1 used the wrong verb for a plain
+		// "get me this page" read. searchUsers should only ever be hit once a
+		// real filter is present.
+		let searchUsersCalled = false;
 		await page.route('**/api/searchUsers', async (route) => {
-			requestedPage = route.request().postDataJSON()?.page;
-			const name = requestedPage === 2 ? 'Sara Idrissi' : 'Amine Bennani';
+			searchUsersCalled = true;
+			await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ users: [], totalItems: 0 }) });
+		});
+		await page.route('**/api/users?*', async (route) => {
+			const requestedPage = new URL(route.request().url()).searchParams.get('page');
+			const name = requestedPage === '2' ? 'Sara Idrissi' : 'Amine Bennani';
 			await route.fulfill({
 				status: 200,
 				contentType: 'application/json',
@@ -140,6 +140,7 @@ test.describe('Admin users list', () => {
 				}),
 			});
 		});
+		await seedAuth(page, { isAdmin: true });
 
 		await page.goto('/users');
 		await expect(page.getByText('Amine Bennani')).toBeVisible({ timeout: 5000 });
@@ -149,9 +150,41 @@ test.describe('Admin users list', () => {
 		await page.getByRole('button', { name: 'التالي' }).click();
 
 		await expect(page.getByText('Sara Idrissi')).toBeVisible({ timeout: 5000 });
-		expect(requestedPage).toBe(2);
 		await expect(page.getByText('صفحة 2 من 2')).toBeVisible();
 		await expect(page.getByRole('button', { name: 'التالي' })).toBeDisabled();
+		expect(searchUsersCalled).toBe(false);
+	});
+
+	test('regression: paginating within an active filtered search still POSTs to /api/searchUsers with the right page', async ({ page }) => {
+		await seedAuth(page, { isAdmin: true });
+		await mockJson(page, '**/api/users?*', {
+			message: 'Fetched users successfully.',
+			users: [sampleUser({ username: 'CIN000111', profile: { firstname: 'Amine', lastname: 'Bennani' } })],
+			totalItems: 1,
+		});
+		let requestedPage: number | undefined;
+		await page.route('**/api/searchUsers', async (route) => {
+			requestedPage = route.request().postDataJSON()?.page;
+			const name = requestedPage === 2 ? 'Sara Idrissi' : 'Youssef Amrani';
+			await route.fulfill({
+				status: 200,
+				contentType: 'application/json',
+				body: JSON.stringify({
+					message: 'Fetched users successfully.',
+					users: [sampleUser({ username: 'CIN000333', profile: { firstname: name.split(' ')[0], lastname: name.split(' ')[1] } })],
+					totalItems: 11,
+				}),
+			});
+		});
+
+		await page.goto('/users?bloodGroup=O%2B');
+		await expect(page.getByText('Youssef Amrani')).toBeVisible({ timeout: 5000 });
+		expect(requestedPage).toBe(1);
+
+		await page.getByRole('button', { name: 'التالي' }).click();
+
+		await expect(page.getByText('Sara Idrissi')).toBeVisible({ timeout: 5000 });
+		expect(requestedPage).toBe(2);
 	});
 
 	test('admin can promote a user to admin from the user detail page', async ({ page }) => {
