@@ -1,4 +1,5 @@
 import {
+	Checkbox,
 	FormControl,
 	FormControlLabel,
 	FormHelperText,
@@ -29,6 +30,7 @@ const SignupForm = () => {
 		primaryButton,
 		divider,
 		subtitleLink,
+		link,
 	} = authRedesignStyles();
 	const {
 		handleSubmit,
@@ -41,7 +43,7 @@ const SignupForm = () => {
 	const { signup } = useAuth();
 	const [googleSnackbarOpen, setGoogleSnackbarOpen] = useState(false);
 
-	const onSubmit = (formData: SignupFormData) => {
+	const onSubmit = ({ privacyConsent: _privacyConsent, ...formData }: SignupFormData) => {
 		signup.mutate(formData as any, {
 			onSuccess: () => {
 				navigate('/login?new-user');
@@ -188,6 +190,47 @@ const SignupForm = () => {
 									</RadioGroup>
 									{errors.gender && (
 										<FormHelperText>{errors.gender.message}</FormHelperText>
+									)}
+								</FormControl>
+							)}
+						/>
+						<Controller
+							name='privacyConsent'
+							control={control}
+							defaultValue={false}
+							rules={{ required: t('auth.signup.privacyConsentRequired') }}
+							render={({ field: { value, onChange, ...field } }) => (
+								<FormControl error={Boolean(errors.privacyConsent)}>
+									<FormControlLabel
+										control={
+											<Checkbox
+												{...field}
+												checked={value}
+												onChange={(e) => onChange(e.target.checked)}
+											/>
+										}
+										label={
+											<span>
+												{t('auth.signup.privacyConsentPrefix')}
+												{/* stopPropagation -- FormControlLabel wraps the whole
+													label in a native <label>, which activates the
+													checkbox on any click inside it, including this
+													link; without this, opening the PDF would also
+													toggle/uncheck the box. */}
+												<a
+													href='/files/Warid_Policies.pdf'
+													target='_blank'
+													rel='noopener noreferrer'
+													className={link}
+													onClick={(e) => e.stopPropagation()}
+												>
+													{t('landing.privacyPolicy')}
+												</a>
+											</span>
+										}
+									/>
+									{errors.privacyConsent && (
+										<FormHelperText>{errors.privacyConsent.message}</FormHelperText>
 									)}
 								</FormControl>
 							)}

@@ -90,7 +90,9 @@
       "signupWithGoogle": "إنشاء حساب باستخدام جوجل",
       "back": "رجوع",
       "showPassword": "إظهار كلمة المرور",
-      "hidePassword": "إخفاء كلمة المرور"
+      "hidePassword": "إخفاء كلمة المرور",
+      "privacyConsentPrefix": "أوافق على ",
+      "privacyConsentRequired": ".يجب الموافقة على سياسة الخصوصية للمتابعة"
     },
     "login": {
       "title": "تسجيل الدخول",
