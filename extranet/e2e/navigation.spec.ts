@@ -12,6 +12,20 @@ test.describe('Basic navigation', () => {
 		await expect(page.getByText(/غير موجودة هنا/)).toBeVisible();
 	});
 
+	test('regression (issue #330): the 404 page is self-contained -- no legacy app chrome anywhere', async ({ page }) => {
+		// The legacy chrome (NavBar / MobileHeader / MobileNavbar, ~800 lines)
+		// used to render on exactly one route: this one. Every other screen was
+		// in App.tsx's FULL_SCREEN_ROUTES allowlist. The chrome is deleted now,
+		// so nothing should render the old MobileHeader logo, and the 404 page
+		// still has to offer its own way back home.
+		await page.goto('/this-route-does-not-exist');
+		await expect(page.getByText('404')).toBeVisible();
+		await expect(page.locator('img[alt="Logo"]')).toHaveCount(0);
+
+		await page.getByRole('button', { name: 'العودة إلى الصفحة الرئيسية' }).click();
+		await expect(page).toHaveURL(/\/home$/);
+	});
+
 	test('FAQ page renders questions', async ({ page }) => {
 		await page.goto('/FAQ?forceDesktop=1');
 		await expect(page.getByText(/أجوبة سريعة/)).toBeVisible();

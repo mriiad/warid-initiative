@@ -3,9 +3,6 @@ import { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 import { useAuth } from './auth/AuthContext';
-import MobileHeader from './components/MobileHeader';
-import MobileNavbar from './components/MobileNavbar';
-import NavBar from './components/NavBar';
 import UnsupportedPage from './components/UnsupportedPage';
 import { useIsMobile } from './hooks/useIsMobile';
 
@@ -70,21 +67,6 @@ const AppContainer = styled.div`
 	background: linear-gradient(to left, #e0d1f5, #f6ecf3 48%, #e0d1f5);
 `;
 
-const ContentContainer = styled.div`
-	flex-grow: 1;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	padding: 0 19px;
-`;
-
-const MobileNavContainer = styled.div`
-	position: fixed;
-	bottom: env(safe-area-inset-bottom);
-	width: 100%;
-	z-index: 101;
-`;
-
 const RouteLoadingContainer = styled.div`
 	display: flex;
 	justify-content: center;
@@ -99,93 +81,20 @@ const routeFallback = (
 	</RouteLoadingContainer>
 );
 
-// Routes that ship their own full-bleed header/layout (the redesigned
-// screens) skip the app chrome below instead of sitting inside the padded
-// ContentContainer with a NavBar/MobileHeader above and MobileNavbar below.
-// '/admin' (the admin menu) is here unconditionally: it's only meaningful
-// for admins, but it self-guards (like the other admin screens) and a
-// non-admin landing on it should see a bare NotFoundPage, not app chrome
-// wrapped around one. '/emergency' is public (no isAuth on that endpoint),
-// so it's here for every visitor, not just admins. '/update-profile',
-// '/profile' and '/dashboard' apply to any authenticated user regardless of
-// role (both admins and donors can view/edit their own profile or personal
-// donation history), so they're unconditional too rather than admin-only.
-// '/donate' applies to any user regardless of role (and even a
-// not-yet-logged-in visitor, who gets redirected to /login from inside the
-// form on submit). '/contact' and '/FAQ' are reachable by anyone (logged in
-// or not) and self-adjust their fields/nav based on auth state, so they're
-// unconditional too. '/request-reset-password' is inherently pre-auth.
-// '/home' is here unconditionally too now that LandingPage (the pre-auth
-// destination) has its own redesign -- AdminDashboard renders instead for
-// admins, and Dashboard for any other logged-in user, both also full-bleed
-// (see the route element below; bug fix, issue #292 -- Home used to always
-// render LandingPage for non-admins regardless of login state, so a donor's
-// dashboard was reachable only once, immediately after login, with no way
-// back to it short of typing /dashboard directly). '/events' (the list) is
-// here unconditionally too:
-// EventsComponent now renders a full-bleed view for both roles
-// (AdminEventsListView / DonorEventsListView, each with their own top bar +
-// RedesignBottomNav) -- it was previously admin-gated from before the donor
-// view existed, which left non-admins with the old chrome stacked on top of
-// the new self-contained UI (the same double-chrome bug fixed for '/users'
-// below).
-const FULL_SCREEN_ROUTES = [
-	'/login',
-	'/signup',
-	'/admin',
-	'/emergency',
-	'/update-profile',
-	'/profile',
-	'/dashboard',
-	'/donate',
-	'/contact',
-	'/FAQ',
-	'/request-reset-password',
-	'/home',
-	'/events',
-];
-// '/events/create' and the emergencies admin screens only go full-screen for
-// admins -- their redesign is admin-only so far (see
-// EventForm/EmergencyComponent). '/users' is here too -- see the bug-fix
-// note below.
-const ADMIN_ONLY_FULL_SCREEN_ROUTES = ['/events/create', '/emergencies', '/users'];
-// Bug fix: UsersComponent and UserDetailView already ship their own
-// full-bleed top bar + RedesignBottomNav, but '/users' and '/users/:userId'
-// were never added here, so admins were getting the old chrome wrapped
-// around the new self-contained UI (two stacked bottom navs). Both
-// '/users/:userId' (a single path segment) and '/users/update/:userId' (two
-// segments, so it needs its own branch) are covered below -- the latter is
-// redesigned too, an admin-only edit form, same pattern as the emergencies
-// one. '/events/update/:reference' is also an admin-only form (UpdateEvent
-// self-guards non-admins to NotFoundPage).
-const ADMIN_ONLY_FULL_SCREEN_ROUTE_PATTERN =
-	/^\/emergencies\/[^/]+\/matched-users\/?$|^\/users\/(?!update\/)[^/]+$|^\/users\/update\/[^/]+$|^\/events\/update\/[^/]+$/;
-// The event detail page also has a redesign for BOTH admins and non-admins
-// (like the '/events' list above), so unlike the admin-only pattern above
-// this one applies regardless of role. Still excludes '/events/create' and
-// '/events/update/:reference' (matched separately above). The nested
-// can-donate/confirmation donor sub-routes are also redesigned now, with
-// their own minimal chrome (no bottom nav, since they're transient steps).
-const EVENT_DETAIL_FULL_SCREEN_PATTERN = /^\/events\/(?!create$)[^/]+$/;
-const EVENT_SUBFLOW_FULL_SCREEN_PATTERN = /^\/events\/[^/]+\/(can-donate|confirmation)\/?$/;
-// '/reset-password/:resetToken' is the other half of the pre-auth password
-// reset flow, also reachable by anyone (it's the link from the reset email).
-const RESET_PASSWORD_FULL_SCREEN_PATTERN = /^\/reset-password\/[^/]+$/;
-
+// Every screen now ships its own full-bleed layout (own top bar and, where
+// it belongs, RedesignBottomNav), so there is no app-level chrome to wrap
+// them in and nothing to opt into. This used to be a FULL_SCREEN_ROUTES
+// allowlist plus four regex patterns, needed only to decide which routes
+// still got the legacy NavBar/MobileHeader/MobileNavbar treatment -- by the
+// end that was just the 404 page, and forgetting to add a newly-redesigned
+// route to the list was its own recurring bug (the "double chrome" fixes for
+// '/users' and '/events'). See issue #330.
 const App = () => {
 	const isMobile = useIsMobile();
 	const { isAdmin, token } = useAuth();
 	const location = useLocation();
 	const forceDesktop =
 		new URLSearchParams(location.search).get('forceDesktop') === '1';
-	const isFullScreenRoute =
-		FULL_SCREEN_ROUTES.includes(location.pathname) ||
-		EVENT_DETAIL_FULL_SCREEN_PATTERN.test(location.pathname) ||
-		EVENT_SUBFLOW_FULL_SCREEN_PATTERN.test(location.pathname) ||
-		RESET_PASSWORD_FULL_SCREEN_PATTERN.test(location.pathname) ||
-		(isAdmin &&
-			(ADMIN_ONLY_FULL_SCREEN_ROUTES.includes(location.pathname) ||
-				ADMIN_ONLY_FULL_SCREEN_ROUTE_PATTERN.test(location.pathname)));
 
 	const routes = (
 		<Suspense fallback={routeFallback}>
@@ -266,21 +175,7 @@ const App = () => {
 
 	return (
 		<AppContainer>
-			{!isMobile && !forceDesktop ? (
-				<UnsupportedPage />
-			) : isFullScreenRoute ? (
-				routes
-			) : (
-				<>
-					{!isMobile ? <NavBar /> : <MobileHeader />}
-					<ContentContainer>{routes}</ContentContainer>
-					{isMobile && (
-						<MobileNavContainer>
-							<MobileNavbar />
-						</MobileNavContainer>
-					)}
-				</>
-			)}
+			{!isMobile && !forceDesktop ? <UnsupportedPage /> : routes}
 		</AppContainer>
 	);
 };
