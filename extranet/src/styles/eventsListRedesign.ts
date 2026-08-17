@@ -1,5 +1,6 @@
 import { makeStyles } from '@mui/styles';
 import { redesignColors } from './authRedesign';
+import { onRose, palette, radius } from './tokens';
 
 export const eventsListRedesignStyles = makeStyles({
 	screen: {
@@ -7,7 +8,7 @@ export const eventsListRedesignStyles = makeStyles({
 		width: '100%',
 		display: 'flex',
 		flexDirection: 'column',
-		backgroundColor: '#F4F3F6',
+		backgroundColor: palette.ground,
 		paddingBottom: '160px',
 	},
 	topBar: {
@@ -15,7 +16,7 @@ export const eventsListRedesignStyles = makeStyles({
 		alignItems: 'center',
 		gap: '14px',
 		padding: '16px 20px',
-		backgroundColor: '#FFFFFF',
+		backgroundColor: palette.white,
 	},
 	topBarDivider: {
 		width: '1px',
@@ -28,12 +29,12 @@ export const eventsListRedesignStyles = makeStyles({
 			textAlign: 'center',
 			fontWeight: 700,
 			fontSize: '16px',
-			color: '#1F1B24',
+			color: palette.ink,
 		},
 	},
 	searchField: {
 		padding: '0 20px 12px',
-		backgroundColor: '#FFFFFF',
+		backgroundColor: palette.white,
 	},
 	content: {
 		padding: '20px 20px 0',
@@ -44,15 +45,15 @@ export const eventsListRedesignStyles = makeStyles({
 	hero: {
 		position: 'relative',
 		backgroundColor: redesignColors.headerRose,
-		borderRadius: '24px',
+		borderRadius: radius.sheet,
 		padding: '22px',
-		color: '#FFFFFF',
+		color: palette.white,
 	},
 	heroIcon: {
 		width: '48px',
 		height: '48px',
-		borderRadius: '16px',
-		backgroundColor: 'rgba(255, 255, 255, 0.25)',
+		borderRadius: radius.input,
+		backgroundColor: onRose.surface,
 		display: 'flex',
 		alignItems: 'center',
 		justifyContent: 'center',
@@ -65,28 +66,28 @@ export const eventsListRedesignStyles = makeStyles({
 			insetInlineEnd: '18px',
 			width: '40px',
 			height: '40px',
-			borderRadius: '12px',
-			backgroundColor: 'rgba(255, 255, 255, 0.25)',
-			color: '#FFFFFF',
+			borderRadius: radius.chip,
+			backgroundColor: onRose.surface,
+			color: palette.white,
 		},
 	},
 	heroTitle: {
 		'&.MuiTypography-root': {
 			fontWeight: 700,
 			fontSize: '22px',
-			color: '#FFFFFF',
+			color: palette.white,
 		},
 	},
 	heroSubtitle: {
 		'&.MuiTypography-root': {
 			fontSize: '13px',
-			color: 'rgba(255, 255, 255, 0.75)',
+			color: onRose.medium,
 			marginTop: '4px',
 		},
 	},
 	emptyState: {
-		backgroundColor: '#FFFFFF',
-		borderRadius: '20px',
+		backgroundColor: palette.white,
+		borderRadius: radius.card,
 		padding: '24px',
 		textAlign: 'center',
 		color: redesignColors.placeholder,

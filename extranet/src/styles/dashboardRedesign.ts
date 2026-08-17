@@ -1,5 +1,6 @@
 import { makeStyles } from '@mui/styles';
 import { redesignColors } from './authRedesign';
+import { onRose, palette, radius, shadow } from './tokens';
 
 export const statCardColors = {
 	users: { bg: '#FBE4C9', fg: '#C97A2B' },
@@ -17,7 +18,7 @@ export const dashboardRedesignStyles = makeStyles({
 		width: '100%',
 		display: 'flex',
 		flexDirection: 'column',
-		backgroundColor: '#F4F3F6',
+		backgroundColor: palette.ground,
 		paddingBottom: '160px',
 	},
 	header: {
@@ -30,14 +31,14 @@ export const dashboardRedesignStyles = makeStyles({
 		alignItems: 'center',
 		justifyContent: 'space-between',
 		gap: '10px',
-		backgroundColor: 'rgba(255, 255, 255, 0.18)',
-		borderRadius: '18px',
+		backgroundColor: onRose.surfaceFaint,
+		borderRadius: radius.row,
 		padding: '12px 16px',
-		color: '#FFFFFF',
+		color: palette.white,
 	},
 	searchIconButton: {
 		'&.MuiIconButton-root': {
-			color: '#FFFFFF',
+			color: palette.white,
 			padding: '4px',
 		},
 	},
@@ -50,26 +51,26 @@ export const dashboardRedesignStyles = makeStyles({
 	avatar: {
 		width: '52px',
 		height: '52px',
-		borderRadius: '50%',
-		backgroundColor: 'rgba(255, 255, 255, 0.25)',
+		borderRadius: radius.pill,
+		backgroundColor: onRose.surface,
 		display: 'flex',
 		alignItems: 'center',
 		justifyContent: 'center',
-		color: '#FFFFFF',
+		color: palette.white,
 		fontSize: '20px',
 		fontWeight: 700,
 		flexShrink: 0,
 	},
 	greetingTitle: {
 		'&.MuiTypography-root': {
-			color: '#FFFFFF',
+			color: palette.white,
 			fontWeight: 700,
 			fontSize: '19px',
 		},
 	},
 	greetingSubtitle: {
 		'&.MuiTypography-root': {
-			color: 'rgba(255, 255, 255, 0.85)',
+			color: onRose.strong,
 			fontSize: '13px',
 		},
 	},
@@ -82,7 +83,7 @@ export const dashboardRedesignStyles = makeStyles({
 		'&.MuiTypography-root': {
 			fontWeight: 700,
 			fontSize: '17px',
-			color: '#1F1B24',
+			color: palette.ink,
 			marginBottom: '14px',
 		},
 	},
@@ -93,15 +94,15 @@ export const dashboardRedesignStyles = makeStyles({
 		marginBottom: '28px',
 	},
 	statCard: {
-		backgroundColor: '#FFFFFF',
-		borderRadius: '20px',
+		backgroundColor: palette.white,
+		borderRadius: radius.card,
 		padding: '16px',
-		boxShadow: '0 4px 16px rgba(0, 0, 0, 0.05)',
+		boxShadow: shadow.card,
 	},
 	statIcon: {
 		width: '44px',
 		height: '44px',
-		borderRadius: '14px',
+		borderRadius: radius.button,
 		display: 'flex',
 		alignItems: 'center',
 		justifyContent: 'center',
@@ -117,14 +118,14 @@ export const dashboardRedesignStyles = makeStyles({
 		'&.MuiTypography-root': {
 			fontSize: '22px',
 			fontWeight: 700,
-			color: '#1F1B24',
+			color: palette.ink,
 		},
 	},
 	eventCard: {
-		backgroundColor: '#FFFFFF',
-		borderRadius: '20px',
+		backgroundColor: palette.white,
+		borderRadius: radius.card,
 		padding: '18px',
-		boxShadow: '0 4px 16px rgba(0, 0, 0, 0.05)',
+		boxShadow: shadow.card,
 	},
 	eventHeaderRow: {
 		display: 'flex',
@@ -146,7 +147,7 @@ export const dashboardRedesignStyles = makeStyles({
 		'&.MuiTypography-root': {
 			fontWeight: 700,
 			fontSize: '16px',
-			color: '#1F1B24',
+			color: palette.ink,
 		},
 	},
 	eventDateRow: {
@@ -190,16 +191,16 @@ export const dashboardRedesignStyles = makeStyles({
 	weekDayNumber: {
 		width: '28px',
 		height: '28px',
-		borderRadius: '50%',
+		borderRadius: radius.pill,
 		display: 'flex',
 		alignItems: 'center',
 		justifyContent: 'center',
 		fontSize: '13px',
-		color: '#1F1B24',
+		color: palette.ink,
 	},
 	weekDayNumberActive: {
 		backgroundColor: redesignColors.headerRose,
-		color: '#FFFFFF',
+		color: palette.white,
 		fontWeight: 700,
 	},
 	eventActionsRow: {
@@ -209,18 +210,18 @@ export const dashboardRedesignStyles = makeStyles({
 	editButton: {
 		'&.MuiButton-root': {
 			backgroundColor: '#1F1B3A',
-			color: '#FFFFFF',
-			borderRadius: '14px',
+			color: palette.white,
+			borderRadius: radius.button,
 			padding: '10px 20px',
 			fontSize: '14px',
 			fontWeight: 600,
 			textTransform: 'none',
-			boxShadow: 'none',
+			boxShadow: shadow.none,
 			display: 'flex',
 			gap: '8px',
 			'&:hover': {
 				backgroundColor: '#141026',
-				boxShadow: 'none',
+				boxShadow: shadow.none,
 			},
 		},
 	},
@@ -228,7 +229,7 @@ export const dashboardRedesignStyles = makeStyles({
 		'&.MuiIconButton-root': {
 			width: '44px',
 			height: '44px',
-			borderRadius: '14px',
+			borderRadius: radius.button,
 			backgroundColor: '#FBE4EA',
 			color: redesignColors.headerRose,
 		},
@@ -237,15 +238,15 @@ export const dashboardRedesignStyles = makeStyles({
 		'&.MuiIconButton-root': {
 			width: '44px',
 			height: '44px',
-			borderRadius: '14px',
-			backgroundColor: '#F1EFF4',
-			color: '#1F1B24',
+			borderRadius: radius.button,
+			backgroundColor: palette.subtle,
+			color: palette.ink,
 			marginInlineStart: 'auto',
 		},
 	},
 	emptyState: {
-		backgroundColor: '#FFFFFF',
-		borderRadius: '20px',
+		backgroundColor: palette.white,
+		borderRadius: radius.card,
 		padding: '24px',
 		textAlign: 'center',
 		color: redesignColors.placeholder,
@@ -254,7 +255,7 @@ export const dashboardRedesignStyles = makeStyles({
 	giftCard: {
 		marginTop: '20px',
 		backgroundColor: 'rgba(255, 255, 255, 0.16)',
-		borderRadius: '18px',
+		borderRadius: radius.row,
 		padding: '16px',
 	},
 	giftHeaderRow: {
@@ -267,7 +268,7 @@ export const dashboardRedesignStyles = makeStyles({
 		width: '32px',
 		height: '32px',
 		borderRadius: '10px',
-		backgroundColor: 'rgba(255, 255, 255, 0.22)',
+		backgroundColor: onRose.surfaceSoft,
 		display: 'flex',
 		alignItems: 'center',
 		justifyContent: 'center',
@@ -276,7 +277,7 @@ export const dashboardRedesignStyles = makeStyles({
 	},
 	giftTitle: {
 		'&.MuiTypography-root': {
-			color: '#FFFFFF',
+			color: palette.white,
 			fontWeight: 700,
 			fontSize: '14px',
 		},
@@ -291,7 +292,7 @@ export const dashboardRedesignStyles = makeStyles({
 		alignItems: 'center',
 		gap: '6px',
 		fontSize: '11px',
-		color: 'rgba(255, 255, 255, 0.75)',
+		color: onRose.medium,
 	},
 	giftDayMarkerFilled: {
 		fontSize: '18px',
@@ -299,7 +300,7 @@ export const dashboardRedesignStyles = makeStyles({
 	giftDayMarkerEmpty: {
 		width: '18px',
 		height: '18px',
-		borderRadius: '50%',
+		borderRadius: radius.pill,
 		backgroundColor: 'rgba(255, 255, 255, 0.2)',
 	},
 	sectionHeaderRow: {
@@ -342,8 +343,8 @@ export const dashboardRedesignStyles = makeStyles({
 	carouselDot: {
 		width: '6px',
 		height: '6px',
-		borderRadius: '50%',
-		backgroundColor: '#E4E1E6',
+		borderRadius: radius.pill,
+		backgroundColor: palette.border,
 	},
 	carouselDotActive: {
 		backgroundColor: redesignColors.headerRose,
@@ -351,19 +352,19 @@ export const dashboardRedesignStyles = makeStyles({
 		borderRadius: '3px',
 	},
 	historyRow: {
-		backgroundColor: '#FFFFFF',
-		borderRadius: '18px',
+		backgroundColor: palette.white,
+		borderRadius: radius.row,
 		padding: '14px 16px',
 		display: 'flex',
 		alignItems: 'center',
 		gap: '14px',
-		boxShadow: '0 4px 16px rgba(0, 0, 0, 0.05)',
+		boxShadow: shadow.card,
 		marginBottom: '12px',
 	},
 	historyIcon: {
 		width: '40px',
 		height: '40px',
-		borderRadius: '12px',
+		borderRadius: radius.chip,
 		backgroundColor: statCardColors.donationsAlt.bg,
 		color: statCardColors.donationsAlt.fg,
 		display: 'flex',
@@ -375,7 +376,7 @@ export const dashboardRedesignStyles = makeStyles({
 		'&.MuiTypography-root': {
 			fontWeight: 600,
 			fontSize: '14px',
-			color: '#1F1B24',
+			color: palette.ink,
 		},
 	},
 	historyMeta: {

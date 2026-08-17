@@ -1,4 +1,5 @@
 import { makeStyles } from '@mui/styles';
+import { radius } from './tokens';
 import colors from './colors';
 
 export const mainStyles = makeStyles({
@@ -33,7 +34,7 @@ export const mainStyles = makeStyles({
 			boxShadow: '0 15px 30px rgba(255,48,103,.3)',
 			'&.MuiButtonBase-root': {
 				backgroundColor: '#ff3067',
-				borderRadius: '16px',
+				borderRadius: radius.input,
 				'&:hover': {
 					backgroundColor: colors.purple,
 				},
@@ -51,7 +52,7 @@ export const authStyles = makeStyles({
 		'& .MuiOutlinedInput-notchedOutline': {
 			borderColor: 'white',
 			backgroundColor: 'white',
-			borderRadius: '20px',
+			borderRadius: radius.card,
 		},
 		'& .MuiInputBase-input': {
 			height: '2em',
@@ -69,7 +70,7 @@ export const authStyles = makeStyles({
 		'& .MuiOutlinedInput-notchedOutline': {
 			borderColor: 'white',
 			backgroundColor: 'white',
-			borderRadius: '20px',
+			borderRadius: radius.card,
 		},
 		'& .MuiInputBase-input': {
 			height: '2em',

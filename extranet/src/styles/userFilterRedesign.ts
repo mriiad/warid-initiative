@@ -1,5 +1,6 @@
 import { makeStyles } from '@mui/styles';
 import { redesignColors } from './authRedesign';
+import { palette, radius, shadow } from './tokens';
 
 export const userFilterRedesignStyles = makeStyles({
 	paper: {
@@ -22,13 +23,13 @@ export const userFilterRedesignStyles = makeStyles({
 		'&.MuiTypography-root': {
 			fontWeight: 700,
 			fontSize: '18px',
-			color: '#1F1B24',
+			color: palette.ink,
 		},
 	},
 	closeButton: {
 		'&.MuiIconButton-root': {
 			color: redesignColors.placeholder,
-			backgroundColor: '#F4F3F6',
+			backgroundColor: palette.ground,
 		},
 	},
 	body: {
@@ -50,7 +51,7 @@ export const userFilterRedesignStyles = makeStyles({
 		margin: 0,
 		'& .MuiFormControlLabel-label': {
 			fontSize: '14px',
-			color: '#1F1B24',
+			color: palette.ink,
 		},
 		'& .MuiCheckbox-root': {
 			color: redesignColors.inputBorder,
@@ -74,30 +75,30 @@ export const userFilterRedesignStyles = makeStyles({
 	resetButton: {
 		'&.MuiButton-root': {
 			flex: 1,
-			borderRadius: '16px',
+			borderRadius: radius.input,
 			padding: '13px',
 			fontSize: '15px',
 			fontWeight: 600,
 			textTransform: 'none',
 			color: redesignColors.inputText,
 			borderColor: redesignColors.inputBorder,
-			boxShadow: 'none',
+			boxShadow: shadow.none,
 		},
 	},
 	applyButton: {
 		'&.MuiButton-root': {
 			flex: 1,
 			backgroundColor: redesignColors.primaryButton,
-			color: '#FFFFFF',
-			borderRadius: '16px',
+			color: palette.white,
+			borderRadius: radius.input,
 			padding: '13px',
 			fontSize: '15px',
 			fontWeight: 600,
 			textTransform: 'none',
-			boxShadow: 'none',
+			boxShadow: shadow.none,
 			'&:hover': {
 				backgroundColor: redesignColors.primaryButtonHover,
-				boxShadow: 'none',
+				boxShadow: shadow.none,
 			},
 		},
 	},

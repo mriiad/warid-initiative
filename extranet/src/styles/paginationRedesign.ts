@@ -1,5 +1,6 @@
 import { makeStyles } from '@mui/styles';
 import { redesignColors } from './authRedesign';
+import { palette } from './tokens';
 
 export const paginationRedesignStyles = makeStyles({
 	row: {
@@ -13,7 +14,7 @@ export const paginationRedesignStyles = makeStyles({
 		'&.MuiIconButton-root': {
 			width: '40px',
 			height: '40px',
-			backgroundColor: '#F1EFF4',
+			backgroundColor: palette.subtle,
 			color: redesignColors.inputText,
 		},
 		'&.Mui-disabled': {

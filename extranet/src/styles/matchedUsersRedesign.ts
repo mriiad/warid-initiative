@@ -1,5 +1,6 @@
 import { makeStyles } from '@mui/styles';
 import { redesignColors } from './authRedesign';
+import { palette, radius, shadow } from './tokens';
 
 export const matchedUsersRedesignStyles = makeStyles({
 	screen: {
@@ -7,7 +8,7 @@ export const matchedUsersRedesignStyles = makeStyles({
 		width: '100%',
 		display: 'flex',
 		flexDirection: 'column',
-		backgroundColor: '#F4F3F6',
+		backgroundColor: palette.ground,
 		paddingBottom: '160px',
 	},
 	topBar: {
@@ -15,7 +16,7 @@ export const matchedUsersRedesignStyles = makeStyles({
 		alignItems: 'center',
 		gap: '14px',
 		padding: '16px 20px',
-		backgroundColor: '#FFFFFF',
+		backgroundColor: palette.white,
 	},
 	topBarDivider: {
 		width: '1px',
@@ -28,7 +29,7 @@ export const matchedUsersRedesignStyles = makeStyles({
 			textAlign: 'center',
 			fontWeight: 700,
 			fontSize: '16px',
-			color: '#1F1B24',
+			color: palette.ink,
 		},
 	},
 	content: {
@@ -52,19 +53,19 @@ export const matchedUsersRedesignStyles = makeStyles({
 		},
 	},
 	userRow: {
-		backgroundColor: '#FFFFFF',
-		borderRadius: '18px',
+		backgroundColor: palette.white,
+		borderRadius: radius.row,
 		padding: '12px 16px',
 		display: 'flex',
 		alignItems: 'center',
 		gap: '14px',
-		boxShadow: '0 4px 16px rgba(0, 0, 0, 0.05)',
+		boxShadow: shadow.card,
 		cursor: 'pointer',
 	},
 	userAvatar: {
 		width: '48px',
 		height: '48px',
-		borderRadius: '50%',
+		borderRadius: radius.pill,
 		backgroundColor: '#FBE4C9',
 		color: '#C97A2B',
 		display: 'flex',
@@ -81,7 +82,7 @@ export const matchedUsersRedesignStyles = makeStyles({
 		'&.MuiTypography-root': {
 			fontWeight: 700,
 			fontSize: '15px',
-			color: '#1F1B24',
+			color: palette.ink,
 		},
 	},
 	userBloodGroup: {
@@ -94,7 +95,7 @@ export const matchedUsersRedesignStyles = makeStyles({
 	},
 	checkbox: {
 		'&.MuiCheckbox-root': {
-			color: '#E4E1E6',
+			color: palette.border,
 		},
 		'&.Mui-checked': {
 			color: `${redesignColors.successGreen} !important`,
@@ -113,8 +114,8 @@ export const matchedUsersRedesignStyles = makeStyles({
 	sendButton: {
 		'&.MuiButton-root': {
 			backgroundColor: redesignColors.successGreen,
-			color: '#FFFFFF',
-			borderRadius: '16px',
+			color: palette.white,
+			borderRadius: radius.input,
 			padding: '14px 32px',
 			fontSize: '15px',
 			fontWeight: 600,
@@ -126,7 +127,7 @@ export const matchedUsersRedesignStyles = makeStyles({
 			},
 			'&.Mui-disabled': {
 				backgroundColor: '#D8E5C4',
-				color: '#FFFFFF',
+				color: palette.white,
 			},
 		},
 	},
@@ -134,15 +135,15 @@ export const matchedUsersRedesignStyles = makeStyles({
 		'&.MuiIconButton-root': {
 			width: '52px',
 			height: '52px',
-			borderRadius: '16px',
-			backgroundColor: '#F1EFF4',
-			color: '#1F1B24',
+			borderRadius: radius.input,
+			backgroundColor: palette.subtle,
+			color: palette.ink,
 			boxShadow: '0 8px 20px rgba(0, 0, 0, 0.08)',
 		},
 	},
 	emptyState: {
-		backgroundColor: '#FFFFFF',
-		borderRadius: '20px',
+		backgroundColor: palette.white,
+		borderRadius: radius.card,
 		padding: '24px',
 		textAlign: 'center',
 		color: redesignColors.placeholder,

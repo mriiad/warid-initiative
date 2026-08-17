@@ -1,5 +1,6 @@
 import { makeStyles } from '@mui/styles';
 import { redesignColors } from './authRedesign';
+import { palette, radius, shadow } from './tokens';
 
 // Shared look for short, focused "flow step" screens that sit between two
 // other real pages (CanDonate, EventConfirmation) -- no bottom nav, since
@@ -14,12 +15,12 @@ export const flowRedesignStyles = makeStyles({
 		textAlign: 'center',
 		padding: '24px 32px',
 		gap: '16px',
-		backgroundColor: '#F4F3F6',
+		backgroundColor: palette.ground,
 	},
 	flowIconCircle: {
 		width: '84px',
 		height: '84px',
-		borderRadius: '50%',
+		borderRadius: radius.pill,
 		display: 'flex',
 		alignItems: 'center',
 		justifyContent: 'center',
@@ -28,7 +29,7 @@ export const flowRedesignStyles = makeStyles({
 		'&.MuiTypography-root': {
 			fontWeight: 700,
 			fontSize: '16px',
-			color: '#1F1B24',
+			color: palette.ink,
 		},
 	},
 	flowSub: {
@@ -42,16 +43,16 @@ export const flowRedesignStyles = makeStyles({
 		'&.MuiButton-root': {
 			marginTop: '8px',
 			backgroundColor: redesignColors.primaryButton,
-			color: '#FFFFFF',
-			borderRadius: '16px',
+			color: palette.white,
+			borderRadius: radius.input,
 			padding: '13px',
 			fontSize: '14px',
 			fontWeight: 600,
 			textTransform: 'none',
-			boxShadow: 'none',
+			boxShadow: shadow.none,
 			'&:hover': {
 				backgroundColor: redesignColors.primaryButtonHover,
-				boxShadow: 'none',
+				boxShadow: shadow.none,
 			},
 		},
 	},

@@ -1,5 +1,6 @@
 import { makeStyles } from '@mui/styles';
 import { redesignColors } from './authRedesign';
+import { onRose, palette, radius, shadow } from './tokens';
 
 export const usersListRedesignStyles = makeStyles({
 	screen: {
@@ -7,7 +8,7 @@ export const usersListRedesignStyles = makeStyles({
 		width: '100%',
 		display: 'flex',
 		flexDirection: 'column',
-		backgroundColor: '#F4F3F6',
+		backgroundColor: palette.ground,
 		paddingBottom: '160px',
 	},
 	topBar: {
@@ -15,7 +16,7 @@ export const usersListRedesignStyles = makeStyles({
 		alignItems: 'center',
 		gap: '14px',
 		padding: '16px 20px',
-		backgroundColor: '#FFFFFF',
+		backgroundColor: palette.white,
 	},
 	topBarDivider: {
 		width: '1px',
@@ -28,7 +29,7 @@ export const usersListRedesignStyles = makeStyles({
 			textAlign: 'center',
 			fontWeight: 700,
 			fontSize: '16px',
-			color: '#1F1B24',
+			color: palette.ink,
 		},
 	},
 	content: {
@@ -39,7 +40,7 @@ export const usersListRedesignStyles = makeStyles({
 	},
 	hero: {
 		backgroundColor: '#1F1B3A',
-		borderRadius: '20px',
+		borderRadius: radius.card,
 		padding: '18px 20px',
 		display: 'flex',
 		alignItems: 'center',
@@ -48,7 +49,7 @@ export const usersListRedesignStyles = makeStyles({
 	heroIcon: {
 		width: '44px',
 		height: '44px',
-		borderRadius: '14px',
+		borderRadius: radius.button,
 		backgroundColor: '#FBE4C9',
 		color: '#C97A2B',
 		display: 'flex',
@@ -58,21 +59,21 @@ export const usersListRedesignStyles = makeStyles({
 	},
 	heroTitle: {
 		'&.MuiTypography-root': {
-			color: '#FFFFFF',
+			color: palette.white,
 			fontWeight: 700,
 			fontSize: '16px',
 		},
 	},
 	heroSubtitle: {
 		'&.MuiTypography-root': {
-			color: 'rgba(255, 255, 255, 0.6)',
+			color: onRose.soft,
 			fontSize: '13px',
 		},
 	},
 	heroCount: {
 		backgroundColor: '#3B2A82',
-		color: '#FFFFFF',
-		borderRadius: '14px',
+		color: palette.white,
+		borderRadius: radius.button,
 		padding: '6px 14px',
 		fontWeight: 700,
 		fontSize: '16px',
@@ -85,13 +86,13 @@ export const usersListRedesignStyles = makeStyles({
 		marginTop: '2px',
 	},
 	userRow: {
-		backgroundColor: '#FFFFFF',
-		borderRadius: '18px',
+		backgroundColor: palette.white,
+		borderRadius: radius.row,
 		padding: '12px 16px',
 		display: 'flex',
 		alignItems: 'center',
 		gap: '14px',
-		boxShadow: '0 4px 16px rgba(0, 0, 0, 0.05)',
+		boxShadow: shadow.card,
 		textDecoration: 'none',
 		cursor: 'pointer',
 		border: 'none',
@@ -101,7 +102,7 @@ export const usersListRedesignStyles = makeStyles({
 	userAvatar: {
 		width: '48px',
 		height: '48px',
-		borderRadius: '50%',
+		borderRadius: radius.pill,
 		backgroundColor: '#FBE4C9',
 		color: '#C97A2B',
 		display: 'flex',
@@ -116,7 +117,7 @@ export const usersListRedesignStyles = makeStyles({
 		'&.MuiTypography-root': {
 			fontWeight: 600,
 			fontSize: '15px',
-			color: '#1F1B24',
+			color: palette.ink,
 		},
 	},
 	userMeta: {
@@ -127,8 +128,8 @@ export const usersListRedesignStyles = makeStyles({
 		},
 	},
 	emptyState: {
-		backgroundColor: '#FFFFFF',
-		borderRadius: '20px',
+		backgroundColor: palette.white,
+		borderRadius: radius.card,
 		padding: '24px',
 		textAlign: 'center',
 		color: redesignColors.placeholder,

@@ -1,5 +1,6 @@
 import { makeStyles } from '@mui/styles';
 import { redesignColors } from './authRedesign';
+import { palette, radius, shadow } from './tokens';
 
 export const adminMenuRedesignStyles = makeStyles({
 	screen: {
@@ -7,7 +8,7 @@ export const adminMenuRedesignStyles = makeStyles({
 		width: '100%',
 		display: 'flex',
 		flexDirection: 'column',
-		backgroundColor: '#F4F3F6',
+		backgroundColor: palette.ground,
 		paddingBottom: '160px',
 	},
 	topBar: {
@@ -15,7 +16,7 @@ export const adminMenuRedesignStyles = makeStyles({
 		alignItems: 'center',
 		gap: '14px',
 		padding: '16px 20px',
-		backgroundColor: '#FFFFFF',
+		backgroundColor: palette.white,
 	},
 	topBarDivider: {
 		width: '1px',
@@ -28,7 +29,7 @@ export const adminMenuRedesignStyles = makeStyles({
 			textAlign: 'center',
 			fontWeight: 700,
 			fontSize: '16px',
-			color: '#1F1B24',
+			color: palette.ink,
 		},
 	},
 	content: {
@@ -38,13 +39,13 @@ export const adminMenuRedesignStyles = makeStyles({
 		gap: '14px',
 	},
 	tile: {
-		backgroundColor: '#FFFFFF',
-		borderRadius: '18px',
+		backgroundColor: palette.white,
+		borderRadius: radius.row,
 		padding: '14px 16px',
 		display: 'flex',
 		alignItems: 'center',
 		gap: '14px',
-		boxShadow: '0 4px 16px rgba(0, 0, 0, 0.05)',
+		boxShadow: shadow.card,
 		textDecoration: 'none',
 		cursor: 'pointer',
 		border: 'none',
@@ -54,7 +55,7 @@ export const adminMenuRedesignStyles = makeStyles({
 	tileIcon: {
 		width: '44px',
 		height: '44px',
-		borderRadius: '14px',
+		borderRadius: radius.button,
 		display: 'flex',
 		alignItems: 'center',
 		justifyContent: 'center',
@@ -65,7 +66,7 @@ export const adminMenuRedesignStyles = makeStyles({
 		'&.MuiTypography-root': {
 			fontWeight: 600,
 			fontSize: '15px',
-			color: '#1F1B24',
+			color: palette.ink,
 		},
 	},
 });

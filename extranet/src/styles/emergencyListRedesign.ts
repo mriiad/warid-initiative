@@ -1,5 +1,6 @@
 import { makeStyles } from '@mui/styles';
 import { redesignColors } from './authRedesign';
+import { onRose, palette, radius, shadow } from './tokens';
 
 export const emergencyListRedesignStyles = makeStyles({
 	screen: {
@@ -7,7 +8,7 @@ export const emergencyListRedesignStyles = makeStyles({
 		width: '100%',
 		display: 'flex',
 		flexDirection: 'column',
-		backgroundColor: '#F4F3F6',
+		backgroundColor: palette.ground,
 		paddingBottom: '160px',
 	},
 	topBar: {
@@ -15,7 +16,7 @@ export const emergencyListRedesignStyles = makeStyles({
 		alignItems: 'center',
 		gap: '14px',
 		padding: '16px 20px',
-		backgroundColor: '#FFFFFF',
+		backgroundColor: palette.white,
 	},
 	topBarDivider: {
 		width: '1px',
@@ -28,7 +29,7 @@ export const emergencyListRedesignStyles = makeStyles({
 			textAlign: 'center',
 			fontWeight: 700,
 			fontSize: '16px',
-			color: '#1F1B24',
+			color: palette.ink,
 		},
 	},
 	content: {
@@ -38,8 +39,8 @@ export const emergencyListRedesignStyles = makeStyles({
 		gap: '14px',
 	},
 	hero: {
-		backgroundColor: '#1F1B24',
-		borderRadius: '20px',
+		backgroundColor: palette.ink,
+		borderRadius: radius.card,
 		padding: '18px 20px',
 		display: 'flex',
 		alignItems: 'center',
@@ -48,7 +49,7 @@ export const emergencyListRedesignStyles = makeStyles({
 	heroIcon: {
 		width: '44px',
 		height: '44px',
-		borderRadius: '14px',
+		borderRadius: radius.button,
 		backgroundColor: 'rgba(255, 255, 255, 0.12)',
 		display: 'flex',
 		alignItems: 'center',
@@ -58,21 +59,21 @@ export const emergencyListRedesignStyles = makeStyles({
 	},
 	heroTitle: {
 		'&.MuiTypography-root': {
-			color: '#FFFFFF',
+			color: palette.white,
 			fontWeight: 700,
 			fontSize: '16px',
 		},
 	},
 	heroSubtitle: {
 		'&.MuiTypography-root': {
-			color: 'rgba(255, 255, 255, 0.6)',
+			color: onRose.soft,
 			fontSize: '13px',
 		},
 	},
 	heroCount: {
 		backgroundColor: redesignColors.headerRose,
-		color: '#FFFFFF',
-		borderRadius: '14px',
+		color: palette.white,
+		borderRadius: radius.button,
 		padding: '6px 14px',
 		fontWeight: 700,
 		fontSize: '16px',
@@ -85,18 +86,18 @@ export const emergencyListRedesignStyles = makeStyles({
 		marginTop: '2px',
 	},
 	card: {
-		backgroundColor: '#FFFFFF',
-		borderRadius: '20px',
+		backgroundColor: palette.white,
+		borderRadius: radius.card,
 		padding: '16px',
 		display: 'flex',
 		flexDirection: 'column',
 		gap: '8px',
-		boxShadow: '0 4px 16px rgba(0, 0, 0, 0.05)',
+		boxShadow: shadow.card,
 	},
 	cardIcon: {
 		width: '40px',
 		height: '40px',
-		borderRadius: '12px',
+		borderRadius: radius.chip,
 		backgroundColor: '#FBE4EA',
 		display: 'flex',
 		alignItems: 'center',
@@ -115,7 +116,7 @@ export const emergencyListRedesignStyles = makeStyles({
 		'&.MuiTypography-root': {
 			fontWeight: 700,
 			fontSize: '15px',
-			color: '#1F1B24',
+			color: palette.ink,
 		},
 	},
 	cardCity: {
@@ -133,20 +134,20 @@ export const emergencyListRedesignStyles = makeStyles({
 	confirmButton: {
 		'&.MuiButton-root': {
 			backgroundColor: redesignColors.successGreen,
-			color: '#FFFFFF',
-			borderRadius: '14px',
+			color: palette.white,
+			borderRadius: radius.button,
 			padding: '10px 20px',
 			fontSize: '14px',
 			fontWeight: 600,
 			textTransform: 'none',
-			boxShadow: 'none',
+			boxShadow: shadow.none,
 			'&:hover': {
 				backgroundColor: redesignColors.successGreenHover,
-				boxShadow: 'none',
+				boxShadow: shadow.none,
 			},
 			'&.Mui-disabled': {
 				backgroundColor: '#D8E5C4',
-				color: '#FFFFFF',
+				color: palette.white,
 			},
 		},
 	},
@@ -154,15 +155,15 @@ export const emergencyListRedesignStyles = makeStyles({
 		'&.MuiIconButton-root': {
 			width: '44px',
 			height: '44px',
-			borderRadius: '14px',
-			backgroundColor: '#F1EFF4',
-			color: '#1F1B24',
+			borderRadius: radius.button,
+			backgroundColor: palette.subtle,
+			color: palette.ink,
 			marginInlineStart: 'auto',
 		},
 	},
 	emptyState: {
-		backgroundColor: '#FFFFFF',
-		borderRadius: '20px',
+		backgroundColor: palette.white,
+		borderRadius: radius.card,
 		padding: '24px',
 		textAlign: 'center',
 		color: redesignColors.placeholder,
