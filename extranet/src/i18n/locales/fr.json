@@ -188,7 +188,8 @@
     "phoneNumeric": "Le numéro de téléphone ne doit contenir que des chiffres",
     "emailInvalid": "Veuillez saisir une adresse e-mail valide",
     "passwordsMismatch": "Le nouveau mot de passe et sa confirmation ne correspondent pas.",
-    "passwordFieldsRequired": "Tous les champs du mot de passe doivent être remplis."
+    "passwordFieldsRequired": "Tous les champs du mot de passe doivent être remplis.",
+    "helpSectionTitle": "Aide et support"
   },
   "dashboard": {
     "welcome": "Bienvenue",

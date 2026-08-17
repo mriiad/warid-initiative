@@ -1,4 +1,5 @@
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import EditIcon from '@mui/icons-material/Edit';
 import LockIcon from '@mui/icons-material/Lock';
 import LogoutIcon from '@mui/icons-material/Logout';
@@ -46,7 +47,7 @@ const ProfileComponent = () => {
 	const { logout } = useAuth();
 
 	const { topBar, topBarDivider, topBarTitle, content } = eventDetailRedesignStyles();
-	const { profileCard, avatar, name, infoCard, infoCardLabel, infoCardValue } =
+	const { profileCard, avatar, name, infoCard, infoCardLabel, infoCardValue, infoCardAction } =
 		userDetailRedesignStyles();
 	const { input } = authRedesignStyles();
 	const {
@@ -403,6 +404,41 @@ const ProfileComponent = () => {
 					</div>
 				</div>
 			)}
+
+			{/* regression (issue #328): /FAQ and /contact still exist and were
+				redesigned onto the same styling system, but nothing in the
+				current navigation links to either one -- the only place that
+				ever did was the old, pre-redesign MobileNavbar, which is now
+				unreachable for practically every route a normal user visits. */}
+			<div className={profileCard}>
+				<Typography className={sectionTitle} style={{ marginBottom: '16px' }}>
+					{t('profile.helpSectionTitle')}
+				</Typography>
+				<div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+					<button
+						type='button'
+						className={infoCard}
+						style={{ width: '100%', border: 'none', cursor: 'pointer', font: 'inherit' }}
+						onClick={() => navigate('/FAQ')}
+					>
+						<Typography className={infoCardLabel}>{t('faq.pageTitle')}</Typography>
+						<span className={infoCardAction} aria-hidden='true'>
+							<ArrowForwardIcon fontSize='small' />
+						</span>
+					</button>
+					<button
+						type='button'
+						className={infoCard}
+						style={{ width: '100%', border: 'none', cursor: 'pointer', font: 'inherit' }}
+						onClick={() => navigate('/contact')}
+					>
+						<Typography className={infoCardLabel}>{t('contact.title')}</Typography>
+						<span className={infoCardAction} aria-hidden='true'>
+							<ArrowForwardIcon fontSize='small' />
+						</span>
+					</button>
+				</div>
+			</div>
 
 			<RedesignBottomNav />
 

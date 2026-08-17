@@ -185,11 +185,27 @@ export const landingRedesignStyles = makeStyles({
 		gap: '10px',
 		textAlign: 'center',
 	},
+	footerLinksRow: {
+		display: 'flex',
+		alignItems: 'center',
+		flexWrap: 'wrap',
+		justifyContent: 'center',
+		gap: '10px',
+	},
 	footerLink: {
 		color: '#FFFFFF',
 		fontWeight: 600,
 		fontSize: '13px',
 		textDecoration: 'none',
+		background: 'none',
+		border: 'none',
+		cursor: 'pointer',
+		font: 'inherit',
+		padding: 0,
+	},
+	footerLinkDivider: {
+		color: 'rgba(255, 255, 255, 0.35)',
+		fontSize: '13px',
 	},
 	footerCopyright: {
 		'&.MuiTypography-root': {
