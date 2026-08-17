@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useConfirmUserInEmergency, useEmergencyMatchUsers } from '../../hooks';
 import { matchedUsersRedesignStyles } from '../../styles/matchedUsersRedesign';
+import API_CONFIG from '../../utils/apiConfig';
 import Pagination from '../shared/Pagination';
 import RedesignBottomNav from '../shared/RedesignBottomNav';
 import SnackbarComponent from '../shared/SnackbarComponent';
@@ -25,7 +26,7 @@ const MatchedUsers = () => {
 	const navigate = useNavigate();
 	const location = useLocation();
 	const emergencyContext = location.state as
-		| { bloodGroup?: string; city?: string; phoneNumber?: string; details?: string }
+		| { bloodGroup?: string; city?: string; details?: string }
 		| null;
 	const requestedBloodGroup = emergencyContext?.bloodGroup;
 
@@ -121,7 +122,10 @@ const MatchedUsers = () => {
 			bloodGroup: requestedBloodGroup || '',
 			city: emergencyContext?.city || '',
 			details: detailsLine,
-			phoneNumber: emergencyContext?.phoneNumber || '',
+			// Fixed config value, not the emergency's own submitted contact
+			// number -- every message shows the same official Warid number
+			// regardless of which admin sends it or which emergency it's for.
+			phoneNumber: API_CONFIG.emergency.whatsappContactNumber,
 		});
 
 		// Opened synchronously, in the same tick as the click that triggered

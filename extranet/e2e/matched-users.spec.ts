@@ -42,7 +42,7 @@ test.describe('Matched users / User List (redesigned)', () => {
 		expect(confirmedUserIds).toEqual(['u1']);
 	});
 
-	test('regression (issue #321): sending via WhatsApp opens a wa.me chat with the emergency context, and still confirms the donor', async ({ page, context }) => {
+	test('regression (issue #321): sending via WhatsApp uses the configured Warid contact number, not the emergency\'s own submitted number, and still confirms the donor', async ({ page, context }) => {
 		await seedAuth(page, { isAdmin: true });
 		await mockJson(page, '**/api/unconfirmedEmergencies*', {
 			message: 'Fetched emergencies successfully.',
@@ -102,8 +102,11 @@ test.describe('Matched users / User List (redesigned)', () => {
 		const text = popupUrl.searchParams.get('text') || '';
 		expect(text).toContain('O-');
 		expect(text).toContain('Casablanca');
-		expect(text).toContain('+212611111111');
 		expect(text).toContain('Accident victim needs an urgent transfusion.');
+		// The configured Warid number (env-config.ts's WHATSAPP_CONTACT_NUMBER
+		// placeholder), not the number submitted with this emergency.
+		expect(text).toContain('+212600000000');
+		expect(text).not.toContain('+212611111111');
 		await popup.close();
 
 		await page.waitForTimeout(500);
