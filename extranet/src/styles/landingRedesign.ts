@@ -1,5 +1,6 @@
 import { makeStyles } from '@mui/styles';
 import { redesignColors } from './authRedesign';
+import { onRose, palette, radius, shadow } from './tokens';
 
 export const landingRedesignStyles = makeStyles({
 	screen: {
@@ -7,13 +8,13 @@ export const landingRedesignStyles = makeStyles({
 		width: '100%',
 		display: 'flex',
 		flexDirection: 'column',
-		backgroundColor: '#F4F3F6',
+		backgroundColor: palette.ground,
 		paddingBottom: '160px',
 	},
 	hero: {
 		backgroundColor: redesignColors.headerRose,
 		padding: '16px 20px 44px',
-		color: '#FFFFFF',
+		color: palette.white,
 	},
 	heroTopRow: {
 		display: 'flex',
@@ -23,8 +24,8 @@ export const landingRedesignStyles = makeStyles({
 	heroIcon: {
 		width: '48px',
 		height: '48px',
-		borderRadius: '16px',
-		backgroundColor: 'rgba(255, 255, 255, 0.25)',
+		borderRadius: radius.input,
+		backgroundColor: onRose.surface,
 		display: 'flex',
 		alignItems: 'center',
 		justifyContent: 'center',
@@ -33,23 +34,23 @@ export const landingRedesignStyles = makeStyles({
 		'&.MuiIconButton-root': {
 			width: '40px',
 			height: '40px',
-			borderRadius: '12px',
+			borderRadius: radius.chip,
 			backgroundColor: 'rgba(255, 255, 255, 0.2)',
-			color: '#FFFFFF',
+			color: palette.white,
 		},
 	},
 	heroTitle: {
 		'&.MuiTypography-root': {
 			fontWeight: 700,
 			fontSize: '19px',
-			color: '#FFFFFF',
+			color: palette.white,
 			marginTop: '14px',
 		},
 	},
 	heroSubtitle: {
 		'&.MuiTypography-root': {
 			fontSize: '13px',
-			color: 'rgba(255, 255, 255, 0.85)',
+			color: onRose.strong,
 			marginTop: '4px',
 			lineHeight: 1.5,
 		},
@@ -67,17 +68,17 @@ export const landingRedesignStyles = makeStyles({
 	},
 	statPill: {
 		flex: 1,
-		backgroundColor: '#FFFFFF',
-		borderRadius: '16px',
+		backgroundColor: palette.white,
+		borderRadius: radius.input,
 		padding: '14px 8px',
 		textAlign: 'center',
-		boxShadow: '0 4px 16px rgba(0, 0, 0, 0.05)',
+		boxShadow: shadow.card,
 	},
 	statNumber: {
 		'&.MuiTypography-root': {
 			fontWeight: 700,
 			fontSize: '18px',
-			color: '#1F1B24',
+			color: palette.ink,
 		},
 	},
 	statLabel: {
@@ -91,14 +92,14 @@ export const landingRedesignStyles = makeStyles({
 		'&.MuiTypography-root': {
 			fontWeight: 700,
 			fontSize: '15px',
-			color: '#1F1B24',
+			color: palette.ink,
 		},
 	},
 	card: {
-		backgroundColor: '#FFFFFF',
-		borderRadius: '18px',
+		backgroundColor: palette.white,
+		borderRadius: radius.row,
 		padding: '16px',
-		boxShadow: '0 4px 16px rgba(0, 0, 0, 0.05)',
+		boxShadow: shadow.card,
 	},
 	eventCardRow: {
 		display: 'flex',
@@ -121,22 +122,22 @@ export const landingRedesignStyles = makeStyles({
 		'&.MuiTypography-root': {
 			fontWeight: 700,
 			fontSize: '13px',
-			color: '#1F1B24',
+			color: palette.ink,
 		},
 	},
 	exploreButton: {
 		'&.MuiButton-root': {
 			backgroundColor: redesignColors.primaryButton,
-			color: '#FFFFFF',
-			borderRadius: '14px',
+			color: palette.white,
+			borderRadius: radius.button,
 			padding: '10px',
 			fontSize: '14px',
 			fontWeight: 600,
 			textTransform: 'none',
-			boxShadow: 'none',
+			boxShadow: shadow.none,
 			'&:hover': {
 				backgroundColor: redesignColors.primaryButtonHover,
-				boxShadow: 'none',
+				boxShadow: shadow.none,
 			},
 		},
 	},
@@ -148,7 +149,7 @@ export const landingRedesignStyles = makeStyles({
 	aboutIcon: {
 		width: '40px',
 		height: '40px',
-		borderRadius: '14px',
+		borderRadius: radius.button,
 		backgroundColor: '#DCEFC9',
 		color: '#5C8A2B',
 		display: 'flex',
@@ -161,7 +162,7 @@ export const landingRedesignStyles = makeStyles({
 		'&.MuiTypography-root': {
 			fontWeight: 700,
 			fontSize: '13px',
-			color: '#1F1B24',
+			color: palette.ink,
 		},
 	},
 	aboutBody: {
@@ -176,8 +177,8 @@ export const landingRedesignStyles = makeStyles({
 		margin: '0 -16px',
 	},
 	footer: {
-		backgroundColor: '#1F1B24',
-		borderRadius: '20px',
+		backgroundColor: palette.ink,
+		borderRadius: radius.card,
 		padding: '24px',
 		display: 'flex',
 		flexDirection: 'column',
@@ -193,7 +194,7 @@ export const landingRedesignStyles = makeStyles({
 		gap: '10px',
 	},
 	footerLink: {
-		color: '#FFFFFF',
+		color: palette.white,
 		fontWeight: 600,
 		fontSize: '13px',
 		textDecoration: 'none',
@@ -210,7 +211,7 @@ export const landingRedesignStyles = makeStyles({
 	footerCopyright: {
 		'&.MuiTypography-root': {
 			fontSize: '12px',
-			color: 'rgba(255, 255, 255, 0.6)',
+			color: onRose.soft,
 		},
 	},
 	socialRow: {
@@ -223,7 +224,7 @@ export const landingRedesignStyles = makeStyles({
 			height: '36px',
 			borderRadius: '10px',
 			backgroundColor: 'rgba(255, 255, 255, 0.1)',
-			color: '#FFFFFF',
+			color: palette.white,
 		},
 	},
 });

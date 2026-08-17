@@ -1,5 +1,6 @@
 import { makeStyles } from '@mui/styles';
 import { redesignColors } from './authRedesign';
+import { palette, radius, shadow } from './tokens';
 
 export const userDetailRedesignStyles = makeStyles({
 	screen: {
@@ -7,19 +8,19 @@ export const userDetailRedesignStyles = makeStyles({
 		width: '100%',
 		display: 'flex',
 		flexDirection: 'column',
-		backgroundColor: '#F4F3F6',
+		backgroundColor: palette.ground,
 		paddingBottom: '160px',
 	},
 	profileCard: {
-		backgroundColor: '#FFFFFF',
-		borderRadius: '20px',
+		backgroundColor: palette.white,
+		borderRadius: radius.card,
 		padding: '24px',
-		boxShadow: '0 4px 16px rgba(0, 0, 0, 0.05)',
+		boxShadow: shadow.card,
 	},
 	avatar: {
 		width: '72px',
 		height: '72px',
-		borderRadius: '50%',
+		borderRadius: radius.pill,
 		backgroundColor: '#FBE4C9',
 		color: '#C97A2B',
 		display: 'flex',
@@ -45,7 +46,7 @@ export const userDetailRedesignStyles = makeStyles({
 		'&.MuiTypography-root': {
 			fontWeight: 700,
 			fontSize: '19px',
-			color: '#1F1B24',
+			color: palette.ink,
 		},
 	},
 	city: {
@@ -56,19 +57,19 @@ export const userDetailRedesignStyles = makeStyles({
 		},
 	},
 	infoCard: {
-		backgroundColor: '#FFFFFF',
-		borderRadius: '18px',
+		backgroundColor: palette.white,
+		borderRadius: radius.row,
 		padding: '16px',
 		display: 'flex',
 		alignItems: 'center',
 		justifyContent: 'space-between',
-		boxShadow: '0 4px 16px rgba(0, 0, 0, 0.05)',
+		boxShadow: shadow.card,
 	},
 	infoCardLabel: {
 		'&.MuiTypography-root': {
 			fontWeight: 700,
 			fontSize: '15px',
-			color: '#1F1B24',
+			color: palette.ink,
 		},
 	},
 	infoCardValue: {
@@ -82,9 +83,9 @@ export const userDetailRedesignStyles = makeStyles({
 		'&.MuiIconButton-root, &': {
 			width: '40px',
 			height: '40px',
-			borderRadius: '12px',
-			backgroundColor: '#F1EFF4',
-			color: '#1F1B24',
+			borderRadius: radius.chip,
+			backgroundColor: palette.subtle,
+			color: palette.ink,
 			display: 'flex',
 			alignItems: 'center',
 			justifyContent: 'center',

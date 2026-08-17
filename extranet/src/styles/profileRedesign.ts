@@ -1,5 +1,6 @@
 import { makeStyles } from '@mui/styles';
 import { redesignColors } from './authRedesign';
+import { palette, radius, shadow } from './tokens';
 
 export const profileRedesignStyles = makeStyles({
 	sectionHeaderRow: {
@@ -12,16 +13,16 @@ export const profileRedesignStyles = makeStyles({
 		'&.MuiTypography-root': {
 			fontWeight: 700,
 			fontSize: '15px',
-			color: '#1F1B24',
+			color: palette.ink,
 		},
 	},
 	editToggleButton: {
 		'&.MuiIconButton-root': {
 			width: '36px',
 			height: '36px',
-			borderRadius: '12px',
-			backgroundColor: '#F1EFF4',
-			color: '#1F1B24',
+			borderRadius: radius.chip,
+			backgroundColor: palette.subtle,
+			color: palette.ink,
 		},
 	},
 	actionsRow: {
@@ -32,17 +33,17 @@ export const profileRedesignStyles = makeStyles({
 	cancelButton: {
 		'&.MuiButton-root': {
 			flex: 1,
-			backgroundColor: '#F1EFF4',
-			color: '#1F1B24',
-			borderRadius: '14px',
+			backgroundColor: palette.subtle,
+			color: palette.ink,
+			borderRadius: radius.button,
 			padding: '11px',
 			fontSize: '14px',
 			fontWeight: 600,
 			textTransform: 'none',
-			boxShadow: 'none',
+			boxShadow: shadow.none,
 			'&:hover': {
-				backgroundColor: '#E4E1E6',
-				boxShadow: 'none',
+				backgroundColor: palette.border,
+				boxShadow: shadow.none,
 			},
 		},
 	},
@@ -50,16 +51,16 @@ export const profileRedesignStyles = makeStyles({
 		'&.MuiButton-root': {
 			flex: 1,
 			backgroundColor: redesignColors.primaryButton,
-			color: '#FFFFFF',
-			borderRadius: '14px',
+			color: palette.white,
+			borderRadius: radius.button,
 			padding: '11px',
 			fontSize: '14px',
 			fontWeight: 600,
 			textTransform: 'none',
-			boxShadow: 'none',
+			boxShadow: shadow.none,
 			'&:hover': {
 				backgroundColor: redesignColors.primaryButtonHover,
-				boxShadow: 'none',
+				boxShadow: shadow.none,
 			},
 		},
 	},
@@ -74,8 +75,8 @@ export const profileRedesignStyles = makeStyles({
 	passwordPromptIcon: {
 		width: '52px',
 		height: '52px',
-		borderRadius: '50%',
-		backgroundColor: '#F1EFF4',
+		borderRadius: radius.pill,
+		backgroundColor: palette.subtle,
 		color: redesignColors.placeholder,
 		display: 'flex',
 		alignItems: 'center',
@@ -92,16 +93,16 @@ export const profileRedesignStyles = makeStyles({
 	changePasswordButton: {
 		'&.MuiButton-root': {
 			backgroundColor: redesignColors.primaryButton,
-			color: '#FFFFFF',
-			borderRadius: '14px',
+			color: palette.white,
+			borderRadius: radius.button,
 			padding: '10px 20px',
 			fontSize: '14px',
 			fontWeight: 600,
 			textTransform: 'none',
-			boxShadow: 'none',
+			boxShadow: shadow.none,
 			'&:hover': {
 				backgroundColor: redesignColors.primaryButtonHover,
-				boxShadow: 'none',
+				boxShadow: shadow.none,
 			},
 		},
 	},

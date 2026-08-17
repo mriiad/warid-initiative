@@ -1,13 +1,14 @@
 import { makeStyles } from '@mui/styles';
 import { redesignColors } from './authRedesign';
+import { palette, radius, shadow } from './tokens';
 import { statCardColors } from './dashboardRedesign';
 
 export const eventOverviewCardStyles = makeStyles({
 	card: {
-		backgroundColor: '#FFFFFF',
-		borderRadius: '20px',
+		backgroundColor: palette.white,
+		borderRadius: radius.card,
 		padding: '18px',
-		boxShadow: '0 4px 16px rgba(0, 0, 0, 0.05)',
+		boxShadow: shadow.card,
 	},
 	headerRow: {
 		display: 'flex',
@@ -29,7 +30,7 @@ export const eventOverviewCardStyles = makeStyles({
 		'&.MuiTypography-root': {
 			fontWeight: 700,
 			fontSize: '16px',
-			color: '#1F1B24',
+			color: palette.ink,
 		},
 	},
 	dateRow: {
@@ -73,16 +74,16 @@ export const eventOverviewCardStyles = makeStyles({
 	weekDayNumber: {
 		width: '28px',
 		height: '28px',
-		borderRadius: '50%',
+		borderRadius: radius.pill,
 		display: 'flex',
 		alignItems: 'center',
 		justifyContent: 'center',
 		fontSize: '13px',
-		color: '#1F1B24',
+		color: palette.ink,
 	},
 	weekDayNumberActive: {
 		backgroundColor: redesignColors.headerRose,
-		color: '#FFFFFF',
+		color: palette.white,
 		fontWeight: 700,
 	},
 	actionsRow: {
@@ -92,18 +93,18 @@ export const eventOverviewCardStyles = makeStyles({
 	primaryActionButton: {
 		'&.MuiButton-root': {
 			backgroundColor: '#1F1B3A',
-			color: '#FFFFFF',
-			borderRadius: '14px',
+			color: palette.white,
+			borderRadius: radius.button,
 			padding: '10px 20px',
 			fontSize: '14px',
 			fontWeight: 600,
 			textTransform: 'none',
-			boxShadow: 'none',
+			boxShadow: shadow.none,
 			display: 'flex',
 			gap: '8px',
 			'&:hover': {
 				backgroundColor: '#141026',
-				boxShadow: 'none',
+				boxShadow: shadow.none,
 			},
 		},
 	},
@@ -111,7 +112,7 @@ export const eventOverviewCardStyles = makeStyles({
 		'&.MuiIconButton-root': {
 			width: '44px',
 			height: '44px',
-			borderRadius: '14px',
+			borderRadius: radius.button,
 			backgroundColor: '#FBE4EA',
 			color: redesignColors.headerRose,
 		},
@@ -120,9 +121,9 @@ export const eventOverviewCardStyles = makeStyles({
 		'&.MuiIconButton-root': {
 			width: '44px',
 			height: '44px',
-			borderRadius: '14px',
-			backgroundColor: '#F1EFF4',
-			color: '#1F1B24',
+			borderRadius: radius.button,
+			backgroundColor: palette.subtle,
+			color: palette.ink,
 			marginInlineStart: 'auto',
 		},
 	},

@@ -1,22 +1,26 @@
 import { makeStyles } from '@mui/styles';
+import { onRose, palette, radius, shadow } from './tokens';
 
 // Palette sampled from the new auth mockups. Deliberately kept separate from
 // the app-wide `colors.ts` / `mainStyles.ts` instead of overwriting them, so
 // this redesign can be rolled out screen-by-screen without changing the look
 // of pages that haven't been redesigned yet.
+//
+// The values now come from ./tokens -- same strings, single source. The
+// shape of this object is unchanged so every existing importer still works.
 export const redesignColors = {
-	headerRose: '#C56D86',
-	headerRoseDark: '#B85D77',
-	textOnRose: '#FFFFFF',
-	textOnRoseMuted: 'rgba(255, 255, 255, 0.85)',
-	inputBorder: '#E4E1E6',
-	inputText: '#1F1B24',
-	placeholder: '#8A8690',
-	link: '#C56D86',
-	primaryButton: '#C56D86',
-	primaryButtonHover: '#B85D77',
-	successGreen: '#A9C97E',
-	successGreenHover: '#98BA6C',
+	headerRose: palette.rose,
+	headerRoseDark: palette.roseDark,
+	textOnRose: onRose.full,
+	textOnRoseMuted: onRose.strong,
+	inputBorder: palette.border,
+	inputText: palette.ink,
+	placeholder: palette.muted,
+	link: palette.rose,
+	primaryButton: palette.rose,
+	primaryButtonHover: palette.roseDark,
+	successGreen: palette.successGreen,
+	successGreenHover: palette.successGreenHover,
 };
 
 export const authRedesignStyles = makeStyles({
@@ -79,7 +83,7 @@ export const authRedesignStyles = makeStyles({
 	},
 	card: {
 		flexGrow: 1,
-		backgroundColor: '#FFFFFF',
+		backgroundColor: palette.white,
 		borderTopLeftRadius: '32px',
 		borderTopRightRadius: '32px',
 		padding: '32px 24px 48px',
@@ -89,8 +93,8 @@ export const authRedesignStyles = makeStyles({
 	},
 	input: {
 		'& .MuiOutlinedInput-root': {
-			borderRadius: '16px',
-			backgroundColor: '#FFFFFF',
+			borderRadius: radius.input,
+			backgroundColor: palette.white,
 		},
 		'& .MuiOutlinedInput-notchedOutline': {
 			borderColor: redesignColors.inputBorder,
@@ -133,16 +137,16 @@ export const authRedesignStyles = makeStyles({
 	primaryButton: {
 		'&.MuiButton-root': {
 			backgroundColor: redesignColors.primaryButton,
-			color: '#FFFFFF',
-			borderRadius: '16px',
+			color: palette.white,
+			borderRadius: radius.input,
 			padding: '14px',
 			fontSize: '16px',
 			fontWeight: 600,
 			textTransform: 'none',
-			boxShadow: 'none',
+			boxShadow: shadow.none,
 			'&:hover': {
 				backgroundColor: redesignColors.primaryButtonHover,
-				boxShadow: 'none',
+				boxShadow: shadow.none,
 			},
 			'&.Mui-disabled': {
 				backgroundColor: redesignColors.inputBorder,
@@ -152,20 +156,20 @@ export const authRedesignStyles = makeStyles({
 	},
 	googleButton: {
 		'&.MuiButton-root': {
-			backgroundColor: '#FFFFFF',
+			backgroundColor: palette.white,
 			color: redesignColors.inputText,
-			borderRadius: '16px',
+			borderRadius: radius.input,
 			padding: '13px',
 			fontSize: '15px',
 			fontWeight: 600,
 			textTransform: 'none',
 			border: `1px solid ${redesignColors.inputBorder}`,
-			boxShadow: 'none',
+			boxShadow: shadow.none,
 			display: 'flex',
 			gap: '10px',
 			'&:hover': {
 				backgroundColor: '#FAFAFA',
-				boxShadow: 'none',
+				boxShadow: shadow.none,
 			},
 		},
 	},
@@ -229,7 +233,7 @@ export const authRedesignStyles = makeStyles({
 		alignItems: 'center',
 		gap: '4px',
 		border: `1px solid ${redesignColors.inputBorder}`,
-		borderRadius: '16px',
+		borderRadius: radius.input,
 		padding: '0 12px',
 		flexShrink: 0,
 		fontSize: '20px',

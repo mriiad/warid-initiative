@@ -1,5 +1,6 @@
 import { makeStyles } from '@mui/styles';
 import { redesignColors } from './authRedesign';
+import { palette, radius, shadow } from './tokens';
 
 export const qrModalRedesignStyles = makeStyles({
 	scrim: {
@@ -15,7 +16,7 @@ export const qrModalRedesignStyles = makeStyles({
 	card: {
 		width: '100%',
 		maxWidth: '360px',
-		backgroundColor: '#FFFFFF',
+		backgroundColor: palette.white,
 		borderRadius: '28px',
 		padding: '24px',
 		display: 'flex',
@@ -26,7 +27,7 @@ export const qrModalRedesignStyles = makeStyles({
 		'&.MuiTypography-root': {
 			fontWeight: 700,
 			fontSize: '20px',
-			color: '#1F1B24',
+			color: palette.ink,
 		},
 	},
 	subtitle: {
@@ -68,22 +69,22 @@ export const qrModalRedesignStyles = makeStyles({
 	saveButton: {
 		'&.MuiButton-root': {
 			backgroundColor: redesignColors.successGreen,
-			color: '#FFFFFF',
-			borderRadius: '16px',
+			color: palette.white,
+			borderRadius: radius.input,
 			padding: '12px 24px',
 			fontSize: '14px',
 			fontWeight: 600,
 			textTransform: 'none',
-			boxShadow: 'none',
+			boxShadow: shadow.none,
 			display: 'flex',
 			gap: '8px',
 			'&:hover': {
 				backgroundColor: redesignColors.successGreenHover,
-				boxShadow: 'none',
+				boxShadow: shadow.none,
 			},
 			'&.Mui-disabled': {
 				backgroundColor: '#D8E5C4',
-				color: '#FFFFFF',
+				color: palette.white,
 			},
 		},
 	},
