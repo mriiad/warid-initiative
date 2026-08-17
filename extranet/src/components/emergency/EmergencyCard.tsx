@@ -27,8 +27,16 @@ const EmergencyCard = ({ emergency, onConfirm, isConfirming }: EmergencyCardProp
 	} = emergencyListRedesignStyles();
 
 	const handleMatchedUsers = () => {
+		// The matched-users page has no endpoint of its own to fetch a single
+		// emergency's details, so the full context it needs for the WhatsApp
+		// message (city, contact number, details) is forwarded here instead.
 		navigate(`/emergencies/${emergency._id}/matched-users`, {
-			state: { bloodGroup: emergency.bloodGroup },
+			state: {
+				bloodGroup: emergency.bloodGroup,
+				city: emergency.city,
+				phoneNumber: emergency.phoneNumber,
+				details: emergency.details,
+			},
 		});
 	};
 

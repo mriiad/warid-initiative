@@ -24,7 +24,10 @@ const MatchedUsers = () => {
 	const { emergencyId } = useParams<{ emergencyId: string }>();
 	const navigate = useNavigate();
 	const location = useLocation();
-	const requestedBloodGroup = (location.state as { bloodGroup?: string } | null)?.bloodGroup;
+	const emergencyContext = location.state as
+		| { bloodGroup?: string; city?: string; phoneNumber?: string; details?: string }
+		| null;
+	const requestedBloodGroup = emergencyContext?.bloodGroup;
 
 	const {
 		screen,
@@ -73,11 +76,10 @@ const MatchedUsers = () => {
 		);
 	};
 
-	const handleSend = async () => {
-		if (selected.size === 0) {
-			setMessage(t('emergency.matchedUsers.noSelection'));
-			return;
-		}
+	// Marks every selected donor as contacted for this emergency. Shared by
+	// both the SMS and WhatsApp actions below -- what differs between them is
+	// what (if anything) happens before this runs.
+	const confirmSelectedUsers = async () => {
 		setIsSending(true);
 		const results = await Promise.allSettled(
 			Array.from(selected).map((userId) =>
@@ -92,6 +94,48 @@ const MatchedUsers = () => {
 			setMessage(t('emergency.matchedUsers.bulkConfirmSuccess', { count: selected.size }));
 			setSelected(new Set());
 		}
+	};
+
+	const handleSend = async () => {
+		if (selected.size === 0) {
+			setMessage(t('emergency.matchedUsers.noSelection'));
+			return;
+		}
+		await confirmSelectedUsers();
+	};
+
+	// wa.me expects the full international number with no '+', spaces or
+	// leading zeros -- PhoneNumberField already stores numbers as E.164
+	// (e.g. '+212600000000'), so stripping every non-digit is enough.
+	const buildWhatsappUrl = (phoneNumber: string, text: string) =>
+		`https://wa.me/${phoneNumber.replace(/\D/g, '')}?text=${encodeURIComponent(text)}`;
+
+	const handleSendWhatsapp = async () => {
+		if (selected.size === 0) {
+			setMessage(t('emergency.matchedUsers.noSelection'));
+			return;
+		}
+
+		const detailsLine = emergencyContext?.details ? `${emergencyContext.details}\n` : '';
+		const whatsappMessage = t('emergency.matchedUsers.whatsappMessageTemplate', {
+			bloodGroup: requestedBloodGroup || '',
+			city: emergencyContext?.city || '',
+			details: detailsLine,
+			phoneNumber: emergencyContext?.phoneNumber || '',
+		});
+
+		// Opened synchronously, in the same tick as the click that triggered
+		// this handler -- doing this after an `await` loses the "opened from
+		// a user gesture" trust most browsers require, and every tab beyond
+		// the first would get silently popup-blocked.
+		Array.from(selected).forEach((userId) => {
+			const user = matchedUsers.find((u) => u._id === userId);
+			if (user) {
+				window.open(buildWhatsappUrl(user.phoneNumber, whatsappMessage), '_blank', 'noopener,noreferrer');
+			}
+		});
+
+		await confirmSelectedUsers();
 	};
 
 	return (
@@ -178,7 +222,7 @@ const MatchedUsers = () => {
 					<IconButton
 						className={whatsappButton}
 						aria-label={t('emergency.matchedUsers.sendWhatsapp')}
-						onClick={handleSend}
+						onClick={handleSendWhatsapp}
 						disabled={isSending}
 					>
 						<WhatsAppIcon />

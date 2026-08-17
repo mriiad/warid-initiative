@@ -474,7 +474,8 @@
       "sendWhatsapp": "Envoyer via WhatsApp",
       "noSelection": "Sélectionnez au moins un utilisateur.",
       "bulkConfirmSuccess": "{{count}} utilisateur(s) marqué(s) comme contacté(s).",
-      "bulkConfirmError": "Échec de la mise à jour de certains utilisateurs. Veuillez réessayer."
+      "bulkConfirmError": "Échec de la mise à jour de certains utilisateurs. Veuillez réessayer.",
+      "whatsappMessageTemplate": "🚨 Demande urgente de don de sang\nGroupe sanguin recherché : {{bloodGroup}}\nVille : {{city}}\n{{details}}Merci de nous contacter au {{phoneNumber}} si vous pouvez aider !"
     }
   },
   "admin": {

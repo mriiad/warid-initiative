@@ -474,7 +474,8 @@
       "sendWhatsapp": "Send via WhatsApp",
       "noSelection": "Select at least one user first.",
       "bulkConfirmSuccess": "Marked {{count}} user(s) as contacted.",
-      "bulkConfirmError": "Failed to update some users. Please try again."
+      "bulkConfirmError": "Failed to update some users. Please try again.",
+      "whatsappMessageTemplate": "🚨 Urgent blood donation request\nBlood group needed: {{bloodGroup}}\nCity: {{city}}\n{{details}}Please contact us at {{phoneNumber}} if you can help. Thank you!"
     }
   },
   "admin": {
