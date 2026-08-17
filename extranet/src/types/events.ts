@@ -1,7 +1,26 @@
 /**
  * Events Types
- * Centralized types for events and donations functionality
+ * The Event domain model, plus the request payloads for event/donation
+ * endpoints. Response shapes live in ./api.
  */
+
+import type { BloodGroup } from '../data/constants';
+
+/** The event object as the server stores and returns it. */
+export interface Event {
+	_id: string;
+	reference: string;
+	title: string;
+	image: string;
+	subtitle: string;
+	location: string;
+	date: string;
+	mapLink: string;
+	description: string;
+	isGeneric: boolean;
+	createdAt?: string;
+	qrCode?: string;
+}
 
 export interface EventFormData {
 	title: string;
@@ -15,7 +34,7 @@ export interface EventFormData {
 }
 
 export interface DonationData {
-	bloodGroup: string;
+	bloodGroup: BloodGroup | string;
 	donationDate: string;
 	donationType: string;
 	eventId?: string;

@@ -4,7 +4,7 @@ import { CircularProgress, IconButton, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Emergency } from '../../data/Emergency';
+import { Emergency } from '@/types';
 import { useConfirmEmergency, useUnconfirmedEmergencies } from '../../hooks';
 import { emergencyListRedesignStyles } from '../../styles/emergencyListRedesign';
 import Pagination from '../shared/Pagination';

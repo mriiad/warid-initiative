@@ -18,7 +18,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { BloodGroup } from '@/data/constants';
 import { useAuth as useAuthContext } from '../../auth/AuthContext';
-import { UserFormData } from '../../data/ProfileFormData';
+import { UserFormData } from '@/types';
 import { useAuth, useUpdateMyProfile, useUpdatePassword, useUserProfile } from '../../hooks';
 import { authRedesignStyles } from '../../styles/authRedesign';
 import { eventDetailRedesignStyles } from '../../styles/eventDetailRedesign';

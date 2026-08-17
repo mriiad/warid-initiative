@@ -3,7 +3,7 @@
  * Handles all user management related API calls
  */
 
-import type { UserFormData } from '../data/ProfileFormData';
+import type { UserFormData } from '@/types';
 import type {
 	AdminUserDetailResponse,
 	MessageResponse,

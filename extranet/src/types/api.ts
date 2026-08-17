@@ -16,10 +16,9 @@
  * that same mistake is a build error.
  */
 
-import type { Emergency } from '../data/Emergency';
-import type { MatchedUser } from './emergency';
-import type { Event } from '../data/Event';
 import type { BloodGroup } from '../data/constants';
+import type { Emergency, MatchedUser } from './emergency';
+import type { Event } from './events';
 
 /** Almost every endpoint includes a human-readable message. */
 export interface MessageResponse {
@@ -188,4 +187,25 @@ export interface MatchedUsersResponse extends MessageResponse {
 /** POST /api/emergency */
 export interface EmergencyMutationResponse extends MessageResponse {
 	emergency: Emergency;
+}
+
+/* -------------------------------------------------------------------------
+ * Errors
+ * ---------------------------------------------------------------------- */
+
+/**
+ * The single error shape the API returns, for every failure, from every
+ * controller (see src/middleware/error-handler.js and ApiError).
+ *
+ * This used to be `{ errorMessage, errorKeys }` -- the shape ApiError sent --
+ * while the error middleware's other branch sent `{ message, statusCode }`
+ * for anything that wasn't an ApiError. Two shapes for the same concept, so
+ * whether a caller could read the reason depended on which controller it
+ * happened to hit.
+ */
+export interface ApiErrorResponse {
+	message: string;
+	statusCode?: number;
+	/** Field names that failed validation, for per-field form errors. */
+	errorKeys?: string[];
 }

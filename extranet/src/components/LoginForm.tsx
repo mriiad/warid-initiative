@@ -4,7 +4,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth as useAuthContext } from '../auth/AuthContext';
-import { LoginFormData } from '../data/authData';
+import { LoginFormData } from '@/types';
 import { useAuth, useCheckProfileCompleteness } from '../hooks';
 import { authRedesignStyles } from '../styles/authRedesign';
 import AuthHeader from './shared/AuthHeader';

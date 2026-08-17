@@ -3,7 +3,7 @@ import { IconButton, Typography } from '@mui/material';
 import Button from '@mui/material/Button';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { Emergency } from '../../data/Emergency';
+import { Emergency } from '@/types';
 import { emergencyListRedesignStyles } from '../../styles/emergencyListRedesign';
 
 interface EmergencyCardProps {

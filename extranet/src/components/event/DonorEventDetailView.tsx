@@ -6,7 +6,7 @@ import { IconButton, Typography } from '@mui/material';
 import Button from '@mui/material/Button';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { Event } from '../../data/Event';
+import { Event } from '@/types';
 import { eventDetailRedesignStyles } from '../../styles/eventDetailRedesign';
 import EventOverviewCard from '../shared/EventOverviewCard';
 import RedesignBottomNav from '../shared/RedesignBottomNav';

@@ -1,29 +1,18 @@
 /**
  * Users Types
- * Centralized types for user management functionality
+ * Request payloads and the profile form shapes. Response shapes live in
+ * ./api.
  */
 
-export interface UserProfileData {
-	profile: {
-		firstname: string;
-		lastname: string;
-		bloodGroup: string;
-		city: string;
-		phoneNumber: string;
-		gender: 'male' | 'female';
-	};
-}
+import type { BloodGroup, Gender } from '../data/constants';
 
 export interface UpdateUserData {
 	username?: string;
 	email?: string;
 	phoneNumber?: string;
-	gender?: 'male' | 'female';
+	gender?: `${Gender}`;
 }
 
-export interface AdminUserUpdateData extends UpdateUserData {
-	isActive?: boolean;
-}
 export interface DonationHistoryItem {
 	id: string;
 	date: string;
@@ -47,4 +36,21 @@ export interface AdminStats {
 	totalEvents: number;
 	totalDonations: number;
 	totalEmergencies: number;
+}
+
+/* ---- Profile form shapes ---- */
+
+/** The subset of profile fields the "complete your profile" form collects. */
+export interface ProfileFormData {
+	firstname: string;
+	lastname: string;
+	birthdate: string;
+	bloodGroup: BloodGroup;
+	city: string;
+}
+
+/** ProfileFormData plus the account-level fields the profile screen edits. */
+export interface UserFormData extends ProfileFormData {
+	phoneNumber: string;
+	email: string;
 }
