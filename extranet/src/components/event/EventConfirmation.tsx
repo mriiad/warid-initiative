@@ -73,7 +73,7 @@ const EventConfirmation: React.FC = () => {
 	if (isEventError || confirmPresenceMutation.isError) {
 		const error = confirmPresenceMutation.error as any;
 		const errorMessage =
-			error?.response?.data?.errorMessage || t('events.confirmation.unexpectedError');
+			error?.response?.data?.message || t('events.confirmation.unexpectedError');
 		const details = error?.response?.data?.details;
 		const errorReference = details?.reference;
 

@@ -13,7 +13,7 @@ test.describe('Donation form', () => {
 		await mockJson(
 			page,
 			'**/api/donation',
-			{ errorMessage: 'Based on your last donation date, you are not eligible to donate at this time. You can register for a new donation starting undefined', errorKeys: ['donationDate'] },
+			{ message: 'Based on your last donation date, you are not eligible to donate at this time. You can register for a new donation starting undefined', errorKeys: ['donationDate'] },
 			{ status: 403, method: 'POST' }
 		);
 
@@ -45,7 +45,7 @@ test.describe('Donation form', () => {
 			page,
 			'**/api/donation',
 			{
-				errorMessage:
+				message:
 					'The provided donation date falls within your mandatory rest period. You can register a donation starting 20/09/2026',
 				errorKeys: ['donationDate'],
 			},
@@ -66,7 +66,7 @@ test.describe('Donation form', () => {
 		await mockJson(
 			page,
 			'**/api/donation',
-			{ errorMessage: 'You must be at least 18 years old to donate.', errorKeys: [] },
+			{ message: 'You must be at least 18 years old to donate.', errorKeys: [] },
 			{ status: 403, method: 'POST' }
 		);
 

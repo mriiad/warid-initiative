@@ -90,7 +90,7 @@ describe('E2E: Event APIs', () => {
 			.field('description', 'desc')
 			.field('isGeneric', 'false');
 		expect(res2.status).toBe(409);
-		expect(res2.body.errorMessage).toMatch(/already exists for this date/);
+		expect(res2.body.message).toMatch(/already exists for this date/);
 	});
 
 	test('GET /api/events returns paginated list', async () => {

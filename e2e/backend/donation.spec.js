@@ -238,8 +238,8 @@ describe('POST /api/donation (regression test for issue #200)', () => {
 			.send({ bloodGroup: 'O+', donationDate: new Date().toISOString(), donationType: 'BLOOD' });
 
 		expect(res.status).toBe(403);
-		expect(res.body.errorMessage).not.toContain('undefined');
-		expect(res.body.errorMessage).toMatch(/starting \d{2}\/\d{2}\/\d{4}/);
+		expect(res.body.message).not.toContain('undefined');
+		expect(res.body.message).toMatch(/starting \d{2}\/\d{2}\/\d{4}/);
 	});
 
 	it('rejects a donation dated in the future', async () => {
@@ -254,7 +254,7 @@ describe('POST /api/donation (regression test for issue #200)', () => {
 			.send({ bloodGroup: 'O+', donationDate: tomorrow.toISOString(), donationType: 'BLOOD' });
 
 		expect(res.status).toBe(400);
-		expect(res.body.errorMessage).toMatch(/future/i);
+		expect(res.body.message).toMatch(/future/i);
 	});
 
 	it('rejects a backdated donation that falls inside the rest period of the previous one, even if the donor is eligible again today', async () => {
@@ -280,7 +280,7 @@ describe('POST /api/donation (regression test for issue #200)', () => {
 			});
 
 		expect(res.status).toBe(403);
-		expect(res.body.errorMessage).toMatch(/rest period/i);
+		expect(res.body.message).toMatch(/rest period/i);
 	});
 
 	it('accepts a returning, eligible donor recording today\'s donation', async () => {
@@ -315,7 +315,7 @@ describe('POST /api/donation (regression test for issue #200)', () => {
 			.send({ bloodGroup: 'O+', donationType: 'BLOOD' });
 
 		expect(res.status).toBe(400);
-		expect(res.body.errorMessage).toMatch(/donation date is required/i);
+		expect(res.body.message).toMatch(/donation date is required/i);
 		// Nothing was persisted (the model mock accumulates across this file,
 		// so compare against the count taken before the request).
 		expect(Donation.mock.calls.length).toBe(donationsBefore);
@@ -334,7 +334,7 @@ describe('POST /api/donation (regression test for issue #200)', () => {
 			.send({ bloodGroup: 'O+', donationDate: 'not-a-date', donationType: 'BLOOD' });
 
 		expect(res.status).toBe(400);
-		expect(res.body.errorMessage).toMatch(/not a valid date/i);
+		expect(res.body.message).toMatch(/not a valid date/i);
 		expect(Donation.mock.calls.length).toBe(donationsBefore);
 	});
 
@@ -349,7 +349,7 @@ describe('POST /api/donation (regression test for issue #200)', () => {
 			.send({ bloodGroup: 'O+', donationDate: new Date().toISOString(), donationType: 'BLOOD' });
 
 		expect(res.status).toBe(403);
-		expect(res.body.errorMessage).toMatch(/complete your profile/i);
+		expect(res.body.message).toMatch(/complete your profile/i);
 		expect(res.body.errorKeys).toEqual([]);
 	});
 
@@ -364,7 +364,7 @@ describe('POST /api/donation (regression test for issue #200)', () => {
 			.send({ bloodGroup: 'O+', donationDate: new Date().toISOString(), donationType: 'BLOOD' });
 
 		expect(res.status).toBe(403);
-		expect(res.body.errorMessage).toMatch(/at least 18 years old/i);
+		expect(res.body.message).toMatch(/at least 18 years old/i);
 	});
 
 	it('rejects a donation from a donor over the maximum donation age', async () => {
@@ -378,7 +378,7 @@ describe('POST /api/donation (regression test for issue #200)', () => {
 			.send({ bloodGroup: 'O+', donationDate: new Date().toISOString(), donationType: 'BLOOD' });
 
 		expect(res.status).toBe(403);
-		expect(res.body.errorMessage).toMatch(/over 65 years old/i);
+		expect(res.body.message).toMatch(/over 65 years old/i);
 	});
 });
 
@@ -398,7 +398,7 @@ describe('GET /api/donation', () => {
 		// confusing message for a request whose actual problem is a missing
 		// profile, not a missing donation.
 		expect(res.status).toBe(404);
-		expect(res.body.errorMessage).toBe('User profile not found.');
+		expect(res.body.message).toBe('User profile not found.');
 	});
 
 	it('returns donation details merged with profile blood group and event info', async () => {

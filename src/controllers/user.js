@@ -3,11 +3,12 @@ const Donation = require('../models/donation')
 const Event = require('../models/event');
 const Emergency = require('../models/emergency');
 const { STATUS_CODE } = require('../utils/errors/httpStatusCode');
+const ApiError = require('../utils/errors/ApiError');
 const Profile = require('../models/profile');
 const { calculateAge } = require('../utils/utils');
 const { checkDonationEligibility } = require('./donation');
 const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-const { HTTP_STATUS, ERROR_MESSAGES, MESSAGES } = require('../utils/constants');
+const { ERROR_MESSAGES, MESSAGES } = require('../utils/constants');
 const { addDays, formatDate } = require('../utils/utils');
 
 // Get all users
@@ -45,9 +46,6 @@ exports.getUsers = async (req, res, next) => {
 			totalItems: totalItems,
 		});
 	} catch (err) {
-		if (!err.statusCode) {
-			err.statusCode = STATUS_CODE.INTERNAL_SERVER;
-		}
 		next(err);
 	}
 };
@@ -61,8 +59,7 @@ exports.updateUserInfo = (req, res, next) => {
 	User.findById(userId)
 		.then((user) => {
 			if (!user) {
-				const error = new Error('User not found.');
-				error.statusCode = 404;
+				const error = new ApiError('User not found.', STATUS_CODE.NOT_FOUND);
 				throw error;
 			}
 
@@ -98,9 +95,6 @@ exports.updateUserInfo = (req, res, next) => {
 			res.status(200).json({ message: 'User profile updated successfully!' });
 		})
 		.catch((err) => {
-			if (!err.statusCode) {
-				err.statusCode = 500;
-			}
 			next(err);
 		});
 };
@@ -120,15 +114,13 @@ exports.updateUserProfile = async (req, res, next) => {
 
 		const user = await User.findById(userId).populate('profile');
 		if (!user) {
-			const error = new Error('User not found.');
-			error.statusCode = 404;
+			const error = new ApiError('User not found.', STATUS_CODE.NOT_FOUND);
 			throw error;
 		}
 
 		const profile = user.profile;
 		if (!profile) {
-			const error = new Error('User profile not found.');
-			error.statusCode = 404;
+			const error = new ApiError('User profile not found.', STATUS_CODE.NOT_FOUND);
 			throw error;
 		}
 
@@ -146,7 +138,6 @@ exports.updateUserProfile = async (req, res, next) => {
 
 		res.status(200).json({ message: 'Profile updated successfully!' });
 	} catch (err) {
-		if (!err.statusCode) err.statusCode = 500;
 		next(err);
 	}
 };
@@ -171,9 +162,6 @@ exports.checkUserProfile = async (req, res, next) => {
 
 		res.status(200).json({ isProfileComplete });
 	} catch (err) {
-		if (!err.statusCode) {
-			err.statusCode = 500;
-		}
 		next(err);
 	}
 };
@@ -184,8 +172,7 @@ exports.getProfile = (req, res, next) => {
 		.populate('profile') // Populate the profile field in the found user document
 		.then((user) => {
 			if (!user) {
-				const error = new Error('User not found.');
-				error.statusCode = 404;
+				const error = new ApiError('User not found.', STATUS_CODE.NOT_FOUND);
 				throw error;
 			}
 
@@ -209,9 +196,6 @@ exports.getProfile = (req, res, next) => {
 			});
 		})
 		.catch((err) => {
-			if (!err.statusCode) {
-				err.statusCode = 500;
-			}
 			next(err);
 		});
 };
@@ -434,9 +418,6 @@ exports.deleteUser = async (req, res, next) => {
 
 		res.status(STATUS_CODE.OK).json({ message: 'User deleted successfully' });
 	} catch (err) {
-		if (!err.statusCode) {
-			err.statusCode = STATUS_CODE.INTERNAL_SERVER;
-		}
 		next(err);
 	}
 };
@@ -479,9 +460,6 @@ exports.getUserById = async (req, res, next) => {
 
 		res.status(STATUS_CODE.OK).json(userData);
 	} catch (err) {
-		if (!err.statusCode) {
-			err.statusCode = STATUS_CODE.INTERNAL_SERVER;
-		}
 		next(err);
 	}
 };
@@ -540,9 +518,6 @@ exports.updateUserById = async (req, res, next) => {
 
 		res.status(STATUS_CODE.OK).json({ message: 'User updated successfully' });
 	} catch (err) {
-		if (!err.statusCode) {
-			err.statusCode = STATUS_CODE.INTERNAL_SERVER;
-		}
 		next(err);
 	}
 };
@@ -574,9 +549,6 @@ exports.makeUserAdmin = async (req, res, next) => {
 
 		res.status(STATUS_CODE.OK).json({ message: 'User is now an admin' });
 	} catch (err) {
-		if (!err.statusCode) {
-			err.statusCode = STATUS_CODE.INTERNAL_SERVER;
-		}
 		next(err);
 	}
 };
@@ -588,7 +560,7 @@ exports.getDashboard = async (req, res, next) => {
     // Check if user exists
     const user = await User.findById(userId);
     if (!user) {
-      return res.status(HTTP_STATUS.NOT_FOUND).json({
+      return res.status(STATUS_CODE.NOT_FOUND).json({
         errorMessage: ERROR_MESSAGES.USER_NOT_FOUND
       });
     }
@@ -669,7 +641,6 @@ exports.getAdminStats = async (req, res, next) => {
 			totalEmergencies,
 		});
 	} catch (err) {
-		if (!err.statusCode) err.statusCode = STATUS_CODE.INTERNAL_SERVER;
 		next(err);
 	}
 };

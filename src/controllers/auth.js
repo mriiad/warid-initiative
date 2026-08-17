@@ -8,6 +8,8 @@ const User = require('../models/user');
 const { validationResult } = require('express-validator');
 const config = require('../utils/config');
 const constants = require('../utils/constants');
+const ApiError = require('../utils/errors/ApiError');
+const { STATUS_CODE } = require('../utils/errors/httpStatusCode');
 const { logger } = require('../utils/logger');
 
 const createTransporter = () => {
@@ -41,8 +43,7 @@ exports.signup = (req, res, next) => {
 	const { username, email, password, gender, phoneNumber } = body;
 	const errors = validationResult(req);
 	if (!errors.isEmpty()) {
-		const error = new Error(constants.ERROR_MESSAGES.VALIDATION_FAILED);
-		error.statusCode = constants.HTTP_STATUS.BAD_REQUEST;
+		const error = new ApiError(constants.ERROR_MESSAGES.VALIDATION_FAILED, STATUS_CODE.BAD_REQUEST);
 		throw error;
 	}
 
@@ -65,7 +66,7 @@ exports.signup = (req, res, next) => {
 			return user.save();
 		})
 		.then((result) => {
-			res.status(constants.HTTP_STATUS.CREATED).json({
+			res.status(STATUS_CODE.CREATED).json({
 				message: constants.ERROR_MESSAGES.USER_CREATED,
 				userId: result._id,
 			});
@@ -94,9 +95,6 @@ exports.signup = (req, res, next) => {
 			}
 		})
 		.catch((err) => {
-			if (!err.statusCode) {
-				err.statusCode = constants.HTTP_STATUS.INTERNAL_SERVER;
-			}
 			next(err);
 		});
 };
@@ -110,8 +108,7 @@ exports.login = (req, res, next) => {
 	User.findOne({ username: username })
 		.then((user) => {
 			if (!user) {
-				const error = new Error(constants.ERROR_MESSAGES.USER_NOT_FOUND);
-				error.statusCode = constants.HTTP_STATUS.UNAUTHORIZED;
+				const error = new ApiError(constants.ERROR_MESSAGES.USER_NOT_FOUND, STATUS_CODE.UNAUTHORIZED);
 				throw error;
 			}
 			loadedUser = user;
@@ -119,8 +116,7 @@ exports.login = (req, res, next) => {
 		})
 		.then((isEqual) => {
 			if (!isEqual) {
-				const error = new Error(constants.ERROR_MESSAGES.WRONG_PASSWORD);
-				error.statusCode = constants.HTTP_STATUS.UNAUTHORIZED;
+				const error = new ApiError(constants.ERROR_MESSAGES.WRONG_PASSWORD, STATUS_CODE.UNAUTHORIZED);
 				throw error;
 			}
 
@@ -143,7 +139,7 @@ exports.login = (req, res, next) => {
 			return loadedUser.save().then(() => {
 				return res
 					.cookie('token', token)
-					.status(constants.HTTP_STATUS.OK)
+					.status(STATUS_CODE.OK)
 					.json({
 						token: token,
 						refreshToken: refreshToken,
@@ -153,9 +149,6 @@ exports.login = (req, res, next) => {
 			});
 		})
 		.catch((err) => {
-			if (!err.statusCode) {
-				err.statusCode = constants.HTTP_STATUS.INTERNAL_SERVER;
-			}
 			next(err);
 		});
 };
@@ -167,20 +160,17 @@ exports.verifyUser = (req, res, next) => {
 	})
 		.then((user) => {
 			if (!user) {
-				return res.status(constants.HTTP_STATUS.NOT_FOUND).send({
+				return res.status(STATUS_CODE.NOT_FOUND).send({
 					message: constants.ERROR_MESSAGES.USER_NOT_FOUND,
 				});
 			}
 			user.isActive = true;
 			user.save();
-			return res.status(constants.HTTP_STATUS.OK).send({
+			return res.status(STATUS_CODE.OK).send({
 				message: constants.ERROR_MESSAGES.ACCOUNT_ACTIVATED,
 			});
 		})
 		.catch((err) => {
-			if (!err.statusCode) {
-				err.statusCode = constants.HTTP_STATUS.INTERNAL_SERVER;
-			}
 			next(err);
 		});
 };
@@ -188,13 +178,10 @@ exports.verifyUser = (req, res, next) => {
 exports.logout = (req, res, next) => {
 	try {
 		res.clearCookie('token');
-		res.status(constants.HTTP_STATUS.OK).json({
+		res.status(STATUS_CODE.OK).json({
 			message: constants.ERROR_MESSAGES.LOGGED_OUT_SUCCESSFULLY,
 		});
 	} catch (error) {
-		if (!error.statusCode) {
-			error.statusCode = constants.HTTP_STATUS.INTERNAL_SERVER;
-		}
 		next(error);
 	}
 };
@@ -203,15 +190,13 @@ exports.refreshToken = (req, res, next) => {
 	const refreshToken = req.body.refreshToken;
 
 	if (!refreshToken) {
-		const error = new Error(constants.ERROR_MESSAGES.REFRESH_TOKEN_INVALID);
-		error.statusCode = constants.HTTP_STATUS.BAD_REQUEST;
+		const error = new ApiError(constants.ERROR_MESSAGES.REFRESH_TOKEN_INVALID, STATUS_CODE.BAD_REQUEST);
 		return next(error);
 	}
 
 	jwt.verify(refreshToken, config.auth.refreshSecretKey, (err, decodedData) => {
 		if (err) {
-			const error = new Error(constants.ERROR_MESSAGES.REFRESH_TOKEN_INVALID);
-			error.statusCode = constants.HTTP_STATUS.UNAUTHORIZED;
+			const error = new ApiError(constants.ERROR_MESSAGES.REFRESH_TOKEN_INVALID, STATUS_CODE.UNAUTHORIZED);
 			return next(error);
 		}
 
@@ -219,16 +204,12 @@ exports.refreshToken = (req, res, next) => {
 			.select('+refreshToken')
 			.then((user) => {
 				if (!user) {
-					const error = new Error(constants.ERROR_MESSAGES.USER_NOT_FOUND);
-					error.statusCode = constants.HTTP_STATUS.NOT_FOUND;
+					const error = new ApiError(constants.ERROR_MESSAGES.USER_NOT_FOUND, STATUS_CODE.NOT_FOUND);
 					return next(error);
 				}
 
 				if (user.refreshToken !== refreshToken) {
-					const error = new Error(
-						constants.ERROR_MESSAGES.REFRESH_TOKEN_NOT_VALID
-					);
-					error.statusCode = constants.HTTP_STATUS.UNAUTHORIZED;
+					const error = new ApiError(constants.ERROR_MESSAGES.REFRESH_TOKEN_NOT_VALID, STATUS_CODE.UNAUTHORIZED);
 					return next(error);
 				}
 
@@ -249,16 +230,13 @@ exports.refreshToken = (req, res, next) => {
 
 				user.refreshToken = newRefreshToken;
 				return user.save().then(() => {
-					res.status(constants.HTTP_STATUS.OK).json({
+					res.status(STATUS_CODE.OK).json({
 						accessToken: newAccessToken,
 						refreshToken: newRefreshToken,
 					});
 				});
 			})
 			.catch((err) => {
-				if (!err.statusCode) {
-					err.statusCode = constants.HTTP_STATUS.INTERNAL_SERVER;
-				}
 				next(err);
 			});
 	});
@@ -270,8 +248,7 @@ exports.requestPasswordReset = (req, res, next) => {
 	User.findOne({ email: email })
 		.then((user) => {
 			if (!user) {
-				const error = new Error(constants.ERROR_MESSAGES.NO_USER_FOUND);
-				error.statusCode = constants.HTTP_STATUS.NOT_FOUND;
+				const error = new ApiError(constants.ERROR_MESSAGES.NO_USER_FOUND, STATUS_CODE.NOT_FOUND);
 				throw error;
 			}
 
@@ -304,14 +281,11 @@ exports.requestPasswordReset = (req, res, next) => {
 			}
 		})
 		.then(() => {
-			res.status(constants.HTTP_STATUS.OK).json({
+			res.status(STATUS_CODE.OK).json({
 				message: constants.ERROR_MESSAGES.PASSWORD_RESET_LINK_SENT,
 			});
 		})
 		.catch((err) => {
-			if (!err.statusCode) {
-				err.statusCode = constants.HTTP_STATUS.INTERNAL_SERVER;
-			}
 			next(err);
 		});
 };
@@ -327,10 +301,7 @@ exports.resetPassword = (req, res, next) => {
 	})
 		.then((foundUser) => {
 			if (!foundUser) {
-				const error = new Error(
-					constants.ERROR_MESSAGES.TOKEN_INVALID_OR_EXPIRED
-				);
-				error.statusCode = constants.HTTP_STATUS.BAD_REQUEST;
+				const error = new ApiError(constants.ERROR_MESSAGES.TOKEN_INVALID_OR_EXPIRED, STATUS_CODE.BAD_REQUEST);
 				throw error;
 			}
 			user = foundUser;
@@ -345,14 +316,11 @@ exports.resetPassword = (req, res, next) => {
 		.then(() => {
 			sendPasswordResetSuccessEmail(user.email);
 
-			res.status(constants.HTTP_STATUS.OK).json({
+			res.status(STATUS_CODE.OK).json({
 				message: constants.ERROR_MESSAGES.PASSWORD_RESET_SUCCESSFUL,
 			});
 		})
 		.catch((err) => {
-			if (!err.statusCode) {
-				err.statusCode = constants.HTTP_STATUS.INTERNAL_SERVER;
-			}
 			next(err);
 		});
 };
@@ -390,20 +358,14 @@ exports.checkResetTokenValidity = (req, res, next) => {
 	})
 		.then((user) => {
 			if (!user) {
-				const error = new Error(
-					constants.ERROR_MESSAGES.TOKEN_INVALID_OR_EXPIRED
-				);
-				error.statusCode = constants.HTTP_STATUS.BAD_REQUEST;
+				const error = new ApiError(constants.ERROR_MESSAGES.TOKEN_INVALID_OR_EXPIRED, STATUS_CODE.BAD_REQUEST);
 				throw error;
 			}
-			res.status(constants.HTTP_STATUS.OK).json({
+			res.status(STATUS_CODE.OK).json({
 				message: 'Token is valid.',
 			});
 		})
 		.catch((err) => {
-			if (!err.statusCode) {
-				err.statusCode = constants.HTTP_STATUS.INTERNAL_SERVER;
-			}
 			next(err);
 		});
 };
@@ -415,17 +377,13 @@ exports.updatePassword = async (req, res, next) => {
 
 		const user = await User.findById(userId).select('+password');
 		if (!user) {
-			const error = new Error(constants.ERROR_MESSAGES.USER_NOT_FOUND);
-			error.statusCode = constants.HTTP_STATUS.NOT_FOUND;
+			const error = new ApiError(constants.ERROR_MESSAGES.USER_NOT_FOUND, STATUS_CODE.NOT_FOUND);
 			throw error;
 		}
 
 		const isMatch = await bcrypt.compare(currentPassword, user.password);
 		if (!isMatch) {
-			const error = new Error(
-				constants.ERROR_MESSAGES.CURRENT_PASSWORD_INCORRECT
-			);
-			error.statusCode = constants.HTTP_STATUS.UNAUTHORIZED;
+			const error = new ApiError(constants.ERROR_MESSAGES.CURRENT_PASSWORD_INCORRECT, STATUS_CODE.UNAUTHORIZED);
 			throw error;
 		}
 
@@ -435,11 +393,10 @@ exports.updatePassword = async (req, res, next) => {
 		);
 		await user.save();
 
-		res.status(constants.HTTP_STATUS.OK).json({
+		res.status(STATUS_CODE.OK).json({
 			message: constants.ERROR_MESSAGES.PASSWORD_CHANGED_SUCCESSFULLY,
 		});
 	} catch (err) {
-		if (!err.statusCode) err.statusCode = constants.HTTP_STATUS.INTERNAL_SERVER;
 		next(err);
 	}
 };
