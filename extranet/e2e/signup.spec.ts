@@ -174,11 +174,17 @@ test.describe('Signup', () => {
 		const checkbox = page.getByLabel('أوافق على سياسة الخصوصية');
 		await expect(checkbox).not.toBeChecked();
 
-		const popupPromise = page.context().waitForEvent('page');
+		// Assert on the network request the click triggers, not on the
+		// resulting popup page's `.url()` -- a PDF response is handled
+		// differently by different Chromium builds (rendered inline vs.
+		// downloaded), so the popup can sit on 'about:blank' even though the
+		// browser is correctly fetching the file. The request itself, on the
+		// BrowserContext, is the reliable signal regardless of that.
+		const requestPromise = page
+			.context()
+			.waitForEvent('request', (req) => req.url().includes('Warid_Policies.pdf'));
 		await pdfLink.click();
-		const popup = await popupPromise;
-		await expect(popup).toHaveURL(/Warid_Policies\.pdf/);
-		await popup.close();
+		await requestPromise;
 
 		// Clicking the link must not have also activated the checkbox via the
 		// surrounding native <label>.
