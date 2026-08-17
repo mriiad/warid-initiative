@@ -3,6 +3,7 @@ import Button from '@mui/material/Button';
 import makeStyles from '@mui/styles/makeStyles';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import RedesignBottomNav from './shared/RedesignBottomNav';
 import { authRedesignStyles, redesignColors } from '../styles/authRedesign';
 
 // Self-contained full-screen layout, like every other redesigned screen.
@@ -22,6 +23,9 @@ const useStyles = makeStyles({
 		justifyContent: 'center',
 		textAlign: 'center',
 		padding: '32px 24px',
+		// Reserves the fixed bottom nav's height so the vertically centred
+		// block is centred in the space above the bar rather than behind it.
+		paddingBottom: '104px',
 		gap: '8px',
 	},
 	code: {
@@ -72,6 +76,13 @@ const NotFoundPage = () => {
 			>
 				{t('notFound.button')}
 			</Button>
+			{/*
+				Every in-app screen carries this bar; the 404 is reachable at
+				any time (including when a non-admin hits an admin-only route),
+				so leaving it off made this the one screen with no way out but
+				the button above -- see issue #340.
+			*/}
+			<RedesignBottomNav />
 		</div>
 	);
 };
