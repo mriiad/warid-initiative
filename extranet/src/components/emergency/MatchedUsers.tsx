@@ -7,18 +7,11 @@ import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useConfirmUserInEmergency, useEmergencyMatchUsers } from '../../hooks';
 import { matchedUsersRedesignStyles } from '../../styles/matchedUsersRedesign';
+import type { MatchedUser } from '../../types';
 import API_CONFIG from '../../utils/apiConfig';
 import Pagination from '../shared/Pagination';
 import RedesignBottomNav from '../shared/RedesignBottomNav';
 import SnackbarComponent from '../shared/SnackbarComponent';
-
-interface MatchedUser {
-	_id: string;
-	phoneNumber: string;
-	firstname: string;
-	lastname: string;
-	bloodGroup: string;
-}
 
 const MatchedUsers = () => {
 	const { t } = useTranslation();

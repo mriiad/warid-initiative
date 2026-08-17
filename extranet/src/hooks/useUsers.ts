@@ -12,11 +12,24 @@ import type { AdminStats, DashboardData } from '../types/users';
 import { queryKeys } from './queryKeys';
 
 // Users hooks
-export const useUserProfile = (userId?: string) => {
+//
+// Split in two, mirroring the two genuinely different endpoints behind them:
+// the self-service profile and the admin lookup of another user return
+// different shapes (see AdminUserDetailResponse). This was one hook taking an
+// optional userId, so both callers were handed the same untyped blob and the
+// difference was invisible.
+export const useUserProfile = () => {
 	return useQuery({
-		queryKey: userId ? queryKeys.user.detail(userId) : queryKeys.user.me(),
-		queryFn: () => usersService.getProfile(userId),
-		enabled: true, // Always enabled, will fetch current user's profile if no userId
+		queryKey: queryKeys.user.me(),
+		queryFn: () => usersService.getMyProfile(),
+	});
+};
+
+export const useAdminUserDetail = (userId: string) => {
+	return useQuery({
+		queryKey: queryKeys.user.detail(userId),
+		queryFn: () => usersService.getUserById(userId),
+		enabled: !!userId,
 	});
 };
 

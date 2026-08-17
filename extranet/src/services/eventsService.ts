@@ -4,19 +4,26 @@
  */
 
 import type {
+	CanDonateResponse,
+	CheckParticipationResponse,
 	ConfirmPresenceData,
 	DonationData,
+	EventDetailResponse,
 	EventFormData,
+	EventMutationResponse,
+	EventsListResponse,
+	MessageResponse,
+	ParticipantStatsResponse,
 } from '../types';
 import { apiClient } from '../utils/apiClient';
 
 export const eventsService = {
 	getAll: (page = 1) => {
-		return apiClient.get(`/api/events?page=${page}`);
+		return apiClient.get<EventsListResponse>(`/api/events?page=${page}`);
 	},
 
 	getByReference: (reference: string) => {
-		return apiClient.get(`/api/events/${reference}`);
+		return apiClient.get<EventDetailResponse>(`/api/events/${reference}`);
 	},
 
 	create: (data: EventFormData) => {
@@ -32,7 +39,7 @@ export const eventsService = {
 				}
 			}
 		});
-		return apiClient.post('/api/event', formData, {
+		return apiClient.post<EventMutationResponse>('/api/event', formData, {
 			headers: { 'Content-Type': 'multipart/form-data' },
 		});
 	},
@@ -54,7 +61,7 @@ export const eventsService = {
 		// actually registers (src/routes/event.js). This used to PUT the
 		// plural /api/events/:reference instead, which matches no route at
 		// all: every admin "edit event" save 404'd.
-		return apiClient.put(`/api/event/${reference}`, formData, {
+		return apiClient.put<EventMutationResponse>(`/api/event/${reference}`, formData, {
 			headers: { 'Content-Type': 'multipart/form-data' },
 		});
 	},
@@ -65,33 +72,33 @@ export const eventsService = {
 		// src/routes/event.js). This used to DELETE the plural
 		// /api/events/:reference, which also matches no route: every admin
 		// "delete event" 404'd.
-		return apiClient.delete('/api/event', { data: { reference } });
+		return apiClient.delete<EventMutationResponse>('/api/event', { data: { reference } });
 	},
 
 	confirmPresence: (data: ConfirmPresenceData) => {
-		return apiClient.post('/api/event/confirmPresence', data);
+		return apiClient.post<MessageResponse>('/api/event/confirmPresence', data);
 	},
 
 	donate: (data: DonationData) => {
-		return apiClient.post('/api/donation', data);
+		return apiClient.post<MessageResponse>('/api/donation', data);
 	},
 
 	canDonate: () => {
-		return apiClient.get('/api/donation/canDonate');
+		return apiClient.get<CanDonateResponse>('/api/donation/canDonate');
 	},
 
 	getDonationHistory: () => {
 		return apiClient.get('/api/donation');
 	},
 	createParticipant: (reference: string) => {
-		return apiClient.post(`/api/participate/${reference}`);
+		return apiClient.post<MessageResponse>(`/api/participate/${reference}`);
 	},
 
 	checkParticipation: (reference: string) => {
-		return apiClient.get(`/api/check/${reference}`);
+		return apiClient.get<CheckParticipationResponse>(`/api/check/${reference}`);
 	},
 
 	getEventParticipantsDetails: (reference: string) => {
-		return apiClient.get(`/api/event/${reference}/participants/details`);
+		return apiClient.get<ParticipantStatsResponse>(`/api/event/${reference}/participants/details`);
 	},
 };

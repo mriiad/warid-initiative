@@ -3,11 +3,11 @@
  * Handles all contact form related API calls
  */
 
-import type { ContactData } from '../types';
+import type { ContactData, MessageResponse } from '../types';
 import { apiClient } from '../utils/apiClient';
 
 export const contactService = {
 	sendMessage: (data: ContactData) => {
-		return apiClient.post('/api/contact-us', data);
+		return apiClient.post<MessageResponse>('/api/contact-us', data);
 	},
 };

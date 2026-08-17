@@ -11,7 +11,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
-import { useDeleteUser, useToggleAdminStatus, useUserProfile } from '../hooks';
+import { useAdminUserDetail, useDeleteUser, useToggleAdminStatus } from '../hooks';
 import { eventDetailRedesignStyles } from '../styles/eventDetailRedesign';
 import { eventOverviewCardStyles } from '../styles/eventOverviewCard';
 import { userDetailRedesignStyles } from '../styles/userDetailRedesign';
@@ -25,7 +25,7 @@ const UserDetailView = () => {
 	const navigate = useNavigate();
 	const { userId } = useParams<{ userId: string }>();
 	const { isAdmin } = useAuth();
-	const { data: userInfo, isLoading } = useUserProfile(userId);
+	const { data: userInfo, isLoading } = useAdminUserDetail(userId as string);
 	const deleteUser = useDeleteUser();
 	const toggleAdminStatus = useToggleAdminStatus();
 
