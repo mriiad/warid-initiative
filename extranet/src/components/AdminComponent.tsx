@@ -4,7 +4,6 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import EventIcon from '@mui/icons-material/Event';
 import NotificationImportantIcon from '@mui/icons-material/NotificationImportant';
 import PeopleIcon from '@mui/icons-material/People';
-import SearchIcon from '@mui/icons-material/Search';
 import { IconButton, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -68,9 +67,7 @@ const AdminComponent = () => {
 				</IconButton>
 				<div className={topBarDivider} />
 				<Typography className={topBarTitle}>{t('nav.admin')}</Typography>
-				<IconButton aria-label={t('admin.searchPlaceholder')}>
-					<SearchIcon />
-				</IconButton>
+				<div style={{ width: '40px' }} />
 			</div>
 
 			<div className={content}>
