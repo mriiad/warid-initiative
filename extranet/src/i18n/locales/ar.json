@@ -188,7 +188,8 @@
     "phoneNumeric": "رقم الهاتف يجب أن يحتوي على أرقام فقط",
     "emailInvalid": "الرجاء إدخال عنوان بريد إلكتروني صالح",
     "passwordsMismatch": ".كلمة المرور الجديدة والتأكيد غير متطابقين",
-    "passwordFieldsRequired": ".يجب ملء جميع حقول كلمة المرور"
+    "passwordFieldsRequired": ".يجب ملء جميع حقول كلمة المرور",
+    "helpSectionTitle": "المساعدة والدعم"
   },
   "dashboard": {
     "welcome": "مرحباً بك",

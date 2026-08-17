@@ -188,7 +188,8 @@
     "phoneNumeric": "Phone number must contain only numbers",
     "emailInvalid": "Please enter a valid email address",
     "passwordsMismatch": "New password and confirmation do not match.",
-    "passwordFieldsRequired": "All password fields must be filled."
+    "passwordFieldsRequired": "All password fields must be filled.",
+    "helpSectionTitle": "Help & Support"
   },
   "dashboard": {
     "welcome": "Welcome",

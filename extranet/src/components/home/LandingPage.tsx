@@ -41,7 +41,9 @@ const LandingPage = () => {
 		aboutBody,
 		galleryWrapper,
 		footer,
+		footerLinksRow,
 		footerLink,
+		footerLinkDivider,
 		footerCopyright,
 		socialRow,
 		socialButton,
@@ -188,14 +190,32 @@ const LandingPage = () => {
 							<InstagramIcon fontSize='small' />
 						</IconButton>
 					</div>
-					<a
-						className={footerLink}
-						href='/files/Warid_Policies.pdf'
-						target='_blank'
-						rel='noopener noreferrer'
-					>
-						{t('landing.privacyPolicy')}
-					</a>
+					{/* regression (issue #328): /FAQ and /contact still exist and were
+						redesigned onto the same styling system, but nothing in the
+						current navigation links to either one -- the only place that
+						ever did was the old, pre-redesign MobileNavbar, which is now
+						unreachable for practically every route a normal user visits.
+						Both routes work whether logged in or not (see App.tsx), so
+						they belong here alongside Privacy Policy, not just on the
+						(auth-only) profile page. */}
+					<div className={footerLinksRow}>
+						<button type='button' className={footerLink} onClick={() => navigate('/FAQ')}>
+							{t('faq.pageTitle')}
+						</button>
+						<span className={footerLinkDivider} aria-hidden='true'>·</span>
+						<button type='button' className={footerLink} onClick={() => navigate('/contact')}>
+							{t('contact.title')}
+						</button>
+						<span className={footerLinkDivider} aria-hidden='true'>·</span>
+						<a
+							className={footerLink}
+							href='/files/Warid_Policies.pdf'
+							target='_blank'
+							rel='noopener noreferrer'
+						>
+							{t('landing.privacyPolicy')}
+						</a>
+					</div>
 					<Typography className={footerCopyright}>{t('landing.copyright')}</Typography>
 				</div>
 			</div>

@@ -103,4 +103,26 @@ test.describe('Profile page', () => {
 		// navigates) never ran.
 		await expect(page).toHaveURL(/\/profile/);
 	});
+
+	test('regression (issue #328): the Help & Support links reach the FAQ and Contact us pages', async ({ page }) => {
+		// /FAQ and /contact still existed and were redesigned onto the same
+		// styling system, but nothing in the redesigned navigation linked to
+		// either one -- the only thing that ever did was the old,
+		// pre-redesign MobileNavbar, which no route a normal user visits
+		// renders anymore.
+		await seedAuth(page, { isAdmin: false });
+		await mockJson(page, '**/api/user/profile', fullProfileResponse(), { method: 'GET' });
+
+		await page.goto('/profile');
+		await expect(page.getByText('المعلومات الشخصية')).toBeVisible();
+		await expect(page.getByText('المساعدة والدعم')).toBeVisible();
+
+		await page.getByRole('button', { name: 'الأسئلة الشائعة' }).click();
+		await expect(page).toHaveURL(/\/FAQ/);
+
+		await page.goBack();
+		await expect(page.getByText('المساعدة والدعم')).toBeVisible();
+		await page.getByRole('button', { name: 'تواصل معنا' }).click();
+		await expect(page).toHaveURL(/\/contact/);
+	});
 });
