@@ -90,7 +90,9 @@
       "signupWithGoogle": "S'inscrire avec Google",
       "back": "Retour",
       "showPassword": "Afficher le mot de passe",
-      "hidePassword": "Masquer le mot de passe"
+      "hidePassword": "Masquer le mot de passe",
+      "privacyConsentPrefix": "J'accepte la ",
+      "privacyConsentRequired": "Vous devez accepter la politique de confidentialité pour continuer."
     },
     "login": {
       "title": "Se connecter",

@@ -10,6 +10,9 @@ export interface SignupFormData {
 	bloodGroup: string;
 	lastDonationDate: string;
 	donationType: string;
+	// Client-side gate only -- never sent to the backend (see SignupForm's
+	// onSubmit), which has no field for it and doesn't ask for it.
+	privacyConsent: boolean;
 }
 
 export interface LoginFormData {
