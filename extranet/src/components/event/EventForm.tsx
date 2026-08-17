@@ -1,6 +1,5 @@
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import EventIcon from '@mui/icons-material/Event';
-import SearchIcon from '@mui/icons-material/Search';
 import {
 	Button,
 	Checkbox,
@@ -122,9 +121,7 @@ const EventForm: React.FC = () => {
 				</IconButton>
 				<div className={topBarDivider} />
 				<Typography className={topBarTitle}>{t('events.form.createTitle')}</Typography>
-				<IconButton aria-label={t('admin.searchPlaceholder')}>
-					<SearchIcon />
-				</IconButton>
+				<div style={{ width: '40px' }} />
 			</div>
 
 			<div className={content}>

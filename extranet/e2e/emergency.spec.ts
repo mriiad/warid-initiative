@@ -57,4 +57,9 @@ test.describe('Emergency', () => {
 		await page.waitForTimeout(500);
 		expect(confirmCalled).toBe(true);
 	});
+
+	test('regression (issue #319): the add-emergency form has no search icon -- there is nothing to search here', async ({ page }) => {
+		await page.goto('/emergency');
+		await expect(page.getByLabel('بحث...')).toHaveCount(0);
+	});
 });

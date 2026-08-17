@@ -125,6 +125,12 @@ test.describe('Event creation (admin only)', () => {
 		await expect(page.getByText('404')).toBeVisible({ timeout: 5000 });
 	});
 
+	test('regression (issue #319): the create-event form has no search icon -- there is nothing to search here', async ({ page }) => {
+		await seedAuth(page, { isAdmin: true });
+		await page.goto('/events/create');
+		await expect(page.getByLabel('بحث...')).toHaveCount(0);
+	});
+
 	test('admin can submit the create-event form', async ({ page }) => {
 		await seedAuth(page, { isAdmin: true });
 		await mockJson(page, '**/api/event', { message: 'Event created successfully!', event: { reference: 'WEVENT20990101', _id: 'evt-1' } }, { status: 201, method: 'POST' });
