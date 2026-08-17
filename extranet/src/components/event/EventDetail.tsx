@@ -20,7 +20,6 @@ import SnackbarComponent from '../shared/SnackbarComponent';
 import AdminEventDetailView from './AdminEventDetailView';
 import DonorEventDetailView from './DonorEventDetailView';
 import EventConfirmation from './EventConfirmation';
-import SaveQrModal from './SaveQrModal';
 
 
 const LoadingContainer = styled.div`
@@ -70,7 +69,6 @@ const EventDetail: React.FC = () => {
 	});
 
 	const [message, setMessage] = useState<string | null>(null);
-	const [showQrModal, setShowQrModal] = useState(false);
 
 	const handleParticipateClick = async () => {
 		if (!token) {
@@ -80,13 +78,12 @@ const EventDetail: React.FC = () => {
 
 		createParticipant.mutate(reference, {
 			onSuccess: (response: any) => {
-				if (isAdmin) {
-					setMessage(
-						response.data.message || t('events.detail.participateSuccess')
-					);
-				} else {
-					setShowQrModal(true);
-				}
+				// Registering used to open SaveQrModal for a donor instead of
+				// showing anything here -- a QR the donor never asked to save,
+				// with no success message at all underneath it. See issue #322.
+				setMessage(
+					response.data.message || t('events.detail.participateSuccess')
+				);
 			},
 			onError: (error: any) => {
 				if (error.response && error.response.data?.message) {
@@ -172,13 +169,6 @@ const EventDetail: React.FC = () => {
 					open={!!message}
 					message={message}
 					handleClose={handleCloseSnackbar}
-				/>
-			)}
-			{!isAdmin && (
-				<SaveQrModal
-					open={showQrModal}
-					reference={reference || ''}
-					onClose={() => setShowQrModal(false)}
 				/>
 			)}
 			<ConfirmationDialog
