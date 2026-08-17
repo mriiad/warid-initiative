@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
-import { Event } from '../../data/Event';
+import { Event } from '@/types';
 import { eventsService } from '../../services';
 import { eventsListRedesignStyles } from '../../styles/eventsListRedesign';
 import EventOverviewCard from '../shared/EventOverviewCard';

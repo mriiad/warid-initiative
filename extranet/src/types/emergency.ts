@@ -1,7 +1,20 @@
 /**
  * Emergency Types
- * Centralized types for emergency functionality
+ * The Emergency domain model, plus the request payload. Response shapes
+ * live in ./api.
  */
+
+import type { BloodGroup } from '../data/constants';
+
+/** The emergency object as the server stores and returns it. */
+export interface Emergency {
+	_id: string;
+	bloodGroup: BloodGroup;
+	city: string;
+	phoneNumber: string;
+	details: string;
+	isConfirmed: boolean;
+}
 
 export interface EmergencyData {
 	bloodGroup: string;

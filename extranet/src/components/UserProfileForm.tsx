@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { ProfileFormData } from '../data/ProfileFormData';
+import { ProfileFormData } from '@/types';
 import { BLOOD_GROUP_OPTIONS, BloodGroup } from '../data/constants';
 import { useCompleteMyProfile, useUserProfile } from '../hooks';
 import { authRedesignStyles } from '../styles/authRedesign';

@@ -6,7 +6,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
-import { Event } from '../../data/Event';
+import { Event } from '@/types';
 import { useEvents } from '../../hooks';
 import { landingRedesignStyles } from '../../styles/landingRedesign';
 import API_CONFIG from '../../utils/apiConfig';

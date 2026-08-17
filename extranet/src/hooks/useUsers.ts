@@ -5,7 +5,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useErrorToast } from '../components/shared/ErrorToastProvider';
-import type { UserFormData } from '../data/ProfileFormData';
+import type { UserFormData } from '@/types';
 import { usersService } from '../services';
 import type { UpdateUserData } from '../types';
 import type { AdminStats, DashboardData } from '../types/users';

@@ -10,7 +10,7 @@ import { Button, IconButton, Typography } from '@mui/material';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { Event } from '../../data/Event';
+import { Event } from '@/types';
 import { authRedesignStyles } from '../../styles/authRedesign';
 import { statCardColors } from '../../styles/dashboardRedesign';
 import { eventDetailRedesignStyles } from '../../styles/eventDetailRedesign';

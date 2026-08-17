@@ -11,8 +11,8 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useAuth as useAuthContext } from '../../auth/AuthContext';
-import { Emergency } from '../../data/Emergency';
-import { Event } from '../../data/Event';
+import { Emergency } from '@/types';
+import { Event } from '@/types';
 import {
 	useAuth,
 	useAdminStats,

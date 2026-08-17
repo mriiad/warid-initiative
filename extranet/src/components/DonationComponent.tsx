@@ -17,7 +17,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
-import { ApiErrorResponse } from '../data/ApiErrorResponse';
+import { ApiErrorResponse } from '@/types';
 import { BLOOD_GROUP_OPTIONS } from '../data/constants';
 import {
 	useDonate,

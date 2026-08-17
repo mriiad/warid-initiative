@@ -12,7 +12,7 @@ import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { SignupFormData } from '../data/authData';
+import { SignupFormData } from '@/types';
 import { useAuth } from '../hooks';
 import { authRedesignStyles } from '../styles/authRedesign';
 import AuthHeader from './shared/AuthHeader';
