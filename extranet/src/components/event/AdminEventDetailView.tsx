@@ -6,15 +6,18 @@ import EventIcon from '@mui/icons-material/Event';
 import MapIcon from '@mui/icons-material/Map';
 import PeopleIcon from '@mui/icons-material/People';
 import SearchIcon from '@mui/icons-material/Search';
-import { IconButton, Typography } from '@mui/material';
+import { Button, IconButton, Typography } from '@mui/material';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Event } from '../../data/Event';
+import { authRedesignStyles } from '../../styles/authRedesign';
 import { statCardColors } from '../../styles/dashboardRedesign';
 import { eventDetailRedesignStyles } from '../../styles/eventDetailRedesign';
 import { ParticipantStats } from '../../hooks';
 import EventOverviewCard from '../shared/EventOverviewCard';
 import RedesignBottomNav from '../shared/RedesignBottomNav';
+import SaveQrModal from './SaveQrModal';
 
 interface AdminEventDetailViewProps {
 	event: Event;
@@ -25,6 +28,8 @@ interface AdminEventDetailViewProps {
 const AdminEventDetailView = ({ event, participantStats, onDelete }: AdminEventDetailViewProps) => {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
+	const [showQrModal, setShowQrModal] = useState(false);
+	const { primaryButton } = authRedesignStyles();
 	const {
 		screen,
 		topBar,
@@ -48,7 +53,6 @@ const AdminEventDetailView = ({ event, participantStats, onDelete }: AdminEventD
 		statRowLabel,
 		statRowValue,
 		qrCard,
-		qrImage,
 	} = eventDetailRedesignStyles();
 
 	const heroDate = new Date(event.date).toLocaleDateString(undefined, {
@@ -174,13 +178,23 @@ const AdminEventDetailView = ({ event, participantStats, onDelete }: AdminEventD
 
 				{event.qrCode && (
 					<div className={qrCard}>
-						<Typography className={sectionTitle}>{t('events.detail.qrScanTitle')}</Typography>
-						<img src={event.qrCode} alt='QR Code' className={qrImage} />
+						<Button className={primaryButton} onClick={() => setShowQrModal(true)}>
+							{t('events.detail.getQrCode')}
+						</Button>
 					</div>
 				)}
 			</div>
 
 			<RedesignBottomNav />
+
+			{event.qrCode && (
+				<SaveQrModal
+					open={showQrModal}
+					qrCodeDataUrl={event.qrCode}
+					downloadName={`warid-event-${event.reference}-qr.png`}
+					onClose={() => setShowQrModal(false)}
+				/>
+			)}
 		</div>
 	);
 };

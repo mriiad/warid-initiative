@@ -273,6 +273,7 @@
       "realDonaters": "Actually donated",
       "allDonaters": "Total donors",
       "qrScanTitle": "Scan the QR code to donate",
+      "getQrCode": "Get QR code",
       "participationConfirmed": "You have been successfully registered as a participant!",
       "shareFallbackTitle": "Event",
       "shareFallbackText": "Check out this event",
@@ -284,8 +285,8 @@
       "unexpectedError": "An unexpected error occurred."
     },
     "qrModal": {
-      "title": "Save your QR code",
-      "subtitle": "Scan it on-site to confirm your attendance",
+      "title": "Event QR code",
+      "subtitle": "Download it to share or print",
       "save": "Save",
       "saved": "Saved to your device!",
       "close": "Close"

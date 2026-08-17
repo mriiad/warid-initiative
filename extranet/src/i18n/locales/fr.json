@@ -273,6 +273,7 @@
       "realDonaters": "Ayant réellement donné",
       "allDonaters": "Total des donneurs",
       "qrScanTitle": "Scannez le code QR pour donner",
+      "getQrCode": "Obtenir le code QR",
       "participationConfirmed": "Vous avez été inscrit avec succès en tant que participant !",
       "shareFallbackTitle": "Événement",
       "shareFallbackText": "Découvrez cet événement",
@@ -284,8 +285,8 @@
       "unexpectedError": "Une erreur inattendue est survenue."
     },
     "qrModal": {
-      "title": "Enregistrez votre code QR",
-      "subtitle": "Scannez-le sur place pour confirmer votre présence",
+      "title": "Code QR de l'événement",
+      "subtitle": "Téléchargez-le pour le partager ou l'imprimer",
       "save": "Enregistrer",
       "saved": "Enregistré sur votre appareil !",
       "close": "Fermer"

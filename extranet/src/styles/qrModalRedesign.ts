@@ -22,19 +22,6 @@ export const qrModalRedesignStyles = makeStyles({
 		flexDirection: 'column',
 		alignItems: 'flex-start',
 	},
-	avatar: {
-		width: '56px',
-		height: '56px',
-		borderRadius: '50%',
-		backgroundColor: '#FBE4C9',
-		color: '#C97A2B',
-		display: 'flex',
-		alignItems: 'center',
-		justifyContent: 'center',
-		fontWeight: 700,
-		fontSize: '22px',
-		marginBottom: '16px',
-	},
 	title: {
 		'&.MuiTypography-root': {
 			fontWeight: 700,

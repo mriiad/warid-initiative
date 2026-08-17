@@ -2,52 +2,39 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import DownloadIcon from '@mui/icons-material/Download';
 import { Typography } from '@mui/material';
 import Button from '@mui/material/Button';
-import QRCode from 'qrcode';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useUserProfile } from '../../hooks';
 import { qrModalRedesignStyles } from '../../styles/qrModalRedesign';
 
 interface SaveQrModalProps {
 	open: boolean;
-	reference: string;
+	/** A ready-to-display QR code image, e.g. event.qrCode (data URL). */
+	qrCodeDataUrl: string;
+	/** Filename the download is saved as, including extension. */
+	downloadName: string;
 	onClose: () => void;
 }
 
-// There's no per-user "daily log"/attendance QR concept anywhere in the
-// backend (only a per-event QR the app already shows elsewhere, encoding a
-// donate link). This QR instead encodes a link to the app's own, real
-// presence-confirmation route (POST /api/event/confirmPresence via
-// EventConfirmation.tsx) so scanning/opening it does something real,
-// rather than fabricating an attendance system that doesn't exist.
-const SaveQrModal = ({ open, reference, onClose }: SaveQrModalProps) => {
+// Was generating its own QR encoding a presence-confirmation link, shown to
+// a donor right after registering for an event -- a QR they never asked to
+// save, with no success message at all underneath it (see issue #322: donor
+// registration now shows a success message instead). Repurposed as a
+// generic "here's a QR code, save it" modal: the caller supplies the image
+// directly (event.qrCode, generated server-side) instead of this component
+// generating one itself.
+const SaveQrModal = ({ open, qrCodeDataUrl, downloadName, onClose }: SaveQrModalProps) => {
 	const { t } = useTranslation();
-	const { data: profileResponse } = useUserProfile();
-	const { scrim, card, avatar, title, subtitle, qrWrapper, qrImage, successWrapper, successIcon, actionsRow, saveButton } =
+	const { scrim, card, title, subtitle, qrWrapper, qrImage, successWrapper, successIcon, actionsRow, saveButton } =
 		qrModalRedesignStyles();
 
-	const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
 	const [saved, setSaved] = useState(false);
-
-	const firstName: string | undefined = profileResponse?.data?.firstname;
-
-	useEffect(() => {
-		if (!open || !reference) return;
-		setSaved(false);
-		setQrDataUrl(null);
-		const confirmationUrl = `${window.location.origin}/events/${reference}/confirmation`;
-		QRCode.toDataURL(confirmationUrl, { width: 440, margin: 1 })
-			.then(setQrDataUrl)
-			.catch(() => setQrDataUrl(null));
-	}, [open, reference]);
 
 	if (!open) return null;
 
 	const handleSave = () => {
-		if (!qrDataUrl) return;
 		const link = document.createElement('a');
-		link.href = qrDataUrl;
-		link.download = `warid-event-${reference}-qr.png`;
+		link.href = qrCodeDataUrl;
+		link.download = downloadName;
 		document.body.appendChild(link);
 		link.click();
 		document.body.removeChild(link);
@@ -58,7 +45,6 @@ const SaveQrModal = ({ open, reference, onClose }: SaveQrModalProps) => {
 	return (
 		<div className={scrim} onClick={onClose}>
 			<div className={card} onClick={(e) => e.stopPropagation()}>
-				<div className={avatar}>{(firstName || '?').charAt(0).toUpperCase()}</div>
 				<Typography className={title}>{t('events.qrModal.title')}</Typography>
 				<Typography className={subtitle}>{t('events.qrModal.subtitle')}</Typography>
 
@@ -68,18 +54,13 @@ const SaveQrModal = ({ open, reference, onClose }: SaveQrModalProps) => {
 					</div>
 				) : (
 					<div className={qrWrapper}>
-						{qrDataUrl && <img src={qrDataUrl} alt='QR code' className={qrImage} />}
+						<img src={qrCodeDataUrl} alt='QR code' className={qrImage} />
 					</div>
 				)}
 
 				{!saved && (
 					<div className={actionsRow}>
-						<Button
-							type='button'
-							className={saveButton}
-							onClick={handleSave}
-							disabled={!qrDataUrl}
-						>
+						<Button type='button' className={saveButton} onClick={handleSave}>
 							<DownloadIcon fontSize='small' />
 							{t('events.qrModal.save')}
 						</Button>
