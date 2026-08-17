@@ -474,7 +474,8 @@
       "sendWhatsapp": "إرسال عبر واتساب",
       "noSelection": ".يرجى تحديد مستخدم واحد على الأقل",
       "bulkConfirmSuccess": ".تم تسجيل {{count}} مستخدم كتم التواصل معهم",
-      "bulkConfirmError": ".فشل تحديث بعض المستخدمين. يرجى المحاولة مرة أخرى"
+      "bulkConfirmError": ".فشل تحديث بعض المستخدمين. يرجى المحاولة مرة أخرى",
+      "whatsappMessageTemplate": "🚨 طلب تبرع بالدم عاجل\nفصيلة الدم المطلوبة: {{bloodGroup}}\nالمدينة: {{city}}\n{{details}}يرجى التواصل معنا على {{phoneNumber}} إذا كان بإمكانك المساعدة. شكرًا لك"
     }
   },
   "admin": {
