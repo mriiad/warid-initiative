@@ -83,7 +83,6 @@ exports.sendContactUs = async (req, res, next) => {
 		// middleware with ERR_HTTP_HEADERS_SENT. Don't serialise the raw
 		// error either: on an SMTP failure it carries host/port/command
 		// detail, and this endpoint is public.
-		if (!error.statusCode) error.statusCode = 500;
 		error.message = 'Error sending email';
 		next(error);
 	}

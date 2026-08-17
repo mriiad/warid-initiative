@@ -23,9 +23,12 @@ const buildLimiter = (max) =>
 		// Checked per request rather than at construction time so tests can
 		// toggle the flag and re-require the module.
 		skip: () => !config.rateLimit.enabled,
+		// Bypasses the error middleware entirely, so it has to produce the
+		// same shape by hand -- `message`, like everything else.
 		handler: (req, res) => {
 			res.status(STATUS_CODE.TOO_MANY_REQUESTS).json({
-				errorMessage: 'Too many requests. Please try again later.',
+				message: 'Too many requests. Please try again later.',
+				statusCode: STATUS_CODE.TOO_MANY_REQUESTS,
 			});
 		},
 	});

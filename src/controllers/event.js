@@ -31,7 +31,6 @@ exports.getEvents = async (req, res, next) => {
 			totalItems,
 		});
 	} catch (err) {
-		if (!err.statusCode) err.statusCode = STATUS_CODE.INTERNAL_SERVER;
 		next(err);
 	}
 };
@@ -80,7 +79,6 @@ exports.getEvent = async (req, res, next) => {
 			.status(STATUS_CODE.OK)
 			.json({ message: 'Event fetched successfully.', event });
 	} catch (err) {
-		if (!err.statusCode) err.statusCode = STATUS_CODE.INTERNAL_SERVER;
 		next(err);
 	}
 };
@@ -186,7 +184,6 @@ exports.createEventHandler = async (req, res, next) => {
 			event: { reference: result.reference, _id: result._id },
 		});
 	} catch (err) {
-		if (!err.statusCode) err.statusCode = STATUS_CODE.INTERNAL_SERVER;
 		next(err);
 	}
 };
@@ -312,7 +309,6 @@ exports.updateEventHandler = async (req, res, next) => {
 			},
 		});
 	} catch (err) {
-		if (!err.statusCode) err.statusCode = STATUS_CODE.INTERNAL_SERVER;
 		next(err);
 	}
 };
@@ -353,7 +349,6 @@ exports.deleteEvent = (req, res, next) => {
 			});
 		})
 		.catch((err) => {
-			if (!err.statusCode) err.statusCode = STATUS_CODE.INTERNAL_SERVER;
 			next(err);
 		});
 };
@@ -406,7 +401,6 @@ exports.confirmPresence = async (req, res, next) => {
 			.status(STATUS_CODE.OK)
 			.json({ message: 'Presence confirmed successfully.' });
 	} catch (err) {
-		if (!err.statusCode) err.statusCode = STATUS_CODE.INTERNAL_SERVER;
 		next(err);
 	}
 };
@@ -454,7 +448,6 @@ exports.getEventParticipantDetails = async (req, res, next) => {
       realDonaters: realDonaters.length,
     });
   } catch (err) {
-    if (!err.statusCode) err.statusCode = STATUS_CODE.INTERNAL_SERVER;
     next(err);
   }
 };

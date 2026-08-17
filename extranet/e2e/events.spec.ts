@@ -234,4 +234,37 @@ test.describe('Event deletion (admin only, regression test for the redesigned ev
 		await page.waitForTimeout(500);
 		expect(deleteCalled).toBe(true);
 	});
+
+	test('regression (issue #332): a failed delete shows the real backend reason, not a generic message', async ({ page }) => {
+		// The events controller raises ApiError, which used to serialize as
+		// `{ errorMessage, errorKeys }` while everything else sent
+		// `{ message, statusCode }`. The shared error toast only ever looked
+		// for `message`, so the specific reason was dropped on the floor and
+		// the user got the generic "an error occurred" fallback instead.
+		// Both shapes are now `message`.
+		await seedAuth(page, { isAdmin: true });
+		await mockJson(page, '**/api/events/WEVENT20990101', eventDetailResponse({ reference: 'WEVENT20990101', title: 'To Delete' }));
+		await page.route('**/api/event', async (route) => {
+			if (route.request().method() === 'DELETE') {
+				return route.fulfill({
+					status: 403,
+					contentType: 'application/json',
+					body: JSON.stringify({
+						message: 'This event already has registered participants.',
+						statusCode: 403,
+						errorKeys: [],
+					}),
+				});
+			}
+			return route.fallback();
+		});
+
+		await page.goto('/events/WEVENT20990101?forceDesktop=1');
+		await page.getByRole('button', { name: 'حذف' }).click();
+		await page.getByRole('button', { name: 'Delete' }).click();
+
+		await expect(
+			page.getByText('This event already has registered participants.')
+		).toBeVisible({ timeout: 5000 });
+	});
 });

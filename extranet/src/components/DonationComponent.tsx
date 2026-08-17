@@ -197,7 +197,7 @@ const DonationComponent = () => {
 				if (error.response?.data) {
 					const errorResponseData: ApiErrorResponse = error.response.data;
 					if (error.response.status !== 404 && error.response.status !== 400) {
-						setErrorMessage(errorResponseData.errorMessage || t('donation.genericError'));
+						setErrorMessage(errorResponseData.message || t('donation.genericError'));
 						setIsFormSubmitted(true);
 						setIsErrorAnimationVisible(true);
 					}

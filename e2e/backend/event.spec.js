@@ -103,7 +103,7 @@ describe('POST /api/event (admin only)', () => {
 			.field('location', 'Casablanca')
 			.field('date', '2099-01-01');
 		expect(res.status).toBe(409);
-		expect(res.body.errorMessage).toMatch(/already exists for this date/);
+		expect(res.body.message).toMatch(/already exists for this date/);
 	});
 
 	it('creates an event for a valid admin request', async () => {
@@ -146,7 +146,7 @@ describe('PUT /api/event/:reference (admin only, BUG regression for issue #205/#
 			.field('location', 'Rabat')
 			.field('date', '2099-02-02');
 		expect(res.status).toBe(400);
-		expect(res.body.errorMessage).toMatch(/inconsistency/);
+		expect(res.body.message).toMatch(/inconsistency/);
 	});
 
 	it('updates title/location/description for a same-date update', async () => {

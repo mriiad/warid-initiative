@@ -99,9 +99,6 @@ exports.canDonate = (req, res, next) => {
 			});
 		})
 		.catch((err) => {
-			if (!err.statusCode) {
-				err.statusCode = STATUS_CODE.INTERNAL_SERVER;
-			}
 			next(err);
 		});
 };

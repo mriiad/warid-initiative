@@ -53,7 +53,7 @@ describe('rate limiting on public endpoints', () => {
 
 		const blocked = await attempt();
 		expect(blocked.status).toBe(429);
-		expect(blocked.body.errorMessage).toMatch(/too many requests/i);
+		expect(blocked.body.message).toMatch(/too many requests/i);
 	});
 
 	it('applies a tighter limit to the mail-sending reset endpoint', async () => {

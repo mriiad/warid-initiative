@@ -84,7 +84,7 @@ const EventForm: React.FC = () => {
 			setIsSuccessResponse(false);
 			setIsErrorResponse(true);
 			setErrorMessage(
-				error.data?.errorMessage || t('events.form.createError')
+				error.response?.data?.message || t('events.form.createError')
 			);
 			if (error.response?.data?.errorKeys) {
 				error.response.data.errorKeys.forEach((key: string) => {

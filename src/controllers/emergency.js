@@ -26,9 +26,6 @@ exports.getUnconfirmedEmergencies = async (req, res, next) => {
 			totalItems: totalItems,
 		});
 	} catch (err) {
-		if (!err.statusCode) {
-			err.statusCode = constants.HTTP_STATUS.INTERNAL_SERVER;
-		}
 		next(err);
 	}
 };
@@ -99,7 +96,6 @@ exports.getEmergencyMatchUsers = async (req, res, next) => {
 			totalItems: totalUsers,
 		});
 	} catch (err) {
-		if (!err.statusCode) err.statusCode = STATUS_CODE.INTERNAL_SERVER;
 		next(err);
 	}
 };
@@ -123,9 +119,6 @@ exports.createEmergency = async (req, res, next) => {
 			emergency,
 		});
 	} catch (err) {
-		if (!err.statusCode) {
-			err.statusCode = constants.HTTP_STATUS.INTERNAL_SERVER;
-		}
 		next(err);
 	}
 };
@@ -140,7 +133,7 @@ exports.confirmEmergency = async (req, res, next) => {
 			return next(
 				new ApiError(
 					constants.ERROR_MESSAGES.EMERGENCY_NOT_FOUND,
-					constants.HTTP_STATUS.NOT_FOUND
+					STATUS_CODE.NOT_FOUND
 				)
 			);
 		}
@@ -148,13 +141,10 @@ exports.confirmEmergency = async (req, res, next) => {
 		emergency.isConfirmed = true;
 		await emergency.save();
 
-		res.status(constants.HTTP_STATUS.OK).json({
+		res.status(STATUS_CODE.OK).json({
 			message: constants.ERROR_MESSAGES.EMERGENCY_CONFIRMED_SUCCESSFULLY,
 		});
 	} catch (err) {
-		if (!err.statusCode) {
-			err.statusCode = constants.HTTP_STATUS.INTERNAL_SERVER;
-		}
 		next(err);
 	}
 };
@@ -171,7 +161,7 @@ exports.confirmUserInEmergency = async (req, res, next) => {
 			return next(
 				new ApiError(
 					constants.ERROR_MESSAGES.EMERGENCY_NOT_FOUND,
-					constants.HTTP_STATUS.NOT_FOUND
+					STATUS_CODE.NOT_FOUND
 				)
 			);
 		}
@@ -181,7 +171,7 @@ exports.confirmUserInEmergency = async (req, res, next) => {
 			return next(
 				new ApiError(
 					constants.ERROR_MESSAGES.USER_NOT_FOUND,
-					constants.HTTP_STATUS.NOT_FOUND
+					STATUS_CODE.NOT_FOUND
 				)
 			);
 		}
@@ -199,9 +189,6 @@ exports.confirmUserInEmergency = async (req, res, next) => {
 			message: constants.ERROR_MESSAGES.USER_ADDED_SUCCESSFULLY,
 		});
 	} catch (err) {
-		if (!err.statusCode) {
-			err.statusCode = constants.HTTP_STATUS.INTERNAL_SERVER;
-		}
 		next(err);
 	}
 };
