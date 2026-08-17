@@ -1,5 +1,4 @@
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import SearchIcon from '@mui/icons-material/Search';
 import {
 	Button,
 	FormControl,
@@ -119,9 +118,7 @@ const EmergencyForm = () => {
 				</IconButton>
 				<div className={topBarDivider} />
 				<Typography className={topBarTitle}>{t('emergency.form.title')}</Typography>
-				<IconButton aria-label={t('admin.searchPlaceholder')}>
-					<SearchIcon />
-				</IconButton>
+				<div style={{ width: '40px' }} />
 			</div>
 
 			<div className={content}>

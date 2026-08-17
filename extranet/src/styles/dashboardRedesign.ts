@@ -28,22 +28,12 @@ export const dashboardRedesignStyles = makeStyles({
 	searchBar: {
 		display: 'flex',
 		alignItems: 'center',
+		justifyContent: 'space-between',
 		gap: '10px',
 		backgroundColor: 'rgba(255, 255, 255, 0.18)',
 		borderRadius: '18px',
 		padding: '12px 16px',
 		color: '#FFFFFF',
-	},
-	searchInput: {
-		flexGrow: 1,
-		background: 'none',
-		border: 'none',
-		outline: 'none',
-		color: '#FFFFFF',
-		fontSize: '15px',
-		'&::placeholder': {
-			color: 'rgba(255, 255, 255, 0.75)',
-		},
 	},
 	searchIconButton: {
 		'&.MuiIconButton-root': {

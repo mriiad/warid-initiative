@@ -4,9 +4,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import EventIcon from '@mui/icons-material/Event';
 import HealthAndSafetyIcon from '@mui/icons-material/HealthAndSafety';
 import LogoutIcon from '@mui/icons-material/Logout';
-import OpacityIcon from '@mui/icons-material/Opacity';
 import PeopleIcon from '@mui/icons-material/People';
-import SearchIcon from '@mui/icons-material/Search';
 import WaterDropIcon from '@mui/icons-material/WaterDrop';
 import { Button, IconButton, Typography } from '@mui/material';
 import { useMemo, useState } from 'react';
@@ -19,7 +17,6 @@ import {
 	useAuth,
 	useAdminStats,
 	useConfirmEmergency,
-	useDashboard,
 	useEvents,
 	useUnconfirmedEmergencies,
 	useUserProfile,
@@ -46,13 +43,12 @@ const greetingKeyForHour = (hour: number) => {
 const AdminDashboard = () => {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
-	const { isAdmin, userId, setToken, setUserId, setIsAdmin } = useAuthContext();
+	const { isAdmin, setToken, setUserId, setIsAdmin } = useAuthContext();
 	const { logout } = useAuth();
 	const { data: profileResponse } = useUserProfile();
 	const { data: stats } = useAdminStats();
 	const { data: eventsResponse } = useEvents(1);
 	const { data: emergenciesResponse } = useUnconfirmedEmergencies(1);
-	const { data: dashboardResponse } = useDashboard(userId as string);
 	const confirmEmergency = useConfirmEmergency();
 
 	const [carouselIndex, setCarouselIndex] = useState(0);
@@ -62,7 +58,6 @@ const AdminDashboard = () => {
 		screen,
 		header,
 		searchBar,
-		searchInput,
 		searchIconButton,
 		greetingRow,
 		avatar,
@@ -91,10 +86,6 @@ const AdminDashboard = () => {
 		carouselDots,
 		carouselDot,
 		carouselDotActive,
-		historyRow,
-		historyIcon,
-		historyTitle,
-		historyMeta,
 	} = dashboardRedesignStyles();
 
 	const firstName: string | undefined = profileResponse?.data?.firstname;
@@ -110,7 +101,6 @@ const AdminDashboard = () => {
 	}, [eventsResponse]);
 
 	const emergencies: Emergency[] = emergenciesResponse?.data?.emergencies || [];
-	const donations = dashboardResponse?.donations || [];
 
 	if (!isAdmin) {
 		return <NotFoundPage />;
@@ -149,14 +139,6 @@ const AdminDashboard = () => {
 			<div className={header}>
 				<div className={searchBar}>
 					<BloodtypeIcon fontSize='small' />
-					<input
-						className={searchInput}
-						placeholder={t('admin.searchPlaceholder')}
-						aria-label={t('admin.searchPlaceholder')}
-					/>
-					<IconButton className={searchIconButton} aria-label={t('admin.searchPlaceholder')}>
-						<SearchIcon fontSize='small' />
-					</IconButton>
 					<IconButton
 						className={searchIconButton}
 						aria-label={t('admin.logout')}
@@ -283,25 +265,6 @@ const AdminDashboard = () => {
 						onPrimaryAction={() => navigate(`/events/update/${nextEvent.reference}`)}
 						onViewDetails={() => navigate(`/events/${nextEvent.reference}`)}
 					/>
-				)}
-
-				<Typography className={sectionTitle}>{t('admin.donationHistory')}</Typography>
-				{donations.length === 0 ? (
-					<div className={emptyState}>{t('admin.noDonationHistory')}</div>
-				) : (
-					donations.map((donation) => (
-						<div className={historyRow} key={donation.id}>
-							<div className={historyIcon}>
-								<OpacityIcon fontSize='small' />
-							</div>
-							<div>
-								<Typography className={historyTitle}>{donation.event}</Typography>
-								<Typography className={historyMeta}>
-									{donation.date} · {donation.type}
-								</Typography>
-							</div>
-						</div>
-					))
 				)}
 			</div>
 
