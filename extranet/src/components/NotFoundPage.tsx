@@ -1,84 +1,77 @@
 import { Typography } from '@mui/material';
+import Button from '@mui/material/Button';
 import makeStyles from '@mui/styles/makeStyles';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import colors from '../styles/colors';
+import { authRedesignStyles, redesignColors } from '../styles/authRedesign';
 
+// Self-contained full-screen layout, like every other redesigned screen.
+// This used to be the one and only route still rendering the legacy app
+// chrome (NavBar/MobileHeader/MobileNavbar + ContentContainer), which kept
+// ~800 lines of dead components alive to decorate a 404 -- see issue #330.
 const useStyles = makeStyles({
-	notFoundContainer: {
+	screen: {
+		minHeight: '100vh',
+		width: '100%',
+		// Same neutral ground every other redesigned screen paints, so the
+		// legacy AppContainer gradient doesn't show through on this one page.
+		backgroundColor: '#F4F3F6',
 		display: 'flex',
 		flexDirection: 'column',
-		justifyContent: 'center',
 		alignItems: 'center',
+		justifyContent: 'center',
 		textAlign: 'center',
-		padding: '40px',
-		borderRadius: '30px',
-		backgroundColor: colors.formWhite,
-		border: `1px solid ${colors.purple}`,
-		marginTop: '50px',
+		padding: '32px 24px',
+		gap: '8px',
 	},
-	notFoundIcon: {
-		fontSize: '8rem',
-		color: colors.purple,
-		marginBottom: '20px',
-	},
-	notFoundText: {
-		fontSize: '4rem',
-		fontWeight: 'bold',
-		color: colors.purple,
-		marginBottom: '20px',
-	},
-	description: {
-		fontSize: '1.2rem',
-		color: colors.rose,
-		marginBottom: '20px',
-	},
-	homeButton: {
-		backgroundColor: colors.rose,
-		color: 'white',
-		borderRadius: '10px',
-		marginTop: '20px',
-		padding: '10px 20px',
-		fontSize: '16px',
-		boxShadow: '0px 2px 10px rgba(0, 0, 0, 0.2)',
-		'&:hover': {
-			backgroundColor: colors.purple,
+	code: {
+		'&.MuiTypography-root': {
+			fontSize: 'clamp(56px, 18vw, 88px)',
+			fontWeight: 700,
+			color: redesignColors.headerRose,
+			lineHeight: 1,
 		},
 	},
-	svgIllustration: {
-		width: '40%',
+	illustration: {
+		width: '55%',
+		maxWidth: '240px',
 		height: 'auto',
-		marginBottom: '20px',
+		margin: '8px 0 4px',
+	},
+	description: {
+		'&.MuiTypography-root': {
+			fontSize: '15px',
+			color: redesignColors.placeholder,
+			marginBottom: '24px',
+			maxWidth: '320px',
+		},
 	},
 });
 
 const NotFoundPage = () => {
 	const navigate = useNavigate();
 	const { t } = useTranslation();
-	const {
-		notFoundContainer,
-		notFoundText,
-		description,
-		homeButton,
-		svgIllustration,
-	} = useStyles();
+	const { screen, code, illustration, description } = useStyles();
+	const { primaryButton } = authRedesignStyles();
 
 	return (
-		<div className={notFoundContainer}>
-			<Typography variant='h1' className={notFoundText}>
-				{t('notFound.title')}
-			</Typography>
+		<div className={screen}>
+			<Typography className={code}>{t('notFound.title')}</Typography>
 			<img
 				src='/blood-donation-hand.svg'
 				alt='Blood Donation'
-				className={svgIllustration}
+				className={illustration}
 			/>
 			<Typography className={description}>
 				{t('notFound.description')}
 			</Typography>
-			<div className={homeButton} onClick={() => navigate('/')}>
+			<Button
+				type='button'
+				className={primaryButton}
+				onClick={() => navigate('/home')}
+			>
 				{t('notFound.button')}
-			</div>
+			</Button>
 		</div>
 	);
 };
