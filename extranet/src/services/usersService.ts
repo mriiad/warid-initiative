@@ -4,16 +4,31 @@
  */
 
 import type { UserFormData } from '../data/ProfileFormData';
-import type { UpdateUserData } from '../types';
+import type {
+	AdminUserDetailResponse,
+	MessageResponse,
+	ProfileCompletenessResponse,
+	UpdateUserData,
+	UserProfileResponse,
+	UsersListResponse,
+} from '../types';
 import type { AdminStats, DashboardData } from '../types/users';
 import { apiClient } from '../utils/apiClient';
 
 export const usersService = {
-	getProfile: (userId?: string) => {
-		const endpoint = userId
-			? `/api/users/profile/${userId}`
-			: '/api/user/profile';
-		return apiClient.get(endpoint);
+	// The logged-in user's own profile. Resolved from the auth token
+	// server-side; returns the profile fields at the top level.
+	getMyProfile: () => {
+		return apiClient.get<UserProfileResponse>('/api/user/profile');
+	},
+
+	// Admin-only lookup of another user. A different endpoint returning a
+	// different shape (account fields like username/isAdmin/canDonate on top
+	// of the profile fields) -- these two used to share one `getProfile`
+	// method overloaded on whether a userId was passed, which hid the fact
+	// that callers were getting two incompatible payloads.
+	getUserById: (userId: string) => {
+		return apiClient.get<AdminUserDetailResponse>(`/api/users/profile/${userId}`);
 	},
 
 	// Self-service update of the logged-in user's own profile. Resolves the
@@ -24,7 +39,7 @@ export const usersService = {
 	// for a brand-new user completing their profile for the first time --
 	// use completeMyProfile below for that screen instead.
 	updateMyProfile: (data: Partial<UserFormData>) => {
-		return apiClient.patch('/api/user/profile', data);
+		return apiClient.patch<MessageResponse>('/api/user/profile', data);
 	},
 
 	// The "complete your profile" screen a brand-new user is sent to right
@@ -32,18 +47,18 @@ export const usersService = {
 	// Profile document if it doesn't exist yet, unlike updateMyProfile above,
 	// which requires one to already be there.
 	completeMyProfile: (data: Partial<UserFormData>) => {
-		return apiClient.put('/api/user/update', data);
+		return apiClient.put<MessageResponse>('/api/user/update', data);
 	},
 
 	updateUserInfo: (userId: string, data: UpdateUserData) => {
-		return apiClient.put(`/api/users/${userId}`, data);
+		return apiClient.put<MessageResponse>(`/api/users/${userId}`, data);
 	},
 
 	checkProfileCompleteness: () => {
-		return apiClient.get('/api/user/check-profile');
+		return apiClient.get<ProfileCompletenessResponse>('/api/user/check-profile');
 	},
 	getAllUsers: (page = 1) => {
-		return apiClient.get(`/api/users?page=${page}`);
+		return apiClient.get<UsersListResponse>(`/api/users?page=${page}`);
 	},
 
 	// POST, not GET: the backend route (isAuth + checkIfAdmin) takes its
@@ -51,15 +66,15 @@ export const usersService = {
 	// this used to GET with a single ?q= param, which matches no route at
 	// all (POST-only) and was never reachable.
 	searchUsers: (filters: Record<string, string | number | boolean>) => {
-		return apiClient.post('/api/searchUsers', filters);
+		return apiClient.post<UsersListResponse>('/api/searchUsers', filters);
 	},
 
 	deleteUser: (username: string) => {
-		return apiClient.delete(`/api/deleteUser/${username}`);
+		return apiClient.delete<MessageResponse>(`/api/deleteUser/${username}`);
 	},
 
 	toggleAdminStatus: (userId: string) => {
-		return apiClient.patch(`/api/users/${userId}/admin`);
+		return apiClient.patch<MessageResponse>(`/api/users/${userId}/admin`);
 	},
 	getDashboard: async (userId: string): Promise<DashboardData> => {
 		const res = await apiClient.get<DashboardData>(`/api/users/${userId}/dashboard`);

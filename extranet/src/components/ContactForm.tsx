@@ -7,8 +7,8 @@ import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
-import { ProfileFormData } from '../data/ProfileFormData';
 import { contactService, usersService } from '../services';
+import type { UserProfileResponse } from '../types';
 import { authRedesignStyles } from '../styles/authRedesign';
 import { eventsListRedesignStyles } from '../styles/eventsListRedesign';
 import RedesignBottomNav from './shared/RedesignBottomNav';
@@ -36,15 +36,20 @@ const ContactForm = () => {
 	const [isErrorResponse, setIsErrorResponse] = useState<boolean>(false);
 	const [errorMessage, setErrorMessage] = useState<string>('');
 
+	// UserProfileResponse, not ProfileFormData: GET /api/user/profile returns
+	// only `{ gender }` when the user has no Profile document yet, so every
+	// field but gender is genuinely optional. The reads below already guard
+	// for that (`|| ''`, `?.firstname`) -- the state type just claimed
+	// otherwise.
 	const [localUserProfile, setLocalUserProfile] =
-		useState<ProfileFormData>(null);
+		useState<UserProfileResponse | null>(null);
 	const [isProfileLoading, setIsProfileLoading] = useState<boolean>(true);
 
 	useEffect(() => {
 		if (token) {
 			setIsProfileLoading(true);
 			usersService
-				.getProfile()
+				.getMyProfile()
 				.then((response) => {
 					setLocalUserProfile(response.data);
 				})

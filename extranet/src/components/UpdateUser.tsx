@@ -67,7 +67,7 @@ const UpdateUser = () => {
 	const { data: userData, isLoading } = useQuery({
 		queryKey: queryKeys.user.detail(userId ?? ''),
 		queryFn: async () => {
-			const response = await usersService.getProfile(userId);
+			const response = await usersService.getUserById(userId);
 			return response.data;
 		},
 		enabled: !!userId,
