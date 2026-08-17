@@ -46,6 +46,10 @@ const API_CONFIG = {
 		contact: '/api/contact-us',
 	},
 
+	emergency: {
+		whatsappContactNumber: getEnvVar('WHATSAPP_CONTACT_NUMBER'),
+	},
+
 	request: {
 		timeout: 10000,
 		retries: 3,

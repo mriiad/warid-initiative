@@ -28,13 +28,15 @@ const EmergencyCard = ({ emergency, onConfirm, isConfirming }: EmergencyCardProp
 
 	const handleMatchedUsers = () => {
 		// The matched-users page has no endpoint of its own to fetch a single
-		// emergency's details, so the full context it needs for the WhatsApp
-		// message (city, contact number, details) is forwarded here instead.
+		// emergency's details, so the context it needs for the WhatsApp
+		// message (city, details) is forwarded here instead. The contact
+		// number shown in that message is a fixed config value (see
+		// API_CONFIG.emergency.whatsappContactNumber), not this emergency's
+		// own submitted phone number, so it isn't forwarded.
 		navigate(`/emergencies/${emergency._id}/matched-users`, {
 			state: {
 				bloodGroup: emergency.bloodGroup,
 				city: emergency.city,
-				phoneNumber: emergency.phoneNumber,
 				details: emergency.details,
 			},
 		});
