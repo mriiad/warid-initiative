@@ -3,7 +3,7 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import PeopleIcon from '@mui/icons-material/People';
 import TuneIcon from '@mui/icons-material/Tune';
 import { Chip, CircularProgress, IconButton, Typography } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Pagination from './shared/Pagination';
@@ -111,6 +111,39 @@ const UsersComponent: React.FC = () => {
 		handleFilterApply(newParams, 1);
 	};
 
+	// Takes its filters/page as arguments rather than closing over any
+	// component state, so an empty dependency array gives it a stable
+	// identity for the component's lifetime -- safe to depend on from the
+	// effect below without risking an extra re-run on every unrelated
+	// re-render (setIsLoading/setSearchParams etc. are all stable setters).
+	const handleFilterApply = useCallback(
+		async (filters: URLSearchParams, currentPage: number = 1) => {
+			try {
+				setIsLoading(true);
+				setNoUsersFound(false);
+				const response = await usersService.searchUsers({
+					...Object.fromEntries(filters),
+					page: currentPage,
+					perPage: 10,
+				});
+				setUsers(response.data.users || []);
+				setTotalPages(Math.ceil(response.data.totalItems / 10));
+				filters.set('page', currentPage.toString());
+				setSearchParams(filters);
+			} catch (error) {
+				console.error('Error applying filters:', error);
+				if (error.response && error.response.status === 404) {
+					setNoUsersFound(true);
+				} else {
+					console.error('Unexpected error:', error);
+				}
+			} finally {
+				setIsLoading(false);
+			}
+		},
+		[setSearchParams]
+	);
+
 	useEffect(() => {
 		const fetchUsers = async () => {
 			try {
@@ -145,35 +178,10 @@ const UsersComponent: React.FC = () => {
 			fetchUsers();
 		}
 		navigate(`/users?${searchParams.toString()}`);
-	}, [page, searchParams]);
-
-	const handleFilterApply = async (
-		filters: URLSearchParams,
-		currentPage: number = 1
-	) => {
-		try {
-			setIsLoading(true);
-			setNoUsersFound(false);
-			const response = await usersService.searchUsers({
-				...Object.fromEntries(filters),
-				page: currentPage,
-				perPage: 10,
-			});
-			setUsers(response.data.users || []);
-			setTotalPages(Math.ceil(response.data.totalItems / 10));
-			filters.set('page', currentPage.toString());
-			setSearchParams(filters);
-		} catch (error) {
-			console.error('Error applying filters:', error);
-			if (error.response && error.response.status === 404) {
-				setNoUsersFound(true);
-			} else {
-				console.error('Unexpected error:', error);
-			}
-		} finally {
-			setIsLoading(false);
-		}
-	};
+		// navigate is stable (react-router memoizes it) and handleFilterApply
+		// is memoized above, so neither adds an extra re-run beyond the
+		// page/searchParams changes this effect already exists to react to.
+	}, [page, searchParams, navigate, handleFilterApply]);
 
 	const handleFilterChange = (newFilters: Filters) => {
 		const params = new URLSearchParams();

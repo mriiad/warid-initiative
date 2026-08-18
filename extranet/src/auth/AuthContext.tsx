@@ -61,6 +61,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 	);
 };
 
+// The Provider-plus-hook pattern this file follows (standard for a React
+// context) is exactly what react-refresh/only-export-components flags: Fast
+// Refresh can only hot-reload a module whose exports are all components, so
+// mixing AuthProvider with this hook means an edit here triggers a full page
+// reload instead. That's a real but minor dev-time cost, not a bug -- fixing
+// it would mean splitting the hook into its own file and updating the ~17
+// call sites that import useAuth from here, which is more churn than the
+// warning is worth (see eslint.config.js's own note against unrelated
+// refactors for cosmetic lint rules).
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
 	const context = useContext(AuthContext);
 	if (context === undefined) {

@@ -67,6 +67,9 @@ export const ErrorToastProvider: React.FC<{ children: React.ReactNode }> = ({
 	);
 };
 
+// Same Provider-plus-hook pattern, same react-refresh/only-export-components
+// trade-off, as useAuth in auth/AuthContext.tsx -- see the comment there.
+// eslint-disable-next-line react-refresh/only-export-components
 export const useErrorToast = () => {
 	const context = useContext(ErrorToastContext);
 	if (context === undefined) {
