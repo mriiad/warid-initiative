@@ -100,7 +100,12 @@ const ContactForm = () => {
 			console.error('Error submitting contact form:', error);
 			setIsErrorResponse(true);
 			setIsSuccessResponse(false);
-			setErrorMessage(error.message || t('contact.genericError'));
+			// error.message is Axios's own generic text ("Request failed with
+			// status code 500"), not the backend's reason -- that lives at
+			// error.response.data.message. See issue #344.
+			setErrorMessage(
+				error.response?.data?.message || error.message || t('contact.genericError')
+			);
 		}
 	};
 
