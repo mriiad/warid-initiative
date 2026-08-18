@@ -81,8 +81,12 @@ const EmergencyForm = () => {
 					);
 				}
 
+				// The response body lives at error.response.data (apiClient's
+				// interceptor forwards the raw Axios error unchanged) --
+				// error.data is always undefined, so this used to always fall
+				// through to the generic fallback below. See issue #342.
 				setErrorMessage(
-					error?.data?.message || t('emergency.form.genericError')
+					error?.response?.data?.message || t('emergency.form.genericError')
 				);
 				setIsFormSubmitted(true);
 				setIsErrorResponse(true);
