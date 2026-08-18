@@ -2,7 +2,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { CircularProgress, IconButton, Typography } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
@@ -25,21 +25,32 @@ const EventConfirmation: React.FC = () => {
 		reference || ''
 	);
 	const confirmPresenceMutation = useConfirmPresence();
+	// Destructured so useCallback below can depend on the mutate function
+	// itself (stable across re-renders in TanStack Query v5) rather than the
+	// whole mutation result object, which is a fresh object every render --
+	// including every time isPending/isError changes. Depending on the
+	// object would re-create the callback on every status transition, which
+	// would in turn re-fire the effect below on every one of those
+	// transitions instead of once.
+	const { mutate: confirmPresence } = confirmPresenceMutation;
 
-	const handleConfirmPresence = (eventId: string) => {
-		confirmPresenceMutation.mutate(
-			{ eventId, token },
-			{
-				onSuccess: () => {
-					setIsConfirmed(true);
-					setTimeout(() => navigate('/events'), API_CONFIG.ui.redirectDelay);
-				},
-				onError: (error) => {
-					console.error('Error:', error);
-				},
-			}
-		);
-	};
+	const handleConfirmPresence = useCallback(
+		(eventId: string) => {
+			confirmPresence(
+				{ eventId, token },
+				{
+					onSuccess: () => {
+						setIsConfirmed(true);
+						setTimeout(() => navigate('/events'), API_CONFIG.ui.redirectDelay);
+					},
+					onError: (error) => {
+						console.error('Error:', error);
+					},
+				}
+			);
+		},
+		[confirmPresence, navigate, token]
+	);
 
 	useEffect(() => {
 		// GET /api/events/:reference responds with `{ message, event }`, so the
@@ -48,7 +59,7 @@ const EventConfirmation: React.FC = () => {
 		if (eventData?.data?.event && token) {
 			handleConfirmPresence(eventData.data.event._id);
 		}
-	}, [eventData, token]);
+	}, [eventData, token, handleConfirmPresence]);
 
 	if (isEventLoading || confirmPresenceMutation.isPending) {
 		return (

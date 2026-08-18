@@ -80,7 +80,11 @@ const UserProfileForm = () => {
 				setShowSnackbar(true);
 			}
 		}
-	}, [userProfile, setValue]);
+		// t is stable across renders (react-i18next only changes its identity
+		// on a language switch), and re-running this on a language change is
+		// exactly right: it regenerates the missing-fields message in the new
+		// language.
+	}, [userProfile, setValue, t]);
 
 	const onSubmit = (formData: ProfileFormData) => {
 		setErrorMessage(null);

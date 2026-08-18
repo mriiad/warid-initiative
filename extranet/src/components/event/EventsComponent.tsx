@@ -273,7 +273,11 @@ const EventsComponent = () => {
 		};
 
 		fetchEvents();
-	}, [page]);
+		// isAdmin is a plain boolean from context (stable by value, not
+		// identity), so this only re-runs on an actual admin-status change --
+		// exactly when totalPages (computed only for admins, just above)
+		// needs recomputing anyway.
+	}, [page, isAdmin]);
 
 	// Filter events - only show generic eventsto admins and apply search
 	useEffect(() => {
