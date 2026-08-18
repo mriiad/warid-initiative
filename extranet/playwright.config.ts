@@ -11,7 +11,19 @@ export default defineConfig({
 	testDir: './e2e',
 	fullyParallel: true,
 	forbidOnly: !!process.env.CI,
-	retries: 0,
+	// CI (ubuntu-latest) has 2 vCPUs running 4 workers, each launching its own
+	// Chromium against one shared Vite dev server -- under that contention, a
+	// `toBeVisible({ timeout: ... })` can occasionally fire before content
+	// that has, in fact, rendered gets painted. Reproduced this locally by
+	// deliberately doubling the worker count: the failure screenshot showed
+	// the expected text already on screen at the moment of the timeout, not
+	// missing or wrong -- i.e. a resource-contention timing artifact, not an
+	// app or test bug. Retries are the standard, narrowly-scoped mitigation
+	// for that: a real bug fails again on retry and CI still goes red, but
+	// transient contention gets one or two more tries on a presumably less
+	// loaded moment. Scoped to CI only so local runs still fail fast on the
+	// first try.
+	retries: process.env.CI ? 2 : 0,
 	workers: 4,
 	reporter: [['list'], ['json', { outputFile: 'playwright-report/results.json' }]],
 	use: {
