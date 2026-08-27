@@ -10,12 +10,11 @@ export const ENV_CONFIG = {
 	NODE_ENV: 'development',
 	ENABLE_DEBUG: true,
 	ENABLE_ANALYTICS: false,
-	// PLACEHOLDER -- not a real Warid number. Shown as the "contact us at"
-	// number in every emergency WhatsApp message (see MatchedUsers.tsx),
-	// regardless of which admin sends it or what phone number was entered
-	// when the emergency itself was created. Override with VITE_WHATSAPP_CONTACT_NUMBER,
-	// or just replace the value below once Warid has an official number.
-	WHATSAPP_CONTACT_NUMBER: '+212600000000',
+	// Official Warid number. Shown as the "contact us at" number in every
+	// emergency WhatsApp message (see MatchedUsers.tsx), regardless of which
+	// admin sends it or what phone number was entered when the emergency
+	// itself was created. Override with VITE_WHATSAPP_CONTACT_NUMBER if needed.
+	WHATSAPP_CONTACT_NUMBER: '+212708248313',
 } as const;
 
 export const getEnvVar = (key: keyof typeof ENV_CONFIG): string => {

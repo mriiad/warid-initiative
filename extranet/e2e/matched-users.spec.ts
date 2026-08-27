@@ -103,9 +103,9 @@ test.describe('Matched users / User List (redesigned)', () => {
 		expect(text).toContain('O-');
 		expect(text).toContain('Casablanca');
 		expect(text).toContain('Accident victim needs an urgent transfusion.');
-		// The configured Warid number (env-config.ts's WHATSAPP_CONTACT_NUMBER
-		// placeholder), not the number submitted with this emergency.
-		expect(text).toContain('+212600000000');
+		// The configured Warid number (env-config.ts's WHATSAPP_CONTACT_NUMBER),
+		// not the number submitted with this emergency.
+		expect(text).toContain('+212708248313');
 		expect(text).not.toContain('+212611111111');
 		await popup.close();
 
