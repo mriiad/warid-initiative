@@ -7,6 +7,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useErrorToast } from '../components/shared/ErrorToastProvider';
 import type { UserFormData } from '@/types';
 import { usersService } from '../services';
+import type { AdminRole } from '../data/constants';
 import type { UpdateUserData } from '../types';
 import type { AdminStats, DashboardData } from '../types/users';
 import { queryKeys } from './queryKeys';
@@ -131,18 +132,19 @@ export const useDeleteUser = () => {
 	});
 };
 
-export const useToggleAdminStatus = () => {
+export const useAssignAdminRole = () => {
 	const queryClient = useQueryClient();
 
 	return useMutation({
-		mutationFn: (userId: string) => usersService.toggleAdminStatus(userId),
-		onSuccess: (response, userId) => {
+		mutationFn: ({ userId, role }: { userId: string; role: AdminRole }) =>
+			usersService.assignAdminRole(userId, role),
+		onSuccess: (response, { userId }) => {
 			// Invalidate users list and specific user
 			queryClient.invalidateQueries({ queryKey: queryKeys.users.all });
 			queryClient.invalidateQueries({ queryKey: queryKeys.user.detail(userId) });
 		},
 		onError: (error) => {
-			console.error('Admin status toggle failed:', error);
+			console.error('Admin role assignment failed:', error);
 		},
 	});
 };

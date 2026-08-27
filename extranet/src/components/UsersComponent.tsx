@@ -6,6 +6,8 @@ import { Chip, CircularProgress, IconButton, Typography } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { ADMIN_ROLE_ICONS } from '../auth/adminAccess';
+import { AdminRole } from '../data/constants';
 import Pagination from './shared/Pagination';
 import RedesignBottomNav from './shared/RedesignBottomNav';
 import { usersService } from '../services';
@@ -297,6 +299,32 @@ const UsersComponent: React.FC = () => {
 												.join('   ')}
 										</Typography>
 									</div>
+									{user.isAdmin &&
+										(() => {
+											// No role recorded (legacy, from before roles existed) is
+											// shown and offered as principal everywhere else -- see
+											// UserDetailView.tsx and adminAccess.ts.
+											const role = user.role || AdminRole.Principal;
+											const RoleIcon = ADMIN_ROLE_ICONS[role];
+											return (
+												<span
+													aria-label={t(`users.role.${role}`)}
+													style={{
+														display: 'flex',
+														alignItems: 'center',
+														justifyContent: 'center',
+														width: '32px',
+														height: '32px',
+														backgroundColor: '#F1EFF4',
+														borderRadius: '10px',
+														flexShrink: 0,
+														marginInlineEnd: '8px',
+													}}
+												>
+													<RoleIcon fontSize='small' />
+												</span>
+											);
+										})()}
 									<span
 										aria-hidden='true'
 										style={{

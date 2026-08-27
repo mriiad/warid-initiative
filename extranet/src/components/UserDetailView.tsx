@@ -10,16 +10,20 @@ import { Button, CircularProgress, IconButton, Typography } from '@mui/material'
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
-import { hasAdminRole } from '../auth/adminAccess';
+import { ADMIN_ROLE_ICONS, hasAdminRole } from '../auth/adminAccess';
 import { useAuth } from '../auth/AuthContext';
-import { useAdminUserDetail, useDeleteUser, useToggleAdminStatus } from '../hooks';
+import { AdminRole } from '../data/constants';
+import { useAdminUserDetail, useAssignAdminRole, useDeleteUser } from '../hooks';
 import { eventDetailRedesignStyles } from '../styles/eventDetailRedesign';
 import { eventOverviewCardStyles } from '../styles/eventOverviewCard';
 import { userDetailRedesignStyles } from '../styles/userDetailRedesign';
 import ConfirmationDialog from './shared/ConfirmationDialog';
 import NotFoundPage from './NotFoundPage';
 import RedesignBottomNav from './shared/RedesignBottomNav';
+import RolePickerDialog from './shared/RolePickerDialog';
 import SnackbarComponent from './shared/SnackbarComponent';
+
+const ALL_ADMIN_ROLES = [AdminRole.Principal, AdminRole.Emergency, AdminRole.Event];
 
 const UserDetailView = () => {
 	const { t } = useTranslation();
@@ -32,10 +36,10 @@ const UserDetailView = () => {
 	const isPrincipalAdmin = hasAdminRole(isAdmin, adminRole, []);
 	const { data: userInfo, isLoading } = useAdminUserDetail(userId as string);
 	const deleteUser = useDeleteUser();
-	const toggleAdminStatus = useToggleAdminStatus();
+	const assignAdminRole = useAssignAdminRole();
 
 	const [confirmDelete, setConfirmDelete] = useState(false);
-	const [confirmMakeAdmin, setConfirmMakeAdmin] = useState(false);
+	const [rolePickerOpen, setRolePickerOpen] = useState(false);
 	const [message, setMessage] = useState<string | null>(null);
 
 	const { topBar, topBarDivider, topBarTitle, content } = eventDetailRedesignStyles();
@@ -62,6 +66,12 @@ const UserDetailView = () => {
 
 	const user = userInfo?.data;
 	const fullName = user ? [user.firstname, user.lastname].filter(Boolean).join(' ') : '';
+	// A plain admin with no role recorded (from before roles existed) is
+	// treated as principal everywhere else (adminAccess.ts) -- shown and
+	// offered roles the same way here, rather than as roleless.
+	const currentRole =
+		user?.isAdmin ? user.role || AdminRole.Principal : null;
+	const availableRoles = ALL_ADMIN_ROLES.filter((role) => role !== currentRole);
 
 	const handleDelete = () => {
 		if (!user?.username) return;
@@ -81,21 +91,29 @@ const UserDetailView = () => {
 		setConfirmDelete(false);
 	};
 
-	const handleMakeAdmin = () => {
+	const handleAssignRole = (role: AdminRole) => {
 		if (!userId) return;
-		toggleAdminStatus.mutate(userId, {
-			onSuccess: () => {
-				setMessage(t('users.list.makeAdminSuccess', { username: user?.username }));
-			},
-			onError: (error: any) => {
-				setMessage(
-					t('users.list.makeAdminError', {
-						message: error.response?.data?.message || error.message,
-					})
-				);
-			},
-		});
-		setConfirmMakeAdmin(false);
+		assignAdminRole.mutate(
+			{ userId, role },
+			{
+				onSuccess: () => {
+					setMessage(
+						t('users.list.assignRoleSuccess', {
+							username: user?.username,
+							role: t(`users.role.${role}`),
+						})
+					);
+				},
+				onError: (error: any) => {
+					setMessage(
+						t('users.list.assignRoleError', {
+							message: error.response?.data?.message || error.message,
+						})
+					);
+				},
+			}
+		);
+		setRolePickerOpen(false);
 	};
 
 	return (
@@ -126,6 +144,17 @@ const UserDetailView = () => {
 						>
 							{user.canDonate ? t('users.detail.available') : t('users.detail.unavailable')}
 						</span>
+						{/* Current role, always visible for an admin (issue #183) --
+							distinct icon per role, via the same map the picker below uses. */}
+						{currentRole && (
+							<span className={availabilityBadge} style={{ marginInlineStart: '8px' }}>
+								{(() => {
+									const RoleIcon = ADMIN_ROLE_ICONS[currentRole];
+									return <RoleIcon fontSize='small' style={{ marginInlineEnd: '4px', verticalAlign: 'middle' }} />;
+								})()}
+								{t(`users.role.${currentRole}`)}
+							</span>
+						)}
 						<Typography className={name}>{fullName || user.username}</Typography>
 						{user.city && <Typography className={city}>{user.city}</Typography>}
 
@@ -138,15 +167,15 @@ const UserDetailView = () => {
 								{t('common.edit')}
 								<EditIcon fontSize='small' />
 							</Button>
-							{!user.isAdmin && (
-								<IconButton
-									className={iconSquareButton}
-									aria-label={t('users.card.makeAdmin')}
-									onClick={() => setConfirmMakeAdmin(true)}
-								>
-									<PersonAddIcon />
-								</IconButton>
-							)}
+							<IconButton
+								className={iconSquareButton}
+								aria-label={
+									user.isAdmin ? t('users.card.changeRole') : t('users.card.makeAdmin')
+								}
+								onClick={() => setRolePickerOpen(true)}
+							>
+								<PersonAddIcon />
+							</IconButton>
 							<IconButton
 								className={iconSquareButtonNeutral}
 								aria-label={t('users.card.delete')}
@@ -215,14 +244,11 @@ const UserDetailView = () => {
 				onCancel={() => setConfirmDelete(false)}
 				warning
 			/>
-			<ConfirmationDialog
-				open={confirmMakeAdmin}
-				title={t('users.list.makeAdminTitle')}
-				message={t('users.list.makeAdminConfirm', { username: user?.username })}
-				confirmText={t('users.card.makeAdmin')}
-				cancelText={t('common.cancel')}
-				onConfirm={handleMakeAdmin}
-				onCancel={() => setConfirmMakeAdmin(false)}
+			<RolePickerDialog
+				open={rolePickerOpen}
+				availableRoles={availableRoles}
+				onSelect={handleAssignRole}
+				onCancel={() => setRolePickerOpen(false)}
 			/>
 			<SnackbarComponent
 				open={!!message}

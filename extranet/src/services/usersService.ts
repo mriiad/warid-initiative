@@ -5,6 +5,7 @@
 
 import type { UserFormData } from '@/types';
 import type {
+	AdminRoleAssignmentResponse,
 	AdminUserDetailResponse,
 	MessageResponse,
 	ProfileCompletenessResponse,
@@ -12,6 +13,7 @@ import type {
 	UserProfileResponse,
 	UsersListResponse,
 } from '../types';
+import type { AdminRole } from '../data/constants';
 import type { AdminStats, DashboardData } from '../types/users';
 import { apiClient } from '../utils/apiClient';
 
@@ -73,8 +75,16 @@ export const usersService = {
 		return apiClient.delete<MessageResponse>(`/api/deleteUser/${username}`);
 	},
 
-	toggleAdminStatus: (userId: string) => {
-		return apiClient.patch<MessageResponse>(`/api/users/${userId}/admin`);
+	// Grants admin access if the target isn't already an admin, and either
+	// way sets which of the three roles they hold -- so this also covers a
+	// principal reassigning an existing admin from one role to another, not
+	// just a first-time promotion. See issue #183 and the matching backend
+	// change in controllers/user.js's makeUserAdmin.
+	assignAdminRole: (userId: string, role: AdminRole) => {
+		return apiClient.patch<AdminRoleAssignmentResponse>(
+			`/api/users/${userId}/admin`,
+			{ role }
+		);
 	},
 	getDashboard: async (userId: string): Promise<DashboardData> => {
 		const res = await apiClient.get<DashboardData>(`/api/users/${userId}/dashboard`);

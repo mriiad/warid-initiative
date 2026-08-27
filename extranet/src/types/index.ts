@@ -46,6 +46,7 @@ export type {
 
 // Server response shapes
 export type {
+	AdminRoleAssignmentResponse,
 	AdminUserDetailResponse,
 	ApiErrorResponse,
 	CanDonateResponse,
