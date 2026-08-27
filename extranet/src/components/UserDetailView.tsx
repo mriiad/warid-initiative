@@ -10,6 +10,7 @@ import { Button, CircularProgress, IconButton, Typography } from '@mui/material'
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
+import { hasAdminRole } from '../auth/adminAccess';
 import { useAuth } from '../auth/AuthContext';
 import { useAdminUserDetail, useDeleteUser, useToggleAdminStatus } from '../hooks';
 import { eventDetailRedesignStyles } from '../styles/eventDetailRedesign';
@@ -24,7 +25,11 @@ const UserDetailView = () => {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const { userId } = useParams<{ userId: string }>();
-	const { isAdmin } = useAuth();
+	const { isAdmin, adminRole } = useAuth();
+	// Principal-Admin-only (issue #183), same as the Route-level gate in
+	// App.tsx -- this is the belt-and-suspenders self-guard that was already
+	// here for plain isAdmin.
+	const isPrincipalAdmin = hasAdminRole(isAdmin, adminRole, []);
 	const { data: userInfo, isLoading } = useAdminUserDetail(userId as string);
 	const deleteUser = useDeleteUser();
 	const toggleAdminStatus = useToggleAdminStatus();
@@ -51,7 +56,7 @@ const UserDetailView = () => {
 		infoCardAction,
 	} = userDetailRedesignStyles();
 
-	if (!isAdmin) {
+	if (!isPrincipalAdmin) {
 		return <NotFoundPage />;
 	}
 

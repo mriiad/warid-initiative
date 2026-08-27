@@ -29,3 +29,13 @@ export enum Gender {
 	Male = 'male',
 	Female = 'female',
 }
+
+// Meaningful only when isAdmin is true. Mirrors the backend's User.role enum
+// (src/models/user.js). See src/auth/adminAccess.ts for how a role is
+// checked against a route's allowed roles -- Principal Admin has full
+// access to everything, per issue #183.
+export enum AdminRole {
+	Principal = 'principal',
+	Emergency = 'emergency',
+	Event = 'event',
+}

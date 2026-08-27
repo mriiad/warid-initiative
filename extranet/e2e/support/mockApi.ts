@@ -19,6 +19,12 @@ export async function seedAuth(
 		userId?: string;
 		isAdmin?: boolean;
 		refreshToken?: string;
+		// 'principal' | 'emergency' | 'event', omitted entirely by default --
+		// matching a plain admin from before roles existed (issue #183), which
+		// AuthContext/adminAccess.ts treat as full (principal-equivalent)
+		// access. Existing isAdmin: true callers are unaffected by this
+		// param's addition.
+		adminRole?: string;
 	} = {}
 ) {
 	const {
@@ -28,15 +34,17 @@ export async function seedAuth(
 		// A real session always has both -- apiClient's response interceptor
 		// uses this to silently refresh an expired access token.
 		refreshToken = 'fake-refresh-token',
+		adminRole,
 	} = opts;
 	await page.addInitScript(
-		([t, u, a, r]) => {
+		([t, u, a, r, role]) => {
 			window.localStorage.setItem('token', t as string);
 			window.localStorage.setItem('userId', u as string);
 			window.localStorage.setItem('isAdmin', String(a));
 			window.localStorage.setItem('refreshToken', r as string);
+			if (role) window.localStorage.setItem('adminRole', role as string);
 		},
-		[token, userId, isAdmin, refreshToken]
+		[token, userId, isAdmin, refreshToken, adminRole]
 	);
 }
 

@@ -202,4 +202,56 @@ test.describe('Login', () => {
 		expect(await page.evaluate(() => localStorage.getItem('token'))).toBe('fake-token');
 		expect(unauthenticatedCallCount).toBe(0);
 	});
+
+	// Both admin post-login flows land on /home, which renders AdminDashboard
+	// regardless of role (isAdmin is App.tsx's only gate on that route) --
+	// same mock set as the #297 admin-login test above.
+	const mockAdminHomeDependencies = async (page: import('@playwright/test').Page) => {
+		await mockJson(page, '**/api/user/check-profile', { isProfileComplete: true }, { status: 200 });
+		await mockJson(page, '**/api/admin/stats', { totalUsers: 0, totalEvents: 0, totalDonations: 0, totalEmergencies: 0 });
+		await mockJson(page, '**/api/user/profile', { firstname: 'Sara', lastname: 'Idrissi', gender: 'female' });
+		await mockJson(page, '**/api/events*', { events: [], totalItems: 0 });
+		await mockJson(page, '**/api/unconfirmedEmergencies*', { emergencies: [], totalItems: 0 });
+		await mockJson(page, '**/api/users/admin-1/dashboard', { donations: [] });
+	};
+
+	test('an admin role in the login response is persisted (issue #183)', async ({ page }) => {
+		await mockJson(page, '**/api/auth/login', {
+			token: 'fake-token',
+			refreshToken: 'fake-refresh',
+			userId: 'admin-1',
+			isAdmin: true,
+			role: 'event',
+		}, { status: 200, method: 'POST' });
+		await mockAdminHomeDependencies(page);
+
+		await page.goto('/login');
+		await page.getByLabel('اسم المستخدم').fill('CIN999999');
+		await page.getByRole('textbox', { name: 'كلمة المرور' }).fill('password123');
+		await page.locator('button[type=submit]').click();
+
+		await expect(page).toHaveURL(/\/home$/, { timeout: 10000 });
+		expect(await page.evaluate(() => localStorage.getItem('adminRole'))).toBe('event');
+	});
+
+	test('a legacy admin with no role in the login response stores no adminRole (issue #183)', async ({ page }) => {
+		// requireAdminRole.js / adminAccess.ts both treat a missing role the
+		// same as principal (full access) -- nothing here should ever store
+		// the literal string "undefined".
+		await mockJson(page, '**/api/auth/login', {
+			token: 'fake-token',
+			refreshToken: 'fake-refresh',
+			userId: 'admin-1',
+			isAdmin: true,
+		}, { status: 200, method: 'POST' });
+		await mockAdminHomeDependencies(page);
+
+		await page.goto('/login');
+		await page.getByLabel('اسم المستخدم').fill('CIN999999');
+		await page.getByRole('textbox', { name: 'كلمة المرور' }).fill('password123');
+		await page.locator('button[type=submit]').click();
+
+		await expect(page).toHaveURL(/\/home$/, { timeout: 10000 });
+		expect(await page.evaluate(() => localStorage.getItem('adminRole'))).toBeNull();
+	});
 });
