@@ -528,10 +528,9 @@
       "deleteConfirm": "؟هل أنت متأكد من رغبتك في حذف المستخدم \"{{username}}\". لا يمكن التراجع عن هذا الإجراء",
       "deleteSuccess": "تم حذف المستخدم بنجاح",
       "deleteError": "خطأ في حذف المستخدم: {{message}}",
-      "makeAdminTitle": "تعيين المستخدم كمشرف",
-      "makeAdminConfirm": "؟هل أنت متأكد من رغبتك في تعيين \"{{username}}\" كمشرف. سيحصل على كامل الصلاحيات الإدارية",
-      "makeAdminSuccess": "أصبح \"{{username}}\" الآن مشرفاً",
-      "makeAdminError": "خطأ في تعيين المستخدم كمشرف: {{message}}",
+      "assignRoleTitle": "اختر دور المشرف",
+      "assignRoleSuccess": "أصبح \"{{username}}\" الآن {{role}}",
+      "assignRoleError": "خطأ في تعيين دور المشرف: {{message}}",
       "noUsersTitle": "لم يتم العثور على مستخدمين",
       "noUsersBody": ".لم نتمكن من العثور على مستخدمين يطابقون معاييرك",
       "resetFilter": "إعادة تعيين التصفية",
@@ -542,7 +541,13 @@
       "admin": "مشرف",
       "update": "تحديث",
       "delete": "حذف",
-      "makeAdmin": "تعيين مشرف"
+      "makeAdmin": "تعيين مشرف",
+      "changeRole": "تغيير الدور"
+    },
+    "role": {
+      "principal": "مشرف رئيسي",
+      "emergency": "مشرف الطوارئ",
+      "event": "مشرف الفعاليات"
     },
     "filter": {
       "title": "تصفية المستخدمين",

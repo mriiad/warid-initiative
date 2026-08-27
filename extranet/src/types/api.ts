@@ -137,6 +137,8 @@ export interface AdminUserDetailResponse {
 	email: string;
 	phoneNumber?: string;
 	isAdmin: boolean;
+	/** Meaningful only when isAdmin is true. Undefined for a plain admin from before roles existed -- see src/auth/adminAccess.ts. */
+	role?: AdminRole;
 	gender: string;
 	canDonate: boolean;
 	firstname?: string;
@@ -158,10 +160,16 @@ export interface UserListItem {
 	email?: string;
 	phoneNumber?: string;
 	isAdmin?: boolean;
+	role?: AdminRole;
 	firstname?: string;
 	lastname?: string;
 	bloodGroup?: BloodGroup;
 	city?: string;
+}
+
+/** PATCH /api/users/:userId/admin -- role assignment (issue #183). */
+export interface AdminRoleAssignmentResponse extends MessageResponse {
+	role: AdminRole;
 }
 
 /** GET /api/checkUserProfile */

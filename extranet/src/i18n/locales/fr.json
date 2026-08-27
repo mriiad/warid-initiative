@@ -528,10 +528,9 @@
       "deleteConfirm": "Êtes-vous sûr de vouloir supprimer l'utilisateur \"{{username}}\" ? Cette action est irréversible.",
       "deleteSuccess": "Utilisateur supprimé avec succès",
       "deleteError": "Erreur lors de la suppression de l'utilisateur : {{message}}",
-      "makeAdminTitle": "Nommer administrateur",
-      "makeAdminConfirm": "Êtes-vous sûr de vouloir nommer \"{{username}}\" administrateur ? Cela lui donnera tous les privilèges administratifs.",
-      "makeAdminSuccess": "{{username}} est désormais administrateur",
-      "makeAdminError": "Erreur lors de la nomination de l'administrateur : {{message}}",
+      "assignRoleTitle": "Choisir le rôle d'administrateur",
+      "assignRoleSuccess": "{{username}} est désormais {{role}}",
+      "assignRoleError": "Erreur lors de l'attribution du rôle d'administrateur : {{message}}",
       "noUsersTitle": "Aucun utilisateur trouvé",
       "noUsersBody": "Nous n'avons trouvé aucun utilisateur correspondant à vos critères.",
       "resetFilter": "Réinitialiser le filtre",
@@ -542,7 +541,13 @@
       "admin": "Admin",
       "update": "Modifier",
       "delete": "Supprimer",
-      "makeAdmin": "Nommer admin"
+      "makeAdmin": "Nommer admin",
+      "changeRole": "Changer de rôle"
+    },
+    "role": {
+      "principal": "Administrateur principal",
+      "emergency": "Administrateur des urgences",
+      "event": "Administrateur des événements"
     },
     "filter": {
       "title": "Filtrer les utilisateurs",

@@ -528,10 +528,9 @@
       "deleteConfirm": "Are you sure you want to delete the user \"{{username}}\"? This action cannot be undone.",
       "deleteSuccess": "User deleted successfully",
       "deleteError": "Error deleting user: {{message}}",
-      "makeAdminTitle": "Make User Admin",
-      "makeAdminConfirm": "Are you sure you want to make \"{{username}}\" an admin? This will give them full administrative privileges.",
-      "makeAdminSuccess": "{{username}} is now an admin",
-      "makeAdminError": "Error making user admin: {{message}}",
+      "assignRoleTitle": "Choose admin role",
+      "assignRoleSuccess": "{{username}} is now {{role}}",
+      "assignRoleError": "Error assigning admin role: {{message}}",
       "noUsersTitle": "No Users Found",
       "noUsersBody": "We couldn't find any users matching your criteria.",
       "resetFilter": "Reset Filter",
@@ -542,7 +541,13 @@
       "admin": "Admin",
       "update": "Update",
       "delete": "Delete",
-      "makeAdmin": "Make Admin"
+      "makeAdmin": "Make Admin",
+      "changeRole": "Change Role"
+    },
+    "role": {
+      "principal": "Principal Admin",
+      "emergency": "Emergency Admin",
+      "event": "Event Admin"
     },
     "filter": {
       "title": "Filter Users",

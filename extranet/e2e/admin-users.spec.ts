@@ -187,7 +187,7 @@ test.describe('Admin users list', () => {
 		expect(requestedPage).toBe(2);
 	});
 
-	test('admin can promote a user to admin from the user detail page', async ({ page }) => {
+	test('admin can assign a role to a user from the user detail page (issue #183)', async ({ page }) => {
 		await seedAuth(page, { isAdmin: true });
 		await mockJson(page, '**/api/users?*', {
 			message: 'Fetched users successfully.',
@@ -207,20 +207,82 @@ test.describe('Admin users list', () => {
 			city: 'Rabat',
 			canDonate: true,
 		});
-		let patchCalled = false;
+		let requestBody: any = null;
 		await page.route('**/api/users/target-1/admin', async (route) => {
-			patchCalled = true;
-			await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ message: 'User is now an admin' }) });
+			requestBody = route.request().postDataJSON();
+			await route.fulfill({
+				status: 200,
+				contentType: 'application/json',
+				body: JSON.stringify({ message: 'Admin role updated successfully', role: 'emergency' }),
+			});
 		});
 
 		await page.goto('/users');
 		await expect(page.getByText('Amine Bennani')).toBeVisible({ timeout: 5000 });
 		await page.getByText('Amine Bennani').click();
 		await expect(page).toHaveURL(/\/users\/target-1$/);
+		// Not yet an admin: no role badge, and the action opens a picker
+		// listing all three roles rather than promoting outright.
 		await page.getByRole('button', { name: 'تعيين مشرف' }).click();
-		await page.getByRole('button', { name: 'تعيين مشرف' }).last().click();
+		await expect(page.getByText('اختر دور المشرف')).toBeVisible({ timeout: 5000 });
+		await page.getByRole('button', { name: 'مشرف الطوارئ' }).click();
 		await page.waitForTimeout(500);
-		expect(patchCalled).toBe(true);
+		expect(requestBody).toEqual({ role: 'emergency' });
+	});
+
+	test("the role picker excludes the role a user already holds (issue #183)", async ({ page }) => {
+		await seedAuth(page, { isAdmin: true });
+		await mockJson(page, '**/api/users?*', {
+			message: 'Fetched users successfully.',
+			users: [sampleUser({ _id: 'target-1', username: 'CIN000111' })],
+			totalItems: 1,
+		});
+		await mockJson(page, '**/api/users/profile/target-1', {
+			_id: 'target-1',
+			username: 'CIN000111',
+			email: 'donor@example.com',
+			phoneNumber: '+212612345680',
+			isAdmin: true,
+			role: 'event',
+			gender: 'male',
+			firstname: 'Amine',
+			lastname: 'Bennani',
+			canDonate: true,
+		});
+
+		await page.goto('/users/target-1');
+		// Current role is visible on the page (issue #183's "current role
+		// must be visible"), and re-offering it in the picker is redundant.
+		await expect(page.getByText('مشرف الفعاليات')).toBeVisible({ timeout: 5000 });
+		await page.getByRole('button', { name: 'تغيير الدور' }).click();
+		await expect(page.getByText('اختر دور المشرف')).toBeVisible({ timeout: 5000 });
+		await expect(page.getByRole('button', { name: 'مشرف رئيسي' })).toBeVisible();
+		await expect(page.getByRole('button', { name: 'مشرف الطوارئ' })).toBeVisible();
+		await expect(page.getByRole('button', { name: 'مشرف الفعاليات' })).toHaveCount(0);
+	});
+
+	test('the users list shows a distinct icon per admin role (issue #183)', async ({ page }) => {
+		await seedAuth(page, { isAdmin: true });
+		await mockJson(page, '**/api/users?*', {
+			message: 'Fetched users successfully.',
+			users: [
+				sampleUser({ _id: 'u-principal', username: 'CIN000001', isAdmin: true, role: 'principal', profile: { firstname: 'Yassine', lastname: 'Alaoui' } }),
+				sampleUser({ _id: 'u-emergency', username: 'CIN000002', isAdmin: true, role: 'emergency', profile: { firstname: 'Salma', lastname: 'Bennani' } }),
+				sampleUser({ _id: 'u-event', username: 'CIN000003', isAdmin: true, role: 'event', profile: { firstname: 'Karim', lastname: 'Idrissi' } }),
+				sampleUser({ _id: 'u-donor', username: 'CIN000004', isAdmin: false, profile: { firstname: 'Sara', lastname: 'Tazi' } }),
+			],
+			totalItems: 4,
+		});
+
+		await page.goto('/users');
+		for (const name of ['Yassine Alaoui', 'Salma Bennani', 'Karim Idrissi', 'Sara Tazi']) {
+			await expect(page.getByText(name)).toBeVisible({ timeout: 5000 });
+		}
+		// Each admin row carries a role-icon badge, aria-labeled with the
+		// role name; the donor row carries none.
+		await expect(page.getByLabel('مشرف رئيسي')).toBeVisible();
+		await expect(page.getByLabel('مشرف الطوارئ')).toBeVisible();
+		await expect(page.getByLabel('مشرف الفعاليات')).toBeVisible();
 	});
 
 	test('admin can delete a user from the user detail page', async ({ page }) => {

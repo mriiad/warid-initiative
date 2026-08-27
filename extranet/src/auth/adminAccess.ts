@@ -1,4 +1,20 @@
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+import NotificationImportantIcon from '@mui/icons-material/NotificationImportant';
 import { AdminRole } from '../data/constants';
+
+/**
+ * One icon per role, shared by the role-assignment picker and the badge
+ * shown on an admin's row/detail page (issue #183: "use distinct icons for
+ * each role to visually differentiate them"). Matches the icon each role's
+ * own restricted bottom-nav entry uses (RedesignBottomNav.tsx) -- an
+ * admin's role icon is the icon of the area they manage.
+ */
+export const ADMIN_ROLE_ICONS: Record<AdminRole, typeof AdminPanelSettingsIcon> = {
+	[AdminRole.Principal]: AdminPanelSettingsIcon,
+	[AdminRole.Emergency]: NotificationImportantIcon,
+	[AdminRole.Event]: CalendarMonthIcon,
+};
 
 /**
  * Mirrors the backend's requireAdminRole (src/utils/requireAdminRole.js):

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { BloodGroup } from '../data/constants';
+import { AdminRole, BloodGroup } from '../data/constants';
 import { apiClient } from '../utils/apiClient';
 import { usersService } from './usersService';
 
@@ -33,5 +33,15 @@ describe('usersService.completeMyProfile (issue #300)', () => {
 		usersService.completeMyProfile(data);
 
 		expect(apiClient.put).toHaveBeenCalledWith('/api/user/update', data);
+	});
+});
+
+describe('usersService.assignAdminRole (issue #183)', () => {
+	it('PATCHes /api/users/:userId/admin with the chosen role in the body', () => {
+		usersService.assignAdminRole('user-1', AdminRole.Emergency);
+
+		expect(apiClient.patch).toHaveBeenCalledWith('/api/users/user-1/admin', {
+			role: AdminRole.Emergency,
+		});
 	});
 });
