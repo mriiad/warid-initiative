@@ -16,7 +16,7 @@
  * that same mistake is a build error.
  */
 
-import type { BloodGroup } from '../data/constants';
+import type { AdminRole, BloodGroup } from '../data/constants';
 import type { Emergency, MatchedUser } from './emergency';
 import type { Event } from './events';
 
@@ -84,6 +84,8 @@ export interface LoginResponse {
 	refreshToken: string;
 	userId: string;
 	isAdmin: boolean;
+	/** Undefined for a plain admin from before roles existed -- see src/auth/adminAccess.ts. */
+	role?: AdminRole;
 }
 
 /**

@@ -2,8 +2,10 @@ import { CircularProgress } from '@mui/material';
 import { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
+import { hasAdminRole } from './auth/adminAccess';
 import { useAuth } from './auth/AuthContext';
 import UnsupportedPage from './components/UnsupportedPage';
+import { AdminRole } from './data/constants';
 import { useIsMobile } from './hooks/useIsMobile';
 
 // Route-level screens are loaded on demand (one chunk per route) instead of
@@ -91,7 +93,13 @@ const routeFallback = (
 // '/users' and '/events'). See issue #330.
 const App = () => {
 	const isMobile = useIsMobile();
-	const { isAdmin, token } = useAuth();
+	const { isAdmin, adminRole, token } = useAuth();
+	// Principal Admin has full access to everything (issue #183); empty
+	// allowedRoles means no other role qualifies, i.e. principal-only.
+	const isPrincipalAdmin = hasAdminRole(isAdmin, adminRole, []);
+	const isEmergencyAdmin = hasAdminRole(isAdmin, adminRole, [
+		AdminRole.Emergency,
+	]);
 	const location = useLocation();
 	const forceDesktop =
 		new URLSearchParams(location.search).get('forceDesktop') === '1';
@@ -132,7 +140,11 @@ const App = () => {
 					<Route path='confirmation' element={<EventConfirmation />} />
 				</Route>
 				<Route path='/donate' element={<DonationComponent />} />
-				{isAdmin && <Route path='/users' element={<UsersComponent />} />}
+				{/*
+					Principal-Admin-only (issue #183): Emergency and Event Admin
+					get neither the users list nor user detail/edit.
+				*/}
+				{isPrincipalAdmin && <Route path='/users' element={<UsersComponent />} />}
 				{/*
 					Registered ahead of '/users/update/:userId' below only in the
 					sense that both are always mounted (not gated) -- same
@@ -140,8 +152,10 @@ const App = () => {
 					above, so a non-admin gets NotFoundPage instead of a route
 					mismatch.
 				*/}
-				{isAdmin && <Route path='/users/:userId' element={<UserDetailView />} />}
-				{isAdmin && (
+				{isPrincipalAdmin && (
+					<Route path='/users/:userId' element={<UserDetailView />} />
+				)}
+				{isPrincipalAdmin && (
 					<Route path='/users/update/:userId' element={<UpdateUser />} />
 				)}
 				<Route path='/contact' element={<ContactForm />} />
@@ -160,10 +174,11 @@ const App = () => {
 				<Route path='/profile' element={<ProfileComponent />} />
 				<Route path='/dashboard' element={<Dashboard />} />
 				<Route path='/emergency' element={<EmergencyForm />} />
-				{isAdmin && (
+				{/* Emergency Admin or Principal Admin (issue #183). */}
+				{isEmergencyAdmin && (
 					<Route path='/emergencies' element={<EmergencyComponent />} />
 				)}
-				{isAdmin && (
+				{isEmergencyAdmin && (
 					<Route
 						path='/emergencies/:emergencyId/matched-users/'
 						element={<MatchedUsers />}

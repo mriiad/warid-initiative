@@ -65,8 +65,8 @@ const LoginForm = () => {
 	useEffect(() => {
 		if (login.isSuccess && login.data && profileCompleteness.data) {
 			// Update AuthContext state immediately
-			const { token, userId, isAdmin } = login.data.data;
-			updateAuthState(token, userId, isAdmin);
+			const { token, userId, isAdmin, role } = login.data.data;
+			updateAuthState(token, userId, isAdmin, role ?? null);
 
 			const params = new URLSearchParams(window.location.search);
 			const redirectURL = params.get('redirect');

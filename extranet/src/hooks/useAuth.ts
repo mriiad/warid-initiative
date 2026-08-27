@@ -39,11 +39,21 @@ export const useLogin = () => {
 	return useMutation({
 		mutationFn: (data: LoginData) => authService.login(data),
 		onSuccess: (response) => {
-			const { token, refreshToken, userId, isAdmin } = response.data;
+			const { token, refreshToken, userId, isAdmin, role } = response.data;
 			localStorage.setItem('token', token);
 			localStorage.setItem('refreshToken', refreshToken);
 			localStorage.setItem('userId', userId);
 			localStorage.setItem('isAdmin', String(isAdmin));
+			// Undefined for a plain admin from before roles existed (see
+			// adminAccess.ts) -- cleared rather than stored as the string
+			// "undefined", which would otherwise satisfy AuthContext's
+			// `localStorage.getItem('adminRole') as AdminRole | null` read as
+			// if it were a real (invalid) role.
+			if (role) {
+				localStorage.setItem('adminRole', role);
+			} else {
+				localStorage.removeItem('adminRole');
+			}
 
 			// Force immediate update of queries and clear cache
 			queryClient.invalidateQueries({ queryKey: queryKeys.user.all });
@@ -66,6 +76,7 @@ export const useLogout = () => {
 			localStorage.removeItem('refreshToken');
 			localStorage.removeItem('userId');
 			localStorage.removeItem('isAdmin');
+			localStorage.removeItem('adminRole');
 			queryClient.clear();
 		},
 		onError: (error) => {

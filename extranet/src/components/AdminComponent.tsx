@@ -7,6 +7,7 @@ import PeopleIcon from '@mui/icons-material/People';
 import { IconButton, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { hasAdminRole } from '../auth/adminAccess';
 import { useAuth } from '../auth/AuthContext';
 import { statCardColors } from '../styles/dashboardRedesign';
 import { adminMenuRedesignStyles } from '../styles/adminMenuRedesign';
@@ -16,7 +17,11 @@ import RedesignBottomNav from './shared/RedesignBottomNav';
 const AdminComponent = () => {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
-	const { isAdmin } = useAuth();
+	const { isAdmin, adminRole } = useAuth();
+	// The administration page -- with its buttons for handling emergencies,
+	// creating events and managing users -- is Principal-Admin-only, who
+	// keeps the full navbar as it is today. See issue #183.
+	const isPrincipalAdmin = hasAdminRole(isAdmin, adminRole, []);
 	const {
 		screen,
 		topBar,
@@ -28,7 +33,7 @@ const AdminComponent = () => {
 		tileLabel,
 	} = adminMenuRedesignStyles();
 
-	if (!isAdmin) {
+	if (!isPrincipalAdmin) {
 		return <NotFoundPage />;
 	}
 

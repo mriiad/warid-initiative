@@ -14,7 +14,9 @@ import React, { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
+import { hasAdminRole } from '../../auth/adminAccess';
 import { useAuth } from '../../auth/AuthContext';
+import { AdminRole } from '../../data/constants';
 import { useEvent } from '../../hooks';
 import { apiClient } from '../../utils/apiClient';
 import { authRedesignStyles } from '../../styles/authRedesign';
@@ -42,7 +44,9 @@ const UpdateEvent: React.FC = () => {
 		eventsListRedesignStyles();
 	const navigate = useNavigate();
 	const { reference } = useParams<{ reference: string }>();
-	const { isAdmin } = useAuth();
+	const { isAdmin, adminRole } = useAuth();
+	// Event Admin or Principal Admin (issue #183).
+	const isEventAdmin = hasAdminRole(isAdmin, adminRole, [AdminRole.Event]);
 
 	const {
 		control,
@@ -78,7 +82,7 @@ const UpdateEvent: React.FC = () => {
 		}
 	}, [eventData, reset]);
 
-	if (!isAdmin) {
+	if (!isEventAdmin) {
 		return <NotFoundPage />;
 	}
 

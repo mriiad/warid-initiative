@@ -5,15 +5,25 @@ import React, {
 	useEffect,
 	useState,
 } from 'react';
+import { AdminRole } from '../data/constants';
 
 interface AuthContextProps {
 	token: string | null;
 	userId: string | null;
 	isAdmin: boolean;
+	// Meaningful only when isAdmin is true. null covers both "not an admin"
+	// and "an admin from before roles existed" -- see adminAccess.ts for why
+	// the latter still gets full (principal-equivalent) access.
+	adminRole: AdminRole | null;
 	setToken: React.Dispatch<React.SetStateAction<string | null>>;
 	setUserId: React.Dispatch<React.SetStateAction<string | null>>;
 	setIsAdmin: React.Dispatch<React.SetStateAction<boolean>>;
-	updateAuthState: (token: string, userId: string, isAdmin: boolean) => void;
+	updateAuthState: (
+		token: string,
+		userId: string,
+		isAdmin: boolean,
+		adminRole?: AdminRole | null
+	) => void;
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
@@ -24,22 +34,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 	const [token, setToken] = useState<string | null>(null);
 	const [userId, setUserId] = useState<string | null>(null);
 	const [isAdmin, setIsAdmin] = useState<boolean>(false);
+	const [adminRole, setAdminRole] = useState<AdminRole | null>(null);
 
 	useEffect(() => {
 		const storedToken = localStorage.getItem('token');
 		const storedUserId = localStorage.getItem('userId');
 		const storedIsAdmin = localStorage.getItem('isAdmin') === 'true';
+		const storedAdminRole = localStorage.getItem(
+			'adminRole'
+		) as AdminRole | null;
 
 		if (storedToken) setToken(storedToken);
 		if (storedUserId) setUserId(storedUserId);
 		setIsAdmin(storedIsAdmin);
+		setAdminRole(storedAdminRole || null);
 	}, []);
 
+	// Mirrors token/userId/isAdmin exactly: this only updates the in-memory
+	// state. The localStorage write already happens in useLogin's onSuccess
+	// (hooks/useAuth.ts), same place token/userId/isAdmin are written -- not
+	// here, and not duplicated here either.
 	const updateAuthState = useCallback(
-		(newToken: string, newUserId: string, newIsAdmin: boolean) => {
+		(
+			newToken: string,
+			newUserId: string,
+			newIsAdmin: boolean,
+			newAdminRole: AdminRole | null = null
+		) => {
 			setToken(newToken);
 			setUserId(newUserId);
 			setIsAdmin(newIsAdmin);
+			setAdminRole(newAdminRole);
 		},
 		[]
 	);
@@ -53,6 +78,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 				setUserId,
 				isAdmin,
 				setIsAdmin,
+				adminRole,
 				updateAuthState,
 			}}
 		>

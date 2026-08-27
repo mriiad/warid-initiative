@@ -12,7 +12,9 @@ import React, { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { hasAdminRole } from '../../auth/adminAccess';
 import { useAuth } from '../../auth/AuthContext';
+import { AdminRole } from '../../data/constants';
 import { useCreateEvent } from '../../hooks';
 import { authRedesignStyles } from '../../styles/authRedesign';
 import { eventsListRedesignStyles } from '../../styles/eventsListRedesign';
@@ -33,7 +35,9 @@ interface IFormInput {
 
 const EventForm: React.FC = () => {
 	const { t } = useTranslation();
-	const { isAdmin } = useAuth();
+	const { isAdmin, adminRole } = useAuth();
+	// Event Admin or Principal Admin (issue #183).
+	const isEventAdmin = hasAdminRole(isAdmin, adminRole, [AdminRole.Event]);
 	const navigate = useNavigate();
 	const { input, primaryButton } = authRedesignStyles();
 	const { screen, topBar, topBarDivider, topBarTitle, content, hero, heroIcon, heroTitle } =
@@ -59,7 +63,7 @@ const EventForm: React.FC = () => {
 
 	const createEventMutation = useCreateEvent();
 
-	if (!isAdmin) {
+	if (!isEventAdmin) {
 		return <NotFoundPage />;
 	}
 

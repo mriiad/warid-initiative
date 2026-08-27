@@ -60,6 +60,7 @@ const clearSessionAndRedirectToLogin = () => {
 	localStorage.removeItem('refreshToken');
 	localStorage.removeItem('userId');
 	localStorage.removeItem('isAdmin');
+	localStorage.removeItem('adminRole');
 
 	// Only redirect if not already on login page.
 	if (window.location.pathname !== '/login') {
