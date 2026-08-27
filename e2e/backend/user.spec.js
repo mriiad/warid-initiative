@@ -167,16 +167,60 @@ describe('POST /api/searchUsers (admin only)', () => {
 	});
 });
 
-describe('PATCH /api/users/:userId/admin', () => {
-	it('rejects promoting an already-admin user', async () => {
+describe('PATCH /api/users/:userId/admin (role assignment, issue #183)', () => {
+	it('reassigns an already-admin user to a different role rather than rejecting the request', async () => {
+		// This route used to only ever promote a non-admin once and 400 on
+		// anyone already an admin. Role assignment needs the opposite: a
+		// principal reassigning someone's role IS an already-admin user.
+		const save = jest.fn().mockResolvedValue(true);
 		User.findById.mockImplementation((id) => {
-			if (id === ADMIN_ID) return resolveTo({ _id: ADMIN_ID, isAdmin: true });
-			return resolveTo({ _id: 'target', isAdmin: true });
+			if (id === ADMIN_ID) return resolveTo({ _id: ADMIN_ID, isAdmin: true, role: 'principal' });
+			return resolveTo({ _id: 'target', isAdmin: true, role: 'event', save });
 		});
 		const res = await request(app)
 			.patch('/api/users/target/admin')
-			.set('Authorization', authHeader(ADMIN_ID));
+			.set('Authorization', authHeader(ADMIN_ID))
+			.send({ role: 'emergency' });
+		expect(res.status).toBe(200);
+		expect(save).toHaveBeenCalled();
+		expect(res.body.role).toBe('emergency');
+	});
+
+	it('rejects an invalid role', async () => {
+		User.findById.mockReturnValue(resolveTo({ _id: ADMIN_ID, isAdmin: true, role: 'principal' }));
+		const res = await request(app)
+			.patch('/api/users/target/admin')
+			.set('Authorization', authHeader(ADMIN_ID))
+			.send({ role: 'superadmin' });
 		expect(res.status).toBe(400);
+	});
+
+	it('defaults to principal when no role is sent in the body', async () => {
+		// The existing frontend "make admin" action (UserDetailView.tsx) calls
+		// this route with no body at all -- see the comment in
+		// controllers/user.js. Preserves that exact behavior until issue #351's
+		// role-picker UI ships and starts sending an explicit role.
+		const save = jest.fn().mockResolvedValue(true);
+		User.findById.mockImplementation((id) =>
+			id === ADMIN_ID
+				? resolveTo({ _id: ADMIN_ID, isAdmin: true, role: 'principal' })
+				: resolveTo({ _id: 'target', isAdmin: false, save })
+		);
+		const res = await request(app)
+			.patch('/api/users/target/admin')
+			.set('Authorization', authHeader(ADMIN_ID));
+		expect(res.status).toBe(200);
+		expect(res.body.role).toBe('principal');
+		expect(save).toHaveBeenCalled();
+	});
+
+	it('rejects a non-principal admin, even though they pass the base admin check', async () => {
+		User.findById.mockReturnValue(resolveTo({ _id: ADMIN_ID, isAdmin: true, role: 'event' }));
+		const res = await request(app)
+			.patch('/api/users/target/admin')
+			.set('Authorization', authHeader(ADMIN_ID))
+			.send({ role: 'emergency' });
+		expect(res.status).toBe(403);
 	});
 });
 
@@ -776,11 +820,12 @@ describe('PATCH /api/users/:userId/admin additional branches', () => {
 		);
 		const res = await request(app)
 			.patch(`/api/users/${USER_ID}/admin`)
-			.set('Authorization', authHeader(ADMIN_ID));
+			.set('Authorization', authHeader(ADMIN_ID))
+			.send({ role: 'emergency' });
 		expect(res.status).toBe(404);
 	});
 
-	it('promotes a non-admin user', async () => {
+	it('promotes a non-admin user to the given role', async () => {
 		const save = jest.fn().mockResolvedValue(true);
 		User.findById.mockImplementation((id) =>
 			id === ADMIN_ID
@@ -789,9 +834,11 @@ describe('PATCH /api/users/:userId/admin additional branches', () => {
 		);
 		const res = await request(app)
 			.patch(`/api/users/${USER_ID}/admin`)
-			.set('Authorization', authHeader(ADMIN_ID));
+			.set('Authorization', authHeader(ADMIN_ID))
+			.send({ role: 'event' });
 		expect(res.status).toBe(200);
 		expect(save).toHaveBeenCalled();
+		expect(res.body.role).toBe('event');
 	});
 
 	it('returns 500 on a database error', async () => {
@@ -804,7 +851,8 @@ describe('PATCH /api/users/:userId/admin additional branches', () => {
 		);
 		const res = await request(app)
 			.patch(`/api/users/${USER_ID}/admin`)
-			.set('Authorization', authHeader(ADMIN_ID));
+			.set('Authorization', authHeader(ADMIN_ID))
+			.send({ role: 'emergency' });
 		expect(res.status).toBe(500);
 	});
 });
@@ -828,5 +876,46 @@ describe('GET /api/users/:userId/dashboard additional branches', () => {
 			.get(`/api/users/${USER_ID}/dashboard`)
 			.set('Authorization', authHeader(USER_ID));
 		expect(res.status).toBe(500);
+	});
+});
+
+describe('User-management routes are Principal-Admin-only (issue #183)', () => {
+	it('an Event Admin is refused the users list', async () => {
+		User.findById.mockReturnValue(resolveTo({ _id: ADMIN_ID, isAdmin: true, role: 'event' }));
+		const res = await request(app)
+			.get('/api/users')
+			.set('Authorization', authHeader(ADMIN_ID));
+		expect(res.status).toBe(403);
+	});
+
+	it('an Emergency Admin is refused the users list', async () => {
+		User.findById.mockReturnValue(resolveTo({ _id: ADMIN_ID, isAdmin: true, role: 'emergency' }));
+		const res = await request(app)
+			.get('/api/users')
+			.set('Authorization', authHeader(ADMIN_ID));
+		expect(res.status).toBe(403);
+	});
+
+	it('a Principal Admin can reach the users list', async () => {
+		User.findById.mockReturnValue(resolveTo({ _id: ADMIN_ID, isAdmin: true, role: 'principal' }));
+		User.countDocuments.mockReturnValue(resolveTo(0));
+		User.find.mockReturnValue({
+			populate: () => ({ skip: () => ({ limit: () => Promise.resolve([]) }) }),
+		});
+		const res = await request(app)
+			.get('/api/users')
+			.set('Authorization', authHeader(ADMIN_ID));
+		expect(res.status).toBe(200);
+	});
+
+	it('any admin role can still reach the dashboard stats -- not principal-restricted', async () => {
+		// #183: "the event admin sees only the dashboard and the event icon",
+		// "the emergency admin sees only the dashboard and a list icon" -- the
+		// dashboard itself stays reachable by every admin role.
+		User.findById.mockReturnValue(resolveTo({ _id: ADMIN_ID, isAdmin: true, role: 'event' }));
+		const res = await request(app)
+			.get('/api/admin/stats')
+			.set('Authorization', authHeader(ADMIN_ID));
+		expect(res.status).toBe(200);
 	});
 });

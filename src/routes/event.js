@@ -13,9 +13,12 @@ const {
 	getEventParticipantDetails
 } = require('../controllers/event');
 const { isAuth } = require('../middleware/token-check');
-const checkIfAdmin = require('../utils/checks');
+const requireAdminRole = require('../utils/requireAdminRole');
 
 const eventRouter = express.Router();
+
+// Event Admin or Principal Admin (see issue #183).
+const requireEventAdmin = requireAdminRole(['event']);
 
 const storage = multer.diskStorage({
 	destination: (req, file, cb) => cb(null, 'uploads/'),
@@ -59,7 +62,7 @@ eventRouter.get('/api/events/:reference', getEvent);
 eventRouter.post(
 	'/api/event',
 	isAuth,
-	checkIfAdmin,
+	requireEventAdmin,
 	upload.single('image'),
 	createEventValidators,
 	async (req, res, next) => {
@@ -73,7 +76,7 @@ eventRouter.post(
 eventRouter.put(
 	'/api/event/:reference',
 	isAuth,
-	checkIfAdmin,
+	requireEventAdmin,
 	upload.single('image'),
 	updateEventValidators,
 	async (req, res, next) => {
@@ -84,13 +87,13 @@ eventRouter.put(
 		}
 	}
 );
-eventRouter.delete('/api/event', isAuth, checkIfAdmin, deleteEvent);
+eventRouter.delete('/api/event', isAuth, requireEventAdmin, deleteEvent);
 // POST, matching what the frontend calls. It was registered as PUT, which
 // both 404'd the frontend's POST and was itself unreachable: the earlier
 // `PUT /api/event/:reference` matched first with reference="confirmPresence"
 // and rejected donors via its checkIfAdmin guard.
 eventRouter.post('/api/event/confirmPresence', isAuth, confirmPresence);
-eventRouter.get('/api/event/:reference/participants/details', isAuth, checkIfAdmin, getEventParticipantDetails);
+eventRouter.get('/api/event/:reference/participants/details', isAuth, requireEventAdmin, getEventParticipantDetails);
 
 
 module.exports = eventRouter;

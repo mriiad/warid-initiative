@@ -7,6 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon ./src/app.js",
     "bootstrap:admin": "node ./src/scripts/bootstrap-admin.js",
+    "backfill:admin-roles": "node ./src/scripts/backfill-admin-roles.js",
     "lint": "eslint .",
     "test:e2e": "jest --config=jest.config.js",
     "test:e2e:backend": "jest --config=jest.backend.config.js"

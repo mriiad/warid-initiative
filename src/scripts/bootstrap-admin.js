@@ -39,6 +39,9 @@ async function bootstrapFirstAdmin(username) {
 	}
 
 	user.isAdmin = true;
+	// The very first admin has nobody above them to assign a role, so they
+	// start as Principal (full access) -- see issue #183.
+	user.role = 'principal';
 	await user.save();
 
 	return user;

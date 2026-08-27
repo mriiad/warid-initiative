@@ -199,3 +199,40 @@ describe('POST /api/event/confirmPresence', () => {
 		expect(res.status).toBe(401);
 	});
 });
+
+describe('Event routes are role-gated (issue #183)', () => {
+	it('an Event Admin can create an event', async () => {
+		User.findById.mockReturnValue(resolveTo({ _id: ADMIN_ID, isAdmin: true, role: 'event' }));
+		Event.exists.mockReturnValue(Promise.resolve(false));
+		const res = await request(app)
+			.post('/api/event')
+			.set('Authorization', authHeader(ADMIN_ID))
+			.field('title', 'Drive')
+			.field('location', 'Casablanca')
+			.field('date', '2099-01-01');
+		expect(res.status).toBe(201);
+	});
+
+	it('an Emergency Admin is refused event creation', async () => {
+		User.findById.mockReturnValue(resolveTo({ _id: ADMIN_ID, isAdmin: true, role: 'emergency' }));
+		const res = await request(app)
+			.post('/api/event')
+			.set('Authorization', authHeader(ADMIN_ID))
+			.field('title', 'Drive')
+			.field('location', 'Casablanca')
+			.field('date', '2099-01-01');
+		expect(res.status).toBe(403);
+	});
+
+	it('a Principal Admin can still create an event (full access)', async () => {
+		User.findById.mockReturnValue(resolveTo({ _id: ADMIN_ID, isAdmin: true, role: 'principal' }));
+		Event.exists.mockReturnValue(Promise.resolve(false));
+		const res = await request(app)
+			.post('/api/event')
+			.set('Authorization', authHeader(ADMIN_ID))
+			.field('title', 'Drive')
+			.field('location', 'Casablanca')
+			.field('date', '2099-01-01');
+		expect(res.status).toBe(201);
+	});
+});

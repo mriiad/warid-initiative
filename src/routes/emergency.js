@@ -1,22 +1,24 @@
 const express = require('express');
 const emergencyRouter = express.Router();
 const { isAuth } = require('../middleware/token-check');
-const checkIfAdmin = require('../utils/checks');
+const requireAdminRole = require('../utils/requireAdminRole');
 const { publicWriteLimiter } = require('../middleware/rate-limit');
-const { 
-    getUnconfirmedEmergencies, 
+const {
+    getUnconfirmedEmergencies,
     getEmergencyMatchUsers,
-    createEmergency, 
+    createEmergency,
     confirmEmergency ,
     confirmUserInEmergency
 } = require('../controllers/emergency');
 
+// Emergency Admin or Principal Admin (see issue #183).
+const requireEmergencyAdmin = requireAdminRole(['emergency']);
 
-emergencyRouter.get('/api/unconfirmedEmergencies', isAuth, checkIfAdmin, getUnconfirmedEmergencies);
-emergencyRouter.get('/api/emergencies/:id/matchingUsers', isAuth, checkIfAdmin, getEmergencyMatchUsers);
+emergencyRouter.get('/api/unconfirmedEmergencies', isAuth, requireEmergencyAdmin, getUnconfirmedEmergencies);
+emergencyRouter.get('/api/emergencies/:id/matchingUsers', isAuth, requireEmergencyAdmin, getEmergencyMatchUsers);
 emergencyRouter.post('/api/emergency', publicWriteLimiter, createEmergency);
-emergencyRouter.patch('/api/emergencies/:id/confirm', isAuth, checkIfAdmin, confirmEmergency);
-emergencyRouter.patch('/api/emergencies/:emergencyId/matchedUsers/:userId/confirm', isAuth, checkIfAdmin, confirmUserInEmergency);
+emergencyRouter.patch('/api/emergencies/:id/confirm', isAuth, requireEmergencyAdmin, confirmEmergency);
+emergencyRouter.patch('/api/emergencies/:emergencyId/matchedUsers/:userId/confirm', isAuth, requireEmergencyAdmin, confirmUserInEmergency);
 
 
 

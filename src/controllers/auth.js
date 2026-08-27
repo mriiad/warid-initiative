@@ -145,6 +145,10 @@ exports.login = (req, res, next) => {
 						refreshToken: refreshToken,
 						userId: loadedUser._id.toString(),
 						isAdmin: loadedUser.isAdmin,
+						// Undefined for a plain admin from before roles existed --
+						// see requireAdminRole.js for why that's treated as full
+						// (principal) access rather than none. See issue #183.
+						role: loadedUser.role,
 					});
 			});
 		})

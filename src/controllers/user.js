@@ -21,7 +21,7 @@ exports.getUsers = async (req, res, next) => {
 
 		const users = await User.find(
 			{},
-			'username email phoneNumber isAdmin profile gender'
+			'username email phoneNumber isAdmin role profile gender'
 		)
 			.populate('profile')
 			.skip((currentPage - 1) * perPage)
@@ -447,6 +447,7 @@ exports.getUserById = async (req, res, next) => {
 			email: user.email,
 			phoneNumber: user.phoneNumber,
 			isAdmin: user.isAdmin,
+			role: user.role,
 			gender: user.gender,
 			canDonate,
 			...(user.profile && {
@@ -522,13 +523,31 @@ exports.updateUserById = async (req, res, next) => {
 	}
 };
 
+// Role assignment (see issue #183): grants admin access if the target isn't
+// already an admin, and either way sets which of the three roles they hold
+// -- so this also covers a principal reassigning an existing admin from one
+// role to another, not just a first-time promotion.
+const ADMIN_ROLES = ['principal', 'emergency', 'event'];
+
 exports.makeUserAdmin = async (req, res, next) => {
 	try {
 		const { userId } = req.params;
+		// Optional and defaulted to 'principal', not required: the existing
+		// frontend "make admin" action (UserDetailView.tsx) calls this route
+		// with no body at all, and used to mean exactly that -- grant full
+		// admin access. The role-picker UI that sends an explicit role is
+		// issue #351; until it ships, an omitted role must keep doing what it
+		// always did rather than 400 on every existing caller.
+		const role = (req.body && req.body.role) || 'principal';
 		if (!userId) {
 			return res
 				.status(STATUS_CODE.BAD_REQUEST)
 				.json({ message: 'User ID is required' });
+		}
+		if (!ADMIN_ROLES.includes(role)) {
+			return res.status(STATUS_CODE.BAD_REQUEST).json({
+				message: `A valid role is required (one of: ${ADMIN_ROLES.join(', ')}).`,
+			});
 		}
 
 		const user = await User.findById(userId);
@@ -538,16 +557,13 @@ exports.makeUserAdmin = async (req, res, next) => {
 				.json({ message: 'User not found' });
 		}
 
-		if (user.isAdmin) {
-			return res
-				.status(STATUS_CODE.BAD_REQUEST)
-				.json({ message: 'User is already an admin' });
-		}
-
 		user.isAdmin = true;
+		user.role = role;
 		await user.save();
 
-		res.status(STATUS_CODE.OK).json({ message: 'User is now an admin' });
+		res
+			.status(STATUS_CODE.OK)
+			.json({ message: 'Admin role updated successfully', role: user.role });
 	} catch (err) {
 		next(err);
 	}

@@ -36,6 +36,16 @@ const userSchema = new Schema({
     type: Boolean,
     required: true,
   },
+  // Meaningful only when isAdmin is true. Absent (undefined) on every admin
+  // created before role-based access existed -- middleware/requireAdminRole.js
+  // treats that the same as 'principal' (full access), matching what every
+  // admin could already do before this field existed, rather than silently
+  // losing access on deploy. See issue #183.
+  role: {
+    type: String,
+    enum: ["principal", "emergency", "event"],
+    required: false,
+  },
   isActive: {
     type: Boolean,
     required: true,
