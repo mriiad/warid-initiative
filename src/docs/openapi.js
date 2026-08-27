@@ -300,10 +300,21 @@ module.exports = {
 		'/api/users/{userId}/admin': {
 			patch: {
 				tags: ['Users'],
-				summary: 'Promote a user to admin (admin only)',
+				summary: 'Assign an admin role to a user (Principal Admin only)',
+				description:
+					'Grants admin access if the target is not already an admin, and sets which of the three roles they hold either way -- so this also reassigns an existing admin from one role to another. role defaults to principal when omitted.',
 				security: bearerAuth,
 				parameters: [idParameter('userId', 'User identifier')],
-				responses: { 200: messageResponse('User promoted'), ...errorResponses },
+				requestBody: jsonBody(
+					{
+						type: 'object',
+						properties: {
+							role: { type: 'string', enum: ['principal', 'emergency', 'event'], default: 'principal' },
+						},
+					},
+					false
+				),
+				responses: { 200: messageResponse('Admin role updated'), ...errorResponses },
 			},
 		},
 		'/api/users/{userId}/dashboard': {
@@ -568,6 +579,11 @@ module.exports = {
 					refreshToken: { type: 'string' },
 					userId: { type: 'string' },
 					isAdmin: { type: 'boolean' },
+					role: {
+						type: 'string',
+						enum: ['principal', 'emergency', 'event'],
+						description: 'Meaningful only when isAdmin is true. Absent on a plain admin from before roles existed.',
+					},
 				},
 			},
 			RefreshTokens: {
@@ -622,6 +638,7 @@ module.exports = {
 					phoneNumber: { type: 'string' },
 					gender: { type: 'string', enum: ['male', 'female'] },
 					isAdmin: { type: 'boolean' },
+					role: { type: 'string', enum: ['principal', 'emergency', 'event'] },
 					canDonate: { type: 'boolean' },
 					profile: ref('UserProfile'),
 				},

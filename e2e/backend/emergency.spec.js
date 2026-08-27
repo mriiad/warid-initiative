@@ -332,3 +332,43 @@ describe('error handling', () => {
 		expect(res.status).toBe(500);
 	});
 });
+
+describe('Emergency routes are role-gated (issue #183)', () => {
+	it('an Emergency Admin can list unconfirmed emergencies', async () => {
+		User.findById.mockReturnValue(resolveTo({ _id: ADMIN_ID, isAdmin: true, role: 'emergency' }));
+		Emergency.find.mockReturnValue(resolveTo([]));
+		Emergency.countDocuments.mockReturnValue(resolveTo(0));
+		const res = await request(app)
+			.get('/api/unconfirmedEmergencies')
+			.set('Authorization', authHeader(ADMIN_ID));
+		expect(res.status).toBe(200);
+	});
+
+	it('an Event Admin is refused the emergency routes', async () => {
+		User.findById.mockReturnValue(resolveTo({ _id: ADMIN_ID, isAdmin: true, role: 'event' }));
+		const res = await request(app)
+			.get('/api/unconfirmedEmergencies')
+			.set('Authorization', authHeader(ADMIN_ID));
+		expect(res.status).toBe(403);
+	});
+
+	it('a Principal Admin can still reach the emergency routes (full access)', async () => {
+		User.findById.mockReturnValue(resolveTo({ _id: ADMIN_ID, isAdmin: true, role: 'principal' }));
+		Emergency.find.mockReturnValue(resolveTo([]));
+		Emergency.countDocuments.mockReturnValue(resolveTo(0));
+		const res = await request(app)
+			.get('/api/unconfirmedEmergencies')
+			.set('Authorization', authHeader(ADMIN_ID));
+		expect(res.status).toBe(200);
+	});
+
+	it('an admin with no role recorded (legacy, from before roles existed) still has full access', async () => {
+		User.findById.mockReturnValue(resolveTo({ _id: ADMIN_ID, isAdmin: true }));
+		Emergency.find.mockReturnValue(resolveTo([]));
+		Emergency.countDocuments.mockReturnValue(resolveTo(0));
+		const res = await request(app)
+			.get('/api/unconfirmedEmergencies')
+			.set('Authorization', authHeader(ADMIN_ID));
+		expect(res.status).toBe(200);
+	});
+});

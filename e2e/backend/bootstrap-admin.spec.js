@@ -29,6 +29,8 @@ describe('first administrator bootstrap', () => {
 		expect(User.exists).toHaveBeenCalledWith({ isAdmin: true });
 		expect(User.findOne).toHaveBeenCalledWith({ username: 'AB123456' });
 		expect(user.isAdmin).toBe(true);
+		// The first admin has nobody to assign them a role -- see issue #183.
+		expect(user.role).toBe('principal');
 		expect(user.save).toHaveBeenCalledTimes(1);
 		expect(result).toBe(user);
 	});
