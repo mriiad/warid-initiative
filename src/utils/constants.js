@@ -11,7 +11,6 @@ const constants = {
 		VALIDATION_FAILED: 'Validation failed.',
 		USER_ALREADY_EXISTS: 'E-Mail address already exists!',
 		CIN_ALREADY_EXISTS: 'The CIN already exists!',
-		NO_USER_FOUND: 'No user found with that email address.',
 		TOKEN_INVALID_OR_EXPIRED: 'Token is invalid or has expired.',
 		REFRESH_TOKEN_INVALID: 'Invalid refresh token.',
 		REFRESH_TOKEN_NOT_VALID: 'Refresh token is not valid.',
@@ -25,7 +24,9 @@ const constants = {
 		EMERGENCY_CONFIRMED_SUCCESSFULLY: 'The emergency is successfully confirmed',
 		USER_ADDED_SUCCESSFULLY: 'The contacted user was added successfully',
 		ACCOUNT_ACTIVATED: 'Account activated.',
-		PASSWORD_RESET_LINK_SENT: 'Password reset link sent to email!',
+		// Deliberately non-committal about whether the email is registered --
+		// see issue #359. Sent for both a known and an unknown email.
+		PASSWORD_RESET_LINK_SENT: 'If that email is registered, a password reset link has been sent.',
 		USER_CREATED: 'User created!',
 
 	},

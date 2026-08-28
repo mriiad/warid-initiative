@@ -185,12 +185,12 @@ describe('POST /api/auth/login', () => {
 });
 
 describe('Password reset flow', () => {
-	it('request-reset returns 404 for unknown email (leaks whether an email is registered)', async () => {
+	it('request-reset responds the same way for an unknown email as for a known one (issue #359)', async () => {
 		User.findOne.mockReturnValue(resolveTo(null));
 		const res = await request(app)
 			.post('/api/auth/request-reset')
 			.send({ email: 'nobody@example.com' });
-		expect(res.status).toBe(404);
+		expect(res.status).toBe(200);
 	});
 
 	it('request-reset succeeds for a known email', async () => {
