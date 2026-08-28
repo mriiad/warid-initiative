@@ -38,7 +38,6 @@ const MatchedUsers = () => {
 		userBloodGroup,
 		checkbox,
 		actionBar,
-		sendButton,
 		whatsappButton,
 		emptyState,
 	} = matchedUsersRedesignStyles();
@@ -70,9 +69,8 @@ const MatchedUsers = () => {
 		);
 	};
 
-	// Marks every selected donor as contacted for this emergency. Shared by
-	// both the SMS and WhatsApp actions below -- what differs between them is
-	// what (if anything) happens before this runs.
+	// Marks every selected donor as contacted for this emergency, after the
+	// WhatsApp messages below have been opened.
 	const confirmSelectedUsers = async () => {
 		setIsSending(true);
 		const results = await Promise.allSettled(
@@ -88,14 +86,6 @@ const MatchedUsers = () => {
 			setMessage(t('emergency.matchedUsers.bulkConfirmSuccess', { count: selected.size }));
 			setSelected(new Set());
 		}
-	};
-
-	const handleSend = async () => {
-		if (selected.size === 0) {
-			setMessage(t('emergency.matchedUsers.noSelection'));
-			return;
-		}
-		await confirmSelectedUsers();
 	};
 
 	// wa.me expects the full international number with no '+', spaces or
@@ -210,20 +200,13 @@ const MatchedUsers = () => {
 				<div className={actionBar}>
 					<Button
 						type='button'
-						className={sendButton}
-						onClick={handleSend}
-						disabled={isSending}
-					>
-						{t('emergency.matchedUsers.sendSms')}
-					</Button>
-					<IconButton
 						className={whatsappButton}
-						aria-label={t('emergency.matchedUsers.sendWhatsapp')}
 						onClick={handleSendWhatsapp}
 						disabled={isSending}
+						startIcon={<WhatsAppIcon />}
 					>
-						<WhatsAppIcon />
-					</IconButton>
+						{t('emergency.matchedUsers.sendWhatsapp')}
+					</Button>
 				</div>
 			)}
 

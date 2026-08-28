@@ -111,7 +111,10 @@ export const matchedUsersRedesignStyles = makeStyles({
 		gap: '12px',
 		padding: '0 20px',
 	},
-	sendButton: {
+	// The only send action (SMS was removed -- WhatsApp covers it), so this
+	// is styled as the screen's one primary CTA rather than a small icon
+	// button next to another action.
+	whatsappButton: {
 		'&.MuiButton-root': {
 			backgroundColor: redesignColors.successGreen,
 			color: palette.white,
@@ -129,16 +132,6 @@ export const matchedUsersRedesignStyles = makeStyles({
 				backgroundColor: '#D8E5C4',
 				color: palette.white,
 			},
-		},
-	},
-	whatsappButton: {
-		'&.MuiIconButton-root': {
-			width: '52px',
-			height: '52px',
-			borderRadius: radius.input,
-			backgroundColor: palette.subtle,
-			color: palette.ink,
-			boxShadow: '0 8px 20px rgba(0, 0, 0, 0.08)',
 		},
 	},
 	emptyState: {

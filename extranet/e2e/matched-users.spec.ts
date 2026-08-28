@@ -8,7 +8,7 @@ test.describe('Matched users / User List (redesigned)', () => {
 		await expect(page.getByText('404')).toBeVisible();
 	});
 
-	test('admin can select matched users and send SMS, which confirms each selected user', async ({ page }) => {
+	test('admin can select matched users and send via WhatsApp, which confirms each selected user', async ({ page, context }) => {
 		await seedAuth(page, { isAdmin: true });
 		await mockJson(page, '**/api/emergencies/em-1/matchingUsers*', {
 			message: 'Fetched matching users successfully.',
@@ -25,6 +25,12 @@ test.describe('Matched users / User List (redesigned)', () => {
 			confirmedUserIds.push(userId);
 			await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ message: 'User confirmed in emergency.' }) });
 		});
+		// The sandbox has no real network access to wa.me, so intercept the
+		// navigation at the context level (covers the popup page too) instead
+		// of letting it fail and redirect to a chrome-error:// page.
+		await context.route('https://wa.me/**', (route) =>
+			route.fulfill({ status: 200, contentType: 'text/html', body: '<html><body>ok</body></html>' })
+		);
 
 		await page.goto('/emergencies/em-1/matched-users');
 		await expect(page.getByText('Amine Bennani')).toBeVisible({ timeout: 5000 });
@@ -36,7 +42,11 @@ test.describe('Matched users / User List (redesigned)', () => {
 		await expect(page.getByText('AB+', { exact: true })).toBeVisible();
 
 		await page.getByText('Amine Bennani').click();
-		await page.getByRole('button', { name: 'إرسال رسالة نصية' }).click();
+		const popupPromise = context.waitForEvent('page');
+		await page.getByRole('button', { name: 'إرسال عبر واتساب' }).click();
+		const popup = await popupPromise;
+		await popup.waitForLoadState('domcontentloaded');
+		await popup.close();
 		await page.waitForTimeout(500);
 
 		expect(confirmedUserIds).toEqual(['u1']);

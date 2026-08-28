@@ -473,7 +473,6 @@
       "pageTitle": "قائمة المستخدمين",
       "requestedFor": "الفصيلة المطلوبة: {{bloodGroup}}",
       "selectLabel": "تحديد",
-      "sendSms": "إرسال رسالة نصية",
       "sendWhatsapp": "إرسال عبر واتساب",
       "noSelection": ".يرجى تحديد مستخدم واحد على الأقل",
       "bulkConfirmSuccess": ".تم تسجيل {{count}} مستخدم كتم التواصل معهم",
