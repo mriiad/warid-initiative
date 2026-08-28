@@ -135,6 +135,13 @@
       "passwordsMismatch": "Passwords do not match",
       "submit": "Reset Password"
     },
+    "activate": {
+      "title": "Confirm Your Email",
+      "checking": "Confirming your account...",
+      "success": "Your account is confirmed! You can now log in.",
+      "invalidToken": "This activation link is invalid or has expired.",
+      "goToLogin": "Go to Login"
+    },
     "completeProfile": {
       "title": "Complete Your Profile",
       "firstName": "First Name",

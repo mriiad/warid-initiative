@@ -16,6 +16,7 @@ const constants = {
 		REFRESH_TOKEN_INVALID: 'Invalid refresh token.',
 		REFRESH_TOKEN_NOT_VALID: 'Refresh token is not valid.',
 		CURRENT_PASSWORD_INCORRECT: 'Current password is incorrect.',
+		ACCOUNT_NOT_ACTIVATED: 'Please confirm your email before logging in. Check your inbox for the activation link.',
 		PASSWORD_RESET_SUCCESSFUL: 'Password reset successful!',
 		LOGGED_OUT_SUCCESSFULLY: 'Logged out successfully',
 		PASSWORD_CHANGED_SUCCESSFULLY: 'Password changed successfully!',

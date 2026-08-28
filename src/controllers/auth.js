@@ -48,7 +48,10 @@ exports.signup = (req, res, next) => {
 	}
 
 	const token = jwt.sign({ email: req.body.email }, config.auth.secretKey);
-	const activationLink = `${config.frontend.url}/api/auth/activation/${token}`;
+	// Points at a frontend page (issue #357), not the backend API route
+	// directly -- that used to leave whoever clicked it looking at a raw
+	// JSON response with no UI and no way back to login.
+	const activationLink = `${config.frontend.url}/activate/${token}`;
 
 	bcrypt
 		.hash(password, config.constants.bcryptRounds)
@@ -117,6 +120,16 @@ exports.login = (req, res, next) => {
 		.then((isEqual) => {
 			if (!isEqual) {
 				const error = new ApiError(constants.ERROR_MESSAGES.WRONG_PASSWORD, STATUS_CODE.UNAUTHORIZED);
+				throw error;
+			}
+
+			// Only enforced when mail is actually configured -- otherwise
+			// nobody could ever reach the activation link, permanently
+			// locking every new account out with no way to clear it. See
+			// issue #357. Existing accounts from before this check existed
+			// are covered by the backfill-activate-users script.
+			if (transporter && !loadedUser.isActive) {
+				const error = new ApiError(constants.ERROR_MESSAGES.ACCOUNT_NOT_ACTIVATED, STATUS_CODE.FORBIDDEN);
 				throw error;
 			}
 

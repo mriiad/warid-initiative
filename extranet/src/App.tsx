@@ -11,6 +11,7 @@ import { useIsMobile } from './hooks/useIsMobile';
 // Route-level screens are loaded on demand (one chunk per route) instead of
 // being bundled into the initial download -- see the routing chrome logic
 // further down for how each of these is wired up.
+const ActivateAccount = lazy(() => import('./components/ActivateAccount'));
 const AdminComponent = lazy(() => import('./components/AdminComponent'));
 const AdminDashboard = lazy(() => import('./components/admin/AdminDashboard'));
 const CanDonate = lazy(() => import('./components/CanDonate'));
@@ -168,6 +169,7 @@ const App = () => {
 					path='/reset-password/:resetToken'
 					element={<ResetPasswordForm />}
 				/>
+				<Route path='/activate/:token' element={<ActivateAccount />} />
 				<Route path='*' element={<NotFoundPage />} />
 
 				<Route path='/FAQ' element={<FAQComponent />} />

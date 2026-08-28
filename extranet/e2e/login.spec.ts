@@ -32,6 +32,23 @@ test.describe('Login', () => {
 		await expect(page).toHaveURL(/\/login/);
 	});
 
+	test('an unconfirmed account shows the backend\'s activation message (issue #357)', async ({ page }) => {
+		await mockJson(
+			page,
+			'**/api/auth/login',
+			{ message: 'Please confirm your email before logging in. Check your inbox for the activation link.' },
+			{ status: 403, method: 'POST' }
+		);
+		await page.goto('/login');
+		await page.getByLabel('اسم المستخدم').fill('CIN123456');
+		await page.getByRole('textbox', { name: 'كلمة المرور' }).fill('correctpassword');
+		await page.locator('button[type=submit]').click();
+
+		await expect(
+			page.getByText('Please confirm your email before logging in. Check your inbox for the activation link.')
+		).toBeVisible({ timeout: 5000 });
+	});
+
 	test('a translated fallback message is shown when the backend response has no message field', async ({ page }) => {
 		await mockJson(page, '**/api/auth/login', {}, { status: 401, method: 'POST' });
 		await page.goto('/login');

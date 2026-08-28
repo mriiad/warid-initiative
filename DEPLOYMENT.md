@@ -71,6 +71,24 @@ Render redeploys automatically on every push to the branch it's watching
 `develop`). CI (`.github/workflows/ci.yml`) validates that the Docker image
 still builds on every PR and push, independently of Render's own build.
 
+### One-time data backfills
+
+A few changes add a new required field to existing documents and ship a
+backfill script for it. Run these once, from a trusted shell configured with
+the production database environment variables, right after deploying the
+version that introduces them -- skipping one doesn't corrupt data, but does
+leave existing accounts/admins missing something the new code expects of
+everyone going forward:
+
+- `npm run backfill:admin-roles` -- sets `role: 'principal'` on every existing
+  admin (issue #183). Safe to skip: `requireAdminRole.js` already treats a
+  missing role as principal, this just makes it explicit for the UI.
+- `npm run backfill:activate-users` -- sets `isActive: true` on every
+  existing account (issue #357). **Not safe to skip**: login now refuses an
+  account with `isActive: false` once mail is configured, and every account
+  created before this field existed has `isActive: false` -- skipping this
+  locks all of them out.
+
 ## Local parity
 
 To build and run the same image locally:
