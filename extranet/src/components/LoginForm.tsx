@@ -167,7 +167,7 @@ const LoginForm = () => {
 						<SnackbarComponent
 							open={googleSnackbarOpen}
 							handleClose={() => setGoogleSnackbarOpen(false)}
-							message={t('auth.login.continueWithGoogle')}
+							message={t('auth.login.googleNotAvailable')}
 							autoHideDuration={3000}
 						/>
 						<SnackbarComponent

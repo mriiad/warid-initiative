@@ -85,7 +85,7 @@ const SignupForm = () => {
 				<SnackbarComponent
 					open={googleSnackbarOpen}
 					handleClose={() => setGoogleSnackbarOpen(false)}
-					message={t('auth.signup.signupWithGoogle')}
+					message={t('auth.signup.googleNotAvailable')}
 					autoHideDuration={3000}
 				/>
 				<form onSubmit={handleSubmit(onSubmit)} noValidate>

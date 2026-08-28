@@ -88,6 +88,7 @@
       "submit": "Submit",
       "orSignupWith": "Or",
       "signupWithGoogle": "Sign up with Google",
+      "googleNotAvailable": "Google sign-up isn't available yet.",
       "back": "Back",
       "showPassword": "Show password",
       "hidePassword": "Hide password",
@@ -109,6 +110,7 @@
       "rememberMe": "Remember me",
       "orLoginWith": "Or login with",
       "continueWithGoogle": "Continue with Google",
+      "googleNotAvailable": "Google sign-in isn't available yet.",
       "back": "Back",
       "showPassword": "Show password",
       "hidePassword": "Hide password"
