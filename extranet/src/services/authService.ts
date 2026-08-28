@@ -37,6 +37,10 @@ export const authService = {
 		return apiClient.post<MessageResponse>('/api/auth/request-reset', data);
 	},
 
+	resendActivation: (data: { email: string }) => {
+		return apiClient.post<MessageResponse>('/api/auth/resend-activation', data);
+	},
+
 	resetPassword: (token: string, data: ResetPasswordData) => {
 		return apiClient.post<MessageResponse>(`/api/auth/reset-password/${token}`, data);
 	},

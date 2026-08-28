@@ -49,6 +49,50 @@ test.describe('Login', () => {
 		).toBeVisible({ timeout: 5000 });
 	});
 
+	test('an unconfirmed account can resend the activation email from the login page (issue #365)', async ({ page }) => {
+		await mockJson(
+			page,
+			'**/api/auth/login',
+			{ message: 'Please confirm your email before logging in. Check your inbox for the activation link.' },
+			{ status: 403, method: 'POST' }
+		);
+		let resendRequestBody: unknown = null;
+		await page.route('**/api/auth/resend-activation', async (route) => {
+			resendRequestBody = route.request().postDataJSON();
+			await route.fulfill({
+				status: 200,
+				contentType: 'application/json',
+				body: JSON.stringify({ message: 'sent' }),
+			});
+		});
+
+		await page.goto('/login');
+		await page.getByLabel('اسم المستخدم').fill('CIN123456');
+		await page.getByRole('textbox', { name: 'كلمة المرور' }).fill('correctpassword');
+		await page.locator('button[type=submit]').click();
+
+		// The resend field/button only appear for this specific 403 case, not
+		// for a plain wrong-password rejection.
+		const resendField = page.getByLabel('البريد الإلكتروني');
+		await expect(resendField).toBeVisible({ timeout: 5000 });
+		await resendField.fill('donor@example.com');
+		await page.getByRole('button', { name: 'إعادة إرسال رابط التأكيد' }).click();
+
+		await expect(page.getByText('تم إرسال رابط جديد')).toBeVisible({ timeout: 5000 });
+		expect(resendRequestBody).toEqual({ email: 'donor@example.com' });
+	});
+
+	test('the resend-activation field does not appear for a plain wrong-password rejection', async ({ page }) => {
+		await mockJson(page, '**/api/auth/login', { message: 'Wrong password.' }, { status: 401, method: 'POST' });
+		await page.goto('/login');
+		await page.getByLabel('اسم المستخدم').fill('CIN123456');
+		await page.getByRole('textbox', { name: 'كلمة المرور' }).fill('wrongpassword');
+		await page.locator('button[type=submit]').click();
+
+		await expect(page.getByText('Wrong password.')).toBeVisible({ timeout: 5000 });
+		await expect(page.getByLabel('البريد الإلكتروني')).not.toBeVisible();
+	});
+
 	test('a translated fallback message is shown when the backend response has no message field', async ({ page }) => {
 		await mockJson(page, '**/api/auth/login', {}, { status: 401, method: 'POST' });
 		await page.goto('/login');

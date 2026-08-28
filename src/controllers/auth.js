@@ -102,6 +102,51 @@ exports.signup = (req, res, next) => {
 		});
 };
 
+// Lets a user get a second copy of the activation email if the first is
+// lost (spam, typo'd at signup, never arrived). See issue #365. Responds the
+// same way whether or not the email is registered, and whether or not it's
+// already active -- same reasoning as requestPasswordReset (issue #359):
+// don't reopen the enumeration hole while closing this gap. Only a
+// registered, not-yet-active account actually gets a new email.
+exports.resendActivation = async (req, res, next) => {
+	try {
+		const email = req.body.email;
+		const user = await User.findOne({ email });
+
+		if (user && !user.isActive) {
+			const token = jwt.sign({ email }, config.auth.secretKey);
+			// Same destination as signup's own activation link -- see the
+			// comment there (issue #357).
+			const activationLink = `${config.frontend.url}/activate/${token}`;
+			user.confirmationCode = token;
+			await user.save();
+
+			if (transporter) {
+				try {
+					await transporter.sendMail({
+						from: config.email.from,
+						to: email,
+						subject: constants.EMAIL_SUBJECTS.ACCOUNT_ACTIVATION,
+						text: constants.EMAIL_TEMPLATES.ACTIVATION.TEXT(user.username),
+						html: constants.EMAIL_TEMPLATES.ACTIVATION.HTML(
+							user.username,
+							activationLink
+						),
+					});
+				} catch (mailErr) {
+					logger.error({ err: mailErr }, 'Failed to resend activation email');
+				}
+			}
+		}
+
+		res.status(STATUS_CODE.OK).json({
+			message: constants.ERROR_MESSAGES.ACTIVATION_EMAIL_RESENT,
+		});
+	} catch (err) {
+		next(err);
+	}
+};
+
 exports.login = (req, res, next) => {
 	const body = req.body;
 	const username = body.username;
