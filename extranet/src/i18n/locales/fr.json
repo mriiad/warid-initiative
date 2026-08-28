@@ -473,7 +473,6 @@
       "pageTitle": "Liste des utilisateurs",
       "requestedFor": "Demandé : {{bloodGroup}}",
       "selectLabel": "Sélectionner",
-      "sendSms": "Envoyer un SMS",
       "sendWhatsapp": "Envoyer via WhatsApp",
       "noSelection": "Sélectionnez au moins un utilisateur.",
       "bulkConfirmSuccess": "{{count}} utilisateur(s) marqué(s) comme contacté(s).",
