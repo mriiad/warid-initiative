@@ -88,6 +88,7 @@
       "submit": "إرسال",
       "orSignupWith": "أو",
       "signupWithGoogle": "إنشاء حساب باستخدام جوجل",
+      "googleNotAvailable": "التسجيل عبر جوجل غير متاح حالياً.",
       "back": "رجوع",
       "showPassword": "إظهار كلمة المرور",
       "hidePassword": "إخفاء كلمة المرور",
@@ -109,6 +110,7 @@
       "rememberMe": "تذكرني",
       "orLoginWith": "أو سجل الدخول باستخدام",
       "continueWithGoogle": "المتابعة باستخدام جوجل",
+      "googleNotAvailable": "تسجيل الدخول عبر جوجل غير متاح حالياً.",
       "back": "رجوع",
       "showPassword": "إظهار كلمة المرور",
       "hidePassword": "إخفاء كلمة المرور"
