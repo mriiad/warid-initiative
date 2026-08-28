@@ -246,16 +246,17 @@ exports.refreshToken = (req, res, next) => {
 	});
 };
 
-exports.requestPasswordReset = (req, res, next) => {
-	const email = req.body.email;
+// Always responds the same way whether or not the email is registered --
+// returning 404 for an unknown email vs 200 for a known one lets anyone
+// enumerate which emails have an account (see issue #359). The reset
+// token/email are only generated when a user is actually found; for an
+// unknown email this is a no-op that still reports success.
+exports.requestPasswordReset = async (req, res, next) => {
+	try {
+		const email = req.body.email;
+		const user = await User.findOne({ email: email });
 
-	User.findOne({ email: email })
-		.then((user) => {
-			if (!user) {
-				const error = new ApiError(constants.ERROR_MESSAGES.NO_USER_FOUND, STATUS_CODE.NOT_FOUND);
-				throw error;
-			}
-
+		if (user) {
 			const resetToken = crypto
 				.randomBytes(constants.VALIDATION.PASSWORD_RESET_TOKEN_BYTES)
 				.toString('hex');
@@ -265,33 +266,28 @@ exports.requestPasswordReset = (req, res, next) => {
 				.utc()
 				.add(config.auth.passwordResetExpireMinutes, 'minutes')
 				.toDate();
-
 			user.passwordResetExpires = expiryDate;
-			return user.save();
-		})
-		.then((user) => {
-			if (transporter) {
-				const resetURL = `${config.frontend.url}/reset-password/${user.passwordResetToken}`;
+			await user.save();
 
-				return transporter.sendMail({
+			if (transporter) {
+				const resetURL = `${config.frontend.url}/reset-password/${resetToken}`;
+
+				await transporter.sendMail({
 					from: config.email.from,
 					to: email,
 					subject: constants.EMAIL_SUBJECTS.PASSWORD_RESET_REQUEST,
 					text: constants.EMAIL_TEMPLATES.PASSWORD_RESET_REQUEST.TEXT(resetURL),
 					html: constants.EMAIL_TEMPLATES.PASSWORD_RESET_REQUEST.HTML(resetURL),
 				});
-			} else {
-				return Promise.resolve();
 			}
-		})
-		.then(() => {
-			res.status(STATUS_CODE.OK).json({
-				message: constants.ERROR_MESSAGES.PASSWORD_RESET_LINK_SENT,
-			});
-		})
-		.catch((err) => {
-			next(err);
+		}
+
+		res.status(STATUS_CODE.OK).json({
+			message: constants.ERROR_MESSAGES.PASSWORD_RESET_LINK_SENT,
 		});
+	} catch (err) {
+		next(err);
+	}
 };
 
 exports.resetPassword = (req, res, next) => {
