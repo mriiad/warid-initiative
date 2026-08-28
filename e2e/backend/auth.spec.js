@@ -135,6 +135,56 @@ describe('GET /api/auth/activation/:confirmationCode', () => {
 	});
 });
 
+describe('POST /api/auth/resend-activation (issue #365)', () => {
+	beforeEach(() => {
+		nodemailer.__sendMail.mockClear();
+	});
+
+	it('responds the same way for an unknown email as for a known one', async () => {
+		User.findOne.mockReturnValue(resolveTo(null));
+		const res = await request(app)
+			.post('/api/auth/resend-activation')
+			.send({ email: 'nobody@example.com' });
+		expect(res.status).toBe(200);
+		expect(nodemailer.__sendMail).not.toHaveBeenCalled();
+	});
+
+	it('sends a new activation email and updates the confirmation code for an unconfirmed account', async () => {
+		const fakeUser = {
+			username: 'CIN555',
+			isActive: false,
+			confirmationCode: 'stale-code',
+			save: jest.fn().mockResolvedValue(true),
+		};
+		User.findOne.mockReturnValue(resolveTo(fakeUser));
+		const res = await request(app)
+			.post('/api/auth/resend-activation')
+			.send({ email: 'donor@example.com' });
+		expect(res.status).toBe(200);
+		expect(fakeUser.save).toHaveBeenCalled();
+		expect(fakeUser.confirmationCode).not.toBe('stale-code');
+		expect(nodemailer.__sendMail).toHaveBeenCalledTimes(1);
+		const sentMail = nodemailer.__sendMail.mock.calls[0][0];
+		expect(sentMail.to).toBe('donor@example.com');
+		expect(sentMail.html).toContain(fakeUser.confirmationCode);
+	});
+
+	it('does not send an email for an already-active account, but still responds 200', async () => {
+		const fakeUser = {
+			username: 'CIN555',
+			isActive: true,
+			save: jest.fn().mockResolvedValue(true),
+		};
+		User.findOne.mockReturnValue(resolveTo(fakeUser));
+		const res = await request(app)
+			.post('/api/auth/resend-activation')
+			.send({ email: 'donor@example.com' });
+		expect(res.status).toBe(200);
+		expect(fakeUser.save).not.toHaveBeenCalled();
+		expect(nodemailer.__sendMail).not.toHaveBeenCalled();
+	});
+});
+
 describe('POST /api/auth/login', () => {
 	it('returns 401 for an unknown username', async () => {
 		User.findOne.mockReturnValue(resolveTo(null));

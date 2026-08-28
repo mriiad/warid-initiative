@@ -140,6 +140,22 @@ export const useResetPassword = () => {
 	});
 };
 
+// LoginForm surfaces this itself (next to the "please confirm your email"
+// rejection), reading its own success/error state rather than the shared
+// toast -- same reasoning as useLogin above.
+export const useResendActivation = () => {
+	return useMutation({
+		mutationFn: (data: { email: string }) => authService.resendActivation(data),
+		onSuccess: (response) => {
+			// A new activation email was sent (or the request was a no-op --
+			// the response is deliberately the same either way, see #365).
+		},
+		onError: (error) => {
+			console.error('Resending the activation email failed:', error);
+		},
+	});
+};
+
 export const useCheckResetToken = (token = '', enabled = true) => {
 	const { showError } = useErrorToast();
 
@@ -180,5 +196,6 @@ export const useAuth = () => {
 		resetPassword: useResetPassword(),
 		checkResetToken: useCheckResetToken(),
 		updatePassword: useUpdatePassword(),
+		resendActivation: useResendActivation(),
 	};
 };

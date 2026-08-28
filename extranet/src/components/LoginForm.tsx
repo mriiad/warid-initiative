@@ -47,8 +47,10 @@ const LoginForm = () => {
 	const [googleSnackbarOpen, setGoogleSnackbarOpen] = useState(false);
 	const [rememberMeChecked, setRememberMeChecked] = useState(false);
 	const [loginErrorMessage, setLoginErrorMessage] = useState<string | null>(null);
+	const [resendEmail, setResendEmail] = useState('');
+	const [resendSnackbarOpen, setResendSnackbarOpen] = useState(false);
 
-	const { login } = useAuth();
+	const { login, resendActivation } = useAuth();
 	const { updateAuthState } = useAuthContext();
 	// Gated on login.isSuccess: this hits an isAuth-gated backend route, so
 	// firing it before then (i.e. on every /login page load, unauthenticated)
@@ -113,11 +115,25 @@ const LoginForm = () => {
 		}
 	}, [login.isError, login.error, t]);
 
+	// Login refuses an unconfirmed account with 403 (see issue #357) -- it's
+	// the only case login ever returns 403 for, so the status code alone is
+	// enough to know this is that case, without matching on message text.
+	const isUnconfirmedAccount =
+		(login.error as { response?: { status?: number } } | null)?.response
+			?.status === 403;
+
 	const onSubmit = (formData: LoginFormData) => {
 		// Clear any previous failure so a retry doesn't sit next to a stale
 		// error, and so the snackbar re-opens even if the message is identical.
 		setLoginErrorMessage(null);
 		login.mutate(formData);
+	};
+
+	const handleResendActivation = () => {
+		resendActivation.mutate(
+			{ email: resendEmail },
+			{ onSuccess: () => setResendSnackbarOpen(true) }
+		);
 	};
 
 	return (
@@ -174,6 +190,12 @@ const LoginForm = () => {
 							open={Boolean(loginErrorMessage)}
 							handleClose={() => setLoginErrorMessage(null)}
 							message={loginErrorMessage || ''}
+							autoHideDuration={6000}
+						/>
+						<SnackbarComponent
+							open={resendSnackbarOpen}
+							handleClose={() => setResendSnackbarOpen(false)}
+							message={t('auth.login.resendActivationSuccess')}
 							autoHideDuration={6000}
 						/>
 						<GoogleButton onClick={() => setGoogleSnackbarOpen(true)}>
@@ -237,6 +259,34 @@ const LoginForm = () => {
 								</Button>
 							</div>
 						</form>
+						{isUnconfirmedAccount && (
+							<div
+								style={{
+									display: 'flex',
+									flexDirection: 'column',
+									gap: '8px',
+									marginTop: '16px',
+								}}
+							>
+								<TextField
+									fullWidth
+									className={input}
+									label={t('auth.login.resendActivationEmail')}
+									type='email'
+									value={resendEmail}
+									onChange={(e) => setResendEmail(e.target.value)}
+								/>
+								<Button
+									type='button'
+									fullWidth
+									className={primaryButton}
+									onClick={handleResendActivation}
+									disabled={resendActivation.isPending || !resendEmail}
+								>
+									{t('auth.login.resendActivationSubmit')}
+								</Button>
+							</div>
+						)}
 						<div className={footerText}>
 							{t('auth.login.noAccount')}{' '}
 							<button

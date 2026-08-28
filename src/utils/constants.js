@@ -25,6 +25,9 @@ const constants = {
 		EMERGENCY_CONFIRMED_SUCCESSFULLY: 'The emergency is successfully confirmed',
 		USER_ADDED_SUCCESSFULLY: 'The contacted user was added successfully',
 		ACCOUNT_ACTIVATED: 'Account activated.',
+		// Deliberately non-committal about whether the email is registered or
+		// already active -- see issue #365, same reasoning as issue #359.
+		ACTIVATION_EMAIL_RESENT: 'If that email is registered and not yet confirmed, a new activation link has been sent.',
 		// Deliberately non-committal about whether the email is registered --
 		// see issue #359. Sent for both a known and an unknown email.
 		PASSWORD_RESET_LINK_SENT: 'If that email is registered, a password reset link has been sent.',

@@ -10,6 +10,7 @@ const {
 	resetPassword,
 	checkResetTokenValidity,
 	updatePassword,
+	resendActivation,
 
 } = require('../controllers/auth');
 const User = require('../models/user');
@@ -66,6 +67,9 @@ authRouter.post('/api/auth/login', authLimiter, login);
 authRouter.post('/api/auth/logout', logout);
 
 authRouter.get('/api/auth/activation/:confirmationCode', verifyUser);
+
+// Sends mail on every accepted request.
+authRouter.post('/api/auth/resend-activation', mailLimiter, resendActivation);
 
 authRouter.post('/api/auth/refresh-token', authLimiter, refreshToken);
 
