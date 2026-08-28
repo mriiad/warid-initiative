@@ -171,6 +171,7 @@ describe('POST /api/auth/login', () => {
 				email: 'a@example.com',
 				password: 'hashed',
 				isAdmin: true,
+				isActive: true,
 				save,
 			})
 		);
@@ -181,6 +182,24 @@ describe('POST /api/auth/login', () => {
 		expect(res.body.token).toBeDefined();
 		expect(res.body.isAdmin).toBe(true);
 		expect(JSON.stringify(res.body)).not.toMatch(/hashed/);
+	});
+
+	it('rejects an unconfirmed account (issue #357)', async () => {
+		const bcrypt = require('bcrypt');
+		jest.spyOn(bcrypt, 'compare').mockResolvedValueOnce(true);
+		User.findOne.mockReturnValue(
+			resolveTo({
+				_id: 'user-1',
+				email: 'a@example.com',
+				password: 'hashed',
+				isActive: false,
+				save: jest.fn().mockResolvedValue(true),
+			})
+		);
+		const res = await request(app)
+			.post('/api/auth/login')
+			.send({ username: 'bob', password: 'correct' });
+		expect(res.status).toBe(403);
 	});
 });
 
@@ -303,6 +322,7 @@ describe('POST /api/auth/login error handling', () => {
 				_id: 'user-1',
 				email: 'a@example.com',
 				password: 'hashed',
+				isActive: true,
 				save: jest.fn().mockRejectedValue(new Error('db down')),
 			})
 		);
@@ -505,6 +525,28 @@ describe('email transporter disabled (EMAIL_ENABLED=false)', () => {
 		const res = await request(isolatedApp)
 			.post('/api/auth/reset-password/good-token')
 			.send({ password: 'newpassword123' });
+		expect(res.status).toBe(200);
+	});
+
+	it('lets an unconfirmed account log in when mail is off (issue #357: no way to ever confirm otherwise)', async () => {
+		// jest.isolateModules gives this describe block's auth.js its own
+		// fresh `require('bcrypt')`, separate from the one at the top of
+		// this file -- a jest.spyOn on the outer instance wouldn't reach it.
+		// A real hash sidesteps that entirely.
+		const bcrypt = require('bcrypt');
+		const realHash = await bcrypt.hash('correct', 4);
+		IsolatedUser.findOne.mockReset().mockReturnValue(
+			resolveTo({
+				_id: 'user-1',
+				email: 'a@example.com',
+				password: realHash,
+				isActive: false,
+				save: jest.fn().mockResolvedValue(true),
+			})
+		);
+		const res = await request(isolatedApp)
+			.post('/api/auth/login')
+			.send({ username: 'bob', password: 'correct' });
 		expect(res.status).toBe(200);
 	});
 });

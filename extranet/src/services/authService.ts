@@ -45,6 +45,10 @@ export const authService = {
 		return apiClient.get<MessageResponse>(`/api/auth/check-reset-token/${token}`);
 	},
 
+	activateAccount: (token: string) => {
+		return apiClient.get<MessageResponse>(`/api/auth/activation/${token}`);
+	},
+
 	updatePassword: (data: UpdatePasswordData) => {
 		return apiClient.patch<MessageResponse>('/api/auth/update-password', data);
 	},

@@ -137,6 +137,13 @@
       "passwordsMismatch": "Les mots de passe ne correspondent pas",
       "submit": "Réinitialiser le mot de passe"
     },
+    "activate": {
+      "title": "Confirmez votre e-mail",
+      "checking": "Confirmation de votre compte...",
+      "success": "Votre compte est confirmé ! Vous pouvez maintenant vous connecter.",
+      "invalidToken": "Ce lien de confirmation est invalide ou a expiré.",
+      "goToLogin": "Aller à la connexion"
+    },
     "completeProfile": {
       "title": "Complétez votre profil",
       "firstName": "Prénom",
