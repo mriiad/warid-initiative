@@ -78,6 +78,7 @@ const constants = {
 		PASSWORD_MIN_LENGTH: 5,
 		PHONE_MIN_LENGTH: 10,
 		PASSWORD_RESET_TOKEN_BYTES: 32,
+		ACTIVATION_TOKEN_BYTES: 32,
 	},
 
 	// Blood donation eligibility policy. Standard bounds used by most blood

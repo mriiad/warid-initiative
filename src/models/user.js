@@ -55,6 +55,11 @@ const userSchema = new Schema({
     unique: true,
     sparse: true,
   },
+  confirmationCodeExpires: {
+    type: Date,
+    required: false,
+    select: false,
+  },
   passwordResetToken: {
     type: String,
     required: false,

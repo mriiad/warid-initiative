@@ -47,11 +47,21 @@ exports.signup = (req, res, next) => {
 		throw error;
 	}
 
-	const token = jwt.sign({ email: req.body.email }, config.auth.secretKey);
+	// A random token, not a signed JWT -- verifyUser never actually calls
+	// jwt.verify on this (it's just a unique lookup key), and a plain JWT
+	// has no server-side way to expire early or be invalidated by a resend.
+	// Same shape as the password-reset token below.
+	const token = crypto
+		.randomBytes(constants.VALIDATION.ACTIVATION_TOKEN_BYTES)
+		.toString('hex');
 	// Points at a frontend page (issue #357), not the backend API route
 	// directly -- that used to leave whoever clicked it looking at a raw
 	// JSON response with no UI and no way back to login.
 	const activationLink = `${config.frontend.url}/activate/${token}`;
+	const confirmationCodeExpires = moment
+		.utc()
+		.add(config.auth.activationLinkExpireHours, 'hours')
+		.toDate();
 
 	bcrypt
 		.hash(password, config.constants.bcryptRounds)
@@ -65,6 +75,7 @@ exports.signup = (req, res, next) => {
 				isAdmin: false,
 				isActive: false,
 				confirmationCode: token,
+				confirmationCodeExpires,
 			});
 			return user.save();
 		})
@@ -114,11 +125,18 @@ exports.resendActivation = async (req, res, next) => {
 		const user = await User.findOne({ email });
 
 		if (user && !user.isActive) {
-			const token = jwt.sign({ email }, config.auth.secretKey);
+			// Same token shape as signup's own -- see the comment there.
+			const token = crypto
+				.randomBytes(constants.VALIDATION.ACTIVATION_TOKEN_BYTES)
+				.toString('hex');
 			// Same destination as signup's own activation link -- see the
 			// comment there (issue #357).
 			const activationLink = `${config.frontend.url}/activate/${token}`;
 			user.confirmationCode = token;
+			user.confirmationCodeExpires = moment
+				.utc()
+				.add(config.auth.activationLinkExpireHours, 'hours')
+				.toDate();
 			await user.save();
 
 			if (transporter) {
@@ -219,14 +237,30 @@ exports.verifyUser = (req, res, next) => {
 	const params = req.params;
 	User.findOne({
 		confirmationCode: params.confirmationCode,
+		// An unmatched, already-used, or expired code all land here alike --
+		// same TOKEN_INVALID_OR_EXPIRED response as an expired password-reset
+		// token below, and the frontend's activation page already shows a
+		// generic "invalid or expired" message either way (issue #357).
+		//
+		// A missing confirmationCodeExpires (an account created before this
+		// field existed, still pending activation) is treated as not
+		// expired -- their link never had an expiry before, and this must
+		// not silently invalidate it out from under them on deploy.
+		$or: [
+			{ confirmationCodeExpires: { $gt: moment.utc().toDate() } },
+			{ confirmationCodeExpires: { $exists: false } },
+		],
 	})
 		.then((user) => {
 			if (!user) {
-				return res.status(STATUS_CODE.NOT_FOUND).send({
-					message: constants.ERROR_MESSAGES.USER_NOT_FOUND,
-				});
+				const error = new ApiError(constants.ERROR_MESSAGES.TOKEN_INVALID_OR_EXPIRED, STATUS_CODE.BAD_REQUEST);
+				throw error;
 			}
 			user.isActive = true;
+			// One-time use, same as a password-reset token -- an already-used
+			// or superseded (resent) link should not keep working.
+			user.confirmationCode = undefined;
+			user.confirmationCodeExpires = undefined;
 			user.save();
 			return res.status(STATUS_CODE.OK).send({
 				message: constants.ERROR_MESSAGES.ACCOUNT_ACTIVATED,

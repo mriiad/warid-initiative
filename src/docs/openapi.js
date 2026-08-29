@@ -126,6 +126,20 @@ module.exports = {
 				responses: { 200: messageResponse('Account activated'), ...errorResponses },
 			},
 		},
+		'/api/auth/resend-activation': {
+			post: {
+				tags: ['Authentication'],
+				summary: 'Resend the account-activation email',
+				description:
+					'Responds the same way whether or not the email is registered or already active -- only a registered, not-yet-active account actually gets a new email.',
+				requestBody: jsonBody({
+					type: 'object',
+					required: ['email'],
+					properties: { email: { type: 'string', format: 'email' } },
+				}),
+				responses: { 200: messageResponse('Activation email resent'), ...errorResponses },
+			},
+		},
 		'/api/auth/refresh-token': {
 			post: {
 				tags: ['Authentication'],
