@@ -69,6 +69,13 @@ const config = {
 		refreshTokenExpire: process.env.REFRESH_TOKEN_EXPIRE || '7d',
 		passwordResetExpireMinutes:
 			parseInt(process.env.PASSWORD_RESET_EXPIRE_MINUTES) || 15,
+		// Long compared to the password-reset window on purpose -- an
+		// activation link isn't a security-sensitive credential the way a
+		// password reset is, and an inbox can easily go unchecked for a day
+		// or two. A stale link is recoverable either way, via the resend
+		// flow (issue #365).
+		activationLinkExpireHours:
+			parseInt(process.env.ACTIVATION_LINK_EXPIRE_HOURS) || 24,
 	},
 
 	email: {

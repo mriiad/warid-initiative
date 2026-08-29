@@ -119,18 +119,28 @@ describe('POST /api/auth/signup', () => {
 });
 
 describe('GET /api/auth/activation/:confirmationCode', () => {
-	it('returns 404 for an unknown confirmation code', async () => {
+	it('rejects an unknown, already-used, or expired confirmation code', async () => {
+		// The mocked model can't evaluate the real query's expiry filter, so
+		// this covers all three cases the same way a real "no match" would:
+		// findOne simply returns nothing.
 		User.findOne.mockReturnValue(resolveTo(null));
 		const res = await request(app).get('/api/auth/activation/bogus-code');
-		expect(res.status).toBe(404);
+		expect(res.status).toBe(400);
 	});
 
-	it('activates the account for a known confirmation code', async () => {
-		const fakeUser = { isActive: false, save: jest.fn().mockResolvedValue(true) };
+	it('activates the account for a valid confirmation code and clears it (one-time use)', async () => {
+		const fakeUser = {
+			isActive: false,
+			confirmationCode: 'good-code',
+			confirmationCodeExpires: new Date(Date.now() + 60 * 60 * 1000),
+			save: jest.fn().mockResolvedValue(true),
+		};
 		User.findOne.mockReturnValue(resolveTo(fakeUser));
 		const res = await request(app).get('/api/auth/activation/good-code');
 		expect(res.status).toBe(200);
 		expect(fakeUser.isActive).toBe(true);
+		expect(fakeUser.confirmationCode).toBeUndefined();
+		expect(fakeUser.confirmationCodeExpires).toBeUndefined();
 		expect(fakeUser.save).toHaveBeenCalled();
 	});
 });

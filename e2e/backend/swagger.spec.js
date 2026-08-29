@@ -10,7 +10,7 @@ describe('Swagger documentation', () => {
 		expect(response.status).toBe(200);
 		expect(response.body.openapi).toBe('3.0.3');
 		expect(response.body.info.title).toBe('Warid Initiative API');
-		expect(Object.keys(response.body.paths)).toHaveLength(38);
+		expect(Object.keys(response.body.paths)).toHaveLength(39);
 		const operationCount = Object.values(response.body.paths).reduce(
 			(total, path) =>
 				total +
@@ -19,7 +19,7 @@ describe('Swagger documentation', () => {
 				).length,
 			0
 		);
-		expect(operationCount).toBe(41);
+		expect(operationCount).toBe(42);
 		expect(response.body.components.securitySchemes.bearerAuth).toEqual(
 			expect.objectContaining({ type: 'http', scheme: 'bearer' })
 		);
