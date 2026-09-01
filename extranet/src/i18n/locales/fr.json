@@ -48,7 +48,6 @@
   "landing": {
     "heroTitle": "Association Warid pour le don de sang",
     "heroSubtitle": "Chaque goutte fait la différence. Rejoignez la communauté des donneurs dès aujourd'hui.",
-    "donorsLabel": "Donneurs",
     "eventsLabel": "Événements",
     "exploreEvents": "Explorer les événements",
     "aboutTitle": "Qui sommes-nous",
@@ -64,7 +63,7 @@
     "gallery": "Galerie photo",
     "partners": "Nos partenaires",
     "privacyPolicy": "Politique de confidentialité",
-    "copyright": "© 2024 WARID"
+    "copyright": "© {{year}} WARID"
   },
   "auth": {
     "signup": {
