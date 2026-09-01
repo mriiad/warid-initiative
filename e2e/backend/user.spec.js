@@ -165,6 +165,99 @@ describe('POST /api/searchUsers (admin only)', () => {
 		expect(res.status).toBe(200);
 		expect(res.body.users).toHaveLength(1);
 	});
+
+	// Search terms were interpolated into regexes raw. See issue #400.
+	describe('treats search terms as literal text, not as regex (issue #400)', () => {
+		// searchUsers answers 404 when nothing matches, so the profile lookup
+		// has to yield a hit for the flow to reach User.find and let us
+		// inspect the regex it built.
+		const mockAdminAndCapture = () => {
+			User.findById.mockImplementation((id) => resolveTo({ _id: id, isAdmin: true }));
+			const captured = {};
+			User.find.mockImplementation((q) => {
+				Object.assign(captured, q);
+				return {
+					populate: () => ({
+						select: () =>
+							Promise.resolve([
+								{ _id: 'u1', toObject: () => ({ _id: 'u1', username: 'bob' }) },
+							]),
+					}),
+				};
+			});
+			Profile.find.mockImplementation((q) => {
+				captured.profileQuery = q;
+				return { select: () => Promise.resolve([{ user: 'u1' }]) };
+			});
+			return captured;
+		};
+
+		it('does not 500 on an unbalanced bracket', async () => {
+			// `new RegExp('(')` throws SyntaxError before any query runs.
+			mockAdminAndCapture();
+			const res = await request(app)
+				.post('/api/searchUsers')
+				.set('Authorization', authHeader(ADMIN_ID))
+				.send({ username: '(' });
+			// Unescaped this threw SyntaxError before any query ran.
+			expect(res.status).not.toBe(500);
+		});
+
+		it('matches a plus-addressed email literally', async () => {
+			// Unescaped, '+' is a quantifier: searching "a+b@x.com" also
+			// matched "aaab@xYcom".
+			const captured = mockAdminAndCapture();
+			const res = await request(app)
+				.post('/api/searchUsers')
+				.set('Authorization', authHeader(ADMIN_ID))
+				.send({ email: 'a+b@x.com' });
+			expect(res.status).not.toBe(500);
+			expect(captured.email.$regex.test('aaab@xYcom')).toBe(false);
+			expect(captured.email.$regex.test('a+b@x.com')).toBe(true);
+		});
+
+		it('escapes every term, not just some of them', async () => {
+			// escapeRegex already existed but was applied to gender only.
+			const captured = mockAdminAndCapture();
+			await request(app)
+				.post('/api/searchUsers')
+				.set('Authorization', authHeader(ADMIN_ID))
+				.send({
+					username: 'a.b',
+					email: 'c+d',
+					firstname: 'e(f',
+					lastname: 'g|h',
+					phoneNumber: '+212',
+				});
+			expect(captured.username.$regex.source).toContain('a\\.b');
+			expect(captured.email.$regex.source).toContain('c\\+d');
+			expect(captured.profileQuery.firstname.$regex.source).toContain('e\\(f');
+			expect(captured.profileQuery.lastname.$regex.source).toContain('g\\|h');
+			// This one is evaluated by the MongoDB server, not by Node.
+			expect(captured.$expr.$regexMatch.regex).toBe('\\+212');
+		});
+
+		it('builds a regex that cannot backtrack catastrophically', async () => {
+			// Unescaped, '(a+)+$' took ~36s against a 30-char string and, being
+			// single-threaded, blocked every other request with it. Asserting
+			// the response is fast would prove nothing here -- the mocked
+			// query never runs the pattern -- so run the regex the controller
+			// actually built against an adversarial input and time that.
+			const captured = mockAdminAndCapture();
+			await request(app)
+				.post('/api/searchUsers')
+				.set('Authorization', authHeader(ADMIN_ID))
+				.send({ username: '(a+)+$' });
+
+			const built = captured.username.$regex;
+			const adversarial = 'a'.repeat(30) + '!';
+			const started = Date.now();
+			built.test(adversarial);
+			expect(Date.now() - started).toBeLessThan(1000);
+			// And it still means what the admin typed, literally.
+			expect(built.test('(a+)+$')).toBe(true);
+		});
+	});
 });
 
 describe('PATCH /api/users/:userId/admin (role assignment, issue #183)', () => {
