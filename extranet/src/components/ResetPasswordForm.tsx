@@ -9,6 +9,7 @@ import { authService } from '../services';
 import { authRedesignStyles } from '../styles/authRedesign';
 import { useErrorToast } from './shared/ErrorToastProvider';
 import PasswordField from './shared/PasswordField';
+import { PASSWORD_MIN_LENGTH } from '../data/constants';
 
 type FormData = {
 	password: string;
@@ -153,7 +154,17 @@ const ResetPasswordForm = () => {
 						<Controller
 							name='password'
 							control={control}
-							rules={{ required: t('auth.resetPassword.newPasswordRequired') }}
+							rules={{
+								required: t('auth.resetPassword.newPasswordRequired'),
+								// Same minimum the signup form has always applied. Without
+								// it this screen accepted a one-character password. The
+								// server enforces it too now -- this is just the earlier,
+								// friendlier half. See issue #395.
+								minLength: {
+									value: PASSWORD_MIN_LENGTH,
+									message: t('auth.signup.passwordMinLength'),
+								},
+							}}
 							render={({ field }) => (
 								<PasswordField
 									fullWidth

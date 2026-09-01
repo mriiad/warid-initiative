@@ -20,6 +20,7 @@ import GoogleButton from './shared/GoogleButton';
 import PasswordField from './shared/PasswordField';
 import PhoneNumberField from './shared/PhoneNumberField';
 import SnackbarComponent from './shared/SnackbarComponent';
+import { PASSWORD_MIN_LENGTH } from '../data/constants';
 
 const SignupForm = () => {
 	const { t } = useTranslation();
@@ -131,7 +132,7 @@ const SignupForm = () => {
 							rules={{
 								required: t('auth.signup.passwordRequired'),
 								minLength: {
-									value: 6,
+									value: PASSWORD_MIN_LENGTH,
 									message: t('auth.signup.passwordMinLength'),
 								},
 							}}

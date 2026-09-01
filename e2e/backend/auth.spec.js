@@ -310,6 +310,48 @@ describe('Password reset flow', () => {
 			.send({ password: 'newpassword123' });
 		expect(res.status).toBe(200);
 	});
+
+	// The policy used to be enforced only in the signup chain, so these
+	// flows hashed whatever arrived. bcrypt hashes '' happily and the hash
+	// compares true against '', so an account reset this way logged in with
+	// no password at all. See issue #395.
+	it('reset-password refuses an empty password and writes nothing', async () => {
+		const save = jest.fn().mockResolvedValue(true);
+		User.findOne.mockReturnValue(
+			resolveTo({ email: 'known@example.com', save })
+		);
+		const res = await request(app)
+			.post('/api/auth/reset-password/good-token')
+			.send({ password: '' });
+		expect(res.status).toBe(400);
+		// The point isn't only the status: no password may have been stored.
+		expect(save).not.toHaveBeenCalled();
+	});
+
+	it('reset-password refuses a password shorter than the minimum', async () => {
+		const save = jest.fn().mockResolvedValue(true);
+		User.findOne.mockReturnValue(
+			resolveTo({ email: 'known@example.com', save })
+		);
+		const res = await request(app)
+			.post('/api/auth/reset-password/good-token')
+			.send({ password: 'ab' });
+		expect(res.status).toBe(400);
+		expect(res.body.message).toMatch(/at least/i);
+		expect(save).not.toHaveBeenCalled();
+	});
+
+	it('reset-password refuses a password missing entirely', async () => {
+		const save = jest.fn().mockResolvedValue(true);
+		User.findOne.mockReturnValue(
+			resolveTo({ email: 'known@example.com', save })
+		);
+		const res = await request(app)
+			.post('/api/auth/reset-password/good-token')
+			.send({});
+		expect(res.status).toBe(400);
+		expect(save).not.toHaveBeenCalled();
+	});
 });
 
 describe('PATCH /api/auth/update-password', () => {
@@ -351,6 +393,35 @@ describe('PATCH /api/auth/update-password', () => {
 			.send({ currentPassword: 'correct', newPassword: 'newpassword123' });
 		expect(res.status).toBe(200);
 		expect(save).toHaveBeenCalled();
+	});
+
+	it('refuses an empty new password even with the right current password', async () => {
+		const bcrypt = require('bcrypt');
+		const compare = jest.spyOn(bcrypt, 'compare').mockResolvedValue(true);
+		const save = jest.fn().mockResolvedValue(true);
+		User.findById.mockReturnValue(resolveTo({ password: 'hashed', save }));
+		const res = await request(app)
+			.patch('/api/auth/update-password')
+			.set('Authorization', authHeader('user-1'))
+			.send({ currentPassword: 'correct', newPassword: '' });
+		expect(res.status).toBe(400);
+		expect(save).not.toHaveBeenCalled();
+		compare.mockRestore();
+	});
+
+	it('refuses a new password shorter than the minimum', async () => {
+		const bcrypt = require('bcrypt');
+		const compare = jest.spyOn(bcrypt, 'compare').mockResolvedValue(true);
+		const save = jest.fn().mockResolvedValue(true);
+		User.findById.mockReturnValue(resolveTo({ password: 'hashed', save }));
+		const res = await request(app)
+			.patch('/api/auth/update-password')
+			.set('Authorization', authHeader('user-1'))
+			.send({ currentPassword: 'correct', newPassword: 'ab' });
+		expect(res.status).toBe(400);
+		expect(res.body.message).toMatch(/at least/i);
+		expect(save).not.toHaveBeenCalled();
+		compare.mockRestore();
 	});
 });
 

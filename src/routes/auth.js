@@ -15,6 +15,7 @@ const {
 } = require('../controllers/auth');
 const User = require('../models/user');
 const { isAuth } = require('../middleware/token-check');
+const { VALIDATION } = require('../utils/constants');
 const {
 	authLimiter,
 	mailLimiter,
@@ -24,6 +25,25 @@ const {
  * Could contain news & other data from different resources (Event)
  */
 const authRouter = express.Router();
+
+// The one place the password policy lives. It used to be enforced only in
+// the signup chain below (a hardcoded `min: 5`), while resetPassword and
+// updatePassword hashed whatever arrived -- so a user could reduce their
+// password to a single character, or to '', through either of those flows.
+// bcrypt hashes '' happily and the hash compares true against '', so such
+// an account then logs in with no password at all. See issue #395.
+//
+// Trims like the signup chain always has, so a password set through reset
+// or change is stored the same way one set at signup would be.
+const PASSWORD_TOO_SHORT = `Password must be at least ${VALIDATION.PASSWORD_MIN_LENGTH} characters.`;
+
+const passwordRule = (field) =>
+	body(field)
+		.isString()
+		.withMessage(PASSWORD_TOO_SHORT)
+		.trim()
+		.isLength({ min: VALIDATION.PASSWORD_MIN_LENGTH })
+		.withMessage(PASSWORD_TOO_SHORT);
 
 // Creates a new User -- POST, not PUT: the client isn't naming the resource's
 // final URI (which PUT's semantics require), the server is.
@@ -42,7 +62,7 @@ authRouter.post(
 				});
 			})
 			.normalizeEmail(),
-		body('password').trim().isLength({ min: 5 }),
+		passwordRule('password'),
 		body('phoneNumber')
 			.trim()
 			.matches(/^\+[1-9]\d{6,14}$/)
@@ -76,11 +96,21 @@ authRouter.post('/api/auth/refresh-token', authLimiter, refreshToken);
 // Sends mail on every accepted request.
 authRouter.post('/api/auth/request-reset', mailLimiter, requestPasswordReset);
 
-authRouter.post('/api/auth/reset-password/:token', authLimiter, resetPassword);
+authRouter.post(
+	'/api/auth/reset-password/:token',
+	authLimiter,
+	passwordRule('password'),
+	resetPassword
+);
 
 authRouter.get('/api/auth/check-reset-token/:token', checkResetTokenValidity);
 
-authRouter.patch('/api/auth/update-password', isAuth, updatePassword);
+authRouter.patch(
+	'/api/auth/update-password',
+	isAuth,
+	passwordRule('newPassword'),
+	updatePassword
+);
 
 
 
