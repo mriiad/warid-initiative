@@ -54,14 +54,20 @@ authRouter.post(
 		body('email')
 			.isEmail()
 			.withMessage('Please enter a valid email.')
-			.custom((value, { req }) => {
+			// normalizeEmail runs before the uniqueness check, not after it.
+			// The other way round, the check queried the raw input while a
+			// different, normalized value was what got persisted -- so
+			// 'Foo.Bar@Example.COM' sailed past the friendly "already exists"
+			// message when 'foo.bar@example.com' was taken, and was stopped
+			// only by the unique index as a generic conflict. See issue #396.
+			.normalizeEmail()
+			.custom((value) => {
 				return User.findOne({ email: value }).then((userDoc) => {
 					if (userDoc) {
 						return Promise.reject('E-Mail address already exists!');
 					}
 				});
-			})
-			.normalizeEmail(),
+			}),
 		passwordRule('password'),
 		body('phoneNumber')
 			.trim()
