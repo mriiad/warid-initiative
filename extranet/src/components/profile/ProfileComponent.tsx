@@ -29,15 +29,19 @@ import PasswordField from '../shared/PasswordField';
 import PhoneNumberField from '../shared/PhoneNumberField';
 import RedesignBottomNav from '../shared/RedesignBottomNav';
 import SnackbarComponent from '../shared/SnackbarComponent';
+import Ltr from '../shared/Ltr';
 
-const profileFields: { field: keyof UserFormData; labelKey: string }[] = [
+// `ltr` marks the values that are LTR-directional data rather than prose:
+// under the app's RTL direction a trailing +/- would otherwise be moved to
+// the wrong visual side ("O+" as "+O", "+212..." as "212...+"). See #384.
+const profileFields: { field: keyof UserFormData; labelKey: string; ltr?: boolean }[] = [
 	{ field: 'firstname', labelKey: 'profile.firstName' },
 	{ field: 'lastname', labelKey: 'profile.lastName' },
 	{ field: 'birthdate', labelKey: 'profile.birthdate' },
-	{ field: 'bloodGroup', labelKey: 'profile.bloodGroup' },
+	{ field: 'bloodGroup', labelKey: 'profile.bloodGroup', ltr: true },
 	{ field: 'city', labelKey: 'profile.city' },
-	{ field: 'phoneNumber', labelKey: 'profile.phoneNumber' },
-	{ field: 'email', labelKey: 'profile.email' },
+	{ field: 'phoneNumber', labelKey: 'profile.phoneNumber', ltr: true },
+	{ field: 'email', labelKey: 'profile.email', ltr: true },
 ];
 
 const ProfileComponent = () => {
@@ -330,11 +334,13 @@ const ProfileComponent = () => {
 							</div>
 						) : (
 							<div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-								{profileFields.map(({ field, labelKey }) => (
+								{profileFields.map(({ field, labelKey, ltr }) => (
 									<div className={infoCard} key={field}>
 										<div>
 											<Typography className={infoCardLabel}>{t(labelKey)}</Typography>
-											<Typography className={infoCardValue}>{renderFieldValue(field)}</Typography>
+											<Typography className={infoCardValue}>
+												{ltr ? <Ltr>{renderFieldValue(field)}</Ltr> : renderFieldValue(field)}
+											</Typography>
 										</div>
 									</div>
 								))}

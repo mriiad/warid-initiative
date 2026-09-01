@@ -23,6 +23,7 @@ import { cities } from '../../utils/utils';
 import PhoneNumberField from '../shared/PhoneNumberField';
 import RedesignBottomNav from '../shared/RedesignBottomNav';
 import ResponseAnimation from '../shared/ResponseAnimation';
+import Ltr from '../shared/Ltr';
 
 // Form data interface for the form (with string phoneNumber for validation)
 interface EmergencyFormData {
@@ -159,7 +160,7 @@ const EmergencyForm = () => {
 											</MenuItem>
 											{BLOOD_GROUP_OPTIONS.map((option) => (
 												<MenuItem key={option.value} value={option.value}>
-													{option.label}
+													<Ltr>{option.label}</Ltr>
 												</MenuItem>
 											))}
 										</Select>

@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Emergency } from '@/types';
 import { emergencyListRedesignStyles } from '../../styles/emergencyListRedesign';
+import Ltr from '../shared/Ltr';
 
 interface EmergencyCardProps {
 	emergency: Emergency;
@@ -45,7 +46,9 @@ const EmergencyCard = ({ emergency, onConfirm, isConfirming }: EmergencyCardProp
 	return (
 		<div className={card}>
 			<div className={cardIcon}>🚨</div>
-			<Typography className={cardBloodBadge}>{emergency.bloodGroup}</Typography>
+			<Typography className={cardBloodBadge}>
+				<Ltr>{emergency.bloodGroup}</Ltr>
+			</Typography>
 			<Typography className={cardDetails}>{emergency.details}</Typography>
 			<Typography className={cardCity}>{emergency.city}</Typography>
 

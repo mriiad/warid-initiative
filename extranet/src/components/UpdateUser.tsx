@@ -25,6 +25,7 @@ import { userDetailRedesignStyles } from '../styles/userDetailRedesign';
 import { cities } from '../utils/utils';
 import RedesignBottomNav from './shared/RedesignBottomNav';
 import SnackbarComponent from './shared/SnackbarComponent';
+import Ltr from './shared/Ltr';
 
 interface UpdateUserFormData {
 	firstname: string;
@@ -258,7 +259,7 @@ const UpdateUser = () => {
 										<Select {...field} label={t('users.update.bloodGroup')}>
 											{BLOOD_GROUP_OPTIONS.map((option) => (
 												<MenuItem key={option.value} value={option.value}>
-													{option.label}
+													<Ltr>{option.label}</Ltr>
 												</MenuItem>
 											))}
 										</Select>
