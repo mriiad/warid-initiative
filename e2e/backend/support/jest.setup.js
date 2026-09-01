@@ -1,9 +1,7 @@
-// Must match jwtHelper.js's TEST_SECRET. Both auth.js and token-check.js
-// read this same env var via src/utils/config.js, so tokens issued the way
-// auth.js issues them verify correctly through token-check.js.
-process.env.JWT_SECRET_KEY = 'test-jwt-secret-key-for-sandbox';
-process.env.SECRET_KEY = 'test-secret-key-for-sandbox';
-process.env.REFRESH_SECRET_KEY = 'test-refresh-secret-key-for-sandbox';
+// The auth secrets live in one shared file so this suite and the
+// mongodb-memory-server suite (jest.config.js) cannot drift apart. See
+// e2e/support/authEnv.js.
+require('../../support/authEnv');
 process.env.EMAIL_ENABLED = 'true';
 process.env.SMTP_USER = 'test@example.com';
 process.env.SMTP_PASS = 'test-password';
