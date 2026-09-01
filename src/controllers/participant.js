@@ -2,7 +2,6 @@ const Participant = require('../models/participant');
 const Event = require('../models/event');
 const { STATUS_CODE } = require('../utils/errors/httpStatusCode');
 const { checkDonationEligibility } = require('./donation');
-const { logger } = require('../utils/logger');
 
 exports.createParticipant = async (req, res, next) => {
   try {
@@ -35,18 +34,19 @@ exports.createParticipant = async (req, res, next) => {
       message: 'User successfully registered as participant.',
     });
   } catch (error) {
-    logger.error({ err: error }, 'Failed to create participant');
-    return res
-      .status(STATUS_CODE.INTERNAL_SERVER)
-      .json({ message: 'Server error' });
+    // Routed through the shared handler (issue #368) instead of a local,
+    // hand-built 500 -- a duplicate registration (Participant has a unique
+    // index on userId+eventId, guarding a double-click/race/stale cache)
+    // now gets a proper "already in use" message via
+    // translateMongooseError instead of a generic "Server error".
+    next(error);
   }
 };
-
 
 exports.checkUserParticipation = async (req, res, next) => {
   try {
     const { reference } = req.params;
-    const userId = req.userId; 
+    const userId = req.userId;
 
     const event = await Event.findOne({ reference });
     if (!event) {
@@ -65,9 +65,6 @@ exports.checkUserParticipation = async (req, res, next) => {
       message: participant ? "User has already participated" : "User has not participated yet"
     });
   } catch (err) {
-    logger.error({ err }, 'Failed to check participation');
-    return res
-      .status(STATUS_CODE.INTERNAL_SERVER)
-      .json({ message: 'Server error' });
+    next(err);
   }
 };

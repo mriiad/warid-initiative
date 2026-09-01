@@ -63,6 +63,33 @@ describe('POST /api/participate/:reference', () => {
 		expect(res.status).toBe(403);
 		expect(res.body.message).toMatch(/cannot donate yet/);
 	});
+
+	// Participant has a unique index on userId+eventId, guarding a
+	// double-click/race/stale cache. Before issue #368 this fell into the
+	// generic "Something went wrong" 500; now the shared error-handler
+	// translates it into a proper 409 naming the conflict.
+	it('returns a friendly 409 instead of a generic 500 on a duplicate registration', async () => {
+		Event.findOne.mockReturnValue(resolveTo({ _id: 'evt-1', reference: 'WEVENT1' }));
+		User.findById.mockReturnValue(resolveTo({ _id: USER_ID, gender: 'male' }));
+		Donation.find.mockReturnValue(resolveTo([]));
+		Profile.findOne.mockReturnValue(resolveTo({ birthdate: adultBirthdate() }));
+		Participant.mockImplementationOnce(function (data) {
+			Object.assign(this, data);
+			this.save = jest.fn().mockRejectedValue(
+				Object.assign(new Error('E11000 duplicate key error collection: warid.participants index: userId_1_eventId_1 dup key'), {
+					code: 11000,
+					keyPattern: { userId: 1, eventId: 1 },
+				})
+			);
+			return this;
+		});
+		const res = await request(app)
+			.post('/api/participate/WEVENT1')
+			.set('Authorization', authHeader(USER_ID));
+		expect(res.status).toBe(409);
+		expect(res.body.message).not.toBe('Something went wrong. Please try again later.');
+		expect(res.body.message).not.toContain('E11000');
+	});
 });
 
 describe('GET /api/check/:reference', () => {
