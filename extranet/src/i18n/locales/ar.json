@@ -48,7 +48,6 @@
   "landing": {
     "heroTitle": "جمعية وريد للتبرع بالدم",
     "heroSubtitle": "كل قطرة تصنع فرقًا. انضم إلى مجتمع المتبرعين اليوم.",
-    "donorsLabel": "متبرع",
     "eventsLabel": "فعالية",
     "exploreEvents": "استكشف الفعاليات",
     "aboutTitle": "من نحن",
@@ -64,7 +63,7 @@
     "gallery": "معرض الصور",
     "partners": "شركاؤنا",
     "privacyPolicy": "سياسة الخصوصية",
-    "copyright": "© 2024 WARID"
+    "copyright": "© {{year}} WARID"
   },
   "auth": {
     "signup": {

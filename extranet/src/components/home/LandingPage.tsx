@@ -2,14 +2,13 @@ import InstagramIcon from '@mui/icons-material/Instagram';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import WaterDropIcon from '@mui/icons-material/WaterDrop';
 import { IconButton, Typography } from '@mui/material';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
 import { Event } from '@/types';
 import { useEvents } from '../../hooks';
 import { landingRedesignStyles } from '../../styles/landingRedesign';
-import API_CONFIG from '../../utils/apiConfig';
 import RedesignBottomNav from '../shared/RedesignBottomNav';
 import EventOverviewCard from '../shared/EventOverviewCard';
 import BloodDropsAnimation from './BloodDropsAnimation';
@@ -49,49 +48,6 @@ const LandingPage = () => {
 		socialButton,
 	} = landingRedesignStyles();
 
-	const numbersRef = useRef(null);
-	const [animatedDonorCount, setAnimatedDonorCount] = useState(0);
-	const [startAnimation, setStartAnimation] = useState(false);
-
-	useEffect(() => {
-		const observer = new IntersectionObserver(
-			(entries) => {
-				if (entries[0].isIntersecting) {
-					setStartAnimation(true);
-				}
-			},
-			{ threshold: 0.5 }
-		);
-
-		if (numbersRef.current) {
-			observer.observe(numbersRef.current);
-		}
-
-		return () => {
-			observer.disconnect();
-		};
-	}, []);
-
-	useEffect(() => {
-		if (startAnimation) {
-			const targetNumber = 84750;
-			const duration = API_CONFIG.ui.snackbarDuration;
-			const start = performance.now();
-
-			const animateCount = (now) => {
-				const elapsedTime = now - start;
-				const progress = Math.min(elapsedTime / duration, 1);
-				setAnimatedDonorCount(Math.floor(progress * targetNumber));
-
-				if (progress < 1) {
-					requestAnimationFrame(animateCount);
-				}
-			};
-
-			requestAnimationFrame(animateCount);
-		}
-	}, [startAnimation]);
-
 	const { data: eventsResponse } = useEvents(1);
 
 	const nextEvent: Event | undefined = useMemo(() => {
@@ -127,13 +83,15 @@ const LandingPage = () => {
 			</div>
 
 			<div className={content}>
-				<div className={statStrip} ref={numbersRef}>
-					<div className={statPill}>
-						<Typography className={statNumber}>
-							{animatedDonorCount.toLocaleString()}
-						</Typography>
-						<Typography className={statLabel}>{t('landing.donorsLabel')}</Typography>
-					</div>
+				{/*
+					Only stats backed by a real response belong here. The donor
+					count next to this one was a hardcoded 84,750 animated up
+					from zero, sitting beside this genuinely API-driven figure
+					with nothing to tell a visitor which was which. Restoring it
+					needs a public counts endpoint -- /api/admin/stats is
+					admin-gated -- rather than another constant. See issue #385.
+				*/}
+				<div className={statStrip}>
 					<div className={statPill}>
 						<Typography className={statNumber}>{totalEvents ?? '—'}</Typography>
 						<Typography className={statLabel}>{t('landing.eventsLabel')}</Typography>
@@ -216,7 +174,9 @@ const LandingPage = () => {
 							{t('landing.privacyPolicy')}
 						</a>
 					</div>
-					<Typography className={footerCopyright}>{t('landing.copyright')}</Typography>
+					<Typography className={footerCopyright}>
+						{t('landing.copyright', { year: new Date().getFullYear() })}
+					</Typography>
 				</div>
 			</div>
 

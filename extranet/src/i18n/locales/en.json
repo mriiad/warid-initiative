@@ -48,7 +48,6 @@
   "landing": {
     "heroTitle": "Warid Blood Donation Association",
     "heroSubtitle": "Every drop makes a difference. Join the donor community today.",
-    "donorsLabel": "Donors",
     "eventsLabel": "Events",
     "exploreEvents": "Explore events",
     "aboutTitle": "About us",
@@ -64,7 +63,7 @@
     "gallery": "Photo Gallery",
     "partners": "Our Partners",
     "privacyPolicy": "Privacy Policy",
-    "copyright": "© 2024 WARID"
+    "copyright": "© {{year}} WARID"
   },
   "auth": {
     "signup": {
