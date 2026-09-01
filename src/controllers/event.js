@@ -92,13 +92,6 @@ exports.createEvent = async (req) => {
 			errors.array().map((e) => e.param)
 		);
 	}
-	if (req.fileValidationError) {
-		throw new ApiError(
-			'File too large. Please upload a file smaller than 5MB.',
-			STATUS_CODE.PAYLOAD_TOO_LARGE
-		);
-	}
-
 	const { title, subtitle, location, date, mapLink, description, isGeneric } =
 		req.body;
 	let eventImage = null;

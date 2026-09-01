@@ -119,6 +119,36 @@ describe('POST /api/event (admin only)', () => {
 		expect(res.status).toBe(201);
 		expect(res.body.event.reference).toBe('WEVENT20990101');
 	});
+
+	// Both of these used to bypass createEventHandler entirely: multer's own
+	// error handling runs before the route handler, so a raw error reached
+	// the shared error handler unconverted and produced a generic
+	// "Something went wrong" instead of a message about the file. See #370.
+	it('rejects a non-image upload with a friendly message, not a generic 500', async () => {
+		mockAdmin();
+		const res = await request(app)
+			.post('/api/event')
+			.set('Authorization', authHeader(ADMIN_ID))
+			.field('title', 'Drive')
+			.field('location', 'Casablanca')
+			.field('date', '2099-01-01')
+			.attach('image', Buffer.from('not an image'), { filename: 'notes.txt', contentType: 'text/plain' });
+		expect(res.status).toBe(400);
+		expect(res.body.message).toMatch(/only image uploads are allowed/i);
+	});
+
+	it('rejects a file over 5MB with a friendly message, not a generic 500', async () => {
+		mockAdmin();
+		const res = await request(app)
+			.post('/api/event')
+			.set('Authorization', authHeader(ADMIN_ID))
+			.field('title', 'Drive')
+			.field('location', 'Casablanca')
+			.field('date', '2099-01-01')
+			.attach('image', Buffer.alloc(6 * 1024 * 1024), { filename: 'big.png', contentType: 'image/png' });
+		expect(res.status).toBe(412);
+		expect(res.body.message).toMatch(/smaller than 5MB/i);
+	});
 });
 
 describe('PUT /api/event/:reference (admin only, BUG regression for issue #205/#202)', () => {
