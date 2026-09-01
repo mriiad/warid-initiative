@@ -30,6 +30,7 @@ import PhoneNumberField from '../shared/PhoneNumberField';
 import RedesignBottomNav from '../shared/RedesignBottomNav';
 import SnackbarComponent from '../shared/SnackbarComponent';
 import Ltr from '../shared/Ltr';
+import { PASSWORD_MIN_LENGTH } from '../../data/constants';
 
 // `ltr` marks the values that are LTR-directional data rather than prose:
 // under the app's RTL direction a trailing +/- would otherwise be moved to
@@ -175,6 +176,13 @@ const ProfileComponent = () => {
 	const handlePasswordSave = () => {
 		if (!currentPassword || !newPassword || !confirmPassword) {
 			setMessage(t('profile.passwordFieldsRequired'));
+			return;
+		}
+		// This screen applied no minimum at all, so it accepted a
+		// one-character password. The server enforces it too now -- this is
+		// the earlier, friendlier half. See issue #395.
+		if (newPassword.length < PASSWORD_MIN_LENGTH) {
+			setMessage(t('auth.signup.passwordMinLength'));
 			return;
 		}
 		if (newPassword !== confirmPassword) {
