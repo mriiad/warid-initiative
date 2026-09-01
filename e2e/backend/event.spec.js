@@ -8,6 +8,8 @@ jest.mock('../../src/models/participant', () => require('./support/mongooseMock'
 
 const User = require('../../src/models/user');
 const Event = require('../../src/models/event');
+const Donation = require('../../src/models/donation');
+const Participant = require('../../src/models/participant');
 const { buildApp } = require('./support/testApp');
 const { authHeader } = require('./support/jwtHelper');
 
@@ -185,6 +187,38 @@ describe('DELETE /api/event (admin only)', () => {
 			.set('Authorization', authHeader(ADMIN_ID))
 			.send({ reference: 'DOES-NOT-EXIST' });
 		expect(res.status).toBe(404);
+	});
+
+	// Donations were reassigned to the generic event so donation history/
+	// eligibility stays intact, but nothing cleaned up Participant records
+	// for the deleted event -- left dangling, referencing an eventId that no
+	// longer exists. See #375.
+	it('also deletes Participant records for the deleted event (no donations to reassign)', async () => {
+		mockAdmin();
+		Event.findOneAndDelete.mockReturnValue(resolveTo({ _id: 'evt-1', reference: 'WEVENT1' }));
+		Donation.find.mockReturnValue(resolveTo([]));
+		Participant.deleteMany.mockReturnValue(resolveTo({ deletedCount: 2 }));
+		const res = await request(app)
+			.delete('/api/event')
+			.set('Authorization', authHeader(ADMIN_ID))
+			.send({ reference: 'WEVENT1' });
+		expect(res.status).toBe(200);
+		expect(Participant.deleteMany).toHaveBeenCalledWith({ eventId: 'evt-1' });
+	});
+
+	it('also deletes Participant records for the deleted event (donations reassigned)', async () => {
+		mockAdmin();
+		Event.findOneAndDelete.mockReturnValue(resolveTo({ _id: 'evt-1', reference: 'WEVENT1' }));
+		Donation.find.mockReturnValue(resolveTo([{ _id: 'don-1' }]));
+		Event.findOne.mockReturnValue(resolveTo({ _id: 'generic-evt', isGeneric: true }));
+		Donation.findByIdAndUpdate.mockReturnValue(resolveTo({}));
+		Participant.deleteMany.mockReturnValue(resolveTo({ deletedCount: 1 }));
+		const res = await request(app)
+			.delete('/api/event')
+			.set('Authorization', authHeader(ADMIN_ID))
+			.send({ reference: 'WEVENT1' });
+		expect(res.status).toBe(200);
+		expect(Participant.deleteMany).toHaveBeenCalledWith({ eventId: 'evt-1' });
 	});
 });
 
