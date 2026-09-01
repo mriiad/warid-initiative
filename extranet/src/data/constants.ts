@@ -39,3 +39,9 @@ export enum AdminRole {
 	Emergency = 'emergency',
 	Event = 'event',
 }
+
+// Mirrors VALIDATION.PASSWORD_MIN_LENGTH in the backend's
+// src/utils/constants.js. The signup form used to hardcode 6 while the
+// server accepted 5, and the reset/change-password screens applied no
+// minimum at all -- so one value, referenced everywhere. See issue #395.
+export const PASSWORD_MIN_LENGTH = 6;

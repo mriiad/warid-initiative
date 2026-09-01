@@ -383,6 +383,13 @@ exports.requestPasswordReset = async (req, res, next) => {
 };
 
 exports.resetPassword = (req, res, next) => {
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		return next(
+			new ApiError(errors.array()[0].msg, STATUS_CODE.BAD_REQUEST, ['password'])
+		);
+	}
+
 	const resetToken = req.params.token;
 	const newPassword = req.body.password;
 	let user;
@@ -464,6 +471,13 @@ exports.checkResetTokenValidity = (req, res, next) => {
 
 exports.updatePassword = async (req, res, next) => {
 	try {
+		const errors = validationResult(req);
+		if (!errors.isEmpty()) {
+			throw new ApiError(errors.array()[0].msg, STATUS_CODE.BAD_REQUEST, [
+				'newPassword',
+			]);
+		}
+
 		const userId = req.userId;
 		const { currentPassword, newPassword } = req.body;
 

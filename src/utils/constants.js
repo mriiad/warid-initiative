@@ -75,7 +75,10 @@ const constants = {
 
 	// Validation Rules
 	VALIDATION: {
-		PASSWORD_MIN_LENGTH: 5,
+		// Matches the rule the signup form has always shown users
+		// ('Password must be at least 6 characters'); the server used to
+		// accept 5, so the UI and the API disagreed. See issue #395.
+		PASSWORD_MIN_LENGTH: 6,
 		PHONE_MIN_LENGTH: 10,
 		PASSWORD_RESET_TOKEN_BYTES: 32,
 		ACTIVATION_TOKEN_BYTES: 32,
