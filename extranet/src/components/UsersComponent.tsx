@@ -14,6 +14,7 @@ import { usersService } from '../services';
 import { usersListRedesignStyles } from '../styles/usersListRedesign';
 import NoUserFound from './NoUserFound';
 import UserFilter from './UserFilter';
+import Ltr from './shared/Ltr';
 
 interface Filters {
 	username?: string;
@@ -294,9 +295,11 @@ const UsersComponent: React.FC = () => {
 											{fullName || user.username}
 										</Typography>
 										<Typography className={userMeta}>
-											{[user.phoneNumber, user.profile?.bloodGroup]
-												.filter(Boolean)
-												.join('   ')}
+											<Ltr>
+												{[user.phoneNumber, user.profile?.bloodGroup]
+													.filter(Boolean)
+													.join('   ')}
+											</Ltr>
 										</Typography>
 									</div>
 									{user.isAdmin &&

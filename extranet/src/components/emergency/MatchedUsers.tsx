@@ -12,6 +12,8 @@ import API_CONFIG from '../../utils/apiConfig';
 import Pagination from '../shared/Pagination';
 import RedesignBottomNav from '../shared/RedesignBottomNav';
 import SnackbarComponent from '../shared/SnackbarComponent';
+import Ltr from '../shared/Ltr';
+import { isolateLtr } from '../../utils/bidi';
 
 const MatchedUsers = () => {
 	const { t } = useTranslation();
@@ -136,7 +138,9 @@ const MatchedUsers = () => {
 					<Typography className={topBarTitle}>{t('emergency.matchedUsers.pageTitle')}</Typography>
 					{requestedBloodGroup && (
 						<Typography className={userBloodGroup} style={{ textAlign: 'center' }}>
-							{t('emergency.matchedUsers.requestedFor', { bloodGroup: requestedBloodGroup })}
+							{t('emergency.matchedUsers.requestedFor', {
+									bloodGroup: isolateLtr(requestedBloodGroup),
+								})}
 						</Typography>
 					)}
 				</div>
@@ -173,7 +177,9 @@ const MatchedUsers = () => {
 									<div className={userInfo}>
 										<Typography className={userName}>{fullName || user.phoneNumber}</Typography>
 										{user.bloodGroup && (
-											<Typography className={userBloodGroup}>{user.bloodGroup}</Typography>
+											<Typography className={userBloodGroup}>
+											<Ltr>{user.bloodGroup}</Ltr>
+										</Typography>
 										)}
 									</div>
 									<Checkbox

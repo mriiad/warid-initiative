@@ -17,6 +17,7 @@ import { useTranslation } from 'react-i18next';
 import { BLOOD_GROUP_OPTIONS } from '../data/constants';
 import { authRedesignStyles } from '../styles/authRedesign';
 import { userFilterRedesignStyles } from '../styles/userFilterRedesign';
+import Ltr from './shared/Ltr';
 
 const defaultFilters = {
 	username: '',
@@ -167,7 +168,7 @@ const UserFilter = ({ open, onClose, onApply }) => {
 								>
 									{BLOOD_GROUP_OPTIONS.map((option) => (
 										<MenuItem key={option.value} value={option.value}>
-											{option.label}
+											<Ltr>{option.label}</Ltr>
 										</MenuItem>
 									))}
 								</TextField>

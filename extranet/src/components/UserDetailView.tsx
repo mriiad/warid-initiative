@@ -22,6 +22,7 @@ import NotFoundPage from './NotFoundPage';
 import RedesignBottomNav from './shared/RedesignBottomNav';
 import RolePickerDialog from './shared/RolePickerDialog';
 import SnackbarComponent from './shared/SnackbarComponent';
+import Ltr from './shared/Ltr';
 
 const ALL_ADMIN_ROLES = [AdminRole.Principal, AdminRole.Emergency, AdminRole.Event];
 
@@ -189,7 +190,9 @@ const UserDetailView = () => {
 					<div className={infoCard}>
 						<div>
 							<Typography className={infoCardLabel}>{t('users.detail.bloodType')}</Typography>
-							<Typography className={infoCardValue}>{user.bloodGroup || '—'}</Typography>
+							<Typography className={infoCardValue}>
+								{user.bloodGroup ? <Ltr>{user.bloodGroup}</Ltr> : '—'}
+							</Typography>
 						</div>
 						<div className={infoCardAction}>
 							<BloodtypeIcon fontSize='small' />
@@ -199,7 +202,9 @@ const UserDetailView = () => {
 					<div className={infoCard}>
 						<div>
 							<Typography className={infoCardLabel}>{t('users.detail.phoneNumber')}</Typography>
-							<Typography className={infoCardValue}>{user.phoneNumber || '—'}</Typography>
+							<Typography className={infoCardValue}>
+								{user.phoneNumber ? <Ltr>{user.phoneNumber}</Ltr> : '—'}
+							</Typography>
 						</div>
 						{user.phoneNumber && (
 							<IconButton

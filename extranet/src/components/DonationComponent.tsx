@@ -32,6 +32,7 @@ import { formatDate, formatDateForDisplay } from '../utils/utils';
 import RedesignBottomNav from './shared/RedesignBottomNav';
 import ResponseAnimation from './shared/ResponseAnimation';
 import SnackbarComponent from './shared/SnackbarComponent';
+import Ltr from './shared/Ltr';
 
 const DonationComponent = () => {
 	const { t } = useTranslation();
@@ -256,7 +257,7 @@ const DonationComponent = () => {
 											</MenuItem>
 											{BLOOD_GROUP_OPTIONS.map((option) => (
 												<MenuItem key={option.value} value={option.value}>
-													{option.label}
+													<Ltr>{option.label}</Ltr>
 												</MenuItem>
 											))}
 										</Select>

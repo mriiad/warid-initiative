@@ -11,6 +11,7 @@ import { cities, formatDate } from '../utils/utils';
 import AuthHeader from './shared/AuthHeader';
 import RedesignBottomNav from './shared/RedesignBottomNav';
 import SnackbarComponent from './shared/SnackbarComponent';
+import Ltr from './shared/Ltr';
 
 const fieldTranslationKeys: { [K in keyof ProfileFormData]: string } = {
 	firstname: 'auth.completeProfile.firstName',
@@ -167,7 +168,7 @@ const UserProfileForm = () => {
 										</MenuItem>
 										{BLOOD_GROUP_OPTIONS.map((option) => (
 											<MenuItem key={option.value} value={option.value}>
-												{option.label}
+												<Ltr>{option.label}</Ltr>
 											</MenuItem>
 										))}
 									</Select>
