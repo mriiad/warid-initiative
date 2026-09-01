@@ -91,3 +91,6 @@ temp/
 
 # Local agent tooling (git worktrees for isolated background tasks)
 /.claude/
+
+# User-uploaded event images (multer diskStorage destination)
+/uploads/

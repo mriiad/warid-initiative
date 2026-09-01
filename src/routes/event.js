@@ -2,6 +2,7 @@ const express = require('express');
 const { body } = require('express-validator');
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
 
 const {
 	getEvents,
@@ -14,11 +15,20 @@ const {
 } = require('../controllers/event');
 const { isAuth } = require('../middleware/token-check');
 const requireAdminRole = require('../utils/requireAdminRole');
+const ApiError = require('../utils/errors/ApiError');
+const { STATUS_CODE } = require('../utils/errors/httpStatusCode');
 
 const eventRouter = express.Router();
 
 // Event Admin or Principal Admin (see issue #183).
 const requireEventAdmin = requireAdminRole(['event']);
+
+// diskStorage never creates its destination folder -- on a fresh checkout
+// (nothing else in the repo/Dockerfile creates 'uploads/' either) any image
+// upload fails with a raw ENOENT before multer's own limit/fileFilter
+// errors even get a chance to fire, which is how the oversized-file path
+// below went untested. See #370.
+fs.mkdirSync('uploads', { recursive: true });
 
 const storage = multer.diskStorage({
 	destination: (req, file, cb) => cb(null, 'uploads/'),
@@ -36,6 +46,29 @@ const upload = multer({
 		cb(new Error('Only image uploads are allowed'));
 	},
 });
+
+// multer's own error handling runs before createEventHandler/updateEventHandler
+// ever see the request -- an oversized file (LIMIT_FILE_SIZE) or a rejected
+// mimetype (the fileFilter's plain Error above) both reach the shared error
+// handler as a raw, non-ApiError error, producing a generic "Something went
+// wrong" instead of a message describing what was actually wrong with the
+// file. Translate both cases here, right after the upload runs. See #370.
+const handleImageUpload = (req, res, next) => {
+	upload.single('image')(req, res, (err) => {
+		if (!err) return next();
+		if (err instanceof multer.MulterError && err.code === 'LIMIT_FILE_SIZE') {
+			return next(
+				new ApiError(
+					'File too large. Please upload a file smaller than 5MB.',
+					STATUS_CODE.PAYLOAD_TOO_LARGE
+				)
+			);
+		}
+		return next(
+			new ApiError('Only image uploads are allowed.', STATUS_CODE.BAD_REQUEST)
+		);
+	});
+};
 
 const createEventValidators = [
 	body('title').isString().trim().notEmpty(),
@@ -63,7 +96,7 @@ eventRouter.post(
 	'/api/event',
 	isAuth,
 	requireEventAdmin,
-	upload.single('image'),
+	handleImageUpload,
 	createEventValidators,
 	async (req, res, next) => {
 		try {
@@ -77,7 +110,7 @@ eventRouter.put(
 	'/api/event/:reference',
 	isAuth,
 	requireEventAdmin,
-	upload.single('image'),
+	handleImageUpload,
 	updateEventValidators,
 	async (req, res, next) => {
 		try {
