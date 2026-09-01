@@ -265,6 +265,48 @@ describe('GET /api/users/:userId/dashboard (regression test for issue #203)', ()
 		expect(res.status).toBe(200);
 		expect(res.body.stats.total).toBe(1);
 	});
+
+	// The :userId param used to be ignored entirely -- asking for someone
+	// else's dashboard silently returned your own. See issue #397.
+	it('refuses another user\'s dashboard instead of silently returning your own', async () => {
+		const OTHER_ID = '507f1f77bcf86cd799439022';
+		User.findById.mockReturnValue(resolveTo({ _id: OTHER_ID, gender: 'male' }));
+		Donation.find.mockReturnValue(resolveTo([]));
+		const res = await request(app)
+			.get(`/api/users/${OTHER_ID}/dashboard`)
+			.set('Authorization', authHeader(USER_ID));
+		expect(res.status).toBe(403);
+		// Crucially it must not have answered with the caller's own data.
+		expect(res.body.donations).toBeUndefined();
+		expect(res.body.stats).toBeUndefined();
+	});
+
+	it('reports a missing user with the key the frontend actually reads', async () => {
+		// Was `errorMessage`, which the shared error toast never looks at.
+		User.findById.mockReturnValue(resolveTo(null));
+		const res = await request(app)
+			.get(`/api/users/${USER_ID}/dashboard`)
+			.set('Authorization', authHeader(USER_ID));
+		expect(res.status).toBe(404);
+		expect(res.body.message).toBeDefined();
+		expect(res.body.errorMessage).toBeUndefined();
+	});
+
+	it('routes an unexpected failure through the shared error handler', async () => {
+		// Used to answer directly with { errorMessage: err.message }, handing
+		// the client raw driver text and logging nothing.
+		User.findById.mockReturnValue(resolveTo({ _id: USER_ID, gender: 'male' }));
+		Donation.find.mockImplementation(() => {
+			throw new Error('db down');
+		});
+		const res = await request(app)
+			.get(`/api/users/${USER_ID}/dashboard`)
+			.set('Authorization', authHeader(USER_ID));
+		expect(res.status).toBe(500);
+		expect(res.body.message).toBe(GENERIC_SERVER_ERROR);
+		expect(res.body.errorMessage).toBeUndefined();
+		expect(JSON.stringify(res.body)).not.toContain('db down');
+	});
 });
 
 describe('GET /api/users/profile/:userId (admin only)', () => {
