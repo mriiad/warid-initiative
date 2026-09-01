@@ -33,6 +33,16 @@ export const eventDetailRedesignStyles = makeStyles({
 			overflow: 'hidden',
 			textOverflow: 'ellipsis',
 			whiteSpace: 'nowrap',
+			// `text-overflow: ellipsis` trims at the end of the line *in the
+			// container's direction*, which under dir=rtl is the visual left.
+			// Event titles are Latin-script ("Collecte de sang - Casablanca"),
+			// so the clipped half was the beginning -- the part that tells one
+			// event from another -- and the bar read "...cte de sang -
+			// Casablanca". `plaintext` resolves the base direction from the
+			// text's own first strong character (as dir="auto" does), so a
+			// Latin title truncates at its end and an Arabic one still
+			// truncates at its own end. See issue #388.
+			unicodeBidi: 'plaintext',
 		},
 	},
 	content: {
