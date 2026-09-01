@@ -8,7 +8,12 @@ const Profile = require('../models/profile');
 const { calculateAge } = require('../utils/utils');
 const { checkDonationEligibility } = require('./donation');
 const { validationResult } = require('express-validator');
-const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+// Search terms are user input used to build regexes. Unescaped, a '+' in a
+// plus-addressed email silently matches the wrong records, an unbalanced
+// '(' throws before the query runs, and a crafted pattern can backtrack
+// catastrophically -- one search blocked this single-threaded server for 36
+// seconds in testing. Every term below goes through this. See issue #400.
+const escapeRegex = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const { ERROR_MESSAGES, MESSAGES } = require('../utils/constants');
 const { addDays, formatDate } = require('../utils/utils');
 
@@ -265,10 +270,10 @@ exports.searchUsers = async (req, res, next) => {
 		// Build base query for User
 		const query = {};
 		if (username) {
-			query.username = { $regex: new RegExp(username, 'i') };
+			query.username = { $regex: new RegExp(escapeRegex(username), 'i') };
 		}
 		if (email) {
-			query.email = { $regex: new RegExp(email, 'i') };
+			query.email = { $regex: new RegExp(escapeRegex(email), 'i') };
 		}
 		if (isAdmin !== undefined) {
 			query.isAdmin = isAdmin;
@@ -278,7 +283,7 @@ exports.searchUsers = async (req, res, next) => {
 			query.$expr = {
 				$regexMatch: {
 					input: { $toString: '$phoneNumber' },
-					regex: phoneNumberRaw,
+					regex: escapeRegex(phoneNumberRaw),
 					options: 'i',
 				},
 			};
@@ -286,10 +291,10 @@ exports.searchUsers = async (req, res, next) => {
 
 		const profileQuery = {};
 		if (firstname) {
-			profileQuery.firstname = { $regex: new RegExp(firstname, 'i') };
+			profileQuery.firstname = { $regex: new RegExp(escapeRegex(firstname), 'i') };
 		}
 		if (lastname) {
-			profileQuery.lastname = { $regex: new RegExp(lastname, 'i') };
+			profileQuery.lastname = { $regex: new RegExp(escapeRegex(lastname), 'i') };
 		}
 		if (bloodGroup) {
 			profileQuery.bloodGroup = bloodGroup;
