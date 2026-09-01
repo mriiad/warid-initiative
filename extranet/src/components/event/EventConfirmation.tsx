@@ -4,7 +4,7 @@ import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { CircularProgress, IconButton, Typography } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
 import { useConfirmPresence, useEvent } from '../../hooks';
 import { flowRedesignStyles } from '../../styles/flowRedesign';
@@ -15,6 +15,7 @@ const EventConfirmation: React.FC = () => {
 	const { reference } = useParams<{ reference: string }>();
 	const { token } = useAuth();
 	const navigate = useNavigate();
+	const location = useLocation();
 	const [isConfirmed, setIsConfirmed] = useState(false);
 
 	const { flowCenter, flowIconCircle, flowTitle } = flowRedesignStyles();
@@ -36,8 +37,12 @@ const EventConfirmation: React.FC = () => {
 
 	const handleConfirmPresence = useCallback(
 		(eventId: string) => {
+			// Not `{ eventId, token }`: confirmPresence's own auth goes through
+			// the Authorization header (apiClient's request interceptor), same
+			// as every other call -- the backend controller never reads a
+			// `token` field from the body. Sending it here was inert.
 			confirmPresence(
-				{ eventId, token },
+				{ eventId },
 				{
 					onSuccess: () => {
 						setIsConfirmed(true);
@@ -49,17 +54,34 @@ const EventConfirmation: React.FC = () => {
 				}
 			);
 		},
-		[confirmPresence, navigate, token]
+		[confirmPresence, navigate]
 	);
 
 	useEffect(() => {
 		// GET /api/events/:reference responds with `{ message, event }`, so the
 		// event's own fields live at `eventData.data.event` -- reading
 		// `eventData.data._id` sent eventId: undefined to the backend.
-		if (eventData?.data?.event && token) {
-			handleConfirmPresence(eventData.data.event._id);
+		if (!eventData?.data?.event) {
+			return;
 		}
-	}, [eventData, token, handleConfirmPresence]);
+		if (token) {
+			handleConfirmPresence(eventData.data.event._id);
+			return;
+		}
+		// `token` (AuthContext) starts null on every mount and only gets
+		// populated by AuthContext's own hydration effect a tick later, so it
+		// being falsy *right now* doesn't yet mean "logged out" -- reading
+		// localStorage directly sidesteps that lag entirely (unlike the
+		// context copy, it has no hydration delay) and tells us the real
+		// answer. Without this fallback, a genuinely logged-out visitor (a
+		// stale link, an expired session, a cold-opened bookmark) saw a
+		// permanent blank page: this effect never fires without a token, and
+		// every render branch below falls through to `return null`. See
+		// issue #374.
+		if (!localStorage.getItem('token')) {
+			navigate(`/login?redirect=${encodeURIComponent(location.pathname)}`);
+		}
+	}, [eventData, token, handleConfirmPresence, navigate, location.pathname]);
 
 	if (isEventLoading || confirmPresenceMutation.isPending) {
 		return (

@@ -42,5 +42,4 @@ export interface DonationData {
 
 export interface ConfirmPresenceData {
 	eventId: string;
-	token: string;
 }
