@@ -37,22 +37,52 @@ const NON_REFRESHABLE_ENDPOINTS = [
  * users out even though their still-valid refresh token could have kept
  * them signed in silently. See issue #304.
  */
-const attemptRefresh = async (): Promise<string | null> => {
-	const refreshToken = localStorage.getItem('refreshToken');
-	if (!refreshToken) {
-		return null;
+// Shared across every concurrent 401: the backend rotates refresh tokens
+// (single-use -- see refreshToken in src/controllers/auth.js), so two
+// requests that both hit a 401 at once and each called attemptRefresh()
+// independently would both read the same, still-current refresh token from
+// localStorage, but only the first to reach the server actually succeeds --
+// the second gets REFRESH_TOKEN_NOT_VALID and looks like a dead session,
+// logging the user out even though the first refresh just proved it wasn't.
+// A page firing several parallel queries on load hits exactly this. Every
+// concurrent caller now awaits the same in-flight refresh instead of
+// starting its own. See issue #373.
+let refreshPromise: Promise<string | null> | null = null;
+
+const attemptRefresh = (): Promise<string | null> => {
+	if (refreshPromise) {
+		return refreshPromise;
 	}
 
-	const response = await axios.post(
-		`${API_CONFIG.baseURL}${API_CONFIG.endpoints.auth.refreshToken}`,
-		{ refreshToken }
-	);
-	const { accessToken, refreshToken: newRefreshToken } = response.data;
+	refreshPromise = (async () => {
+		const refreshToken = localStorage.getItem('refreshToken');
+		if (!refreshToken) {
+			return null;
+		}
 
-	localStorage.setItem('token', accessToken);
-	localStorage.setItem('refreshToken', newRefreshToken);
+		const response = await axios.post(
+			`${API_CONFIG.baseURL}${API_CONFIG.endpoints.auth.refreshToken}`,
+			{ refreshToken }
+		);
+		const { accessToken, refreshToken: newRefreshToken } = response.data;
 
-	return accessToken;
+		localStorage.setItem('token', accessToken);
+		localStorage.setItem('refreshToken', newRefreshToken);
+		// AuthContext holds its own in-memory copy of the token, populated at
+		// login and otherwise never touched -- without this it would go stale
+		// the instant a silent refresh happens. apiClient is a plain module
+		// with no access to the context, so it announces the change instead
+		// of setting it directly; AuthContext listens for this event.
+		window.dispatchEvent(new Event('auth:token-refreshed'));
+
+		return accessToken;
+	})();
+
+	// Cleared once settled (success or failure) so the *next* 401, whenever
+	// it happens, starts a fresh refresh rather than reusing this one.
+	return refreshPromise.finally(() => {
+		refreshPromise = null;
+	});
 };
 
 const clearSessionAndRedirectToLogin = () => {

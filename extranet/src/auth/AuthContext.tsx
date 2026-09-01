@@ -50,6 +50,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 		setAdminRole(storedAdminRole || null);
 	}, []);
 
+	useEffect(() => {
+		// apiClient's silent token refresh (issue #373) writes the new token
+		// straight to localStorage -- it has no access to this context, so it
+		// announces the change instead. Without this, `token` here would stay
+		// the pre-refresh value for the rest of the session; every real API
+		// call is unaffected either way since the request interceptor always
+		// reads localStorage fresh, but anything that reads this context's
+		// `token` directly (see EventConfirmation.tsx) would see a stale one.
+		const onTokenRefreshed = () => {
+			const refreshedToken = localStorage.getItem('token');
+			if (refreshedToken) setToken(refreshedToken);
+		};
+		window.addEventListener('auth:token-refreshed', onTokenRefreshed);
+		return () =>
+			window.removeEventListener('auth:token-refreshed', onTokenRefreshed);
+	}, []);
+
 	// Mirrors token/userId/isAdmin exactly: this only updates the in-memory
 	// state. The localStorage write already happens in useLogin's onSuccess
 	// (hooks/useAuth.ts), same place token/userId/isAdmin are written -- not

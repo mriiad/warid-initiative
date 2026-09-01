@@ -85,6 +85,64 @@ test.describe('Silent token refresh on an expired access token', () => {
 		expect(await page.evaluate(() => localStorage.getItem('refreshToken'))).toBeNull();
 	});
 
+	test('several requests hitting a 401 at once share a single refresh call (issue #373)', async ({ page }) => {
+		// A page that fires several parallel queries on load (the admin home
+		// dashboard) is exactly the shape that used to trigger this: every one
+		// of the 401s independently called attemptRefresh() with the same
+		// refresh token. The backend rotates refresh tokens (single-use), so
+		// only the first of those concurrent calls actually succeeded -- the
+		// rest got REFRESH_TOKEN_NOT_VALID and force-logged the user out, even
+		// though the session was in fact still good.
+		await seedAuth(page, { isAdmin: true, userId: 'admin-1' });
+
+		// Keyed by endpoint rather than by "carries the stale token": React's
+		// dev-mode double-invoking of effects can duplicate a request, and a
+		// duplicate issued after the (by-then-completed) refresh would carry
+		// the fresh token on its very first real attempt -- racy either way to
+		// assert against. Failing each endpoint's first hit unconditionally,
+		// regardless of which token it carries, keeps the scenario (several
+		// endpoints all needing a refresh at once) deterministic.
+		const staleThenOk = (body: object) => {
+			let hasFailedOnce = false;
+			return async (route: import('@playwright/test').Route) => {
+				const shouldFail = !hasFailedOnce;
+				hasFailedOnce = true;
+				await route.fulfill({
+					status: shouldFail ? 401 : 200,
+					contentType: 'application/json',
+					body: JSON.stringify(shouldFail ? { message: 'Token expired.' } : body),
+				});
+			};
+		};
+
+		await page.route('**/api/admin/stats', staleThenOk({ totalUsers: 0, totalEvents: 0, totalDonations: 0, totalEmergencies: 0 }));
+		await page.route('**/api/user/check-profile', staleThenOk({ isProfileComplete: true }));
+		await page.route('**/api/user/profile', staleThenOk({ firstname: 'Admin', lastname: 'One', gender: 'male' }));
+		await page.route('**/api/events*', staleThenOk({ events: [], totalItems: 0 }));
+		await page.route('**/api/unconfirmedEmergencies*', staleThenOk({ emergencies: [], totalItems: 0 }));
+		await page.route('**/api/users/admin-1/dashboard', staleThenOk({ donations: [] }));
+
+		let refreshCallCount = 0;
+		await page.route('**/api/auth/refresh-token', async (route) => {
+			refreshCallCount += 1;
+			await route.fulfill({
+				status: 200,
+				contentType: 'application/json',
+				body: JSON.stringify({ accessToken: 'fresh-jwt-token', refreshToken: 'fresh-refresh-token' }),
+			});
+		});
+
+		await page.goto('/home');
+
+		// The dashboard renders normally -- none of the six concurrent 401s
+		// bounced the user to /login.
+		await expect(page).toHaveURL(/\/home/, { timeout: 5000 });
+		await page.waitForTimeout(500);
+		await expect(page).toHaveURL(/\/home/);
+		expect(refreshCallCount).toBe(1);
+		expect(await page.evaluate(() => localStorage.getItem('token'))).toBe('fresh-jwt-token');
+	});
+
 	test('a login attempt with the wrong password does not trigger a refresh attempt', async ({ page }) => {
 		// /api/auth/login is excluded from the retry-on-401 logic -- there is
 		// no session to refresh yet, and a wrong password is not an expired
