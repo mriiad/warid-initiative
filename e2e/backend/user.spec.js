@@ -234,6 +234,78 @@ describe('DELETE /api/deleteUser/:username (admin only)', () => {
 	});
 });
 
+describe('contact-field validation on profile updates (issue #396)', () => {
+	// Signup validated email and phone carefully; the endpoints that change
+	// them had no validator chain at all, and the schema declares email as a
+	// bare String. Email is the only account-recovery channel, so a
+	// malformed address quietly makes the account unrecoverable.
+	const mockSelf = () => {
+		const profileSave = jest.fn().mockResolvedValue(true);
+		const userSave = jest.fn().mockResolvedValue(true);
+		User.findById.mockReturnValue(
+			resolveTo({
+				_id: USER_ID,
+				isAdmin: true,
+				save: userSave,
+				profile: { save: profileSave },
+			})
+		);
+		return { profileSave, userSave };
+	};
+
+	it('rejects a malformed email on PATCH /api/user/profile and stores nothing', async () => {
+		const { userSave } = mockSelf();
+		const res = await request(app)
+			.patch('/api/user/profile')
+			.set('Authorization', authHeader(USER_ID))
+			.send({ email: 'not-an-email' });
+		expect(res.status).toBe(400);
+		expect(res.body.message).toMatch(/valid email/i);
+		expect(userSave).not.toHaveBeenCalled();
+	});
+
+	it('rejects a malformed email on the admin PUT /api/users/:userId', async () => {
+		mockSelf();
+		const res = await request(app)
+			.put(`/api/users/${USER_ID}`)
+			.set('Authorization', authHeader(USER_ID))
+			.send({ email: 'still-not-an-email' });
+		expect(res.status).toBe(400);
+	});
+
+	it('rejects a phone number that is not a phone number', async () => {
+		const { userSave } = mockSelf();
+		const res = await request(app)
+			.patch('/api/user/profile')
+			.set('Authorization', authHeader(USER_ID))
+			.send({ phoneNumber: 'call me maybe' });
+		expect(res.status).toBe(400);
+		expect(userSave).not.toHaveBeenCalled();
+	});
+
+	it('still accepts both the E.164 and the local phone formats in use', async () => {
+		// The admin edit form posts local-format numbers and older records
+		// hold them, so this rule is deliberately looser than signup's.
+		for (const phoneNumber of ['+212600000000', '0600000001']) {
+			mockSelf();
+			const res = await request(app)
+				.patch('/api/user/profile')
+				.set('Authorization', authHeader(USER_ID))
+				.send({ phoneNumber });
+			expect(res.status).toBe(200);
+		}
+	});
+
+	it('leaves an update with no contact fields alone', async () => {
+		mockSelf();
+		const res = await request(app)
+			.patch('/api/user/profile')
+			.set('Authorization', authHeader(USER_ID))
+			.send({ firstname: 'New' });
+		expect(res.status).toBe(200);
+	});
+});
+
 describe('GET /api/users/:userId/dashboard (regression test for issue #203)', () => {
 	it('returns an empty-state dashboard (200, empty donations) for a brand-new user', async () => {
 		// getDashboard used to treat "no donations yet" the same as an

@@ -7,6 +7,7 @@ const ApiError = require('../utils/errors/ApiError');
 const Profile = require('../models/profile');
 const { calculateAge } = require('../utils/utils');
 const { checkDonationEligibility } = require('./donation');
+const { validationResult } = require('express-validator');
 const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const { ERROR_MESSAGES, MESSAGES } = require('../utils/constants');
 const { addDays, formatDate } = require('../utils/utils');
@@ -101,6 +102,13 @@ exports.updateUserInfo = (req, res, next) => {
 
 exports.updateUserProfile = async (req, res, next) => {
 	try {
+		const errors = validationResult(req);
+		if (!errors.isEmpty()) {
+			throw new ApiError(errors.array()[0].msg, STATUS_CODE.BAD_REQUEST, [
+				errors.array()[0].path,
+			]);
+		}
+
 		const userId = req.userId;
 		const {
 			firstname,
@@ -472,6 +480,13 @@ exports.getUserById = async (req, res, next) => {
 
 exports.updateUserById = async (req, res, next) => {
 	try {
+		const errors = validationResult(req);
+		if (!errors.isEmpty()) {
+			throw new ApiError(errors.array()[0].msg, STATUS_CODE.BAD_REQUEST, [
+				errors.array()[0].path,
+			]);
+		}
+
 		const { userId } = req.params;
 		const {
 			firstname,
