@@ -62,9 +62,16 @@ const config = {
 	},
 
 	auth: {
-		secretKey: process.env.SECRET_KEY || 'random-secret-key',
-		jwtSecretKey: process.env.JWT_SECRET_KEY || 'RANDOMSECRETKEY',
-		refreshSecretKey: process.env.REFRESH_SECRET_KEY || 'REFRESHSECRETKEY',
+		// No fallback on purpose. These used to default to constants written
+		// in this file ('RANDOMSECRETKEY' and friends), so a deployment that
+		// forgot to set them booted normally and signed every token with a
+		// value published in this repository -- anyone could mint a token for
+		// any userId, and isAuth would accept it. Left undefined here and
+		// checked by assertAuthSecrets() below, so a misconfigured deploy
+		// fails loudly at startup instead of serving forgeable tokens.
+		// See issue #394.
+		jwtSecretKey: process.env.JWT_SECRET_KEY,
+		refreshSecretKey: process.env.REFRESH_SECRET_KEY,
 		jwtExpire: process.env.JWT_EXPIRE || '1d',
 		refreshTokenExpire: process.env.REFRESH_TOKEN_EXPIRE || '7d',
 		passwordResetExpireMinutes:
@@ -109,4 +116,43 @@ const config = {
 	},
 };
 
+// The values these used to fall back to. Rejected explicitly so that
+// copying one out of this file's history into an env var doesn't quietly
+// restore the same forgeable-token problem. See issue #394.
+const KNOWN_INSECURE_SECRETS = new Set([
+	'RANDOMSECRETKEY',
+	'REFRESHSECRETKEY',
+	'random-secret-key',
+]);
+
+/**
+ * Fails fast when an auth secret is missing or is one of the constants
+ * this file used to default to.
+ *
+ * Deliberately a function rather than a check at module load: config.js is
+ * imported by scripts and test setup that have no business exiting, so the
+ * assertion belongs at server startup (src/app.js), next to the equally
+ * fatal database-connection check.
+ *
+ * Returns the list of problems rather than throwing, so the caller decides
+ * how to report and exit.
+ */
+const assertAuthSecrets = () => {
+	const problems = [];
+	for (const [name, value] of [
+		['JWT_SECRET_KEY', config.auth.jwtSecretKey],
+		['REFRESH_SECRET_KEY', config.auth.refreshSecretKey],
+	]) {
+		if (!value) {
+			problems.push(`${name} is not set`);
+		} else if (KNOWN_INSECURE_SECRETS.has(value)) {
+			problems.push(
+				`${name} is set to a value this repository once shipped as a default; choose a new secret`
+			);
+		}
+	}
+	return problems;
+};
+
 module.exports = config;
+module.exports.assertAuthSecrets = assertAuthSecrets;

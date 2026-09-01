@@ -90,6 +90,21 @@ process.on('uncaughtException', (err) => {
 	process.exit(1);
 });
 
+// Refuse to start without real auth secrets. These used to fall back to
+// constants written into src/utils/config.js, so a deployment that forgot
+// to set them booted normally and signed every token with a value anyone
+// could read in this repository -- isAuth would then accept a token minted
+// for any userId. Fatal at startup for the same reason a failed database
+// connection is: the app cannot serve safely without it. See issue #394.
+const secretProblems = config.assertAuthSecrets();
+if (secretProblems.length > 0) {
+	logger.fatal(
+		{ problems: secretProblems },
+		'Refusing to start: auth secrets are not configured'
+	);
+	process.exit(1);
+}
+
 // Database connection with configuration
 mongoose
 	.connect(
