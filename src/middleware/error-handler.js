@@ -4,7 +4,41 @@ const { STATUS_CODE } = require('../utils/errors/httpStatusCode');
 
 const GENERIC_SERVER_ERROR = 'Something went wrong. Please try again later.';
 
+// Mongoose's own errors never carry a statusCode or the ApiError shape, so
+// without this they fall straight into the generic 500 branch below -- a
+// missing/invalid field (createEmergency has no express-validator of its
+// own; a duplicate email on updateUserById/updateUserProfile) produced
+// "Something went wrong" instead of a message describing what was actually
+// wrong. Translated once, centrally, here rather than patched into every
+// controller that can hit one. See issue #368.
+const translateMongooseError = (error) => {
+	if (error.name === 'ValidationError') {
+		// The first failing field's own message -- already human-written where
+		// the schema defines one (e.g. Emergency's `required: [true, 'Blood
+		// group is required']`), and a reasonable default otherwise (Mongoose's
+		// own "`x` is not a valid enum value for path `y`." for a bad enum).
+		const firstMessage =
+			Object.values(error.errors || {})[0]?.message || error.message;
+		return new ApiError(firstMessage, STATUS_CODE.BAD_REQUEST);
+	}
+
+	if (error.code === 11000) {
+		// The raw driver message names the index/collection, not something a
+		// user should see ("E11000 duplicate key error collection: ..."). The
+		// field name from keyPattern/keyValue is enough to say what happened.
+		const field = Object.keys(error.keyPattern || error.keyValue || {})[0];
+		const message = field
+			? `That ${field} is already in use.`
+			: 'This value is already in use.';
+		return new ApiError(message, STATUS_CODE.CONFLICT);
+	}
+
+	return error;
+};
+
 const errorMiddleware = (error, req, res, next) => {
+	error = translateMongooseError(error);
+
 	if (!error.statusCode) {
 		error.statusCode = STATUS_CODE.INTERNAL_SERVER;
 	}
