@@ -439,3 +439,59 @@ describe('GET /api/donation/:username (admin only)', () => {
 		expect(res.status).toBe(403);
 	});
 });
+
+describe('fix (issue #369): unexpected errors go through the shared error handler', () => {
+	// donate/getDonation/getDonationsByUser used to catch errors locally and
+	// respond with { errorMessage: err.message } for anything that wasn't an
+	// ApiError -- a different response shape than every other endpoint, the
+	// raw internal error message shipped to the client, and never logged.
+	// They now call next(err)/`.catch(next)` like the rest of the app, so an
+	// unexpected error gets the same generic, safe 500 shape as anywhere else.
+
+	it('POST /api/donation', async () => {
+		User.findById.mockReturnValue(resolveTo({ _id: USER_ID, gender: 'male' }));
+		Profile.findOne.mockReturnValue(resolveTo(eligibleProfile()));
+		Donation.find.mockReturnValue({
+			sort: () => ({ limit: () => resolveTo([]) }),
+		});
+		Event.findOne.mockReturnValue(Promise.reject(new Error('db down')));
+
+		const res = await request(app)
+			.post('/api/donation')
+			.set('Authorization', authHeader(USER_ID))
+			.send({ donationDate: new Date().toISOString() });
+
+		expect(res.status).toBe(500);
+		expect(res.body.message).toBe('Something went wrong. Please try again later.');
+		expect(res.body.errorMessage).toBeUndefined();
+	});
+
+	it('GET /api/donation', async () => {
+		Donation.find.mockReturnValue({
+			sort: () => ({
+				limit: () => ({ exec: () => Promise.reject(new Error('db down')) }),
+			}),
+		});
+
+		const res = await request(app)
+			.get('/api/donation')
+			.set('Authorization', authHeader(USER_ID));
+
+		expect(res.status).toBe(500);
+		expect(res.body.message).toBe('Something went wrong. Please try again later.');
+		expect(res.body.errorMessage).toBeUndefined();
+	});
+
+	it('GET /api/donation/:username', async () => {
+		User.findById.mockReturnValue(resolveTo({ _id: USER_ID, isAdmin: true }));
+		User.findOne.mockReturnValue(Promise.reject(new Error('db down')));
+
+		const res = await request(app)
+			.get('/api/donation/someuser')
+			.set('Authorization', authHeader(USER_ID));
+
+		expect(res.status).toBe(500);
+		expect(res.body.message).toBe('Something went wrong. Please try again later.');
+		expect(res.body.errorMessage).toBeUndefined();
+	});
+});

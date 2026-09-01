@@ -178,14 +178,7 @@ exports.donate = async (req, res, next) => {
 
 		res.status(STATUS_CODE.CREATED).json({ message: 'Donation saved!' });
 	} catch (err) {
-		const statusCode = err.statusCode || STATUS_CODE.INTERNAL_SERVER;
-		res
-			.status(statusCode)
-			.json(
-				err.getErrorResponse
-					? err.getErrorResponse()
-					: { errorMessage: err.message }
-			);
+		next(err);
 	}
 };
 
@@ -269,16 +262,7 @@ exports.getDonation = (req, res, next) => {
 					});
 				});
 		})
-		.catch((err) => {
-			const statusCode = err.statusCode || STATUS_CODE.INTERNAL_SERVER;
-			res
-				.status(statusCode)
-				.json(
-					err.getErrorResponse
-						? err.getErrorResponse()
-						: { errorMessage: err.message }
-				);
-		});
+		.catch(next);
 };
 
 exports.getDonationsByUser = (req, res, next) => {
@@ -301,14 +285,5 @@ exports.getDonationsByUser = (req, res, next) => {
 
 			res.status(STATUS_CODE.OK).json(donations);
 		})
-		.catch((err) => {
-			const statusCode = err.statusCode || STATUS_CODE.INTERNAL_SERVER;
-			res
-				.status(statusCode)
-				.json(
-					err.getErrorResponse
-						? err.getErrorResponse()
-						: { errorMessage: err.message }
-				);
-		});
+		.catch(next);
 };
