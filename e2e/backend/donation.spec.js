@@ -144,6 +144,37 @@ describe('GET /api/donation/canDonate (fix: endpoint used to be completely broke
 		expect(res.body.canDonate).toBe(false);
 		expect(res.body.ineligibilityReason).toBe('TOO_OLD');
 	});
+
+	it('reports TOO_OLD at 61, matching the FAQ\'s stated "18 to 60" policy (issue #372)', async () => {
+		// DONATION_AGE.MAX used to be 65, contradicting the FAQ shown to donors
+		// (which has always said 60) -- a 61-65-year-old was told by the FAQ
+		// they weren't eligible, but the app let them register a donation
+		// anyway. Confirmed 60 is the real policy; the FAQ was already right.
+		User.findById.mockReturnValue(resolveTo({ _id: USER_ID, gender: 'male' }));
+		Donation.find.mockReturnValue(resolveTo([]));
+		Profile.findOne.mockReturnValue(resolveTo({ birthdate: birthdateForAge(61) }));
+
+		const res = await request(app)
+			.get('/api/donation/canDonate')
+			.set('Authorization', authHeader(USER_ID));
+
+		expect(res.status).toBe(200);
+		expect(res.body.canDonate).toBe(false);
+		expect(res.body.ineligibilityReason).toBe('TOO_OLD');
+	});
+
+	it('reports eligible at exactly 60, the boundary age', async () => {
+		User.findById.mockReturnValue(resolveTo({ _id: USER_ID, gender: 'male' }));
+		Donation.find.mockReturnValue(resolveTo([]));
+		Profile.findOne.mockReturnValue(resolveTo({ birthdate: birthdateForAge(60) }));
+
+		const res = await request(app)
+			.get('/api/donation/canDonate')
+			.set('Authorization', authHeader(USER_ID));
+
+		expect(res.status).toBe(200);
+		expect(res.body.canDonate).toBe(true);
+	});
 });
 
 describe('POST /api/donation (regression test for issue #200)', () => {
@@ -378,7 +409,7 @@ describe('POST /api/donation (regression test for issue #200)', () => {
 			.send({ bloodGroup: 'O+', donationDate: new Date().toISOString(), donationType: 'BLOOD' });
 
 		expect(res.status).toBe(403);
-		expect(res.body.message).toMatch(/over 65 years old/i);
+		expect(res.body.message).toMatch(/over 60 years old/i);
 	});
 });
 

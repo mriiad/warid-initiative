@@ -81,12 +81,14 @@ const constants = {
 		ACTIVATION_TOKEN_BYTES: 32,
 	},
 
-	// Blood donation eligibility policy. Standard bounds used by most blood
-	// transfusion services (WHO guidance and typical national policy); the
-	// association should confirm/adjust these against their own rules.
+	// Blood donation eligibility policy, matching the FAQ shown to donors
+	// (extranet/src/i18n/locales/*.json, faq.blood[0]: "aged between 18 and
+	// 60"). Confirmed as the association's actual policy -- see issue #372,
+	// where this had drifted to 65 and silently let a 61-65-year-old
+	// register a donation the FAQ told them they weren't eligible for.
 	DONATION_AGE: {
 		MIN: 18,
-		MAX: 65,
+		MAX: 60,
 	},
 
 	// Time Constants (in milliseconds)
