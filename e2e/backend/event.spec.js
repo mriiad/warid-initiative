@@ -45,6 +45,58 @@ describe('GET /api/events/:reference', () => {
 		expect(res.status).toBe(200);
 		expect(res.body.event.qrCode).toBeUndefined();
 	});
+
+	// This endpoint is public and did its own inline check, which only ever
+	// looked at isAdmin -- granting QR-code visibility to any admin role,
+	// including one (Emergency Admin) with no event-management access at
+	// all. See #371.
+	it('strips the QR code for an Emergency Admin', async () => {
+		User.findById.mockReturnValue(resolveTo({ _id: ADMIN_ID, isAdmin: true, role: 'emergency' }));
+		Event.findOne.mockReturnValue(
+			resolveTo({ reference: 'WEVENT1', title: 'Drive', qrCode: 'data:image/png;base64,XXXX' })
+		);
+		const res = await request(app)
+			.get('/api/events/WEVENT1')
+			.set('Authorization', authHeader(ADMIN_ID));
+		expect(res.status).toBe(200);
+		expect(res.body.event.qrCode).toBeUndefined();
+	});
+
+	it('includes the QR code for an Event Admin', async () => {
+		User.findById.mockReturnValue(resolveTo({ _id: ADMIN_ID, isAdmin: true, role: 'event' }));
+		Event.findOne.mockReturnValue(
+			resolveTo({ reference: 'WEVENT1', title: 'Drive', qrCode: 'data:image/png;base64,XXXX' })
+		);
+		const res = await request(app)
+			.get('/api/events/WEVENT1')
+			.set('Authorization', authHeader(ADMIN_ID));
+		expect(res.status).toBe(200);
+		expect(res.body.event.qrCode).toBe('data:image/png;base64,XXXX');
+	});
+
+	it('includes the QR code for a Principal Admin', async () => {
+		User.findById.mockReturnValue(resolveTo({ _id: ADMIN_ID, isAdmin: true, role: 'principal' }));
+		Event.findOne.mockReturnValue(
+			resolveTo({ reference: 'WEVENT1', title: 'Drive', qrCode: 'data:image/png;base64,XXXX' })
+		);
+		const res = await request(app)
+			.get('/api/events/WEVENT1')
+			.set('Authorization', authHeader(ADMIN_ID));
+		expect(res.status).toBe(200);
+		expect(res.body.event.qrCode).toBe('data:image/png;base64,XXXX');
+	});
+
+	it('includes the QR code for a pre-#183 admin with no role assigned', async () => {
+		mockAdmin(); // isAdmin: true, no role field.
+		Event.findOne.mockReturnValue(
+			resolveTo({ reference: 'WEVENT1', title: 'Drive', qrCode: 'data:image/png;base64,XXXX' })
+		);
+		const res = await request(app)
+			.get('/api/events/WEVENT1')
+			.set('Authorization', authHeader(ADMIN_ID));
+		expect(res.status).toBe(200);
+		expect(res.body.event.qrCode).toBe('data:image/png;base64,XXXX');
+	});
 });
 
 describe('POST /api/event (admin only)', () => {

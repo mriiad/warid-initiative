@@ -2,6 +2,20 @@ const User = require('../models/user');
 const { STATUS_CODE } = require('./errors/httpStatusCode');
 
 /**
+ * The same admin/role check requireAdminRole enforces as route middleware,
+ * usable inline wherever access needs to be decided mid-handler instead of
+ * gating the whole route (e.g. getEvent including the QR code only for an
+ * Event/Principal Admin on an otherwise-public endpoint). Kept here as the
+ * single source of truth so both call sites agree on what "has this admin
+ * role" means. See issue #371.
+ */
+const hasAdminRole = (user, allowedRoles) => {
+	if (!user || !user.isAdmin) return false;
+	if (!user.role) return true; // pre-#183 admin, no role assigned: full access.
+	return user.role === 'principal' || allowedRoles.includes(user.role);
+};
+
+/**
  * Route guard for admin endpoints split by responsibility (see issue #183):
  * Principal Admin has full access to everything, Emergency Admin and Event
  * Admin are restricted to their own area.
@@ -35,7 +49,7 @@ module.exports = (allowedRoles) => {
 					.status(STATUS_CODE.FORBIDDEN)
 					.json({ message: 'User must be an Admin to call this API.' });
 			}
-			if (user.role && user.role !== 'principal' && !allowedRoles.includes(user.role)) {
+			if (!hasAdminRole(user, allowedRoles)) {
 				return res.status(STATUS_CODE.FORBIDDEN).json({
 					message: 'This admin role does not have access to this action.',
 				});
@@ -46,3 +60,5 @@ module.exports = (allowedRoles) => {
 		}
 	};
 };
+
+module.exports.hasAdminRole = hasAdminRole;

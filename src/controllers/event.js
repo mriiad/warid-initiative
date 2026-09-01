@@ -46,7 +46,12 @@ exports.getEvent = async (req, res, next) => {
 		}
 		if (event.image) event.image = event.image.toString('base64');
 
-		// Check if user is authenticated and is admin to include QR code
+		// Check if user is an Event Admin or Principal Admin to include the QR
+		// code. This endpoint is public, so it can't sit behind requireAdminRole
+		// as route middleware -- it decodes the token itself, inline, and used
+		// to check only isAdmin, granting QR-code visibility to any admin role
+		// (including Emergency Admin, who should have none). Reuses the same
+		// role check requireAdminRole enforces everywhere else. See #371.
 		let includeQRCode = false;
 		const authHeader = req.headers['authorization'];
 
@@ -59,8 +64,9 @@ exports.getEvent = async (req, res, next) => {
 					const decodedToken = jwt.verify(token, config.auth.jwtSecretKey);
 					if (decodedToken && decodedToken.userId) {
 						const User = require('../models/user');
+						const { hasAdminRole } = require('../utils/requireAdminRole');
 						const user = await User.findById(decodedToken.userId).lean();
-						if (user && user.isAdmin) {
+						if (hasAdminRole(user, ['event'])) {
 							includeQRCode = true;
 						}
 					}
