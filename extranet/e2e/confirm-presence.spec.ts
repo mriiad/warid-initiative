@@ -25,6 +25,28 @@ test.describe('Confirm presence', () => {
 
 		await expect(page.getByText('!تم تأكيد حضورك بنجاح')).toBeVisible({ timeout: 5000 });
 		await expect(page.getByText('حدث خطأ غير متوقع')).toHaveCount(0);
-		expect(confirmBody?.eventId).toBe('evt-1');
+		expect(confirmBody).toEqual({ eventId: 'evt-1' });
+	});
+
+	test('a logged-out visitor is sent to login instead of a permanent blank page (issue #374)', async ({ page }) => {
+		// No seedAuth -- this visitor has no session at all (a stale link, an
+		// expired session, a cold-opened bookmark). The confirm-presence effect
+		// requires a token and never fires without one, and every render
+		// branch used to fall through to `return null` with no redirect and no
+		// explanation: a permanent blank page.
+		await mockJson(page, '**/api/events/WEVENT1', {
+			message: 'ok',
+			event: { _id: 'evt-1', reference: 'WEVENT1', title: 'T', date: '2026-09-01', isGeneric: false, location: 'Rabat', description: 'd' },
+		});
+		let confirmCalled = false;
+		await page.route('**/api/event/confirmPresence', async (route) => {
+			confirmCalled = true;
+			await route.fulfill({ status: 200, contentType: 'application/json', body: '{}' });
+		});
+
+		await page.goto('/events/WEVENT1/confirmation');
+
+		await expect(page).toHaveURL(/\/login\?redirect=/, { timeout: 5000 });
+		expect(confirmCalled).toBe(false);
 	});
 });
