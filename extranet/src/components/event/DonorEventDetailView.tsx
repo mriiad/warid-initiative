@@ -10,6 +10,7 @@ import { Event } from '@/types';
 import { eventDetailRedesignStyles } from '../../styles/eventDetailRedesign';
 import EventOverviewCard from '../shared/EventOverviewCard';
 import RedesignBottomNav from '../shared/RedesignBottomNav';
+import { useShortDate } from '../../hooks';
 
 interface DonorEventDetailViewProps {
 	event: Event;
@@ -53,11 +54,8 @@ const DonorEventDetailView = ({
 
 	const startDate = event.createdAt ? new Date(event.createdAt) : new Date(event.date);
 	const endDate = new Date(event.date);
-	const endDateLabel = endDate.toLocaleDateString(undefined, {
-		day: 'numeric',
-		month: 'short',
-		year: 'numeric',
-	});
+	const shortDate = useShortDate();
+	const endDateLabel = shortDate(endDate);
 
 	return (
 		<div className={screen}>

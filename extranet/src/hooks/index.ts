@@ -7,4 +7,5 @@ export * from './useAuth';
 export * from './useContact';
 export * from './useEmergency';
 export * from './useEvents';
+export * from './useShortDate';
 export * from './useUsers';

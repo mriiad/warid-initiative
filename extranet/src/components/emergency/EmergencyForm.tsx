@@ -24,6 +24,7 @@ import PhoneNumberField from '../shared/PhoneNumberField';
 import RedesignBottomNav from '../shared/RedesignBottomNav';
 import ResponseAnimation from '../shared/ResponseAnimation';
 import Ltr from '../shared/Ltr';
+import { useShortDate } from '../../hooks';
 
 // Form data interface for the form (with string phoneNumber for validation)
 interface EmergencyFormData {
@@ -109,11 +110,8 @@ const EmergencyForm = () => {
 		handleFormSubmit(formData);
 	};
 
-	const todayLabel = new Date().toLocaleDateString(undefined, {
-		day: 'numeric',
-		month: 'short',
-		year: 'numeric',
-	});
+	const shortDate = useShortDate();
+	const todayLabel = shortDate(new Date());
 
 	return (
 		<div className={screen}>

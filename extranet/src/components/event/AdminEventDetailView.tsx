@@ -18,6 +18,7 @@ import { ParticipantStats } from '../../hooks';
 import EventOverviewCard from '../shared/EventOverviewCard';
 import RedesignBottomNav from '../shared/RedesignBottomNav';
 import SaveQrModal from './SaveQrModal';
+import { useShortDate } from '../../hooks';
 
 interface AdminEventDetailViewProps {
 	event: Event;
@@ -55,11 +56,8 @@ const AdminEventDetailView = ({ event, participantStats, onDelete }: AdminEventD
 		qrCard,
 	} = eventDetailRedesignStyles();
 
-	const heroDate = new Date(event.date).toLocaleDateString(undefined, {
-		day: 'numeric',
-		month: 'short',
-		year: 'numeric',
-	});
+	const shortDate = useShortDate();
+	const heroDate = shortDate(new Date(event.date));
 
 	const statRows = [
 		{

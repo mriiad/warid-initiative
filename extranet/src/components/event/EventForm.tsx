@@ -21,6 +21,7 @@ import { eventsListRedesignStyles } from '../../styles/eventsListRedesign';
 import NotFoundPage from '../NotFoundPage';
 import RedesignBottomNav from '../shared/RedesignBottomNav';
 import ResponseAnimation from '../shared/ResponseAnimation';
+import { useShortDate } from '../../hooks';
 
 interface IFormInput {
 	title: string;
@@ -60,6 +61,7 @@ const EventForm: React.FC = () => {
 	const [isSuccessResponse, setIsSuccessResponse] = useState<boolean>(false);
 	const [isErrorResponse, setIsErrorResponse] = useState<boolean>(false);
 	const [errorMessage, setErrorMessage] = useState<string>('');
+	const shortDate = useShortDate();
 
 	const createEventMutation = useCreateEvent();
 
@@ -111,11 +113,7 @@ const EventForm: React.FC = () => {
 		}
 	};
 
-	const todayLabel = new Date().toLocaleDateString(undefined, {
-		day: 'numeric',
-		month: 'short',
-		year: 'numeric',
-	});
+	const todayLabel = shortDate(new Date());
 
 	return (
 		<div className={screen}>
