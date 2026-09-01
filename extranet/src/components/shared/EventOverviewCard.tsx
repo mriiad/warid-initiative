@@ -6,6 +6,7 @@ import clsx from 'clsx';
 import { ReactNode, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { eventOverviewCardStyles } from '../../styles/eventOverviewCard';
+import { useShortDate } from '../../hooks';
 
 const WEEKDAY_KEYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
@@ -30,7 +31,7 @@ const EventOverviewCard = ({
 	onPrimaryAction,
 	onViewDetails,
 }: EventOverviewCardProps) => {
-	const { t, i18n } = useTranslation();
+	const { t } = useTranslation();
 	const {
 		card,
 		headerRow,
@@ -74,9 +75,7 @@ const EventOverviewCard = ({
 		});
 	}, [eventDate]);
 
-	const locale = i18n.language === 'ar' ? 'ar' : i18n.language === 'fr' ? 'fr' : 'en';
-	const formatDate = (d: Date) =>
-		d.toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' });
+	const formatDate = useShortDate();
 
 	return (
 		<div className={card}>

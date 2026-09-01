@@ -14,6 +14,7 @@ import { eventsListRedesignStyles } from '../../styles/eventsListRedesign';
 import EventOverviewCard from '../shared/EventOverviewCard';
 import Pagination from '../shared/Pagination';
 import RedesignBottomNav from '../shared/RedesignBottomNav';
+import { useShortDate } from '../../hooks';
 
 interface AdminEventsListViewProps {
 	events: Event[];
@@ -57,10 +58,8 @@ const AdminEventsListView = ({
 		emptyState: emptyStateRedesign,
 	} = eventsListRedesignStyles();
 
-	const todayLabel = new Date().toLocaleDateString(
-		document.documentElement.lang === 'ar' ? 'ar' : document.documentElement.lang === 'fr' ? 'fr' : 'en',
-		{ day: 'numeric', month: 'short', year: 'numeric' }
-	);
+	const shortDate = useShortDate();
+	const todayLabel = shortDate(new Date());
 
 	return (
 		<div className={screen}>
