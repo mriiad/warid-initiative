@@ -52,6 +52,8 @@ function makeModelMock(defaultInstanceMethods = {}) {
 	Model.findOneAndUpdate = jest.fn(() => makeQuery(() => null));
 	Model.findOneAndDelete = jest.fn(() => makeQuery(() => null));
 	Model.updateMany = jest.fn(() => Promise.resolve({ modifiedCount: 0 }));
+	Model.deleteOne = jest.fn(() => makeQuery(() => ({ deletedCount: 0 })));
+	Model.deleteMany = jest.fn(() => makeQuery(() => ({ deletedCount: 0 })));
 	Model.countDocuments = jest.fn(() => makeQuery(() => 0));
 	Model.exists = jest.fn(() => Promise.resolve(false));
 	Model.distinct = jest.fn(() => makeQuery(() => []));

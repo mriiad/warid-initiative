@@ -416,6 +416,11 @@ exports.deleteUser = async (req, res, next) => {
 				.json({ message: 'User not found' });
 		}
 
+		// Otherwise every admin-initiated user deletion leaves a permanently
+		// orphaned Profile behind -- nothing else ever queries or cleans it up.
+		// See #375.
+		await Profile.deleteOne({ user: user._id });
+
 		res.status(STATUS_CODE.OK).json({ message: 'User deleted successfully' });
 	} catch (err) {
 		next(err);

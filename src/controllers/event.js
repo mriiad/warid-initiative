@@ -341,6 +341,15 @@ exports.deleteEvent = (req, res, next) => {
 				});
 			});
 		})
+		// Donations are reassigned above so donation history/eligibility stays
+		// intact, but nothing cleaned up Participant records for the deleted
+		// event -- left dangling, referencing an eventId that no longer exists.
+		// See #375.
+		.then(({ deletedEvent }) =>
+			Participant.deleteMany({ eventId: deletedEvent._id }).then(() => ({
+				deletedEvent,
+			}))
+		)
 		.then(({ deletedEvent }) => {
 			res.status(STATUS_CODE.OK).json({
 				message: 'Event deleted successfully.',

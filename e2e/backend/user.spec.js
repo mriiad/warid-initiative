@@ -702,6 +702,19 @@ describe('DELETE /api/deleteUser/:username additional branches', () => {
 		expect(res.status).toBe(200);
 	});
 
+	// Previously nothing cleaned up the deleted user's Profile -- a
+	// permanently orphaned document, unbounded and never queried again. See
+	// #375.
+	it('also deletes the profile belonging to the deleted user', async () => {
+		User.findOneAndDelete.mockReturnValue(resolveTo({ _id: 'user-bob-id', username: 'bob' }));
+		Profile.deleteOne.mockReturnValue(resolveTo({ deletedCount: 1 }));
+		const res = await request(app)
+			.delete('/api/deleteUser/bob')
+			.set('Authorization', authHeader(ADMIN_ID));
+		expect(res.status).toBe(200);
+		expect(Profile.deleteOne).toHaveBeenCalledWith({ user: 'user-bob-id' });
+	});
+
 	it('returns 500 on a database error', async () => {
 		User.findOneAndDelete.mockReturnValue(
 			makeQuery(() => {
