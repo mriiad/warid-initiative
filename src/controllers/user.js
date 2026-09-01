@@ -576,13 +576,25 @@ exports.makeUserAdmin = async (req, res, next) => {
 
 exports.getDashboard = async (req, res, next) => {
   try {
-    const userId = req.userId;
+    // The route is /api/users/:userId/dashboard, but this used to read only
+    // req.userId and ignore the param entirely -- the URL promised a
+    // per-user lookup it never performed, so a caller asking for someone
+    // else's dashboard silently received their own. Honour the param, and
+    // refuse anything that isn't the caller's own rather than serving the
+    // wrong data (or, if it were simply honoured, someone else's). See
+    // issue #397.
+    const userId = req.params.userId;
+    if (userId !== req.userId) {
+      return res
+        .status(STATUS_CODE.FORBIDDEN)
+        .json({ message: 'You can only view your own dashboard.' });
+    }
 
     // Check if user exists
     const user = await User.findById(userId);
     if (!user) {
       return res.status(STATUS_CODE.NOT_FOUND).json({
-        errorMessage: ERROR_MESSAGES.USER_NOT_FOUND
+        message: ERROR_MESSAGES.USER_NOT_FOUND
       });
     }
 
@@ -635,12 +647,11 @@ exports.getDashboard = async (req, res, next) => {
     });
 
   } catch (err) {
-    const statusCode = err.statusCode || STATUS_CODE.INTERNAL_SERVER;
-    res.status(statusCode).json(
-      err.getErrorResponse
-        ? err.getErrorResponse()
-        : { errorMessage: err.message }
-    );
+    // Was hand-building its own response with an `errorMessage` key the
+    // shared frontend toast never reads, returning raw err.message to the
+    // client and logging nothing. Same bug class already fixed in
+    // donation.js (#369) and participant.js (#368). See issue #397.
+    next(err);
   }
 };
 
