@@ -29,7 +29,7 @@ The Warid Initiative Blood Donation Application is a project aimed at facilitati
 
 ## Node server
 
-- Copy `.env.example` to `.env` in the repo root and fill in real values (at minimum `DB_USER`, `DB_PASSWORD`, and `JWT_SECRET_KEY`) -- see `.env.example` for what each variable does. The app boots with working defaults for everything even without a `.env` file, but don't rely on those past local development.
+- Copy `.env.example` to `.env` in the repo root and fill in real values -- see `.env.example` for what each variable does. `JWT_SECRET_KEY` and `REFRESH_SECRET_KEY` are **required**: the server refuses to start without them, and names the missing variable when it exits. They used to fall back to constants written into `src/utils/config.js`, which meant a deployment that forgot them signed every token with a value published in this repository (issue #394). Generate one with `openssl rand -base64 32`.
 - Go to the app's root "warid-app"
 - Run `npm install`
 - Run `npm start`

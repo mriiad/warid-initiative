@@ -6,11 +6,14 @@ module.exports = {
   testMatch: ['<rootDir>/e2e/**/*.spec.[jt]s'],
   // e2e/backend/**/*.spec.js are the Mongoose-mocked suite, run separately
   // via jest.backend.config.js (npm run test:e2e:backend) with its own
-  // setupFiles (dummy JWT secrets, no real DB). This config wires up
-  // e2e/setup.js instead (real mongodb-memory-server connection via
-  // setupFilesAfterEnv), which the backend suite's mocks aren't meant to
-  // run under -- doing so leaves their auth secrets unset and breaks them.
+  // setup. This config wires up e2e/setup.js instead (real
+  // mongodb-memory-server connection via setupFilesAfterEnv), which the
+  // backend suite's mocks aren't meant to run under.
   testPathIgnorePatterns: ['/node_modules/', '<rootDir>/e2e/backend/'],
+  // setupFiles, not setupFilesAfterEnv: this has to run before the spec
+  // files require src/utils/config.js, which no longer falls back to a
+  // built-in JWT secret (issue #394).
+  setupFiles: ['<rootDir>/e2e/support/authEnv.js'],
   setupFilesAfterEnv: ['<rootDir>/e2e/setup.js'],
   verbose: true,
   forceExit: true,
