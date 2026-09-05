@@ -104,6 +104,7 @@
       "passwordRequired": "Password is required",
       "forgotPassword": "Forgot your password?",
       "passwordResetSuccess": "Password reset successfully!",
+      "resetLinkSent": "If that email is registered, a password reset link has been sent to it.",
       "invalidCredentials": "Incorrect username or password.",
       "resendActivationEmail": "Email address",
       "resendActivationSubmit": "Resend activation email",
@@ -122,6 +123,7 @@
       "subtitle": "Enter your email to receive a reset link",
       "email": "Email",
       "emailRequired": "Email is required",
+      "invalidEmail": "Please enter a valid email address.",
       "submit": "Send Reset Link",
       "back": "Back"
     },

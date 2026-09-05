@@ -43,6 +43,14 @@ const LoginForm = () => {
 	const passwordReset = location.state?.passwordReset;
 	const [passwordResetSnackbarOpen, setPasswordResetSnackbarOpen] =
 		useState(passwordReset);
+	// Distinct from `passwordReset` above, which means "your password was
+	// changed" (set by ResetPasswordForm). This one means "we've emailed you a
+	// link", set by PasswordResetForm -- which used to pass an unread
+	// `resetMessage` key instead, so the request silently confirmed nothing.
+	// See issue #412.
+	const resetLinkSent = location.state?.resetLinkSent;
+	const [resetLinkSnackbarOpen, setResetLinkSnackbarOpen] =
+		useState(resetLinkSent);
 	const [signUpSnackbarOpen, setSignUpSnackbarOpen] = useState(false);
 	const [googleSnackbarOpen, setGoogleSnackbarOpen] = useState(false);
 	const [rememberMeChecked, setRememberMeChecked] = useState(false);
@@ -173,6 +181,12 @@ const LoginForm = () => {
 							handleClose={() => setPasswordResetSnackbarOpen(false)}
 							message={t('auth.login.passwordResetSuccess')}
 							autoHideDuration={5000}
+						/>
+						<SnackbarComponent
+							open={resetLinkSnackbarOpen}
+							handleClose={() => setResetLinkSnackbarOpen(false)}
+							message={t('auth.login.resetLinkSent')}
+							autoHideDuration={8000}
 						/>
 						<SnackbarComponent
 							open={signUpSnackbarOpen}
