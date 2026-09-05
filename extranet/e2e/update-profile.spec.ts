@@ -50,4 +50,30 @@ test.describe('Complete your profile', () => {
 		await expect(page).toHaveURL(/\/update-profile/);
 		await expect(page.getByLabel(/الاسم الشخصي/)).toHaveValue('Yassine');
 	});
+
+	// The form was missing `noValidate`, so the browser's own constraint check
+	// on the three `required` inputs blocked the submit event before
+	// react-hook-form ever ran: pressing تحديث did nothing at all, no request
+	// and no message, and every translated error string in this component was
+	// unreachable. See issue #414.
+	test('regression (issue #414): an empty submit shows the form\'s own errors, not nothing', async ({ page }) => {
+		await seedAuth(page, { isAdmin: false, userId: 'user-1' });
+		await mockJson(page, '**/api/user/profile', { gender: 'male' });
+
+		let saved = false;
+		await page.route('**/api/user/update', async (route) => {
+			saved = true;
+			await route.fulfill({ status: 200, contentType: 'application/json', body: '{}' });
+		});
+
+		await page.goto('/update-profile');
+		await expect(page.getByLabel(/الاسم الشخصي/)).toBeVisible({ timeout: 5000 });
+		await page.getByRole('button', { name: /تحديث/ }).click();
+
+		await expect(page.getByText('الاسم الشخصي مطلوب')).toBeVisible({ timeout: 5000 });
+		await expect(page.getByText('الاسم العائلي مطلوب')).toBeVisible();
+		await expect(page.getByText('تاريخ الميلاد مطلوب')).toBeVisible();
+		await expect(page.getByText('المدينة مطلوبة')).toBeVisible();
+		expect(saved).toBe(false);
+	});
 });

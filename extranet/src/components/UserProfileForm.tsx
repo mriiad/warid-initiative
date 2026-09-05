@@ -104,7 +104,13 @@ const UserProfileForm = () => {
 				backLabel={t('common.back')}
 			/>
 			<div className={card}>
-				<form onSubmit={handleSubmit(onSubmit)}>
+				{/* noValidate: three of the fields below pass `required`, which
+				    sets the native HTML attribute -- without this the browser's
+				    own constraint check blocked the submit event before
+				    react-hook-form ever ran, so pressing the button did nothing
+				    visible and none of the translated messages defined here were
+				    ever reached. Matches LoginForm/SignupForm. See issue #414. */}
+				<form onSubmit={handleSubmit(onSubmit)} noValidate>
 					<div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 						<Controller
 							name='firstname'
