@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-const { cities } = require('../utils/cities');
+const cities = require('../utils/cities');
 const { BLOOD_GROUP_VALUES } = require('../utils/constants');
 
 const profileSchema = new Schema({
