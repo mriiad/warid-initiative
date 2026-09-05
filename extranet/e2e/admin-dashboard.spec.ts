@@ -135,4 +135,24 @@ test.describe('Admin dashboard', () => {
 		await page.getByRole('button', { name: 'إضافة حدث' }).click();
 		await expect(page).toHaveURL(/\/events\/create/);
 	});
+
+	// The strip used to render `t('admin.weekday.X').charAt(0)`, which
+	// collapsed different days onto the same glyph: أر (Wed) and أح (Sun)
+	// both showed as أ. The Arabic abbreviations are two letters precisely
+	// because one letter doesn't tell them apart. See issue #422.
+	test('regression (issue #422): every weekday in the gift strip is distinguishable', async ({ page }) => {
+		await seedAuth(page, { isAdmin: true, userId: 'admin-1' });
+		await mockJson(page, '**/api/admin/stats', { totalUsers: 0, totalEvents: 0, totalDonations: 0, totalEmergencies: 0 });
+		await mockJson(page, '**/api/user/profile', { gender: 'male' });
+		await mockJson(page, '**/api/events*', { events: [], totalItems: 0 });
+		await mockJson(page, '**/api/unconfirmedEmergencies*', { emergencies: [], totalItems: 0 });
+
+		await page.goto('/home');
+		await expect(page.getByText('هديتك')).toBeVisible({ timeout: 5000 });
+
+		// GIFT_WEEKDAYS is Wed..Sun; ar.json abbreviates them as أر خم جم سب أح.
+		const labels = await page.locator('[class*="giftDay"] > span:first-child').allInnerTexts();
+		expect(labels).toEqual(['أر', 'خم', 'جم', 'سب', 'أح']);
+		expect(new Set(labels).size).toBe(labels.length);
+	});
 });
