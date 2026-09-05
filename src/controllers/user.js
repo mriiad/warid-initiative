@@ -5,6 +5,7 @@ const Emergency = require('../models/emergency');
 const { STATUS_CODE } = require('../utils/errors/httpStatusCode');
 const ApiError = require('../utils/errors/ApiError');
 const Profile = require('../models/profile');
+const Participant = require('../models/participant');
 const { calculateAge } = require('../utils/utils');
 const { checkDonationEligibility } = require('./donation');
 const { validationResult } = require('express-validator');
@@ -433,6 +434,20 @@ exports.deleteUser = async (req, res, next) => {
 		// orphaned Profile behind -- nothing else ever queries or cleans it up.
 		// See #375.
 		await Profile.deleteOne({ user: user._id });
+
+		// Donations and participations were left pointing at the deleted user,
+		// and both are read as counts -- getAdminStats.totalDonations and each
+		// event's registeredParticipants/allDonaters -- so admin statistics
+		// silently included people who no longer exist. See issue #406.
+		//
+		// The two are treated differently on purpose. A donation records that
+		// blood was actually collected, so it is kept and anonymised: the
+		// association's historical totals stay truthful while nothing points
+		// at the deleted user. A participation is only a registration for one
+		// event; it means nothing without the person, and it would otherwise
+		// keep occupying that (userId, eventId) unique slot forever.
+		await Donation.updateMany({ userId: user._id }, { $unset: { userId: 1 } });
+		await Participant.deleteMany({ userId: user._id });
 
 		res.status(STATUS_CODE.OK).json({ message: 'User deleted successfully' });
 	} catch (err) {

@@ -15,10 +15,15 @@ const DonationSchema = new Schema({
 		type: String,
 		required: false,
 	},
+	// Absent means the donor's account was deleted. The donation itself is
+	// kept: the blood was really collected, so it stays in the association's
+	// historical totals, but nothing points at a user who no longer exists.
+	// Queries that ask for one donor's donations (Donation.find({ userId }))
+	// simply never match these. See issue #406.
 	userId: {
 		type: Schema.Types.ObjectId,
 		ref: 'User',
-		required: true,
+		required: false,
 	},
 	eventId: {
 		type: Schema.Types.ObjectId,
