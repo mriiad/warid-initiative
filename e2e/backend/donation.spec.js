@@ -206,6 +206,48 @@ describe('donations are not denormalized onto the user (issue #407)', () => {
 	});
 });
 
+// donate() reads eligibility then writes, with nothing atomic in between,
+// so two requests arriving together both passed the reads and both
+// inserted. Donation was the only model with no unique index. See #405.
+describe('duplicate donations are refused by the database (issue #405)', () => {
+	it('declares a unique index on userId + donationDate', () => {
+		// The index is the only part of this that is actually atomic -- the
+		// controller's checks are reads that can always go stale.
+		const realDonation = jest.requireActual('../../src/models/donation');
+		const unique = realDonation.schema.indexes().filter(([, opts]) => opts && opts.unique);
+		expect(unique).toHaveLength(1);
+		expect(unique[0][0]).toEqual({ userId: 1, donationDate: 1 });
+	});
+
+	it('answers a racing duplicate insert with a 409, not a generic 500', async () => {
+		User.findById.mockReturnValue(resolveTo({ _id: USER_ID, gender: 'male' }));
+		Profile.findOne.mockReturnValue(resolveTo({ birthdate: birthdateForAge(30), bloodGroup: 'O+' }));
+		Donation.find.mockReturnValue(resolveTo([]));
+		Event.findOne.mockReturnValue(resolveTo({ _id: 'generic-evt', isGeneric: true }));
+		// The loser of the race: both requests passed the reads, this one's
+		// insert is the second to reach the database.
+		Donation.mockImplementationOnce(function (data) {
+			Object.assign(this, data);
+			this.save = jest.fn().mockRejectedValue(
+				Object.assign(
+					new Error('E11000 duplicate key error collection: warid.donations index: userId_1_donationDate_1'),
+					{ code: 11000, keyPattern: { userId: 1, donationDate: 1 } }
+				)
+			);
+			return this;
+		});
+
+		const res = await request(app)
+			.post('/api/donation')
+			.set('Authorization', authHeader(USER_ID))
+			.send({ donationDate: '2026-01-01', donationType: 'BLOOD' });
+
+		expect(res.status).toBe(409);
+		expect(res.body.message).not.toContain('E11000');
+		expect(res.body.message).not.toBe('Something went wrong. Please try again later.');
+	});
+});
+
 describe('POST /api/donation (regression test for issue #200)', () => {
 	it('accepts a brand-new, fully-eligible user (fixed: eligibility promise is now awaited)', async () => {
 		// A user who has never donated before: checkDonationEligibility()

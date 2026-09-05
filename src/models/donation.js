@@ -32,4 +32,22 @@ const DonationSchema = new Schema({
 	},
 });
 
+// donate() decides eligibility by reading (checkDonationEligibility, then
+// checkExistingDonation) and only then writes, so two requests arriving
+// together both pass the reads before either inserts -- a double-tap on
+// submit, or a client retry after a slow response, recorded the donation
+// twice. This was the only model with no unique index, so nothing caught
+// it, and the duplicate then inflated the donor's dashboard total,
+// getAdminStats.totalDonations and every event's donater counts
+// permanently.
+//
+// One donation per donor per day is stricter than the 60/90-day rest
+// period but never contradicts it: the cooldown already forbids two
+// donations in a day. The date arrives from a date input, so racing
+// submissions carry an identical value and the second insert is refused by
+// the database rather than by a read that has already gone stale --
+// translateMongooseError (#368) turns that into a friendly 409.
+// See issue #405.
+DonationSchema.index({ userId: 1, donationDate: 1 }, { unique: true });
+
 module.exports = mongoose.model('Donation', DonationSchema);
