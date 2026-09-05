@@ -5,6 +5,7 @@ const { isAuth } = require('../middleware/token-check');
 const checkIfAdmin = require('../utils/checks');
 const requireAdminRole = require('../utils/requireAdminRole');
 const cities = require('../utils/cities');
+const { BLOOD_GROUP_VALUES } = require('../utils/constants');
 
 // User management is Principal-Admin-only (see issue #183) -- neither
 // Emergency nor Event Admin gets any of these, so the allowed-roles list is
@@ -45,6 +46,30 @@ const profileContactValidators = [
 		.withMessage('Please enter a valid phone number.'),
 ];
 
+// PUT /api/user/update overwrites all five profile fields unconditionally,
+// and carried no validator chain -- so the complete-profile form's default
+// state (bloodGroup left on its "None" option, i.e. '') reached
+// `new Profile({ bloodGroup: '' })`, where Mongoose rejected it against the
+// enum. That surfaced as a 400 reading "`` is not a valid enum value for
+// path `bloodGroup`", which the client showed as a generic "update failed"
+// with no hint which field was at fault. None of these are optional:
+// checkUserProfile requires all five before it calls a profile complete.
+// See issue #413.
+const completeProfileValidators = [
+	body('firstname').trim().notEmpty().withMessage('First name is required.'),
+	body('lastname').trim().notEmpty().withMessage('Last name is required.'),
+	body('birthdate')
+		.notEmpty()
+		.withMessage('Birthdate is required.')
+		.bail()
+		.isISO8601()
+		.withMessage('The birthdate is not a valid date.'),
+	body('bloodGroup')
+		.isIn(BLOOD_GROUP_VALUES)
+		.withMessage('A blood group is required.'),
+	body('city').isIn(cities).withMessage('A city is required.'),
+];
+
 const {
 	getUsers,
 	updateUserInfo,
@@ -68,7 +93,12 @@ const {
 // Principal-Admin-only rather than any admin -- see issue #183.
 userRouter.get('/api/users', isAuth, requirePrincipalAdmin, getUsers);
 
-userRouter.put('/api/user/update', isAuth, updateUserInfo);
+userRouter.put(
+	'/api/user/update',
+	isAuth,
+	completeProfileValidators,
+	updateUserInfo
+);
 
 userRouter.get('/api/user/check-profile', isAuth, checkUserProfile);
 
