@@ -8,14 +8,40 @@ const QRCode = require('qrcode');
 const Donation = require('../models/donation');
 const Participant = require('../models/participant');
 const { logger } = require('../utils/logger');
+const { startOfDay } = require('../utils/utils');
 
 exports.getEvents = async (req, res, next) => {
 	try {
 		const currentPage = Number(req.query.page) || 1;
 		const perPage = 5;
 
-		const totalItems = await Event.countDocuments();
-		const events = await Event.find()
+		// Filtering and ordering belong here, not in the client. The donor
+		// events list wants only upcoming, non-generic events, and used to
+		// get them by filtering whatever this endpoint happened to return
+		// for the requested page -- then deriving its page count from what
+		// survived. Since a page holds at most `perPage` items, that count
+		// was always 0 or 1, the pager never rendered, and events beyond the
+		// first page were unreachable. Worse, with no sort here the oldest
+		// events sit on page 1 as the collection grows, so once five past
+		// events accumulated the list went permanently empty for donors.
+		//
+		// `totalItems` now counts the same filtered set the page is drawn
+		// from, so ceil(totalItems / perPage) is a real page count for both
+		// roles. Omitting both params keeps the previous behaviour (every
+		// event), so existing callers are unaffected. See issue #417.
+		const filter = {};
+		if (req.query.upcoming === 'true') {
+			filter.date = { $gte: startOfDay(new Date()) };
+		}
+		if (req.query.includeGeneric === 'false') {
+			filter.isGeneric = { $ne: true };
+		}
+
+		const totalItems = await Event.countDocuments(filter);
+		const events = await Event.find(filter)
+			// Soonest first, matching the order the events list wants to show
+			// and giving the pages a stable, meaningful order to walk.
+			.sort({ date: 1 })
 			.skip((currentPage - 1) * perPage)
 			.limit(perPage)
 			.lean();

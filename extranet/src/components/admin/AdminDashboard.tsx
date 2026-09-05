@@ -47,7 +47,11 @@ const AdminDashboard = () => {
 	const { logout } = useAuth();
 	const { data: profileResponse } = useUserProfile();
 	const { data: stats } = useAdminStats();
-	const { data: eventsResponse } = useEvents(1);
+	// Asks the server for upcoming events specifically. Page 1 is now ordered
+	// by date (issue #417), so without this filter it would hold the five
+	// *oldest* events -- most likely all in the past, leaving "next event"
+	// empty on a site with any history.
+	const { data: eventsResponse } = useEvents(1, { upcoming: true });
 	const { data: emergenciesResponse } = useUnconfirmedEmergencies(1);
 	const confirmEmergency = useConfirmEmergency();
 

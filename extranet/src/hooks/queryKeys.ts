@@ -22,6 +22,14 @@
  * every users.list(page) and users.search(query) entry. The `.all`-style
  * entries below exist specifically to be used that way.
  */
+/** Server-side filters accepted by GET /api/events (issue #417). */
+export interface EventListFilters {
+	/** Only events dated today or later. */
+	upcoming?: boolean;
+	/** Set false to leave generic ("free donation") events out. */
+	includeGeneric?: boolean;
+}
+
 export const queryKeys = {
 	user: {
 		/** Matches every user.detail() entry too -- prefix invalidation. */
@@ -47,7 +55,14 @@ export const queryKeys = {
 	events: {
 		/** Matches events.list() too -- prefix invalidation. */
 		all: ['events'] as const,
-		list: (page: number) => ['events', page] as const,
+		/**
+		 * The filters are part of the key: the same page number returns a
+		 * different set depending on whether upcoming/generic events were
+		 * asked for, so two callers with different filters must not share a
+		 * cache entry. See issue #417.
+		 */
+		list: (page: number, filters: EventListFilters = {}) =>
+			['events', page, filters.upcoming ?? null, filters.includeGeneric ?? null] as const,
 	},
 	/** Separate family from `events` above -- see the module comment. */
 	event: {

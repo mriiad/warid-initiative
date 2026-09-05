@@ -11,13 +11,17 @@ import type {
 	DonationData,
 	EventFormData,
 } from '../types';
-import { queryKeys } from './queryKeys';
+import { queryKeys, type EventListFilters } from './queryKeys';
 
 // Events hooks
-export const useEvents = (page = 1) => {
+// `filters` are applied server-side, so the returned page and its
+// `totalItems` describe the same set. Callers that want every event (the
+// admin list, the donation form's event picker) simply omit them and get
+// the previous behaviour. See issue #417.
+export const useEvents = (page = 1, filters: EventListFilters = {}) => {
 	return useQuery({
-		queryKey: queryKeys.events.list(page),
-		queryFn: () => eventsService.getAll(page),
+		queryKey: queryKeys.events.list(page, filters),
+		queryFn: () => eventsService.getAll(page, filters),
 		gcTime: 10 * 60 * 1000, // 10 minutes
 	});
 };
