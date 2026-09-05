@@ -25,6 +25,7 @@ import { eventDetailRedesignStyles } from '../../styles/eventDetailRedesign';
 import { profileRedesignStyles } from '../../styles/profileRedesign';
 import { userDetailRedesignStyles } from '../../styles/userDetailRedesign';
 import { cities, formatDateForDisplay } from '../../utils/utils';
+import LanguageSwitcher from '../shared/LanguageSwitcher';
 import PasswordField from '../shared/PasswordField';
 import PhoneNumberField from '../shared/PhoneNumberField';
 import RedesignBottomNav from '../shared/RedesignBottomNav';
@@ -457,6 +458,14 @@ const ProfileComponent = () => {
 							<ArrowForwardIcon fontSize='small' />
 						</span>
 					</button>
+					{/* Same gap as the two rows above (issue #328): LanguageSwitcher
+						was written and unit-tested but rendered nowhere, so the app
+						shipped three complete locales with no way for a user to
+						pick between them. See issue #421. */}
+					<div className={infoCard}>
+						<Typography className={infoCardLabel}>{t('common.language')}</Typography>
+						<LanguageSwitcher />
+					</div>
 				</div>
 			</div>
 

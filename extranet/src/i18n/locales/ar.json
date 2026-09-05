@@ -1,6 +1,8 @@
 {
   "common": {
     "confirm": "تأكيد",
+    "changeLanguage": "تغيير اللغة",
+    "language": "اللغة",
     "cancel": "إلغاء",
     "delete": "حذف",
     "update": "تحديث",

@@ -41,7 +41,10 @@ describe('LanguageSwitcher', () => {
 		await i18n.changeLanguage('ar');
 		render(<LanguageSwitcher />);
 
-		await user.click(screen.getByRole('button', { name: /change language/i }));
+		// The trigger's accessible name is translated too (it used to be the
+		// hardcoded English 'change language'), so under Arabic it reads
+		// common.changeLanguage from ar.json. See issue #421.
+		await user.click(screen.getByRole('button', { name: 'تغيير اللغة' }));
 		await user.click(await screen.findByText('Français'));
 
 		await waitFor(() => expect(i18n.resolvedLanguage).toBe('fr'));
