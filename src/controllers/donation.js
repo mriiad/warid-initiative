@@ -170,11 +170,6 @@ exports.donate = async (req, res, next) => {
 		});
 
 		await donation.save();
-		await User.findByIdAndUpdate(
-			req.userId,
-			{ $push: { donations: donation._id } },
-			{ new: true }
-		);
 
 		res.status(STATUS_CODE.CREATED).json({ message: 'Donation saved!' });
 	} catch (err) {
