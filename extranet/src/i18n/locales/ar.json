@@ -282,6 +282,8 @@
       "alreadyParticipating": "أنت مسجل بالفعل في هذه الفعالية",
       "participateSuccess": ".تمت إضافتك بنجاح كمشارك",
       "participateError": ".حدث خطأ أثناء التسجيل في الفعالية",
+      "deleteTitle": "حذف الفعالية",
+      "deleteConfirm": "؟هل أنت متأكد من رغبتك في حذف الفعالية \"{{title}}\". لا يمكن التراجع عن هذا الإجراء",
       "deleteSuccess": "!تم حذف الفعالية بنجاح",
       "deleteError": "خطأ في حذف الفعالية: {{message}}",
       "participantDetailsTitle": "تفاصيل المشاركين",

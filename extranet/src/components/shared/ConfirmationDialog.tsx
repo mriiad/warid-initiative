@@ -8,6 +8,7 @@ import {
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import colors from '../../styles/colors';
 import { authStyles } from '../../styles/mainStyles';
 
@@ -64,14 +65,21 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
 	open,
 	title,
 	message,
-	confirmText = 'Confirm',
-	cancelText = 'Cancel',
+	confirmText,
+	cancelText,
 	onConfirm,
 	onCancel,
 	warning = false,
 }) => {
 	const classes = useStyles();
 	const { button } = authStyles();
+	const { t } = useTranslation();
+	// Defaulted through i18n rather than to the literals 'Confirm'/'Cancel':
+	// this is a shared dialog in an Arabic-first UI, so a caller that forgets
+	// to pass its own labels should still ask in the user's language. See
+	// issue #420.
+	const confirmLabel = confirmText || t('common.confirm');
+	const cancelLabel = cancelText || t('common.cancel');
 
 	return (
 		<Dialog
@@ -116,7 +124,7 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
 						},
 					}}
 				>
-					{cancelText}
+					{cancelLabel}
 				</Button>
 				<Button
 					onClick={onConfirm}
@@ -125,7 +133,7 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
 					className={button}
 					autoFocus
 				>
-					{confirmText}
+					{confirmLabel}
 				</Button>
 			</DialogActions>
 		</Dialog>
