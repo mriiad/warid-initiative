@@ -280,6 +280,8 @@
       "alreadyParticipating": "Vous êtes déjà inscrit à cet événement",
       "participateSuccess": "Vous avez été ajouté avec succès comme participant.",
       "participateError": "Une erreur est survenue lors de votre inscription à l'événement.",
+      "deleteTitle": "Supprimer l'événement",
+      "deleteConfirm": "Êtes-vous sûr de vouloir supprimer l'événement « {{title}} » ? Cette action est irréversible.",
       "deleteSuccess": "Événement supprimé avec succès !",
       "deleteError": "Erreur lors de la suppression de l'événement : {{message}}",
       "participantDetailsTitle": "Détails des participants",
