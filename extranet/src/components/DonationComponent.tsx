@@ -187,21 +187,36 @@ const DonationComponent = () => {
 			},
 			onError: (error: any) => {
 				setIsSuccessAnimationVisible(false);
-				const errorResponseData: ApiErrorResponse = error.response?.data;
-				if (errorResponseData?.errorKeys) {
-					errorResponseData.errorKeys.forEach((errorKey) => {
-						setError(errorKey, {
-							message: t('donation.fieldInvalid', { field: errorKey }),
-						});
+				const errorResponseData: ApiErrorResponse | undefined = error.response?.data;
+				const errorKeys = errorResponseData?.errorKeys ?? [];
+
+				errorKeys.forEach((errorKey) => {
+					setError(errorKey, {
+						message: t('donation.fieldInvalid', { field: errorKey }),
 					});
-				}
-				if (error.response?.data) {
-					const errorResponseData: ApiErrorResponse = error.response.data;
-					if (error.response.status !== 404 && error.response.status !== 400) {
-						setErrorMessage(errorResponseData.message || t('donation.genericError'));
-						setIsFormSubmitted(true);
-						setIsErrorAnimationVisible(true);
-					}
+				});
+
+				// A 400 carrying field keys is a per-field validation failure the
+				// form can express on its own, so it keeps the form up and just
+				// marks the field. Everything else gets the panel.
+				//
+				// This used to skip 404 as well, on the assumption that it also
+				// arrives with errorKeys. It never does -- and `donate` throws
+				// two of them: a deleted event, and the routine case of a plain
+				// donation on a deployment with no generic event. Both left the
+				// screen completely unchanged, so the donor pressed the button
+				// and had no way to tell the donation had not been recorded. A
+				// 400 that reaches the shared handler without errorKeys (a
+				// Mongoose ValidationError via translateMongooseError), and a
+				// request that failed before getting any response at all, were
+				// silent for the same reason. See issue #416.
+				const handledInline =
+					errorKeys.length > 0 && error.response?.status === 400;
+
+				if (!handledInline) {
+					setErrorMessage(errorResponseData?.message || t('donation.genericError'));
+					setIsFormSubmitted(true);
+					setIsErrorAnimationVisible(true);
 				}
 			},
 		});
