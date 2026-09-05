@@ -274,3 +274,42 @@ test.describe('Event deletion (admin only, regression test for the redesigned ev
 		).toBeVisible({ timeout: 5000 });
 	});
 });
+
+// `isLoading || !event` cannot tell a slow fetch from a failed one: on a 404
+// the query settles, `event` stays undefined, and the loading branch held
+// forever. /events/:reference is the URL behind printed and shared event QR
+// codes, so a deleted event or a mistyped reference produced a dead screen
+// with no explanation. See issue #418.
+test.describe('Event detail when the event cannot be loaded (issue #418)', () => {
+	test('a reference that does not exist shows a not-found message and a way back, not an endless spinner', async ({ page }) => {
+		await seedAuth(page, { isAdmin: false });
+		await mockJson(page, '**/api/events/WEVENTGONE', { message: 'Event not found' }, { status: 404 });
+
+		await page.goto('/events/WEVENTGONE');
+
+		await expect(page.getByText('لم يتم العثور على هذه الفعالية')).toBeVisible({ timeout: 10000 });
+		await expect(page.getByText('...جاري تحميل تفاصيل الفعالية')).toHaveCount(0);
+
+		await page.getByRole('button', { name: 'العودة إلى الفعاليات' }).click();
+		await expect(page).toHaveURL(/\/events(\?|$)/);
+	});
+
+	test('a server error is worded as a transient failure rather than a missing event', async ({ page }) => {
+		await seedAuth(page, { isAdmin: false });
+		await mockJson(page, '**/api/events/WEVENTAGADIR', { message: 'Server error' }, { status: 500 });
+
+		await page.goto('/events/WEVENTAGADIR');
+
+		await expect(page.getByText(/تعذّر تحميل تفاصيل الفعالية/)).toBeVisible({ timeout: 10000 });
+		await expect(page.getByText('لم يتم العثور على هذه الفعالية')).toHaveCount(0);
+	});
+
+	test('an admin gets the same treatment, not a blank detail screen', async ({ page }) => {
+		await seedAuth(page, { isAdmin: true });
+		await mockJson(page, '**/api/events/WEVENTGONE', { message: 'Event not found' }, { status: 404 });
+
+		await page.goto('/events/WEVENTGONE');
+
+		await expect(page.getByText('لم يتم العثور على هذه الفعالية')).toBeVisible({ timeout: 10000 });
+	});
+});

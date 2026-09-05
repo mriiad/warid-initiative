@@ -1,4 +1,4 @@
-import { CircularProgress, Typography } from '@mui/material';
+import { Button, CircularProgress, Typography } from '@mui/material';
 
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -48,8 +48,19 @@ const EventDetail: React.FC = () => {
 	const location = useLocation();
 	const initialRoute: boolean = location.pathname === `/events/${reference}`;
 
-	const { data: eventData, isLoading } = useEvent(reference || '');
+	const {
+		data: eventData,
+		isLoading,
+		isError,
+		error: eventError,
+	} = useEvent(reference || '');
 	const event = eventData?.data?.event;
+	// A 404 means the reference itself is wrong or the event is gone -- the
+	// case behind printed QR codes and shared links pointing at a deleted
+	// event -- and deserves different wording from a transient failure.
+	const eventNotFound =
+		(eventError as { response?: { status?: number } } | null)?.response
+			?.status === 404;
 
 	const { data: participationData } = useCheckParticipation(reference || '');
 	const createParticipant = useCreateParticipant();
@@ -140,7 +151,31 @@ const EventDetail: React.FC = () => {
 	};
 	return (
 		<>
-			{isLoading || !event ? (
+			{isError ? (
+				// `isLoading || !event` alone can't tell a slow fetch from a
+				// failed one: on a 404 the query settles, `event` stays
+				// undefined, and the spinner below used to hold forever with no
+				// explanation and no way out. See issue #418.
+				<LoadingContainer>
+					<Typography className='loadingText'>
+						{t(
+							eventNotFound
+								? 'events.detail.notFoundTitle'
+								: 'events.detail.loadErrorTitle'
+						)}
+					</Typography>
+					<Typography className='loadingText'>
+						{t(
+							eventNotFound
+								? 'events.detail.notFoundBody'
+								: 'events.detail.loadErrorBody'
+						)}
+					</Typography>
+					<Button type='button' onClick={() => navigate('/events')}>
+						{t('events.detail.backToEvents')}
+					</Button>
+				</LoadingContainer>
+			) : isLoading || !event ? (
 				<LoadingContainer>
 					<CircularProgress size={60} />
 					<Typography className='loadingText'>
