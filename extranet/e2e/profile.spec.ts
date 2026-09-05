@@ -98,10 +98,19 @@ test.describe('Profile page', () => {
 		await expect(page.getByText('المعلومات الشخصية')).toBeVisible();
 		await page.getByRole('button', { name: 'تسجيل الخروج' }).click();
 
+		// The error is still surfaced -- a failed logout must not be swallowed.
 		await expect(page.getByText('Could not reach the session store.')).toBeVisible({ timeout: 5000 });
-		// Still on /profile -- onSuccess (which clears the session and
-		// navigates) never ran.
-		await expect(page).toHaveURL(/\/profile/);
+		// What changed (issue #404): the user is logged out anyway. Clearing
+		// the device is the part that must never fail -- this used to leave
+		// every token in localStorage, so someone who pressed "log out" on a
+		// shared device was still logged in behind the toast.
+		await expect(page).toHaveURL(/\/login/);
+		const leftovers = await page.evaluate(() =>
+			['token', 'refreshToken', 'userId', 'isAdmin', 'adminRole'].filter((k) =>
+				localStorage.getItem(k)
+			)
+		);
+		expect(leftovers).toEqual([]);
 	});
 
 	test('regression (issue #328): the Help & Support links reach the FAQ and Contact us pages', async ({ page }) => {

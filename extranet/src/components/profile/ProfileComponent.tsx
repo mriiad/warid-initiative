@@ -148,7 +148,13 @@ const ProfileComponent = () => {
 
 	const handleLogout = () => {
 		logout.mutate(undefined, {
-			onSuccess: () => {
+			// onSettled, not onSuccess: signing out must not depend on the
+			// server call succeeding. useLogout clears localStorage the same
+			// way; this clears the in-memory auth state and leaves the page,
+			// so a failed request can't strand the user on a logged-in screen
+			// with their session half-cleared. The failure is still surfaced
+			// by useLogout's onError. See issue #404.
+			onSettled: () => {
 				setToken(null);
 				setUserId(null);
 				setIsAdmin(false);

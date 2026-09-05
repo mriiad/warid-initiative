@@ -90,7 +90,11 @@ authRouter.post(
 
 authRouter.post('/api/auth/login', authLimiter, login);
 
-authRouter.post('/api/auth/logout', logout);
+// isAuth so logout knows whose session to revoke. The client already sends
+// the access token on this call via apiClient's request interceptor, and
+// that interceptor silently refreshes an expired one before retrying, so
+// requiring it here doesn't cost a working logout. See #404.
+authRouter.post('/api/auth/logout', isAuth, logout);
 
 authRouter.get('/api/auth/activation/:confirmationCode', verifyUser);
 

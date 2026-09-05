@@ -473,10 +473,39 @@ describe('GET /api/auth/activation/:confirmationCode error handling', () => {
 });
 
 describe('POST /api/auth/logout', () => {
-	it('clears the cookie and confirms logout', async () => {
-		const res = await request(app).post('/api/auth/logout');
+	const USER_ID = '507f1f77bcf86cd799439011';
+
+	// Logout used to only res.clearCookie('token') -- a cookie this app never
+	// sets. The stored refresh token, which is exactly what refreshToken()
+	// compares against, was left intact, so a logged-out client could keep
+	// minting access tokens for the token's full 7-day life. See issue #404.
+	it('revokes the stored refresh token', async () => {
+		User.findByIdAndUpdate.mockReturnValue(resolveTo({}));
+		const res = await request(app)
+			.post('/api/auth/logout')
+			.set('Authorization', authHeader(USER_ID));
 		expect(res.status).toBe(200);
-		expect(res.body.message).toBeDefined();
+		expect(User.findByIdAndUpdate).toHaveBeenCalledWith(
+			USER_ID,
+			expect.objectContaining({ $unset: { refreshToken: 1 } })
+		);
+	});
+
+	it('requires authentication, since it has to know whose session to end', async () => {
+		const res = await request(app).post('/api/auth/logout');
+		expect(res.status).toBe(401);
+	});
+
+	it('revokes the session of the caller named by the token, not a body value', async () => {
+		User.findByIdAndUpdate.mockReturnValue(resolveTo({}));
+		await request(app)
+			.post('/api/auth/logout')
+			.set('Authorization', authHeader(USER_ID))
+			.send({ userId: 'someone-else' });
+		expect(User.findByIdAndUpdate).toHaveBeenCalledWith(
+			USER_ID,
+			expect.anything()
+		);
 	});
 });
 
