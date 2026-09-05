@@ -4,6 +4,7 @@ import { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { authRedesignStyles } from '../../styles/authRedesign';
+import LanguageSwitcher from './LanguageSwitcher';
 
 interface AuthHeaderProps {
 	title: string;
@@ -19,13 +20,25 @@ const AuthHeader = ({ title, subtitle, backLabel }: AuthHeaderProps) => {
 
 	return (
 		<div className={header}>
-			<IconButton
-				className={backButton}
-				aria-label={backLabel || t('auth.login.back')}
-				onClick={() => navigate(-1)}
+			{/* The language control lives here as well as on /profile: the
+				language a first-time visitor reads is settled before they have
+				an account to open a profile screen with. See issue #421. */}
+			<div
+				style={{
+					display: 'flex',
+					alignItems: 'center',
+					justifyContent: 'space-between',
+				}}
 			>
-				<ArrowBackIcon />
-			</IconButton>
+				<IconButton
+					className={backButton}
+					aria-label={backLabel || t('auth.login.back')}
+					onClick={() => navigate(-1)}
+				>
+					<ArrowBackIcon />
+				</IconButton>
+				<LanguageSwitcher className={backButton} />
+			</div>
 			<Typography variant='h1' className={titleClass}>
 				{title}
 			</Typography>
