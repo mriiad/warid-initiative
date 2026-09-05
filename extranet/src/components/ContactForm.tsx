@@ -11,6 +11,7 @@ import { contactService, usersService } from '../services';
 import type { UserProfileResponse } from '../types';
 import { authRedesignStyles } from '../styles/authRedesign';
 import { eventsListRedesignStyles } from '../styles/eventsListRedesign';
+import PhoneNumberField from './shared/PhoneNumberField';
 import RedesignBottomNav from './shared/RedesignBottomNav';
 import ResponseAnimation from './shared/ResponseAnimation';
 
@@ -109,6 +110,20 @@ const ContactForm = () => {
 		}
 	};
 
+	// Every Controller below used to carry no `rules` at all, so errors.* was
+	// never populated: the six translated contact.*Required strings were dead
+	// in all three locales, and for a signed-out sender -- whose email and
+	// phone are the only way to answer them -- neither was format-checked.
+	// See issue #415.
+	const validateEmail = (value: string) => {
+		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+		return emailRegex.test(value) || t('contact.emailInvalid');
+	};
+
+	// Same shape SignupForm and EmergencyForm accept (E.164).
+	const validatePhoneNumber = (value: string) =>
+		/^\+[1-9]\d{6,14}$/.test(value) || t('contact.phoneInvalid');
+
 	const handleSendAnotherMessage = () => {
 		setIsFormSubmitted(false);
 		if (isSuccessResponse) reset();
@@ -149,12 +164,17 @@ const ContactForm = () => {
 							<Typography className={heroSubtitle}>{t('contact.heroSubtitle')}</Typography>
 						</div>
 
-						<form onSubmit={handleSubmit(onSubmit)}>
+						{/* noValidate: every field below passes `required`, which sets
+						    the native HTML attribute -- the browser's own check would
+						    otherwise block submit before react-hook-form runs, in the
+						    browser's UI language rather than the app's. See issue #415. */}
+						<form onSubmit={handleSubmit(onSubmit)} noValidate>
 							<div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 								{!localUserProfile?.firstname && (
 									<Controller
 										name='firstname'
 										control={control}
+										rules={{ required: t('contact.firstNameRequired') }}
 										render={({ field }) => (
 											<TextField
 												fullWidth
@@ -172,6 +192,7 @@ const ContactForm = () => {
 									<Controller
 										name='lastname'
 										control={control}
+										rules={{ required: t('contact.lastNameRequired') }}
 										render={({ field }) => (
 											<TextField
 												fullWidth
@@ -189,6 +210,10 @@ const ContactForm = () => {
 									<Controller
 										name='email'
 										control={control}
+										rules={{
+											required: t('contact.emailRequired'),
+											validate: validateEmail,
+										}}
 										render={({ field }) => (
 											<TextField
 												fullWidth
@@ -197,7 +222,7 @@ const ContactForm = () => {
 												required
 												{...field}
 												error={Boolean(errors.email)}
-												helperText={errors.email ? t('contact.emailRequired') : ''}
+												helperText={(errors.email?.message as string) || ''}
 											/>
 										)}
 									/>
@@ -206,15 +231,22 @@ const ContactForm = () => {
 									<Controller
 										name='phoneNumber'
 										control={control}
-										render={({ field }) => (
-											<TextField
-												fullWidth
-												className={input}
+										defaultValue=''
+										rules={{
+											required: t('contact.phoneRequired'),
+											validate: validatePhoneNumber,
+										}}
+										// PhoneNumberField rather than a bare TextField, matching
+										// SignupForm and EmergencyForm: it carries the country
+										// picker that makes the E.164 rule above something a user
+										// can actually satisfy, instead of asking them to know to
+										// type '+212' into an unlabelled box.
+										render={({ field: { ref: _ref, ...field } }) => (
+											<PhoneNumberField
 												label={t('contact.phone')}
-												required
 												{...field}
 												error={Boolean(errors.phoneNumber)}
-												helperText={errors.phoneNumber ? t('contact.phoneRequired') : ''}
+												helperText={(errors.phoneNumber?.message as string) || ''}
 											/>
 										)}
 									/>
@@ -222,6 +254,7 @@ const ContactForm = () => {
 								<Controller
 									name='subject'
 									control={control}
+									rules={{ required: t('contact.subjectRequired') }}
 									render={({ field }) => (
 										<TextField
 											fullWidth
@@ -237,6 +270,7 @@ const ContactForm = () => {
 								<Controller
 									name='message'
 									control={control}
+									rules={{ required: t('contact.messageRequired') }}
 									render={({ field }) => (
 										<TextField
 											fullWidth
