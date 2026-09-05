@@ -15,11 +15,24 @@ import type {
 	MessageResponse,
 	ParticipantStatsResponse,
 } from '../types';
+import type { EventListFilters } from '../hooks/queryKeys';
 import { apiClient } from '../utils/apiClient';
 
 export const eventsService = {
-	getAll: (page = 1) => {
-		return apiClient.get<EventsListResponse>(`/api/events?page=${page}`);
+	// `upcoming` / `includeGeneric` are filtered server-side so the page and
+	// its totalItems describe the same set -- the donor list used to filter a
+	// page client-side and derive its page count from the remainder, which
+	// could never exceed one page. See issue #417. Omitting them returns
+	// every event, as before.
+	getAll: (page = 1, filters: EventListFilters = {}) => {
+		const params = new URLSearchParams({ page: String(page) });
+		if (filters.upcoming !== undefined) {
+			params.set('upcoming', String(filters.upcoming));
+		}
+		if (filters.includeGeneric !== undefined) {
+			params.set('includeGeneric', String(filters.includeGeneric));
+		}
+		return apiClient.get<EventsListResponse>(`/api/events?${params.toString()}`);
 	},
 
 	getByReference: (reference: string) => {
