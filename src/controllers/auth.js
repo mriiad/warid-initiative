@@ -271,9 +271,21 @@ exports.verifyUser = (req, res, next) => {
 		});
 };
 
-exports.logout = (req, res, next) => {
+exports.logout = async (req, res, next) => {
 	try {
-		res.clearCookie('token');
+		// Clearing the stored refresh token is the only thing that actually
+		// ends a session. refreshToken() authorizes a refresh by comparing the
+		// presented token against this exact field, so until it is cleared a
+		// logged-out client's refresh token keeps minting access tokens for
+		// its full 7-day life -- logging out on a shared device revoked
+		// nothing. The access token itself is a stateless JWT and simply
+		// expires; the refresh token is the part we can revoke. See #404.
+		//
+		// This used to call res.clearCookie('token') instead, which did
+		// nothing: auth is Authorization: Bearer with the tokens in
+		// localStorage, and no cookie of that name is ever set.
+		await User.findByIdAndUpdate(req.userId, { $unset: { refreshToken: 1 } });
+
 		res.status(STATUS_CODE.OK).json({
 			message: constants.ERROR_MESSAGES.LOGGED_OUT_SUCCESSFULLY,
 		});

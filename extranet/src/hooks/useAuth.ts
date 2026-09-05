@@ -67,11 +67,16 @@ export const useLogin = () => {
 
 export const useLogout = () => {
 	const queryClient = useQueryClient();
-	const { showError } = useErrorToast();
 
 	return useMutation({
 		mutationFn: () => authService.logout(),
-		onSuccess: () => {
+		// onSettled, not onSuccess: clearing the device is the part that must
+		// never fail. Previously a network blip left every token in
+		// localStorage -- the user pressed "log out", got an error toast, and
+		// was still logged in. The server call is best-effort revocation of
+		// the refresh token on top of that, not a precondition for it.
+		// See issue #404.
+		onSettled: () => {
 			localStorage.removeItem('token');
 			localStorage.removeItem('refreshToken');
 			localStorage.removeItem('userId');
@@ -80,8 +85,9 @@ export const useLogout = () => {
 			queryClient.clear();
 		},
 		onError: (error) => {
+			// Logged, not shown: the user is logged out locally either way, so
+			// a toast here would contradict what just visibly happened.
 			console.error('Logout failed:', error);
-			showError(error);
 		},
 	});
 };
