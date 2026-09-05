@@ -95,4 +95,76 @@ test.describe('Donation form', () => {
 		// The page should still render the form rather than crash outright.
 		await expect(page.locator('form')).toBeVisible();
 	});
+
+	// onError skipped 404 outright, on the assumption it arrives with
+	// errorKeys to render against a field. It never does -- and `donate`
+	// throws one for the routine case of a plain donation on a deployment
+	// with no generic event. The request fired, came back 404, and the screen
+	// did not change at all: no error, no success, nothing. See issue #416.
+	test('regression (issue #416): a 404 from the donation endpoint is shown, not swallowed', async ({ page }) => {
+		await seedAuth(page);
+		await mockJson(page, '**/api/user/profile', fullProfileResponse());
+		await mockJson(page, '**/api/donation/canDonate', { canDonate: true });
+		await mockJson(
+			page,
+			'**/api/donation',
+			{ message: 'No generic event found for free donation' },
+			{ status: 404, method: 'POST' }
+		);
+
+		await page.goto('/donate');
+		await page.getByRole('combobox').nth(1).click();
+		await page.getByRole('option', { name: 'الدم' }).click();
+		await page.locator('button[type=submit]').click();
+
+		await expect(page.getByText(/No generic event found/)).toBeVisible({ timeout: 5000 });
+		// And definitely not reported as a recorded donation.
+		await expect(page.getByText('!شكراً لتبرعك')).toHaveCount(0);
+	});
+
+	// Same hole via the other excluded status: a 400 that reaches the shared
+	// handler without errorKeys (a Mongoose ValidationError translated by
+	// translateMongooseError) carried nothing to mark inline either.
+	test('regression (issue #416): a 400 with no field keys is shown rather than silently dropped', async ({ page }) => {
+		await seedAuth(page);
+		await mockJson(page, '**/api/user/profile', fullProfileResponse());
+		await mockJson(page, '**/api/donation/canDonate', { canDonate: true });
+		await mockJson(
+			page,
+			'**/api/donation',
+			{ message: 'Donation validation failed.' },
+			{ status: 400, method: 'POST' }
+		);
+
+		await page.goto('/donate');
+		await page.getByRole('combobox').nth(1).click();
+		await page.getByRole('option', { name: 'الدم' }).click();
+		await page.locator('button[type=submit]').click();
+
+		await expect(page.getByText('Donation validation failed.')).toBeVisible({ timeout: 5000 });
+	});
+
+	// The complement: a 400 that *does* name a field still keeps the form up
+	// and marks it, rather than replacing the form with the error panel --
+	// otherwise the inline message would be hidden the moment it was set.
+	test('a 400 naming a field marks that field and leaves the form in place', async ({ page }) => {
+		await seedAuth(page);
+		await mockJson(page, '**/api/user/profile', fullProfileResponse());
+		await mockJson(page, '**/api/donation/canDonate', { canDonate: true });
+		await mockJson(
+			page,
+			'**/api/donation',
+			{ message: 'The donation date cannot be in the future.', errorKeys: ['donationDate'] },
+			{ status: 400, method: 'POST' }
+		);
+
+		await page.goto('/donate');
+		await page.getByRole('combobox').nth(1).click();
+		await page.getByRole('option', { name: 'الدم' }).click();
+		await page.locator('button[type=submit]').click();
+		await page.waitForTimeout(500);
+
+		await expect(page.locator('form')).toBeVisible();
+		await expect(page.getByLabel(/تاريخ التبرع/)).toHaveAttribute('aria-invalid', 'true');
+	});
 });
