@@ -230,7 +230,10 @@ test.describe('Event deletion (admin only, regression test for the redesigned ev
 		await page.getByRole('button', { name: 'عرض التفاصيل' }).click();
 		await expect(page).toHaveURL(/\/events\/WEVENT20990101/);
 		await page.getByRole('button', { name: 'حذف' }).click();
-		await page.getByRole('button', { name: 'Delete' }).click();
+		// Scoped to the dialog: its confirm button is now also 'حذف' rather
+		// than the old hardcoded English 'Delete' (issue #420), so an
+		// unscoped lookup would match the page's delete button too.
+		await page.getByRole('dialog').getByRole('button', { name: 'حذف' }).click();
 		await page.waitForTimeout(500);
 		expect(deleteCalled).toBe(true);
 	});
@@ -261,7 +264,10 @@ test.describe('Event deletion (admin only, regression test for the redesigned ev
 
 		await page.goto('/events/WEVENT20990101?forceDesktop=1');
 		await page.getByRole('button', { name: 'حذف' }).click();
-		await page.getByRole('button', { name: 'Delete' }).click();
+		// Scoped to the dialog: its confirm button is now also 'حذف' rather
+		// than the old hardcoded English 'Delete' (issue #420), so an
+		// unscoped lookup would match the page's delete button too.
+		await page.getByRole('dialog').getByRole('button', { name: 'حذف' }).click();
 
 		await expect(
 			page.getByText('This event already has registered participants.')
