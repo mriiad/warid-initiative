@@ -175,7 +175,13 @@ const AdminDashboard = () => {
 					<div className={giftDaysRow}>
 						{GIFT_WEEKDAYS.map((day, index) => (
 							<div className={giftDay} key={day}>
-								<span>{t(`admin.weekday.${day}`, day).charAt(0)}</span>
+								{/* Rendered whole, not truncated to charAt(0): the
+								    abbreviations are already sized for this strip (two
+								    letters in Arabic, three in the Latin locales), and
+								    cutting them to one collapsed different days onto the
+								    same glyph -- أر (Wed) and أح (Sun) both became أ, and
+								    Mar/Mer both became M in French. See issue #422. */}
+								<span>{t(`admin.weekday.${day}`, day)}</span>
 								{index < GIFT_FILLED_COUNT ? (
 									<span className={giftDayMarkerFilled}>⭐</span>
 								) : (

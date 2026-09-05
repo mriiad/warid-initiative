@@ -293,6 +293,9 @@ export const dashboardRedesignStyles = makeStyles({
 		gap: '6px',
 		fontSize: '11px',
 		color: onRose.medium,
+		// The weekday labels are two or three letters depending on locale
+		// (issue #422) -- keep each one on a single line.
+		whiteSpace: 'nowrap',
 	},
 	giftDayMarkerFilled: {
 		fontSize: '18px',
