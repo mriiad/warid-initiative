@@ -104,6 +104,7 @@
       "passwordRequired": "Le mot de passe est requis",
       "forgotPassword": "Mot de passe oublié ?",
       "passwordResetSuccess": "Réinitialisation du mot de passe réussie !",
+      "resetLinkSent": "Si cette adresse e-mail est enregistrée, un lien de réinitialisation vient de lui être envoyé.",
       "invalidCredentials": "Nom d'utilisateur ou mot de passe incorrect.",
       "resendActivationEmail": "Adresse e-mail",
       "resendActivationSubmit": "Renvoyer l'e-mail d'activation",
@@ -122,6 +123,7 @@
       "subtitle": "Entrez votre e-mail pour recevoir un lien de réinitialisation",
       "email": "Adresse e-mail",
       "emailRequired": "L'adresse e-mail est requise",
+      "invalidEmail": "Veuillez saisir une adresse e-mail valide.",
       "submit": "Envoyer le lien de réinitialisation",
       "back": "Retour"
     },

@@ -59,4 +59,55 @@ test.describe('Password reset', () => {
 			expect(true, 'BUG: no visible error for mismatched password confirmation').toBe(false);
 		});
 	});
+
+	// The email Controller carried no `rules` at all, so pressing submit on an
+	// empty form fired POST /api/auth/request-reset with {"email":""} -- past
+	// the mailLimiter, which is tight for mail endpoints -- and then bounced
+	// the user to /login as if something had been sent. See issue #412.
+	test('regression (issue #412): an empty email is rejected in the form, not sent to the server', async ({ page }) => {
+		let requested = false;
+		await page.route('**/api/auth/request-reset', async (route) => {
+			requested = true;
+			await route.fulfill({ status: 200, contentType: 'application/json', body: '{}' });
+		});
+
+		await page.goto('/request-reset-password');
+		await page.locator('button[type=submit]').click();
+
+		await expect(page.getByText('البريد الإلكتروني مطلوب')).toBeVisible({ timeout: 5000 });
+		await expect(page).toHaveURL(/request-reset-password/);
+		expect(requested).toBe(false);
+	});
+
+	test('regression (issue #412): a malformed email is rejected in the form', async ({ page }) => {
+		let requested = false;
+		await page.route('**/api/auth/request-reset', async (route) => {
+			requested = true;
+			await route.fulfill({ status: 200, contentType: 'application/json', body: '{}' });
+		});
+
+		await page.goto('/request-reset-password');
+		await page.getByLabel('البريد الإلكتروني').fill('not-an-email');
+		await page.locator('button[type=submit]').click();
+
+		await expect(page.getByText(/بريد إلكتروني صالح/)).toBeVisible({ timeout: 5000 });
+		expect(requested).toBe(false);
+	});
+
+	// PasswordResetForm navigated with `state.resetMessage`; LoginForm only
+	// ever read `state.passwordReset`, so the user asked for a reset link and
+	// landed on the login page with nothing at all telling them a mail was on
+	// its way. See issue #412.
+	test('regression (issue #412): a successful request confirms itself on the login screen', async ({ page }) => {
+		await mockJson(page, '**/api/auth/request-reset', { message: 'Password reset link sent to email!' }, { status: 200, method: 'POST' });
+
+		await page.goto('/request-reset-password');
+		await page.getByLabel('البريد الإلكتروني').fill('user@example.com');
+		await page.locator('button[type=submit]').click();
+
+		await expect(page).toHaveURL(/\/login/, { timeout: 5000 });
+		// Worded conditionally because requestPasswordReset answers 200 whether
+		// or not the address exists, so it can't be used to enumerate accounts.
+		await expect(page.getByText(/إذا كان هذا البريد الإلكتروني مسجلاً/)).toBeVisible();
+	});
 });
