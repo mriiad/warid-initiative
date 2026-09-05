@@ -275,6 +275,11 @@
     "detail": {
       "description": "Description",
       "loading": "Loading event details...",
+      "notFoundTitle": "This event could not be found",
+      "notFoundBody": "It may have been deleted, or the link may be wrong.",
+      "loadErrorTitle": "Couldn't load the event details.",
+      "loadErrorBody": "Check your connection and try again.",
+      "backToEvents": "Back to events",
       "date": "Date",
       "location": "Location",
       "openMap": "Open Map",
