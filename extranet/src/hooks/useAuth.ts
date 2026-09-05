@@ -67,6 +67,7 @@ export const useLogin = () => {
 
 export const useLogout = () => {
 	const queryClient = useQueryClient();
+	const { showError } = useErrorToast();
 
 	return useMutation({
 		mutationFn: () => authService.logout(),
@@ -85,9 +86,13 @@ export const useLogout = () => {
 			queryClient.clear();
 		},
 		onError: (error) => {
-			// Logged, not shown: the user is logged out locally either way, so
-			// a toast here would contradict what just visibly happened.
+			// Still surfaced, per issue #307: a failed logout must not be
+			// swallowed. What changed is only that the device is cleared
+			// regardless (onSettled above), so the user ends up logged out and
+			// told that ending the session server-side didn't succeed --
+			// instead of being left logged in behind the toast.
 			console.error('Logout failed:', error);
+			showError(error);
 		},
 	});
 };

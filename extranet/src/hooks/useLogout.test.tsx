@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { renderHook, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { ErrorToastProvider } from '../components/shared/ErrorToastProvider';
 import { authService } from '../services';
 import { useLogout } from './useAuth';
 
@@ -13,7 +14,13 @@ function wrapper({ children }: { children: ReactNode }) {
 	const queryClient = new QueryClient({
 		defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
 	});
-	return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+	// useLogout surfaces a failed logout through the shared toast (issue
+	// #307), so the hook needs that provider in scope.
+	return (
+		<QueryClientProvider client={queryClient}>
+			<ErrorToastProvider>{children}</ErrorToastProvider>
+		</QueryClientProvider>
+	);
 }
 
 const seedSession = () => {
