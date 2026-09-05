@@ -22,8 +22,15 @@ const useStyles = makeStyles({
 	},
 });
 
-const LanguageSwitcher = () => {
-	const { i18n } = useTranslation();
+interface LanguageSwitcherProps {
+	// Lets a host screen hand the trigger its own colours -- the auth headers
+	// sit on the rose background and need the same treatment as their back
+	// button. See issue #421.
+	className?: string;
+}
+
+const LanguageSwitcher = ({ className }: LanguageSwitcherProps = {}) => {
+	const { i18n, t } = useTranslation();
 	const { menuItem, activeMenuItem } = useStyles();
 	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
@@ -44,7 +51,12 @@ const LanguageSwitcher = () => {
 
 	return (
 		<>
-			<IconButton onClick={handleOpen} aria-label='change language' size='large'>
+			<IconButton
+				className={className}
+				onClick={handleOpen}
+				aria-label={t('common.changeLanguage')}
+				size='large'
+			>
 				<TranslateIcon />
 			</IconButton>
 			<Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
