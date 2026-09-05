@@ -313,3 +313,105 @@ test.describe('Event detail when the event cannot be loaded (issue #418)', () =>
 		await expect(page.getByText('لم يتم العثور على هذه الفعالية')).toBeVisible({ timeout: 10000 });
 	});
 });
+
+// The donor list used to filter the page it had been given (dropping generic
+// and past events) and then derive totalPages from what survived. A page
+// holds at most five items, so that count could never exceed one: the pager
+// was hidden and events beyond the first page were unreachable. With the
+// backend unsorted, the oldest events also sat on page 1, so once five past
+// events accumulated the list read "no events available" while upcoming ones
+// waited on later pages. See issue #417.
+test.describe('Events list pagination (issue #417)', () => {
+	const mkEvent = (i: number, date: string, isGeneric = false) =>
+		sampleEvent({ _id: `evt-${i}`, reference: `WEV${i}`, title: `Event ${i}`, date, isGeneric });
+	const future = (days: number) => new Date(Date.now() + days * 864e5).toISOString();
+
+	// Serves whatever the server would for the requested page, honouring the
+	// filters, so the test exercises the real client/server contract.
+	const routeEvents = async (page: import('@playwright/test').Page, all: ReturnType<typeof mkEvent>[]) => {
+		await page.route('**/api/events?**', async (route) => {
+			const params = new URL(route.request().url()).searchParams;
+			let set = all;
+			if (params.get('upcoming') === 'true') {
+				const today = new Date();
+				today.setHours(0, 0, 0, 0);
+				set = set.filter((e) => new Date(e.date as string) >= today);
+			}
+			if (params.get('includeGeneric') === 'false') {
+				set = set.filter((e) => !e.isGeneric);
+			}
+			set = [...set].sort(
+				(a, b) => new Date(a.date as string).getTime() - new Date(b.date as string).getTime()
+			);
+			const p = Number(params.get('page') || 1);
+			await route.fulfill({
+				status: 200,
+				contentType: 'application/json',
+				body: JSON.stringify({ events: set.slice((p - 1) * 5, p * 5), totalItems: set.length }),
+			});
+		});
+	};
+
+	test('a donor can page through more than five events', async ({ page }) => {
+		await seedAuth(page, { isAdmin: false });
+		const all = Array.from({ length: 12 }, (_, i) => mkEvent(i + 1, future(i + 1)));
+		await routeEvents(page, all);
+
+		await page.goto('/events');
+		await expect(page.getByText('Event 1')).toBeVisible({ timeout: 5000 });
+		await expect(page.getByText('Event 6')).toHaveCount(0);
+
+		// The pager exists at all -- it used to be hidden, since totalPages
+		// was computed from a five-item page and so was never above 1.
+		await expect(page.getByText('صفحة 1 من 3')).toBeVisible();
+
+		await page.getByRole('button', { name: 'التالي' }).click();
+		await expect(page.getByText('Event 6')).toBeVisible({ timeout: 5000 });
+		await expect(page.getByText('صفحة 2 من 3')).toBeVisible();
+	});
+
+	test('a donor still sees upcoming events when the oldest five are in the past', async ({ page }) => {
+		await seedAuth(page, { isAdmin: false });
+		const past = (days: number) => new Date(Date.now() - days * 864e5).toISOString();
+		const all = [
+			...Array.from({ length: 5 }, (_, i) => mkEvent(i + 1, past(10 - i))),
+			...Array.from({ length: 2 }, (_, i) => mkEvent(i + 6, future(i + 1))),
+		];
+		await routeEvents(page, all);
+
+		await page.goto('/events');
+
+		await expect(page.getByText('Event 6')).toBeVisible({ timeout: 5000 });
+		await expect(page.getByText('.لا توجد فعاليات متاحة حالياً. تحقق مرة أخرى لاحقاً')).toHaveCount(0);
+	});
+
+	test('generic events stay out of the donor list, and out of its page count', async ({ page }) => {
+		await seedAuth(page, { isAdmin: false });
+		const all = [
+			mkEvent(1, future(1)),
+			mkEvent(2, future(2), true),
+			mkEvent(3, future(3), true),
+		];
+		await routeEvents(page, all);
+
+		await page.goto('/events');
+
+		await expect(page.getByText('Event 1')).toBeVisible({ timeout: 5000 });
+		await expect(page.getByText('Event 2')).toHaveCount(0);
+		// One event left after filtering, so no pager at all.
+		await expect(page.getByText(/صفحة \d+ من/)).toHaveCount(0);
+	});
+
+	test('an admin still sees every event, generic and past included', async ({ page }) => {
+		await seedAuth(page, { isAdmin: true });
+		const past = (days: number) => new Date(Date.now() - days * 864e5).toISOString();
+		const all = [mkEvent(1, past(5)), mkEvent(2, future(1), true), mkEvent(3, future(2))];
+		await routeEvents(page, all);
+
+		await page.goto('/events');
+
+		await expect(page.getByText('Event 1')).toBeVisible({ timeout: 5000 });
+		await expect(page.getByText('Event 2')).toBeVisible();
+		await expect(page.getByText('Event 3')).toBeVisible();
+	});
+});

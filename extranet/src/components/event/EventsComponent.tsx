@@ -259,11 +259,20 @@ const EventsComponent = () => {
 		const fetchEvents = async () => {
 			try {
 				setIsLoading(true);
-				const response = await eventsService.getAll(page);
+				// Donors see only upcoming, non-generic events, and the server
+				// now applies both -- so this page and its totalItems describe
+				// the same set. That filtering used to happen here, on whatever
+				// the endpoint returned for the requested page, with totalPages
+				// derived from what survived; since a page holds at most five
+				// items, that count could never exceed one, the pager never
+				// rendered, and every event past the first page was
+				// unreachable. See issue #417.
+				const response = await eventsService.getAll(
+					page,
+					isAdmin ? {} : { upcoming: true, includeGeneric: false }
+				);
 				setEvents(response.data.events);
-				if (isAdmin) {
-					setTotalPages(Math.ceil(response.data.totalItems / 5));
-				}
+				setTotalPages(Math.ceil(response.data.totalItems / 5));
 			} catch (error) {
 				console.error('Error fetching events', error);
 			} finally {
@@ -274,30 +283,16 @@ const EventsComponent = () => {
 		fetchEvents();
 		// isAdmin is a plain boolean from context (stable by value, not
 		// identity), so this only re-runs on an actual admin-status change --
-		// exactly when totalPages (computed only for admins, just above)
-		// needs recomputing anyway.
+		// exactly when the filters above change too.
 	}, [page, isAdmin]);
 
-	// Filter events - only show generic eventsto admins and apply search
+	// The generic/past filtering and the date sort both moved to the server
+	// (issue #417), so all that's left here is the search box, which has
+	// always narrowed the page already on screen rather than querying.
 	useEffect(() => {
 		if (events) {
-			// If admin, show all events, otherwise filter out generic events and old events
-			const today = new Date();
-			today.setHours(0, 0, 0, 0);
-			let filtered = isAdmin
-				? events
-				: events
-					.filter((event) => !event.isGeneric)
-					.filter((event) => {
-						const eventDate = new Date(event.date);
-						eventDate.setHours(0, 0, 0, 0); // normalize event date
-						return eventDate >= today;
-					}); // only future events for normal users
+			let filtered = events;
 
-			// Sort by date ascending (soonest first)
-			filtered.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-
-			// Apply search filter
 			if (searchTerm) {
 				filtered = filtered.filter(
 					(event) =>
@@ -308,11 +303,8 @@ const EventsComponent = () => {
 			}
 
 			setFilteredEvents(filtered);
-			if (!isAdmin) {
-            setTotalPages(Math.ceil(filtered.length / 5));
-        }
 		}
-	}, [events, isAdmin, searchTerm]);
+	}, [events, searchTerm]);
 
 	if (isAdmin) {
 		return (

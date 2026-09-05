@@ -21,6 +21,28 @@ function mockAdmin() {
 }
 
 describe('GET /api/events', () => {
+	// The tests below assert on the filter object handed to Event.find, so
+	// each needs a clean call log. clearAllMocks resets recorded calls
+	// without touching the implementations each test sets up itself.
+	beforeEach(() => {
+		jest.clearAllMocks();
+	});
+
+	// A query whose chain methods are spies, so the test can assert what the
+	// controller asked the database for rather than only what came back.
+	const spyQuery = (rows) => {
+		const query = {
+			sort: jest.fn(() => query),
+			skip: jest.fn(() => query),
+			limit: jest.fn(() => query),
+			lean: jest.fn(() => query),
+			then: (onResolve, onReject) =>
+				Promise.resolve(rows).then(onResolve, onReject),
+			catch: (onReject) => Promise.resolve(rows).catch(onReject),
+		};
+		return query;
+	};
+
 	it('lists events with pagination info', async () => {
 		Event.countDocuments.mockReturnValue(resolveTo(2));
 		Event.find.mockReturnValue(resolveTo([{ reference: 'WEVENT1' }, { reference: 'WEVENT2' }]));
@@ -29,6 +51,75 @@ describe('GET /api/events', () => {
 		expect(res.status).toBe(200);
 		expect(res.body.totalItems).toBe(2);
 		expect(res.body.events).toHaveLength(2);
+	});
+
+	// Without a sort the natural (insertion) order puts the oldest events on
+	// page 1, so once five past events accumulated the donor list -- which
+	// drops past events -- went permanently empty while upcoming ones sat on
+	// later pages. See issue #417.
+	it('orders events by date so the pages walk a meaningful sequence', async () => {
+		const query = spyQuery([]);
+		Event.countDocuments.mockReturnValue(resolveTo(0));
+		Event.find.mockReturnValue(query);
+
+		await request(app).get('/api/events');
+
+		expect(query.sort).toHaveBeenCalledWith({ date: 1 });
+	});
+
+	it('returns every event when no filters are given', async () => {
+		Event.countDocuments.mockReturnValue(resolveTo(30));
+		Event.find.mockReturnValue(resolveTo([]));
+
+		const res = await request(app).get('/api/events?page=2');
+
+		expect(res.status).toBe(200);
+		expect(Event.find).toHaveBeenCalledWith({});
+		expect(Event.countDocuments).toHaveBeenCalledWith({});
+		expect(res.body.totalItems).toBe(30);
+	});
+
+	// The donor list's filters. They live here rather than in the client
+	// because the client could only filter the page it had already been
+	// given, and then had no honest way to count the pages.
+	it('filters out past events when asked for upcoming ones only', async () => {
+		Event.countDocuments.mockReturnValue(resolveTo(7));
+		Event.find.mockReturnValue(resolveTo([]));
+
+		await request(app).get('/api/events?page=1&upcoming=true');
+
+		const filter = Event.find.mock.calls[0][0];
+		expect(filter.date.$gte).toBeInstanceOf(Date);
+		// Start of today, so an event happening later today still counts.
+		expect(filter.date.$gte.getHours()).toBe(0);
+		expect(filter.date.$gte.getMinutes()).toBe(0);
+	});
+
+	it('excludes generic events when asked to', async () => {
+		Event.countDocuments.mockReturnValue(resolveTo(4));
+		Event.find.mockReturnValue(resolveTo([]));
+
+		await request(app).get('/api/events?page=1&includeGeneric=false');
+
+		expect(Event.find).toHaveBeenCalledWith({ isGeneric: { $ne: true } });
+	});
+
+	// The heart of the bug: totalItems has to describe the same set the page
+	// was drawn from, or ceil(totalItems / perPage) is not a page count.
+	it('counts the filtered set, not every event in the collection', async () => {
+		Event.countDocuments.mockReturnValue(resolveTo(7));
+		Event.find.mockReturnValue(resolveTo([]));
+
+		const res = await request(app).get(
+			'/api/events?page=1&upcoming=true&includeGeneric=false'
+		);
+
+		expect(res.body.totalItems).toBe(7);
+		const countFilter = Event.countDocuments.mock.calls[0][0];
+		const findFilter = Event.find.mock.calls[0][0];
+		expect(countFilter).toEqual(findFilter);
+		expect(findFilter.isGeneric).toEqual({ $ne: true });
+		expect(findFilter.date.$gte).toBeInstanceOf(Date);
 	});
 });
 
