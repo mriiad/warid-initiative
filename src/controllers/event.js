@@ -427,7 +427,18 @@ exports.getEventParticipantDetails = async (req, res, next) => {
 
     // Handle generic event
     if (event.isGeneric) {
-      const allDonaters = await Donation.distinct('userId', { eventId });
+      // $ne: null excludes donations whose donor was deleted (issue #406).
+      // distinct() folds every one of them into a single null, so counting
+      // them here would report "1 donor" for any number of them. They are
+      // deliberately not added back: for the generic event a donor can give
+      // repeatedly over the years, so once the id is gone those rows can no
+      // longer be attributed to distinct people. This counts identifiable
+      // donors and never invents one. The donations themselves still count
+      // toward getAdminStats.totalDonations.
+      const allDonaters = await Donation.distinct('userId', {
+        eventId,
+        userId: { $ne: null },
+      });
 
       return res.status(STATUS_CODE.OK).json({
         message: 'Generic event participant details fetched successfully.',
@@ -438,7 +449,11 @@ exports.getEventParticipantDetails = async (req, res, next) => {
     }
 
     // Non-generic event stats
-    const allDonaters = await Donation.distinct('userId', { eventId });
+    // Same exclusion as the generic branch above -- see issue #406.
+    const allDonaters = await Donation.distinct('userId', {
+      eventId,
+      userId: { $ne: null },
+    });
     const registeredParticipants = await Participant.countDocuments({ eventId });
     const participantUserIds = await Participant.find({ eventId }).distinct('userId');
 
