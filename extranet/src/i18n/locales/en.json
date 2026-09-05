@@ -282,6 +282,8 @@
       "alreadyParticipating": "You're already registered for this event",
       "participateSuccess": "You are successfully added as a participant.",
       "participateError": "An error occurred while registering for the event.",
+      "deleteTitle": "Delete Event",
+      "deleteConfirm": "Are you sure you want to delete the event \"{{title}}\"? This action cannot be undone.",
       "deleteSuccess": "Event deleted successfully!",
       "deleteError": "Error deleting event: {{message}}",
       "participantDetailsTitle": "Participant Details",

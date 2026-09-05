@@ -62,8 +62,8 @@ const EventDetail: React.FC = () => {
 		open: false,
 		title: '',
 		message: '',
-		confirmText: 'Confirm',
-		cancelText: 'Cancel',
+		confirmText: '',
+		cancelText: '',
 		onConfirm: () => { },
 		warning: false,
 	});
@@ -100,10 +100,14 @@ const EventDetail: React.FC = () => {
 	const handleDelete = () => {
 		setConfirmationDialog({
 			open: true,
-			title: 'Delete Event',
-			message: `Are you sure you want to delete the event "${event?.title}"? This action cannot be undone.`,
-			confirmText: 'Delete',
-			cancelText: 'Cancel',
+			// Deleting an event is the only irreversible action on this screen
+			// and was the last one still asking in English, under an otherwise
+			// fully Arabic RTL page. Mirrors how UserDetailView's delete
+			// dialog already reads its strings. See issue #420.
+			title: t('events.detail.deleteTitle'),
+			message: t('events.detail.deleteConfirm', { title: event?.title }),
+			confirmText: t('common.delete'),
+			cancelText: t('common.cancel'),
 			onConfirm: async () => {
 				try {
 					setConfirmationDialog({ ...confirmationDialog, open: false });

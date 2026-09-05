@@ -61,4 +61,39 @@ test.describe('Admin event detail (redesigned)', () => {
 		// The redesign's back-arrow + divider + search top bar shouldn't be present.
 		await expect(page.getByRole('button', { name: 'حذف' })).toHaveCount(0);
 	});
+
+	// The dialog used to be built from hardcoded English literals in
+	// EventDetail.tsx ("Delete Event" / "Are you sure you want to delete the
+	// event ...?" / DELETE / CANCEL), under an otherwise fully Arabic RTL
+	// page -- the one irreversible action an event admin can take was the one
+	// they couldn't read. See issue #420.
+	test('regression (issue #420): the delete-event confirmation asks in Arabic, not English', async ({ page }) => {
+		await seedAuth(page, { isAdmin: true });
+		await mockJson(page, '**/api/events/WEVENTAGADIR', eventDetailResponse({
+			reference: 'WEVENTAGADIR',
+			title: 'Agadir Event',
+			isGeneric: false,
+		}));
+		await mockJson(page, '**/api/event/WEVENTAGADIR/participants/details', {
+			isGeneric: false,
+			allDonaters: 4,
+			realDonaters: 2,
+			registeredParticipants: 4,
+		});
+
+		await page.goto('/events/WEVENTAGADIR');
+		await expect(page.getByText('Agadir Event').first()).toBeVisible({ timeout: 5000 });
+
+		await page.getByRole('button', { name: 'حذف' }).click();
+
+		const dialog = page.getByRole('dialog');
+		await expect(dialog).toBeVisible();
+		await expect(dialog.getByRole('heading', { name: 'حذف الفعالية' })).toBeVisible();
+		// The event's own title is still interpolated into the question.
+		await expect(dialog.getByText('Agadir Event', { exact: false })).toBeVisible();
+		await expect(dialog.getByRole('button', { name: 'حذف' })).toBeVisible();
+		await expect(dialog.getByRole('button', { name: 'إلغاء' })).toBeVisible();
+		await expect(dialog.getByText('Delete Event')).toHaveCount(0);
+		await expect(dialog.getByText('cannot be undone', { exact: false })).toHaveCount(0);
+	});
 });
