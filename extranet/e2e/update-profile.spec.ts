@@ -76,4 +76,41 @@ test.describe('Complete your profile', () => {
 		await expect(page.getByText('المدينة مطلوبة')).toBeVisible();
 		expect(saved).toBe(false);
 	});
+
+	// bloodGroup was the only one of the five fields with no rule, while its
+	// default value is BloodGroup.None ('') -- so the form opened in the one
+	// state PUT /api/user/update cannot store (Profile.bloodGroup is an enum,
+	// and '' is not a member) and the save came back 400 under a generic
+	// "update failed". See issue #413.
+	test('regression (issue #413): the blood group must be chosen before the profile can be saved', async ({ page }) => {
+		await seedAuth(page, { isAdmin: false, userId: 'user-1' });
+		await mockJson(page, '**/api/user/profile', { gender: 'male' });
+
+		let sentBloodGroup: unknown = 'never-called';
+		await page.route('**/api/user/update', async (route) => {
+			sentBloodGroup = route.request().postDataJSON()?.bloodGroup;
+			await route.fulfill({ status: 200, contentType: 'application/json', body: '{}' });
+		});
+
+		await page.goto('/update-profile');
+		await page.getByLabel(/الاسم الشخصي/).fill('Yassine');
+		await page.getByLabel(/الاسم العائلي/).fill('Alaoui');
+		await page.getByLabel(/تاريخ الميلاد/).fill('1995-05-20');
+		// City only -- blood group deliberately left on its default "None".
+		await page.getByRole('combobox').nth(1).click();
+		await page.getByRole('option').nth(1).click();
+		await page.getByRole('button', { name: /تحديث/ }).click();
+
+		await expect(page.getByText('فصيلة الدم مطلوبة')).toBeVisible({ timeout: 5000 });
+		await expect(page).toHaveURL(/\/update-profile/);
+		expect(sentBloodGroup).toBe('never-called');
+
+		// Choosing one lets the save through.
+		await page.getByRole('combobox').nth(0).click();
+		await page.getByRole('option', { name: 'O+' }).click();
+		await page.getByRole('button', { name: /تحديث/ }).click();
+
+		await expect(page).toHaveURL(/\/events/, { timeout: 5000 });
+		expect(sentBloodGroup).toBe('O+');
+	});
 });

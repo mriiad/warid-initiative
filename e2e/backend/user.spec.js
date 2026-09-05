@@ -680,8 +680,75 @@ describe('PUT /api/user/update', () => {
 		const res = await request(app)
 			.put('/api/user/update')
 			.set('Authorization', authHeader(USER_ID))
-			.send({});
+			// A complete body: the route now validates before touching the
+			// database, so an empty one would 400 and never reach the failure
+			// this test is about.
+			.send({ firstname: 'A', lastname: 'B', birthdate: '2000-01-01', bloodGroup: 'O+', city: 'Rabat' });
 		expect(res.status).toBe(500);
+	});
+
+	// The complete-profile form defaults bloodGroup to BloodGroup.None (''),
+	// and the field carried no rule -- so the form's own opening state
+	// reached `new Profile({ bloodGroup: '' })`, which Mongoose rejects
+	// against the enum with a message naming nothing the user could act on
+	// ("`` is not a valid enum value for path `bloodGroup`"). The client
+	// showed that as a generic "update failed". See issue #413.
+	it('rejects a blank blood group with a 400 naming the field', async () => {
+		const profileSave = jest.fn().mockResolvedValue(true);
+		User.findById.mockReturnValue(resolveTo({ _id: USER_ID }));
+		Profile.findOne.mockReturnValue(resolveTo({ save: profileSave }));
+
+		const res = await request(app)
+			.put('/api/user/update')
+			.set('Authorization', authHeader(USER_ID))
+			.send({ firstname: 'A', lastname: 'B', birthdate: '2000-01-01', bloodGroup: '', city: 'Rabat' });
+
+		expect(res.status).toBe(400);
+		expect(res.body.errorKeys).toContain('bloodGroup');
+		// Refused before anything was written, rather than half-saved.
+		expect(profileSave).not.toHaveBeenCalled();
+	});
+
+	it('rejects a blood group that is not a real one', async () => {
+		User.findById.mockReturnValue(resolveTo({ _id: USER_ID }));
+		Profile.findOne.mockReturnValue(resolveTo({ save: jest.fn() }));
+		const res = await request(app)
+			.put('/api/user/update')
+			.set('Authorization', authHeader(USER_ID))
+			.send({ firstname: 'A', lastname: 'B', birthdate: '2000-01-01', bloodGroup: 'Z-', city: 'Rabat' });
+		expect(res.status).toBe(400);
+		expect(res.body.errorKeys).toContain('bloodGroup');
+	});
+
+	// Same failure mode: Profile.city is an enum too.
+	it('rejects a blank city with a 400 naming the field', async () => {
+		User.findById.mockReturnValue(resolveTo({ _id: USER_ID }));
+		Profile.findOne.mockReturnValue(resolveTo({ save: jest.fn() }));
+		const res = await request(app)
+			.put('/api/user/update')
+			.set('Authorization', authHeader(USER_ID))
+			.send({ firstname: 'A', lastname: 'B', birthdate: '2000-01-01', bloodGroup: 'O+', city: '' });
+		expect(res.status).toBe(400);
+		expect(res.body.errorKeys).toContain('city');
+	});
+
+	it('rejects a missing name or an unparseable birthdate', async () => {
+		User.findById.mockReturnValue(resolveTo({ _id: USER_ID }));
+		Profile.findOne.mockReturnValue(resolveTo({ save: jest.fn() }));
+
+		const noName = await request(app)
+			.put('/api/user/update')
+			.set('Authorization', authHeader(USER_ID))
+			.send({ firstname: '  ', lastname: 'B', birthdate: '2000-01-01', bloodGroup: 'O+', city: 'Rabat' });
+		expect(noName.status).toBe(400);
+		expect(noName.body.errorKeys).toContain('firstname');
+
+		const badDate = await request(app)
+			.put('/api/user/update')
+			.set('Authorization', authHeader(USER_ID))
+			.send({ firstname: 'A', lastname: 'B', birthdate: 'not-a-date', bloodGroup: 'O+', city: 'Rabat' });
+		expect(badDate.status).toBe(400);
+		expect(badDate.body.errorKeys).toContain('birthdate');
 	});
 });
 
