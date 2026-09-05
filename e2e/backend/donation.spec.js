@@ -177,6 +177,35 @@ describe('GET /api/donation/canDonate (fix: endpoint used to be completely broke
 	});
 });
 
+// `User.donations` was an array pushed on every donation and read by
+// nothing -- every reader queries the Donation collection, which is the
+// single source of truth. Being write-only it was never corrected either,
+// so it grew without bound and drifted from reality. See issue #407.
+describe('donations are not denormalized onto the user (issue #407)', () => {
+	it('does not write a donations array back to the user document', async () => {
+		User.findById.mockReturnValue(resolveTo({ _id: USER_ID, gender: 'male' }));
+		Profile.findOne.mockReturnValue(resolveTo({ birthdate: birthdateForAge(30), bloodGroup: 'O+' }));
+		Donation.find.mockReturnValue(resolveTo([]));
+		Event.findOne.mockReturnValue(resolveTo({ _id: 'generic-evt', isGeneric: true }));
+
+		const res = await request(app)
+			.post('/api/donation')
+			.set('Authorization', authHeader(USER_ID))
+			.send({ donationDate: '2026-01-01', donationType: 'BLOOD' });
+
+		expect(res.status).toBe(201);
+		// The Donation row is the record; nothing may be pushed onto the user.
+		expect(User.findByIdAndUpdate).not.toHaveBeenCalled();
+	});
+
+	it('has no donations path left on the User schema', () => {
+		// Guards against the field being reintroduced without the write paths
+		// that would keep it correct.
+		const realUser = jest.requireActual('../../src/models/user');
+		expect(realUser.schema.path('donations')).toBeUndefined();
+	});
+});
+
 describe('POST /api/donation (regression test for issue #200)', () => {
 	it('accepts a brand-new, fully-eligible user (fixed: eligibility promise is now awaited)', async () => {
 		// A user who has never donated before: checkDonationEligibility()

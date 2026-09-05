@@ -71,13 +71,14 @@ const userSchema = new Schema({
     select: false,
   },
   profile: { type: Schema.Types.ObjectId, ref: "Profile" },
-  donations: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "Donation",
-      required: false,
-    },
-  ],
+  // `donations` used to live here: an array pushed on every donation and
+  // read by nothing. Every reader -- getDashboard, getAdminStats, the event
+  // participation counts, emergency matching -- queries the Donation
+  // collection directly, which is the single source of truth. Being
+  // write-only it was also never corrected (deleteEvent reassigns donations
+  // between events and never touched it), so it grew without bound on a
+  // document fetched on nearly every authenticated request while silently
+  // drifting from reality. See issue #407.
 });
 
 module.exports = mongoose.model("User", userSchema);
