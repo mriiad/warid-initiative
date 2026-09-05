@@ -9,12 +9,14 @@ jest.mock('../../src/models/profile', () => require('./support/mongooseMock').ma
 jest.mock('../../src/models/donation', () => require('./support/mongooseMock').makeModelMock());
 jest.mock('../../src/models/event', () => require('./support/mongooseMock').makeModelMock());
 jest.mock('../../src/models/emergency', () => require('./support/mongooseMock').makeModelMock());
+jest.mock('../../src/models/participant', () => require('./support/mongooseMock').makeModelMock());
 
 const User = require('../../src/models/user');
 const Profile = require('../../src/models/profile');
 const Donation = require('../../src/models/donation');
 const Event = require('../../src/models/event');
 const Emergency = require('../../src/models/emergency');
+const Participant = require('../../src/models/participant');
 const { buildApp } = require('./support/testApp');
 const { authHeader } = require('./support/jwtHelper');
 
@@ -912,6 +914,45 @@ describe('DELETE /api/deleteUser/:username additional branches', () => {
 	// Previously nothing cleaned up the deleted user's Profile -- a
 	// permanently orphaned document, unbounded and never queried again. See
 	// #375.
+	// Donations and participations used to be left pointing at the deleted
+	// user, and both are read as counts, so admin statistics silently
+	// included people who no longer exist. See issue #406.
+	it('anonymises the deleted user\'s donations rather than removing them', async () => {
+		User.findOneAndDelete.mockReturnValue(resolveTo({ _id: 'user-bob-id', username: 'bob' }));
+		Profile.deleteOne.mockReturnValue(resolveTo({ deletedCount: 1 }));
+		Donation.updateMany.mockReturnValue(Promise.resolve({ modifiedCount: 2 }));
+		Participant.deleteMany.mockReturnValue(resolveTo({ deletedCount: 1 }));
+
+		const res = await request(app)
+			.delete('/api/deleteUser/bob')
+			.set('Authorization', authHeader(ADMIN_ID));
+
+		expect(res.status).toBe(200);
+		// Kept, with the link to the person severed: the blood really was
+		// collected, so it stays in the association's historical totals.
+		expect(Donation.updateMany).toHaveBeenCalledWith(
+			{ userId: 'user-bob-id' },
+			{ $unset: { userId: 1 } }
+		);
+		expect(Donation.deleteMany).not.toHaveBeenCalled();
+	});
+
+	it('removes the deleted user\'s event participations', async () => {
+		User.findOneAndDelete.mockReturnValue(resolveTo({ _id: 'user-bob-id', username: 'bob' }));
+		Profile.deleteOne.mockReturnValue(resolveTo({ deletedCount: 1 }));
+		Donation.updateMany.mockReturnValue(Promise.resolve({ modifiedCount: 0 }));
+		Participant.deleteMany.mockReturnValue(resolveTo({ deletedCount: 1 }));
+
+		const res = await request(app)
+			.delete('/api/deleteUser/bob')
+			.set('Authorization', authHeader(ADMIN_ID));
+
+		expect(res.status).toBe(200);
+		// A registration means nothing without the person, and it would
+		// otherwise hold that (userId, eventId) unique slot forever.
+		expect(Participant.deleteMany).toHaveBeenCalledWith({ userId: 'user-bob-id' });
+	});
+
 	it('also deletes the profile belonging to the deleted user', async () => {
 		User.findOneAndDelete.mockReturnValue(resolveTo({ _id: 'user-bob-id', username: 'bob' }));
 		Profile.deleteOne.mockReturnValue(resolveTo({ deletedCount: 1 }));

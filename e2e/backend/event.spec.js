@@ -352,3 +352,55 @@ describe('Event routes are role-gated (issue #183)', () => {
 		expect(res.status).toBe(201);
 	});
 });
+
+describe('GET /api/event/:reference/participants/details (issue #406)', () => {
+	// Anonymised donations (donor account deleted) carry no userId, and
+	// distinct() folds every one of them into a single null -- counting that
+	// would report "1 donor" for any number of them. The query must exclude
+	// them so the figure counts identifiable donors and never invents one.
+	it('excludes donations whose donor was deleted from the donater count', async () => {
+		mockAdmin();
+		Event.findOne.mockReturnValue(
+			resolveTo({ _id: 'evt-1', reference: 'WEVENT1', isGeneric: false })
+		);
+		const distinctCalls = [];
+		Donation.distinct.mockImplementation((field, filter) => {
+			distinctCalls.push({ field, filter });
+			return Promise.resolve(['u1', 'u2']);
+		});
+		Participant.countDocuments.mockReturnValue(resolveTo(2));
+		Participant.find.mockReturnValue({ distinct: () => Promise.resolve(['u1']) });
+
+		const res = await request(app)
+			.get('/api/event/WEVENT1/participants/details')
+			.set('Authorization', authHeader(ADMIN_ID));
+
+		expect(res.status).toBe(200);
+		const allDonatersCall = distinctCalls[0];
+		expect(allDonatersCall.field).toBe('userId');
+		expect(allDonatersCall.filter).toEqual(
+			expect.objectContaining({ userId: { $ne: null } })
+		);
+	});
+
+	it('excludes them on the generic event too', async () => {
+		mockAdmin();
+		Event.findOne.mockReturnValue(
+			resolveTo({ _id: 'evt-generic', reference: 'WGENERIC', isGeneric: true })
+		);
+		const distinctCalls = [];
+		Donation.distinct.mockImplementation((field, filter) => {
+			distinctCalls.push({ field, filter });
+			return Promise.resolve(['u1']);
+		});
+
+		const res = await request(app)
+			.get('/api/event/WGENERIC/participants/details')
+			.set('Authorization', authHeader(ADMIN_ID));
+
+		expect(res.status).toBe(200);
+		expect(distinctCalls[0].filter).toEqual(
+			expect.objectContaining({ userId: { $ne: null } })
+		);
+	});
+});
