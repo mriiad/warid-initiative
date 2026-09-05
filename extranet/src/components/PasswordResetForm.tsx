@@ -22,16 +22,25 @@ const PasswordResetForm = () => {
 	const navigate = useNavigate();
 	const { showError } = useErrorToast();
 
+	// Same shape as SignupForm's check, so a typo caught at signup is caught
+	// here too rather than burning one of the few mailLimiter attempts on an
+	// address that could never receive anything.
+	const validateEmail = (value: string) => {
+		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+		return emailRegex.test(value) || t('auth.passwordReset.invalidEmail');
+	};
+
 	const onSubmit = (formData) => {
 		authService
 			.requestPasswordReset(formData)
-			.then((response) => {
-				console.log('Reset password request sent successfully!');
-				navigate('/login', {
-					state: {
-						resetMessage: 'Please check your email for a password reset link.',
-					},
-				});
+			.then(() => {
+				// `resetLinkSent`, not the old `resetMessage`: LoginForm reads
+				// `state.passwordReset` (set by ResetPasswordForm, meaning "your
+				// password was changed") and now `state.resetLinkSent`. Nothing
+				// ever read `resetMessage`, so asking for a reset link used to
+				// land the user on /login with no confirmation at all -- and the
+				// string itself was hardcoded English. See issue #412.
+				navigate('/login', { state: { resetLinkSent: true } });
 			})
 			.catch((error) => {
 				console.error('Error requesting password reset:', error);
@@ -66,6 +75,10 @@ const PasswordResetForm = () => {
 							name='email'
 							control={control}
 							defaultValue=''
+							rules={{
+								required: t('auth.passwordReset.emailRequired'),
+								validate: validateEmail,
+							}}
 							render={({ field }) => (
 								<TextField
 									fullWidth
@@ -74,7 +87,7 @@ const PasswordResetForm = () => {
 									required
 									{...field}
 									error={Boolean(errors.email)}
-									helperText={errors.email ? t('auth.passwordReset.emailRequired') : ''}
+									helperText={(errors.email?.message as string) || ''}
 								/>
 							)}
 						/>
