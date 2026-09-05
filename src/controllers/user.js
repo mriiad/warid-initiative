@@ -58,6 +58,20 @@ exports.getUsers = async (req, res, next) => {
 };
 
 exports.updateUserInfo = (req, res, next) => {
+	// The route's validator chain is what stops a blank bloodGroup or city
+	// reaching the Profile enums, where Mongoose rejects them with a message
+	// naming no field the user could act on. Reported the same way
+	// updateUserProfile does, so the client can point at the field.
+	// See issue #413.
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		return next(
+			new ApiError(errors.array()[0].msg, STATUS_CODE.BAD_REQUEST, [
+				errors.array()[0].path,
+			])
+		);
+	}
+
 	const userId = req.userId;
 	const { firstname, lastname, birthdate, bloodGroup, city } = req.body;
 

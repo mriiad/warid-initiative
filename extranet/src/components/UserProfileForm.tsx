@@ -165,8 +165,22 @@ const UserProfileForm = () => {
 						<Controller
 							name='bloodGroup'
 							control={control}
+							// The only one of the five fields that carried no rule, while
+							// its default value is BloodGroup.None ('') -- so the form
+							// opened in the one state the backend cannot store
+							// (Profile.bloodGroup is an enum, and '' is not a member) and
+							// the save came back 400 under a generic "update failed".
+							// It isn't optional either: checkUserProfile requires it for
+							// isProfileComplete, and emergency matching keys on it.
+							// See issue #413.
+							rules={{ required: t('auth.completeProfile.bloodGroupRequired') }}
 							render={({ field }) => (
-								<FormControl fullWidth className={input} error={Boolean(errors.bloodGroup)}>
+								<FormControl
+									fullWidth
+									className={input}
+									required
+									error={Boolean(errors.bloodGroup)}
+								>
 									<InputLabel>{t('auth.completeProfile.bloodGroup')}</InputLabel>
 									<Select {...field} label={t('auth.completeProfile.bloodGroup')}>
 										<MenuItem value=''>
