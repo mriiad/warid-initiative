@@ -1,8 +1,16 @@
 class ApiError extends Error {
-	constructor(message, statusCode, errorKeys = []) {
+	/**
+	 * `code` and `params` are optional and additive: a client that recognises
+	 * the code renders its own translated copy, and anything else keeps
+	 * reading `message` exactly as before. That's what lets endpoints be
+	 * tagged one at a time instead of in a flag day. See issue #434.
+	 */
+	constructor(message, statusCode, errorKeys = [], code = null, params = null) {
 		super(message);
 		this.statusCode = statusCode;
 		this.errorKeys = errorKeys;
+		this.code = code;
+		this.params = params;
 		Error.captureStackTrace(this, this.constructor);
 	}
 
@@ -18,6 +26,10 @@ class ApiError extends Error {
 			message: this.message,
 			statusCode: this.statusCode,
 			errorKeys: this.errorKeys || [],
+			// Omitted entirely when absent, so an untagged error serialises to
+			// byte-identical JSON and no existing client sees a change.
+			...(this.code ? { code: this.code } : {}),
+			...(this.params ? { params: this.params } : {}),
 		};
 	}
 }

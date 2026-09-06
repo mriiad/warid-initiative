@@ -9,6 +9,7 @@ const { validationResult } = require('express-validator');
 const config = require('../utils/config');
 const constants = require('../utils/constants');
 const ApiError = require('../utils/errors/ApiError');
+const { ERROR_CODES } = require('../utils/errors/errorCodes');
 const { STATUS_CODE } = require('../utils/errors/httpStatusCode');
 const { logger } = require('../utils/logger');
 
@@ -174,7 +175,12 @@ exports.login = (req, res, next) => {
 	User.findOne({ username: username })
 		.then((user) => {
 			if (!user) {
-				const error = new ApiError(constants.ERROR_MESSAGES.USER_NOT_FOUND, STATUS_CODE.UNAUTHORIZED);
+				const error = new ApiError(
+					constants.ERROR_MESSAGES.USER_NOT_FOUND,
+					STATUS_CODE.UNAUTHORIZED,
+					[],
+					ERROR_CODES.USER_NOT_FOUND
+				);
 				throw error;
 			}
 			loadedUser = user;
@@ -182,7 +188,12 @@ exports.login = (req, res, next) => {
 		})
 		.then((isEqual) => {
 			if (!isEqual) {
-				const error = new ApiError(constants.ERROR_MESSAGES.WRONG_PASSWORD, STATUS_CODE.UNAUTHORIZED);
+				const error = new ApiError(
+					constants.ERROR_MESSAGES.WRONG_PASSWORD,
+					STATUS_CODE.UNAUTHORIZED,
+					[],
+					ERROR_CODES.WRONG_PASSWORD
+				);
 				throw error;
 			}
 
@@ -192,7 +203,12 @@ exports.login = (req, res, next) => {
 			// issue #357. Existing accounts from before this check existed
 			// are covered by the backfill-activate-users script.
 			if (transporter && !loadedUser.isActive) {
-				const error = new ApiError(constants.ERROR_MESSAGES.ACCOUNT_NOT_ACTIVATED, STATUS_CODE.FORBIDDEN);
+				const error = new ApiError(
+					constants.ERROR_MESSAGES.ACCOUNT_NOT_ACTIVATED,
+					STATUS_CODE.FORBIDDEN,
+					[],
+					ERROR_CODES.ACCOUNT_NOT_ACTIVATED
+				);
 				throw error;
 			}
 
@@ -253,7 +269,12 @@ exports.verifyUser = (req, res, next) => {
 	})
 		.then((user) => {
 			if (!user) {
-				const error = new ApiError(constants.ERROR_MESSAGES.TOKEN_INVALID_OR_EXPIRED, STATUS_CODE.BAD_REQUEST);
+				const error = new ApiError(
+					constants.ERROR_MESSAGES.TOKEN_INVALID_OR_EXPIRED,
+					STATUS_CODE.BAD_REQUEST,
+					[],
+					ERROR_CODES.TOKEN_INVALID_OR_EXPIRED
+				);
 				throw error;
 			}
 			user.isActive = true;
@@ -412,7 +433,12 @@ exports.resetPassword = (req, res, next) => {
 	})
 		.then((foundUser) => {
 			if (!foundUser) {
-				const error = new ApiError(constants.ERROR_MESSAGES.TOKEN_INVALID_OR_EXPIRED, STATUS_CODE.BAD_REQUEST);
+				const error = new ApiError(
+					constants.ERROR_MESSAGES.TOKEN_INVALID_OR_EXPIRED,
+					STATUS_CODE.BAD_REQUEST,
+					[],
+					ERROR_CODES.TOKEN_INVALID_OR_EXPIRED
+				);
 				throw error;
 			}
 			user = foundUser;
@@ -469,7 +495,12 @@ exports.checkResetTokenValidity = (req, res, next) => {
 	})
 		.then((user) => {
 			if (!user) {
-				const error = new ApiError(constants.ERROR_MESSAGES.TOKEN_INVALID_OR_EXPIRED, STATUS_CODE.BAD_REQUEST);
+				const error = new ApiError(
+					constants.ERROR_MESSAGES.TOKEN_INVALID_OR_EXPIRED,
+					STATUS_CODE.BAD_REQUEST,
+					[],
+					ERROR_CODES.TOKEN_INVALID_OR_EXPIRED
+				);
 				throw error;
 			}
 			res.status(STATUS_CODE.OK).json({
@@ -501,7 +532,12 @@ exports.updatePassword = async (req, res, next) => {
 
 		const isMatch = await bcrypt.compare(currentPassword, user.password);
 		if (!isMatch) {
-			const error = new ApiError(constants.ERROR_MESSAGES.CURRENT_PASSWORD_INCORRECT, STATUS_CODE.UNAUTHORIZED);
+			const error = new ApiError(
+				constants.ERROR_MESSAGES.CURRENT_PASSWORD_INCORRECT,
+				STATUS_CODE.UNAUTHORIZED,
+				[],
+				ERROR_CODES.CURRENT_PASSWORD_INCORRECT
+			);
 			throw error;
 		}
 

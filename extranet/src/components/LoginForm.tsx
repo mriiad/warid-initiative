@@ -7,6 +7,7 @@ import { useAuth as useAuthContext } from '../auth/AuthContext';
 import { LoginFormData } from '@/types';
 import { useAuth, useCheckProfileCompleteness } from '../hooks';
 import { authRedesignStyles } from '../styles/authRedesign';
+import { resolveApiErrorMessage } from '../utils/apiError';
 import AuthHeader from './shared/AuthHeader';
 import GoogleButton from './shared/GoogleButton';
 import PasswordField from './shared/PasswordField';
@@ -116,10 +117,13 @@ const LoginForm = () => {
 		// a rejected login just left the form sitting there with the spinner
 		// gone and no explanation.
 		if (login.isError) {
-			const backendMessage = (
-				login.error as { response?: { data?: { message?: string } } }
-			)?.response?.data?.message;
-			setLoginErrorMessage(backendMessage || t('auth.login.invalidCredentials'));
+			// Reads the response's error code where there is one, so a rejected
+			// login is refused in the user's language instead of the backend's
+			// English prose; falls back to that prose, then to this screen's
+			// own copy. See issue #434.
+			setLoginErrorMessage(
+				resolveApiErrorMessage(login.error, t, t('auth.login.invalidCredentials'))
+			);
 		}
 	}, [login.isError, login.error, t]);
 
