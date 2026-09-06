@@ -4,6 +4,7 @@ const Profile = require('../models/profile');
 const Event = require('../models/event');
 const { STATUS_CODE } = require('../utils/errors/httpStatusCode');
 const ApiError = require('../utils/errors/ApiError');
+const { ERROR_CODES } = require('../utils/errors/errorCodes');
 const { validationResult } = require('express-validator');
 const mongoose = require('mongoose');
 const { addDays, formatDate, startOfDay, calculateAge } = require('../utils/utils');
@@ -75,6 +76,31 @@ exports.checkDonationEligibility = async (userId) => {
 	};
 };
 
+// The message stays the fallback for a client that doesn't know the code;
+// the code and its params are what a translated client renders instead.
+// See issue #434.
+const buildIneligibilityCode = (ineligibilityReason, nextDonationDate) => {
+	switch (ineligibilityReason) {
+		case 'MISSING_BIRTHDATE':
+			return { code: ERROR_CODES.DONATION_MISSING_BIRTHDATE, params: null };
+		case 'TOO_YOUNG':
+			return {
+				code: ERROR_CODES.DONATION_TOO_YOUNG,
+				params: { minAge: DONATION_AGE.MIN },
+			};
+		case 'TOO_OLD':
+			return {
+				code: ERROR_CODES.DONATION_TOO_OLD,
+				params: { maxAge: DONATION_AGE.MAX },
+			};
+		default:
+			return {
+				code: ERROR_CODES.DONATION_COOLDOWN,
+				params: { nextDonationDate },
+			};
+	}
+};
+
 const buildIneligibilityMessage = (ineligibilityReason, nextDonationDate) => {
 	switch (ineligibilityReason) {
 		case 'MISSING_BIRTHDATE':
@@ -122,10 +148,16 @@ exports.donate = async (req, res, next) => {
 			// Age/profile-completeness issues aren't a bad value in the
 			// donationDate field, so only flag that field for the cooldown case.
 			const errorKeys = ineligibilityReason === 'COOLDOWN' ? ['donationDate'] : [];
+			const { code, params } = buildIneligibilityCode(
+				ineligibilityReason,
+				nextDonationDate
+			);
 			throw new ApiError(
 				buildIneligibilityMessage(ineligibilityReason, nextDonationDate),
 				STATUS_CODE.FORBIDDEN,
-				errorKeys
+				errorKeys,
+				code,
+				params
 			);
 		}
 
@@ -149,7 +181,12 @@ exports.donate = async (req, res, next) => {
 		if (eventId) {
 			event = await Event.findById(eventId);
 			if (!event) {
-				throw new ApiError('Event not found', STATUS_CODE.NOT_FOUND);
+				throw new ApiError(
+					'Event not found',
+					STATUS_CODE.NOT_FOUND,
+					[],
+					ERROR_CODES.EVENT_NOT_FOUND
+				);
 			}
 		} else {
 			// If no event provided, find a generic event
@@ -157,7 +194,9 @@ exports.donate = async (req, res, next) => {
 			if (!event) {
 				throw new ApiError(
 					'No generic event found for free donation',
-					STATUS_CODE.NOT_FOUND
+					STATUS_CODE.NOT_FOUND,
+					[],
+					ERROR_CODES.NO_GENERIC_EVENT
 				);
 			}
 		}
@@ -185,7 +224,8 @@ const checkExistingDonation = async (userId, userProvidedDate) => {
 			throw new ApiError(
 				'The donation date cannot be in the future.',
 				STATUS_CODE.BAD_REQUEST,
-				['donationDate']
+				['donationDate'],
+				ERROR_CODES.DONATION_DATE_IN_FUTURE
 			);
 		}
 
@@ -200,7 +240,9 @@ const checkExistingDonation = async (userId, userProvidedDate) => {
 			throw new ApiError(
 				`The provided donation date falls within your mandatory rest period. You can register a donation starting ${nextDonationDate}`,
 				STATUS_CODE.FORBIDDEN,
-				['donationDate']
+				['donationDate'],
+				ERROR_CODES.DONATION_DATE_IN_REST_PERIOD,
+				{ nextDonationDate }
 			);
 		}
 

@@ -19,6 +19,26 @@
     "edit": "Modifier",
     "back": "Retour"
   },
+  "errors": {
+    "ACCOUNT_NOT_ACTIVATED": "Confirmez votre adresse e-mail avant de vous connecter. Le lien d'activation est dans votre boîte de réception.",
+    "CURRENT_PASSWORD_INCORRECT": "Votre mot de passe actuel est incorrect.",
+    "DONATION_COOLDOWN": "Vous ne pouvez pas encore donner. Vous pourrez enregistrer un nouveau don à partir du {{nextDonationDate}}.",
+    "DONATION_DATE_IN_FUTURE": "La date du don ne peut pas être dans le futur.",
+    "DONATION_DATE_IN_REST_PERIOD": "Cette date tombe dans votre période de repos obligatoire. Vous pourrez enregistrer un don à partir du {{nextDonationDate}}.",
+    "DONATION_MISSING_BIRTHDATE": "Ajoutez votre date de naissance à votre profil avant d'enregistrer un don.",
+    "DONATION_TOO_OLD": "Le don du sang n'est pas ouvert aux donneurs de plus de {{maxAge}} ans.",
+    "DONATION_TOO_YOUNG": "Vous devez avoir au moins {{minAge}} ans pour donner.",
+    "DUPLICATE_VALUE": "Cette valeur ({{field}}) est déjà utilisée.",
+    "EVENT_NOT_FOUND": "Cet événement est introuvable.",
+    "NO_GENERIC_EVENT": "Les dons libres ne peuvent pas être enregistrés pour le moment. Contactez l'association.",
+    "PARTICIPATION_NOT_ELIGIBLE": "Vous ne pouvez pas encore donner. Vous pourrez participer à nouveau à partir du {{nextDonationDate}}.",
+    "REFRESH_TOKEN_INVALID": "Votre session a expiré. Veuillez vous reconnecter.",
+    "SERVER_ERROR": "Une erreur s'est produite. Veuillez réessayer plus tard.",
+    "TOKEN_INVALID_OR_EXPIRED": "Ce lien est invalide ou a expiré.",
+    "USER_NOT_FOUND": "Nom d'utilisateur ou mot de passe incorrect.",
+    "VALIDATION_FAILED": "Vérifiez les informations saisies.",
+    "WRONG_PASSWORD": "Nom d'utilisateur ou mot de passe incorrect."
+  },
   "nav": {
     "home": "Accueil",
     "about": "À propos",

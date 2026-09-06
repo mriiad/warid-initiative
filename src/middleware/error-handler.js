@@ -1,6 +1,7 @@
 const ApiError = require('../utils/errors/ApiError');
 const { logger } = require('../utils/logger');
 const { STATUS_CODE } = require('../utils/errors/httpStatusCode');
+const { ERROR_CODES } = require('../utils/errors/errorCodes');
 
 const GENERIC_SERVER_ERROR = 'Something went wrong. Please try again later.';
 
@@ -19,7 +20,12 @@ const translateMongooseError = (error) => {
 		// own "`x` is not a valid enum value for path `y`." for a bad enum).
 		const firstMessage =
 			Object.values(error.errors || {})[0]?.message || error.message;
-		return new ApiError(firstMessage, STATUS_CODE.BAD_REQUEST);
+		return new ApiError(
+			firstMessage,
+			STATUS_CODE.BAD_REQUEST,
+			[],
+			ERROR_CODES.VALIDATION_FAILED
+		);
 	}
 
 	if (error.code === 11000) {
@@ -30,7 +36,16 @@ const translateMongooseError = (error) => {
 		const message = field
 			? `That ${field} is already in use.`
 			: 'This value is already in use.';
-		return new ApiError(message, STATUS_CODE.CONFLICT);
+		// The field travels as a param so a translated client can name it in
+		// its own language -- this is the path a duplicate signup email or CIN
+		// actually takes, since neither is checked explicitly. See issue #434.
+		return new ApiError(
+			message,
+			STATUS_CODE.CONFLICT,
+			[],
+			ERROR_CODES.DUPLICATE_VALUE,
+			field ? { field } : null
+		);
 	}
 
 	return error;
@@ -84,6 +99,10 @@ const errorMiddleware = (error, req, res, next) => {
 		// findable by requestId.
 		message: isServerError ? GENERIC_SERVER_ERROR : error.message,
 		statusCode: error.statusCode,
+		// Only the generic 500 gets a code here: a non-ApiError client error
+		// carries whatever message its thrower happened to write, and there is
+		// nothing stable to name it by. See issue #434.
+		...(isServerError ? { code: ERROR_CODES.SERVER_ERROR } : {}),
 	});
 };
 

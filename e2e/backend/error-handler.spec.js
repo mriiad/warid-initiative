@@ -89,3 +89,74 @@ describe('error-handler: translating Mongoose errors (issue #368)', () => {
 		expect(res.body.message).not.toContain('db down');
 	});
 });
+
+// The API's `message` is English prose, and the clients deliberately prefer
+// it over their own copy (issues #293, #332, #342, #344) -- which made
+// English the primary error surface of an Arabic-first app. A `code` now
+// travels alongside it so a client can translate what it recognises, while
+// an untagged endpoint keeps behaving exactly as before. See issue #434.
+describe('error codes on the response (issue #434)', () => {
+	const ApiError = require('../../src/utils/errors/ApiError');
+	const { ERROR_CODES } = require('../../src/utils/errors/errorCodes');
+
+	it('omits code and params entirely when an error carries none', () => {
+		const body = new ApiError('boom', 400).getErrorResponse();
+		expect(body).toEqual({ message: 'boom', statusCode: 400, errorKeys: [] });
+		expect('code' in body).toBe(false);
+		expect('params' in body).toBe(false);
+	});
+
+	it('carries the code and its interpolation params when tagged', () => {
+		const body = new ApiError(
+			'You must be at least 18 years old to donate.',
+			403,
+			['donationDate'],
+			ERROR_CODES.DONATION_TOO_YOUNG,
+			{ minAge: 18 }
+		).getErrorResponse();
+
+		expect(body.code).toBe('DONATION_TOO_YOUNG');
+		expect(body.params).toEqual({ minAge: 18 });
+		// The prose stays put: it is what an untranslated client still reads.
+		expect(body.message).toBe('You must be at least 18 years old to donate.');
+		expect(body.errorKeys).toEqual(['donationDate']);
+	});
+
+	it('every declared code is its own name, so the contract cannot drift', () => {
+		Object.entries(ERROR_CODES).forEach(([name, value]) => {
+			expect(value).toBe(name);
+		});
+	});
+
+	// A duplicate signup email or CIN reaches the user through this path --
+	// neither is checked explicitly, so both arrive as an E11000 from the
+	// unique index and are translated centrally.
+	it('tags a duplicate key with the offending field as a param', async () => {
+		const res = await request(buildApp()).get('/throw/duplicate-key');
+		expect(res.status).toBe(409);
+		expect(res.body.code).toBe('DUPLICATE_VALUE');
+		expect(res.body.params).toEqual({ field: 'email' });
+		expect(res.body.message).toBe('That email is already in use.');
+	});
+
+	it('tags a duplicate key with no field at all, without inventing one', async () => {
+		const res = await request(buildApp()).get('/throw/duplicate-key-no-pattern');
+		expect(res.status).toBe(409);
+		expect(res.body.code).toBe('DUPLICATE_VALUE');
+		expect(res.body.params).toBeUndefined();
+	});
+
+	it('tags a Mongoose validation failure', async () => {
+		const res = await request(buildApp()).get('/throw/validation');
+		expect(res.status).toBe(400);
+		expect(res.body.code).toBe('VALIDATION_FAILED');
+	});
+
+	// The 500 body is the one place a non-ApiError gets a code: its message is
+	// the deliberate generic, so there is something stable to name.
+	it('tags the generic server error, and leaves other non-ApiError bodies alone', async () => {
+		const res = await request(buildApp()).get('/throw/unrelated');
+		expect(res.status).toBe(500);
+		expect(res.body.code).toBe('SERVER_ERROR');
+	});
+});

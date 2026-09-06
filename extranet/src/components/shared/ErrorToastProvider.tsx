@@ -1,13 +1,14 @@
 import React, { createContext, useCallback, useContext, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import API_CONFIG from '../../utils/apiConfig';
+import { resolveApiErrorMessage } from '../../utils/apiError';
 import SnackbarComponent from './SnackbarComponent';
 
 interface ErrorToastContextValue {
-	/** Pass the caught error straight through -- extracts the backend's own
-	 * message when there is one, same as every hand-rolled call site already
-	 * does (`error.response?.data?.message || t('...')`), falling back to a
-	 * translated generic message otherwise. */
+	/** Pass the caught error straight through. Renders the app's own
+	 * translated copy when the response carries an error code it recognises,
+	 * falling back to the backend's own message and then to a translated
+	 * generic one. See issue #434. */
 	showError: (error: unknown) => void;
 }
 
@@ -15,12 +16,6 @@ const ErrorToastContext = createContext<ErrorToastContextValue | undefined>(
 	undefined
 );
 
-const extractBackendMessage = (error: unknown): string | undefined => {
-	const response = (
-		error as { response?: { data?: { message?: string; error?: string } } }
-	)?.response;
-	return response?.data?.message || response?.data?.error;
-};
 
 /**
  * One toast, mounted once at the app root, for mutations that have no
@@ -47,7 +42,7 @@ export const ErrorToastProvider: React.FC<{ children: React.ReactNode }> = ({
 
 	const showError = useCallback(
 		(error: unknown) => {
-			setMessage(extractBackendMessage(error) || t('common.error'));
+			setMessage(resolveApiErrorMessage(error, t));
 		},
 		[t]
 	);
