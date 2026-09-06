@@ -13,6 +13,7 @@ import styled from 'styled-components';
 import { useAuth } from '../../auth/AuthContext';
 import { useEvent, useCheckParticipation, useEventParticipantsDetails, useCreateParticipant } from '../../hooks';
 import { eventsService } from '../../services';
+import { resolveApiErrorMessage } from '../../utils/apiError';
 import colors from '../../styles/colors';
 import CanDonate from '../CanDonate';
 import ConfirmationDialog from '../shared/ConfirmationDialog';
@@ -97,11 +98,12 @@ const EventDetail: React.FC = () => {
 				);
 			},
 			onError: (error: any) => {
-				if (error.response && error.response.data?.message) {
-					setMessage(error.response.data.message);
-				} else {
-					setMessage(t('events.detail.participateError'));
-				}
+				// createParticipant refuses with a code now (the event is gone,
+				// or the donor is still inside their rest period), so this reads
+				// in the user's language rather than the backend's. See #434.
+				setMessage(
+					resolveApiErrorMessage(error, t, t('events.detail.participateError'))
+				);
 				console.error('Participant registration failed:', error);
 			},
 		});
@@ -133,7 +135,7 @@ const EventDetail: React.FC = () => {
 					console.error('Error deleting event:', error);
 					setMessage(
 						t('events.detail.deleteError', {
-							message: error.response?.data?.message || error.message,
+							message: resolveApiErrorMessage(error, t),
 						})
 					);
 				}

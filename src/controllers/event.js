@@ -4,6 +4,7 @@ const { validationResult } = require('express-validator');
 const fs = require('fs');
 const path = require('path');
 const ApiError = require('../utils/errors/ApiError');
+const { ERROR_CODES } = require('../utils/errors/errorCodes');
 const QRCode = require('qrcode');
 const Donation = require('../models/donation');
 const Participant = require('../models/participant');
@@ -355,7 +356,9 @@ exports.deleteEvent = (req, res, next) => {
 					if (!genericEvent) {
 						throw new ApiError(
 							'Cannot delete event: No generic event found to link existing donations',
-							STATUS_CODE.CONFLICT
+							STATUS_CODE.CONFLICT,
+							[],
+							ERROR_CODES.NO_GENERIC_EVENT
 						);
 					}
 					const updatePromises = donations.map((donation) =>

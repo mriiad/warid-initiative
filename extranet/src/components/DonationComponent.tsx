@@ -28,6 +28,7 @@ import {
 } from '../hooks';
 import { authRedesignStyles } from '../styles/authRedesign';
 import { eventsListRedesignStyles } from '../styles/eventsListRedesign';
+import { resolveApiErrorMessage } from '../utils/apiError';
 import { formatDate, formatDateForDisplay } from '../utils/utils';
 import RedesignBottomNav from './shared/RedesignBottomNav';
 import ResponseAnimation from './shared/ResponseAnimation';
@@ -214,7 +215,9 @@ const DonationComponent = () => {
 					errorKeys.length > 0 && error.response?.status === 400;
 
 				if (!handledInline) {
-					setErrorMessage(errorResponseData?.message || t('donation.genericError'));
+					setErrorMessage(
+						resolveApiErrorMessage(error, t, t('donation.genericError'))
+					);
 					setIsFormSubmitted(true);
 					setIsErrorAnimationVisible(true);
 				}

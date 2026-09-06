@@ -19,6 +19,26 @@
     "edit": "Edit",
     "back": "Back"
   },
+  "errors": {
+    "ACCOUNT_NOT_ACTIVATED": "Please confirm your email before logging in. Check your inbox for the activation link.",
+    "CURRENT_PASSWORD_INCORRECT": "Your current password is incorrect.",
+    "DONATION_COOLDOWN": "You can't donate yet. You can register a new donation from {{nextDonationDate}}.",
+    "DONATION_DATE_IN_FUTURE": "The donation date can't be in the future.",
+    "DONATION_DATE_IN_REST_PERIOD": "That date falls inside your mandatory rest period. You can register a donation from {{nextDonationDate}}.",
+    "DONATION_MISSING_BIRTHDATE": "Add your date of birth to your profile before registering a donation.",
+    "DONATION_TOO_OLD": "Blood donation isn't available for donors over {{maxAge}}.",
+    "DONATION_TOO_YOUNG": "You must be at least {{minAge}} to donate.",
+    "DUPLICATE_VALUE": "That {{field}} is already in use.",
+    "EVENT_NOT_FOUND": "This event could not be found.",
+    "NO_GENERIC_EVENT": "Free donations can't be recorded right now. Please contact the association.",
+    "PARTICIPATION_NOT_ELIGIBLE": "You can't donate yet. You can take part again from {{nextDonationDate}}.",
+    "REFRESH_TOKEN_INVALID": "Your session has ended. Please log in again.",
+    "SERVER_ERROR": "Something went wrong. Please try again later.",
+    "TOKEN_INVALID_OR_EXPIRED": "This link is invalid or has expired.",
+    "USER_NOT_FOUND": "Incorrect username or password.",
+    "VALIDATION_FAILED": "Check the details you entered.",
+    "WRONG_PASSWORD": "Incorrect username or password."
+  },
   "nav": {
     "home": "Home",
     "about": "About",
