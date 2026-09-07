@@ -10,6 +10,7 @@
     "backfill:admin-roles": "node ./src/scripts/backfill-admin-roles.js",
     "backfill:activate-users": "node ./src/scripts/backfill-activate-users.js",
     "migrate:drop-refresh-token-index": "node ./src/scripts/drop-refresh-token-index.js",
+    "migrate:rebuild-donation-index": "node ./src/scripts/rebuild-donation-index.js",
     "lint": "eslint .",
     "test:e2e": "jest --config=jest.config.js",
     "test:e2e:backend": "jest --config=jest.backend.config.js"

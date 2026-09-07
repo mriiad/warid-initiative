@@ -959,19 +959,23 @@ describe('POST /api/searchUsers additional branches', () => {
 
 describe('DELETE /api/deleteUser/:username additional branches', () => {
 	beforeEach(() => {
+		// Cleared first: these tests assert on which calls were made, and
+		// without this they inherit the previous test's call log.
+		jest.clearAllMocks();
 		User.findById.mockReturnValue(resolveTo({ _id: ADMIN_ID, isAdmin: true }));
 	});
 
 	it('returns 404 when the user does not exist', async () => {
-		User.findOneAndDelete.mockReturnValue(resolveTo(null));
+		User.findOne.mockReturnValue(resolveTo(null));
 		const res = await request(app)
 			.delete('/api/deleteUser/ghost')
 			.set('Authorization', authHeader(ADMIN_ID));
 		expect(res.status).toBe(404);
+		expect(User.findByIdAndDelete).not.toHaveBeenCalled();
 	});
 
 	it('deletes an existing user', async () => {
-		User.findOneAndDelete.mockReturnValue(resolveTo({ username: 'bob' }));
+		User.findOne.mockReturnValue(resolveTo({ _id: 'user-bob-id', username: 'bob' }));
 		const res = await request(app)
 			.delete('/api/deleteUser/bob')
 			.set('Authorization', authHeader(ADMIN_ID));
@@ -985,7 +989,7 @@ describe('DELETE /api/deleteUser/:username additional branches', () => {
 	// user, and both are read as counts, so admin statistics silently
 	// included people who no longer exist. See issue #406.
 	it('anonymises the deleted user\'s donations rather than removing them', async () => {
-		User.findOneAndDelete.mockReturnValue(resolveTo({ _id: 'user-bob-id', username: 'bob' }));
+		User.findOne.mockReturnValue(resolveTo({ _id: 'user-bob-id', username: 'bob' }));
 		Profile.deleteOne.mockReturnValue(resolveTo({ deletedCount: 1 }));
 		Donation.updateMany.mockReturnValue(Promise.resolve({ modifiedCount: 2 }));
 		Participant.deleteMany.mockReturnValue(resolveTo({ deletedCount: 1 }));
@@ -1005,7 +1009,7 @@ describe('DELETE /api/deleteUser/:username additional branches', () => {
 	});
 
 	it('removes the deleted user\'s event participations', async () => {
-		User.findOneAndDelete.mockReturnValue(resolveTo({ _id: 'user-bob-id', username: 'bob' }));
+		User.findOne.mockReturnValue(resolveTo({ _id: 'user-bob-id', username: 'bob' }));
 		Profile.deleteOne.mockReturnValue(resolveTo({ deletedCount: 1 }));
 		Donation.updateMany.mockReturnValue(Promise.resolve({ modifiedCount: 0 }));
 		Participant.deleteMany.mockReturnValue(resolveTo({ deletedCount: 1 }));
@@ -1021,7 +1025,7 @@ describe('DELETE /api/deleteUser/:username additional branches', () => {
 	});
 
 	it('also deletes the profile belonging to the deleted user', async () => {
-		User.findOneAndDelete.mockReturnValue(resolveTo({ _id: 'user-bob-id', username: 'bob' }));
+		User.findOne.mockReturnValue(resolveTo({ _id: 'user-bob-id', username: 'bob' }));
 		Profile.deleteOne.mockReturnValue(resolveTo({ deletedCount: 1 }));
 		const res = await request(app)
 			.delete('/api/deleteUser/bob')
@@ -1031,7 +1035,7 @@ describe('DELETE /api/deleteUser/:username additional branches', () => {
 	});
 
 	it('returns 500 on a database error', async () => {
-		User.findOneAndDelete.mockReturnValue(
+		User.findOne.mockReturnValue(
 			makeQuery(() => {
 				throw new Error('db down');
 			})
@@ -1040,6 +1044,58 @@ describe('DELETE /api/deleteUser/:username additional branches', () => {
 			.delete('/api/deleteUser/bob')
 			.set('Authorization', authHeader(ADMIN_ID));
 		expect(res.status).toBe(500);
+	});
+
+	// The account is removed only once every dependent cleanup has succeeded.
+	// Deleting it first made any later failure unrecoverable: the account was
+	// already gone, so a retry answered 404 while the half-cleaned Profile,
+	// Donation and Participant rows stayed behind for good. See issue #439.
+	it('removes the account last, after the dependent cleanups', async () => {
+		const order = [];
+		User.findOne.mockReturnValue(resolveTo({ _id: 'user-bob-id', username: 'bob' }));
+		Profile.deleteOne.mockImplementation(() => {
+			order.push('profile');
+			return resolveTo({ deletedCount: 1 });
+		});
+		Donation.updateMany.mockImplementation(() => {
+			order.push('donations');
+			return Promise.resolve({ modifiedCount: 1 });
+		});
+		Participant.deleteMany.mockImplementation(() => {
+			order.push('participants');
+			return resolveTo({ deletedCount: 1 });
+		});
+		User.findByIdAndDelete.mockImplementation(() => {
+			order.push('user');
+			return resolveTo({ _id: 'user-bob-id' });
+		});
+
+		const res = await request(app)
+			.delete('/api/deleteUser/bob')
+			.set('Authorization', authHeader(ADMIN_ID));
+
+		expect(res.status).toBe(200);
+		expect(order).toEqual(['profile', 'donations', 'participants', 'user']);
+	});
+
+	// The donation anonymisation writes against a unique index, so it can
+	// fail. When it does, the account must still be there to retry against.
+	it('leaves the account intact when anonymising the donations fails', async () => {
+		User.findOne.mockReturnValue(resolveTo({ _id: 'user-bob-id', username: 'bob' }));
+		Profile.deleteOne.mockReturnValue(resolveTo({ deletedCount: 1 }));
+		Donation.updateMany.mockImplementation(() => {
+			const err = new Error('E11000 duplicate key error');
+			err.code = 11000;
+			err.keyPattern = { userId: 1, donationDate: 1 };
+			return Promise.reject(err);
+		});
+
+		const res = await request(app)
+			.delete('/api/deleteUser/bob')
+			.set('Authorization', authHeader(ADMIN_ID));
+
+		expect(res.status).toBe(409);
+		expect(User.findByIdAndDelete).not.toHaveBeenCalled();
 	});
 });
 
