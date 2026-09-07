@@ -48,6 +48,20 @@ const DonationSchema = new Schema({
 // the database rather than by a read that has already gone stale --
 // translateMongooseError (#368) turns that into a friendly 409.
 // See issue #405.
-DonationSchema.index({ userId: 1, donationDate: 1 }, { unique: true });
+// Partial, not plain unique: userId is optional because deleteUser
+// anonymises a deleted donor's donations by unsetting it (#406), and this
+// index does not skip those. MongoDB indexes a missing field as null, so two
+// anonymised donations sharing a donationDate collided -- deleting a second
+// user who donated on the same day as an already-deleted one failed with a
+// duplicate key error, which at a blood drive is the ordinary case.
+//
+// `sparse: true` is not the fix here: on a compound index it only skips a
+// document missing *all* the indexed fields, and donationDate is required,
+// so nothing would ever be skipped. A partial filter drops exactly the
+// anonymised rows and keeps the guard for every real donor. See issue #439.
+DonationSchema.index(
+	{ userId: 1, donationDate: 1 },
+	{ unique: true, partialFilterExpression: { userId: { $exists: true } } }
+);
 
 module.exports = mongoose.model('Donation', DonationSchema);

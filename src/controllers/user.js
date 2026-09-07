@@ -437,7 +437,15 @@ exports.deleteUser = async (req, res, next) => {
 				.json({ message: 'Username is required' });
 		}
 
-		const user = await User.findOneAndDelete({ username: username });
+		// Looked up rather than deleted here, and removed last. The dependent
+		// cleanups below can fail -- the donation anonymisation in particular
+		// writes against a unique index (#439) -- and deleting the user first
+		// made any such failure unrecoverable: the account was already gone,
+		// so a retry answered 404 while the half-cleaned Profile, Donation and
+		// Participant rows stayed behind for good. With the account removed
+		// last, a failure leaves everything as it was and the admin can simply
+		// try again.
+		const user = await User.findOne({ username: username });
 		if (!user) {
 			return res
 				.status(STATUS_CODE.NOT_FOUND)
@@ -462,6 +470,8 @@ exports.deleteUser = async (req, res, next) => {
 		// keep occupying that (userId, eventId) unique slot forever.
 		await Donation.updateMany({ userId: user._id }, { $unset: { userId: 1 } });
 		await Participant.deleteMany({ userId: user._id });
+
+		await User.findByIdAndDelete(user._id);
 
 		res.status(STATUS_CODE.OK).json({ message: 'User deleted successfully' });
 	} catch (err) {
