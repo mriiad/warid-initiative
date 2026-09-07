@@ -25,11 +25,23 @@ const userSchema = new Schema({
     enum: ["male", "female"],
     required: true,
   },
+  // Deliberately not unique. Uniqueness protected nothing here: the value is
+  // always a JWT this server signs, carrying the user's own id, so two users
+  // cannot be issued the same string, and ownership is enforced in
+  // refreshToken() by comparing the stored value to the presented one.
+  // Nothing queries by this field either -- the refresh path looks the user
+  // up by _id -- so the index earned no reads.
+  //
+  // What it did do was make "no active session" a state at most one user
+  // could occupy, whenever the deployed index was unique without being
+  // sparse (MongoDB indexes a missing field as null, so every tokenless
+  // document collides). Logout leaves a user in exactly that state, so
+  // clearing the token on logout (#404) turned a latent conflict into a
+  // constant one: the second logout failed, and signup -- which also creates
+  // a document with no token -- failed after it. See issue #437.
   refreshToken: {
     type: String,
     required: false,
-    unique: true,
-    sparse: true,
     select: false,
   },
   isAdmin: {
