@@ -13,6 +13,7 @@ const { noCacheApi } = require('./middleware/no-cache-api');
 const { requestLogger } = require('./middleware/request-logger');
 const { securityHeaders } = require('./middleware/security-headers');
 const config = require('./utils/config');
+const { verifyIndexes } = require('./utils/verifyIndexes');
 const { logger } = require('./utils/logger');
 const authRouter = require('./routes/auth');
 const userRouter = require('./routes/user');
@@ -110,8 +111,22 @@ mongoose
 	.connect(
 		`${config.database.host}://${config.database.user}:${config.database.password}@${config.database.name}.${config.database.sample}.mongodb.net/${config.database.name}?retryWrites=true&w=majority`
 	)
-	.then(() => {
+	.then(async () => {
 		logger.info('Connected successfully to MongoDB server');
+
+		// Reports indexes whose real options have drifted from the schema.
+		// Mongoose cannot alter an index that already exists, and swallows
+		// the conflict, so a schema can read one thing while the database
+		// enforces another indefinitely. Diagnostic only, and deliberately
+		// not allowed to stop the server: awaited so its findings are logged
+		// before the first request, caught so a failure here can never be
+		// what takes the app down. See issue #437.
+		try {
+			await verifyIndexes(mongoose.connection);
+		} catch (err) {
+			logger.warn({ err }, 'Index verification failed to run');
+		}
+
 		app.listen(config.server.port, () => {
 			logger.info({ port: config.server.port }, 'Server listening');
 		});
