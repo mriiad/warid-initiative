@@ -282,10 +282,18 @@ exports.verifyUser = (req, res, next) => {
 			// or superseded (resent) link should not keep working.
 			user.confirmationCode = undefined;
 			user.confirmationCodeExpires = undefined;
-			user.save();
-			return res.status(STATUS_CODE.OK).send({
-				message: constants.ERROR_MESSAGES.ACCOUNT_ACTIVATED,
-			});
+			// Returned into the chain, not fired and forgotten. The response
+			// used to be sent without waiting for this, so a failed save still
+			// answered "Account activated" -- and since the rejection was not
+			// part of this chain, the .catch below never saw it either. The
+			// user then went to log in and was refused with 403
+			// ACCOUNT_NOT_ACTIVATED, having been told the opposite of what
+			// happened, with no reason to try the link again. See issue #443.
+			return user.save().then(() =>
+				res.status(STATUS_CODE.OK).send({
+					message: constants.ERROR_MESSAGES.ACCOUNT_ACTIVATED,
+				})
+			);
 		})
 		.catch((err) => {
 			next(err);
