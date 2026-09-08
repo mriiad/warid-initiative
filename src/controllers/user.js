@@ -161,8 +161,14 @@ exports.updateUserProfile = async (req, res, next) => {
 		if (phoneNumber !== undefined) user.phoneNumber = phoneNumber;
 		if (email !== undefined) user.email = email;
 
-		await profile.save();
+		// user first: it carries the unique index on email, so it is the save
+		// that can realistically fail. Saving the profile first meant a
+		// rejected duplicate email answered 409 while the profile changes had
+		// already been persisted -- the user told nothing was saved when some
+		// of it had been. This is not a transaction, but it puts the write
+		// that can fail ahead of the one that cannot. See issue #445.
 		await user.save();
+		await profile.save();
 
 		res.status(200).json({ message: 'Profile updated successfully!' });
 	} catch (err) {
