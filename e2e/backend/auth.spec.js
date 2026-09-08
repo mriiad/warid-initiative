@@ -143,6 +143,51 @@ describe('GET /api/auth/activation/:confirmationCode', () => {
 		expect(fakeUser.confirmationCodeExpires).toBeUndefined();
 		expect(fakeUser.save).toHaveBeenCalled();
 	});
+
+	// The save used to be fired and forgotten: the 200 went out without
+	// waiting for it, so a failed write still answered "Account activated"
+	// while isActive was never persisted. The user then went to log in and
+	// was refused with 403 ACCOUNT_NOT_ACTIVATED, having been told the
+	// opposite of what happened. See issue #443.
+	it('does not report success when the write fails', async () => {
+		const fakeUser = {
+			isActive: false,
+			confirmationCode: 'good-code',
+			confirmationCodeExpires: new Date(Date.now() + 60 * 60 * 1000),
+			// The realistic failure: confirmationCode carries a unique index,
+			// and unsetting it collides if that index is not sparse (#437).
+			save: jest.fn().mockRejectedValue(
+				Object.assign(new Error('E11000 duplicate key error'), {
+					code: 11000,
+					keyPattern: { confirmationCode: 1 },
+				})
+			),
+		};
+		User.findOne.mockReturnValue(resolveTo(fakeUser));
+
+		const res = await request(app).get('/api/auth/activation/good-code');
+
+		expect(res.status).not.toBe(200);
+		expect(res.body.message).not.toBe(
+			require('../../src/utils/constants').ERROR_MESSAGES.ACCOUNT_ACTIVATED
+		);
+	});
+
+	// And the rejection has to reach the shared error handler rather than
+	// escaping the chain as an unhandled rejection.
+	it('routes a failed write through the error handler', async () => {
+		const fakeUser = {
+			isActive: false,
+			confirmationCode: 'good-code',
+			confirmationCodeExpires: new Date(Date.now() + 60 * 60 * 1000),
+			save: jest.fn().mockRejectedValue(new Error('db down')),
+		};
+		User.findOne.mockReturnValue(resolveTo(fakeUser));
+
+		const res = await request(app).get('/api/auth/activation/good-code');
+
+		expect(res.status).toBe(500);
+	});
 });
 
 describe('POST /api/auth/resend-activation (issue #365)', () => {
