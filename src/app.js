@@ -107,10 +107,10 @@ if (secretProblems.length > 0) {
 }
 
 // Database connection with configuration
+logger.info({ target: config.describeDatabaseTarget() }, 'Connecting to MongoDB');
+
 mongoose
-	.connect(
-		`${config.database.host}://${config.database.user}:${config.database.password}@${config.database.name}.${config.database.sample}.mongodb.net/${config.database.name}?retryWrites=true&w=majority`
-	)
+	.connect(config.getDatabaseUri())
 	.then(async () => {
 		logger.info('Connected successfully to MongoDB server');
 

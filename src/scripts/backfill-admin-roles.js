@@ -11,11 +11,6 @@ const config = require('../utils/config');
 // reassigning someone's role can't tell what they currently hold. This
 // makes that explicit by setting role: 'principal' on every admin that
 // doesn't have a role recorded yet, matching the access they already have.
-function getDatabaseUri() {
-	const { host, user, password, name, sample } = config.database;
-	return `${host}://${user}:${password}@${name}.${sample}.mongodb.net/${name}?retryWrites=true&w=majority`;
-}
-
 async function backfillAdminRoles() {
 	const result = await User.updateMany(
 		{ isAdmin: true, role: { $exists: false } },
@@ -28,7 +23,19 @@ async function run() {
 	let isConnected = false;
 
 	try {
-		await mongoose.connect(getDatabaseUri());
+		// A missing DB_* variable falls back to the production cluster, so a
+		// script that writes must be told explicitly where to run rather than
+		// inheriting that default. See issue #441.
+		const problems = config.assertExplicitDatabaseTarget();
+		if (problems.length > 0) {
+			problems.forEach((problem) => console.error(problem));
+			process.exitCode = 1;
+			return;
+		}
+
+		console.log(`Target: ${config.describeDatabaseTarget()}`);
+
+		await mongoose.connect(config.getDatabaseUri());
 		isConnected = true;
 
 		const count = await backfillAdminRoles();
