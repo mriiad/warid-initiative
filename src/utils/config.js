@@ -54,6 +54,11 @@ const config = {
 	},
 
 	database: {
+		// DB_URI wins when set: the assembled form below can only ever address
+		// Atlas (`.mongodb.net` is baked into it), so without this there is no
+		// way to point anything -- least of all a destructive migration -- at
+		// a local or staging database. See issue #441.
+		uri: process.env.DB_URI,
 		host: process.env.DB_HOST || 'mongodb+srv',
 		name: process.env.DB_NAME || 'warid',
 		user: process.env.DB_USER || 'mriad',
@@ -154,5 +159,71 @@ const assertAuthSecrets = () => {
 	return problems;
 };
 
+/**
+ * The one place the connection string is built. It used to be copy-pasted
+ * into app.js and every script, so "where does this actually connect?" had
+ * six answers. See issue #441.
+ */
+const getDatabaseUri = () => {
+	if (config.database.uri) {
+		return config.database.uri;
+	}
+	const { host, user, password, name, sample } = config.database;
+	return `${host}://${user}:${password}@${name}.${sample}.mongodb.net/${name}?retryWrites=true&w=majority`;
+};
+
+/**
+ * The target, safe to print: enough to answer "am I about to touch
+ * production?" and never the password.
+ */
+const describeDatabaseTarget = () => {
+	if (config.database.uri) {
+		// Strip any user:password@ before the host.
+		return config.database.uri.replace(/\/\/[^@/]*@/, '//');
+	}
+	const { host, name, sample } = config.database;
+	return `${host}://${name}.${sample}.mongodb.net/${name}`;
+};
+
+/**
+ * Every part of the assembled URI has a production default, so a missing or
+ * mistyped variable silently resolves to the live cluster. The app keeps
+ * those defaults -- changing that would alter how existing deployments boot
+ * -- but a script that drops indexes must be told explicitly where to run.
+ *
+ * Same reasoning as assertAuthSecrets (issue #394): a misconfiguration
+ * should fail loudly instead of quietly doing the wrong thing somewhere
+ * important. Returns the problems rather than throwing, so the caller
+ * decides how to report and exit.
+ */
+const REQUIRED_DB_VARS = ['DB_HOST', 'DB_NAME', 'DB_USER', 'DB_PASSWORD', 'DB_SAMPLE'];
+
+// Captured when this module loads, like every other value here. The check
+// cannot ask process.env at call time: config.database already resolved its
+// defaults at load, so the two would be answering about different
+// environments -- and a script could then be told its configuration is fine
+// while holding a URI assembled from something else.
+const explicitDbVars = new Set(
+	['DB_URI', ...REQUIRED_DB_VARS].filter((name) => process.env[name])
+);
+
+const assertExplicitDatabaseTarget = () => {
+	if (explicitDbVars.has('DB_URI')) {
+		return [];
+	}
+	const missing = REQUIRED_DB_VARS.filter((name) => !explicitDbVars.has(name));
+	if (missing.length === 0) {
+		return [];
+	}
+	return [
+		`Refusing to guess which database to use: ${missing.join(', ')} not set. ` +
+			'Set DB_URI to a full connection string, or set every DB_* variable ' +
+			'explicitly. Unset variables fall back to the production cluster.',
+	];
+};
+
 module.exports = config;
 module.exports.assertAuthSecrets = assertAuthSecrets;
+module.exports.getDatabaseUri = getDatabaseUri;
+module.exports.describeDatabaseTarget = describeDatabaseTarget;
+module.exports.assertExplicitDatabaseTarget = assertExplicitDatabaseTarget;

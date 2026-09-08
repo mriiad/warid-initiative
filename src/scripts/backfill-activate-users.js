@@ -12,11 +12,6 @@ const config = require('../utils/config');
 // an option). This marks every existing account active, matching the access
 // they already have; only accounts created after this backfill runs are
 // actually gated on confirming their email.
-function getDatabaseUri() {
-	const { host, user, password, name, sample } = config.database;
-	return `${host}://${user}:${password}@${name}.${sample}.mongodb.net/${name}?retryWrites=true&w=majority`;
-}
-
 async function backfillActivateUsers() {
 	const result = await User.updateMany(
 		{ isActive: false },
@@ -29,7 +24,19 @@ async function run() {
 	let isConnected = false;
 
 	try {
-		await mongoose.connect(getDatabaseUri());
+		// A missing DB_* variable falls back to the production cluster, so a
+		// script that writes must be told explicitly where to run rather than
+		// inheriting that default. See issue #441.
+		const problems = config.assertExplicitDatabaseTarget();
+		if (problems.length > 0) {
+			problems.forEach((problem) => console.error(problem));
+			process.exitCode = 1;
+			return;
+		}
+
+		console.log(`Target: ${config.describeDatabaseTarget()}`);
+
+		await mongoose.connect(config.getDatabaseUri());
 		isConnected = true;
 
 		const count = await backfillActivateUsers();
