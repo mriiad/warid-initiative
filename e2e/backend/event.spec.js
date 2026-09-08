@@ -352,14 +352,29 @@ describe('PUT /api/event/:reference (admin only, BUG regression for issue #205/#
 });
 
 describe('DELETE /api/event (admin only)', () => {
+	// deleteEvent now looks the event up with findOne and removes it last, so
+	// both its own lookup and the generic-event lookup go through findOne --
+	// these have to answer them separately. See issue #445.
+	const mockLookups = ({ event, generic }) => {
+		Event.findOne.mockImplementation((query = {}) =>
+			resolveTo(query.isGeneric ? generic : event)
+		);
+	};
+
+	beforeEach(() => {
+		jest.clearAllMocks();
+		Event.findByIdAndDelete.mockReturnValue(resolveTo({ _id: 'evt-1' }));
+	});
+
 	it('returns 404 for an unknown reference', async () => {
 		mockAdmin();
-		Event.findOneAndDelete.mockReturnValue(resolveTo(null));
+		mockLookups({ event: null, generic: null });
 		const res = await request(app)
 			.delete('/api/event')
 			.set('Authorization', authHeader(ADMIN_ID))
 			.send({ reference: 'DOES-NOT-EXIST' });
 		expect(res.status).toBe(404);
+		expect(Event.findByIdAndDelete).not.toHaveBeenCalled();
 	});
 
 	// Donations were reassigned to the generic event so donation history/
@@ -368,7 +383,7 @@ describe('DELETE /api/event (admin only)', () => {
 	// longer exists. See #375.
 	it('also deletes Participant records for the deleted event (no donations to reassign)', async () => {
 		mockAdmin();
-		Event.findOneAndDelete.mockReturnValue(resolveTo({ _id: 'evt-1', reference: 'WEVENT1' }));
+		mockLookups({ event: { _id: 'evt-1', reference: 'WEVENT1' }, generic: null });
 		Donation.find.mockReturnValue(resolveTo([]));
 		Participant.deleteMany.mockReturnValue(resolveTo({ deletedCount: 2 }));
 		const res = await request(app)
@@ -377,13 +392,16 @@ describe('DELETE /api/event (admin only)', () => {
 			.send({ reference: 'WEVENT1' });
 		expect(res.status).toBe(200);
 		expect(Participant.deleteMany).toHaveBeenCalledWith({ eventId: 'evt-1' });
+		expect(Event.findByIdAndDelete).toHaveBeenCalledWith('evt-1');
 	});
 
 	it('also deletes Participant records for the deleted event (donations reassigned)', async () => {
 		mockAdmin();
-		Event.findOneAndDelete.mockReturnValue(resolveTo({ _id: 'evt-1', reference: 'WEVENT1' }));
+		mockLookups({
+			event: { _id: 'evt-1', reference: 'WEVENT1' },
+			generic: { _id: 'generic-evt', isGeneric: true },
+		});
 		Donation.find.mockReturnValue(resolveTo([{ _id: 'don-1' }]));
-		Event.findOne.mockReturnValue(resolveTo({ _id: 'generic-evt', isGeneric: true }));
 		Donation.findByIdAndUpdate.mockReturnValue(resolveTo({}));
 		Participant.deleteMany.mockReturnValue(resolveTo({ deletedCount: 1 }));
 		const res = await request(app)
@@ -392,6 +410,61 @@ describe('DELETE /api/event (admin only)', () => {
 			.send({ reference: 'WEVENT1' });
 		expect(res.status).toBe(200);
 		expect(Participant.deleteMany).toHaveBeenCalledWith({ eventId: 'evt-1' });
+		expect(Event.findByIdAndDelete).toHaveBeenCalledWith('evt-1');
+	});
+
+	// The event used to be deleted before this refusal was even reached, so
+	// the admin was told "Cannot delete event" about an event that had just
+	// been deleted -- with its donations left pointing at a missing eventId
+	// and its participations never cleaned up, and a retry answering 404.
+	// See issue #445.
+	it('refuses without deleting anything when there is no generic event to reassign donations to', async () => {
+		mockAdmin();
+		mockLookups({ event: { _id: 'evt-1', reference: 'WEVENT1' }, generic: null });
+		Donation.find.mockReturnValue(resolveTo([{ _id: 'don-1' }]));
+		Participant.deleteMany.mockReturnValue(resolveTo({ deletedCount: 0 }));
+
+		const res = await request(app)
+			.delete('/api/event')
+			.set('Authorization', authHeader(ADMIN_ID))
+			.send({ reference: 'WEVENT1' });
+
+		expect(res.status).toBe(409);
+		// The message is now true: the event is still there.
+		expect(Event.findByIdAndDelete).not.toHaveBeenCalled();
+		// And nothing else was touched on the way out.
+		expect(Participant.deleteMany).not.toHaveBeenCalled();
+		expect(Donation.findByIdAndUpdate).not.toHaveBeenCalled();
+	});
+
+	it('removes the event only after the donations and participations are handled', async () => {
+		mockAdmin();
+		const order = [];
+		mockLookups({
+			event: { _id: 'evt-1', reference: 'WEVENT1' },
+			generic: { _id: 'generic-evt', isGeneric: true },
+		});
+		Donation.find.mockReturnValue(resolveTo([{ _id: 'don-1' }]));
+		Donation.findByIdAndUpdate.mockImplementation(() => {
+			order.push('donations');
+			return resolveTo({});
+		});
+		Participant.deleteMany.mockImplementation(() => {
+			order.push('participants');
+			return resolveTo({ deletedCount: 1 });
+		});
+		Event.findByIdAndDelete.mockImplementation(() => {
+			order.push('event');
+			return resolveTo({ _id: 'evt-1' });
+		});
+
+		const res = await request(app)
+			.delete('/api/event')
+			.set('Authorization', authHeader(ADMIN_ID))
+			.send({ reference: 'WEVENT1' });
+
+		expect(res.status).toBe(200);
+		expect(order).toEqual(['donations', 'participants', 'event']);
 	});
 });
 

@@ -339,9 +339,17 @@ exports.updateEventHandler = async (req, res, next) => {
 	}
 };
 
+// The event is removed last, after every dependent write has succeeded.
+// Deleting it first meant the "no generic event" refusal below threw when
+// the event was already gone: the admin was told "Cannot delete event"
+// while it had in fact been deleted, its donations were left pointing at an
+// eventId that no longer existed, and its participants were never cleaned
+// up because that step sits in a later .then that never ran -- the orphans
+// #375 fixed. A retry could not help either, since the lookup then answered
+// 404. See issue #445.
 exports.deleteEvent = (req, res, next) => {
 	const { reference } = req.body;
-	Event.findOneAndDelete({ reference })
+	Event.findOne({ reference })
 		.then((deletedEvent) => {
 			if (!deletedEvent) {
 				return res.status(STATUS_CODE.NOT_FOUND).json({
@@ -378,6 +386,11 @@ exports.deleteEvent = (req, res, next) => {
 			Participant.deleteMany({ eventId: deletedEvent._id }).then(() => ({
 				deletedEvent,
 			}))
+		)
+		// Only now, with the donations reassigned and the participations
+		// cleared, is the event itself removed.
+		.then(({ deletedEvent }) =>
+			Event.findByIdAndDelete(deletedEvent._id).then(() => ({ deletedEvent }))
 		)
 		.then(({ deletedEvent }) => {
 			res.status(STATUS_CODE.OK).json({
