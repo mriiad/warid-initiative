@@ -122,4 +122,83 @@ const verifyIndexes = async (connection) => {
 	return problems;
 };
 
-module.exports = { verifyIndexes };
+/**
+ * Indexes that no schema declares any more, and that must be removed from
+ * databases which still carry them.
+ *
+ * Mongoose only ever *creates* indexes. Dropping one from a schema does
+ * nothing to a database that already has it, so #437 shipped a fix that
+ * could not take effect until somebody ran a migration by hand -- and
+ * logout and signup stayed broken in production because that step is the
+ * one that gets forgotten while the deploy is the one that happens.
+ * See issue #447.
+ *
+ * Deliberately an explicit, reviewed list rather than syncIndexes(), which
+ * drops everything a schema does not mention and would take out an index
+ * added by hand for performance.
+ *
+ * Only for indexes that are *retired*. An index being *replaced* -- same
+ * name, different options, like #439's userId_1_donationDate_1 -- stays a
+ * manual migration: that one refuses to run while duplicates exist, because
+ * a unique index cannot build over them, and dropping it here would throw
+ * that check away and leave the collection unguarded.
+ */
+const RETIRED_INDEXES = [
+	{
+		model: 'User',
+		name: 'refreshToken_1',
+		// Unique but not sparse, so every user without a refresh token
+		// collided on null: the second logout failed, and signup failed
+		// after it. The field is still stored, just no longer indexed.
+		issue: 437,
+	},
+];
+
+/**
+ * Drops the retired indexes above from whichever databases still have them.
+ *
+ * Idempotent, and does nothing on a database that is already correct.
+ * Returns what it dropped so a caller (or a test) can assert on it rather
+ * than scraping logs.
+ */
+const retireIndexes = async (connection) => {
+	const dropped = [];
+
+	for (const retired of RETIRED_INDEXES) {
+		let model;
+		try {
+			model = connection.model(retired.model);
+		} catch {
+			// The model is not registered on this connection; nothing to do.
+			continue;
+		}
+
+		try {
+			const existing = await model.collection.indexes();
+			if (!existing.some((index) => index.name === retired.name)) {
+				continue;
+			}
+
+			await model.collection.dropIndex(retired.name);
+			dropped.push({ model: retired.model, index: retired.name, issue: retired.issue });
+			logger.warn(
+				{ model: retired.model, index: retired.name, issue: retired.issue },
+				`Dropped retired index ${retired.model}.${retired.name}: no schema declares it, ` +
+					`and leaving it in place breaks writes (see issue #${retired.issue}).`
+			);
+		} catch (err) {
+			// A missing collection is a fresh database, not a problem. Anything
+			// else is worth a line but must not stop the app from starting.
+			if (err.codeName !== 'NamespaceNotFound' && err.code !== 26) {
+				logger.warn(
+					{ err, model: retired.model, index: retired.name },
+					'Could not retire index'
+				);
+			}
+		}
+	}
+
+	return dropped;
+};
+
+module.exports = { verifyIndexes, retireIndexes, RETIRED_INDEXES };
