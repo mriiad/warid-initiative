@@ -1,4 +1,8 @@
-const { verifyIndexes } = require('../../src/utils/verifyIndexes');
+const {
+	verifyIndexes,
+	retireIndexes,
+	RETIRED_INDEXES,
+} = require('../../src/utils/verifyIndexes');
 
 // Mongoose creates missing indexes at startup but never alters one that
 // already exists: MongoDB answers createIndex with an IndexOptionsConflict
@@ -123,5 +127,91 @@ describe('verifyIndexes', () => {
 		model.collection.indexes.mockRejectedValue(new Error('not authorized'));
 
 		await expect(verifyIndexes(makeConnection({ User: model }))).resolves.toEqual([]);
+	});
+});
+
+// Mongoose never drops an index a schema stopped declaring, so #437's fix
+// could not take effect until someone ran a migration by hand -- and
+// production stayed broken because that step is the one that gets
+// forgotten. See issue #447. (The behaviour against a real mongod is in
+// e2e/refreshTokenIndex.e2e.spec.js.)
+describe('retireIndexes', () => {
+	const makeConn = (models) => ({
+		modelNames: () => Object.keys(models),
+		model: (name) => {
+			if (!models[name]) throw new Error('MissingSchemaError');
+			return models[name];
+		},
+	});
+
+	const userModel = (indexes) => ({
+		schema: { indexes: () => [] },
+		collection: {
+			indexes: jest.fn().mockResolvedValue(indexes),
+			dropIndex: jest.fn().mockResolvedValue(undefined),
+		},
+	});
+
+	it('drops a retired index that is still present', async () => {
+		const User = userModel([
+			{ name: '_id_', key: { _id: 1 } },
+			{ name: 'refreshToken_1', key: { refreshToken: 1 }, unique: true },
+		]);
+
+		const dropped = await retireIndexes(makeConn({ User }));
+
+		expect(User.collection.dropIndex).toHaveBeenCalledWith('refreshToken_1');
+		expect(dropped).toEqual([{ model: 'User', index: 'refreshToken_1', issue: 437 }]);
+	});
+
+	it('does nothing when the database is already correct', async () => {
+		const User = userModel([{ name: '_id_', key: { _id: 1 } }]);
+
+		expect(await retireIndexes(makeConn({ User }))).toEqual([]);
+		expect(User.collection.dropIndex).not.toHaveBeenCalled();
+	});
+
+	it('leaves every index it was not told to retire alone', async () => {
+		const User = userModel([
+			{ name: '_id_', key: { _id: 1 } },
+			{ name: 'username_1', key: { username: 1 }, unique: true },
+			{ name: 'email_1', key: { email: 1 }, unique: true },
+			{ name: 'refreshToken_1', key: { refreshToken: 1 }, unique: true },
+		]);
+
+		await retireIndexes(makeConn({ User }));
+
+		expect(User.collection.dropIndex).toHaveBeenCalledTimes(1);
+		expect(User.collection.dropIndex).toHaveBeenCalledWith('refreshToken_1');
+	});
+
+	// A fresh database has no collections yet.
+	it('survives a collection that does not exist', async () => {
+		const User = userModel([]);
+		const err = new Error('ns does not exist');
+		err.codeName = 'NamespaceNotFound';
+		User.collection.indexes.mockRejectedValue(err);
+
+		await expect(retireIndexes(makeConn({ User }))).resolves.toEqual([]);
+	});
+
+	// This runs on the startup path and must never be the reason a deploy
+	// fails to come up.
+	it('survives a drop it is not allowed to perform', async () => {
+		const User = userModel([{ name: 'refreshToken_1', key: { refreshToken: 1 } }]);
+		User.collection.dropIndex.mockRejectedValue(new Error('not authorized'));
+
+		await expect(retireIndexes(makeConn({ User }))).resolves.toEqual([]);
+	});
+
+	it('survives a model that is not registered on the connection', async () => {
+		await expect(retireIndexes(makeConn({}))).resolves.toEqual([]);
+	});
+
+	// #439's index is replaced, not retired: its migration refuses to run
+	// while duplicates exist, and dropping it here would throw that away.
+	it('does not retire the donation index, which is replaced rather than removed', () => {
+		expect(RETIRED_INDEXES.map((r) => r.name)).not.toContain('userId_1_donationDate_1');
+		expect(RETIRED_INDEXES.every((r) => r.issue && r.model && r.name)).toBe(true);
 	});
 });
