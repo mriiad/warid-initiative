@@ -13,7 +13,7 @@ const { noCacheApi } = require('./middleware/no-cache-api');
 const { requestLogger } = require('./middleware/request-logger');
 const { securityHeaders } = require('./middleware/security-headers');
 const config = require('./utils/config');
-const { verifyIndexes } = require('./utils/verifyIndexes');
+const { verifyIndexes, retireIndexes } = require('./utils/verifyIndexes');
 const { logger } = require('./utils/logger');
 const authRouter = require('./routes/auth');
 const userRouter = require('./routes/user');
@@ -122,6 +122,12 @@ mongoose
 		// before the first request, caught so a failure here can never be
 		// what takes the app down. See issue #437.
 		try {
+			// Retire first, then report: an index this drops should not also be
+			// listed as drift. Retirement is the narrow, self-healing half --
+			// indexes no schema declares any more, named in a reviewed list --
+			// so a deploy is enough to repair a database, rather than a
+			// migration somebody has to remember. See issue #447.
+			await retireIndexes(mongoose.connection);
 			await verifyIndexes(mongoose.connection);
 		} catch (err) {
 			logger.warn({ err }, 'Index verification failed to run');
