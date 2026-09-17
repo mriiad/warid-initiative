@@ -15,6 +15,7 @@ The platform **coordinates only**. It makes no medical eligibility decisions, do
 ## Contents
 
 - [What it does](#what-it-does)
+- [Screens](#screens)
 - [Stack](#stack)
 - [Repository layout](#repository-layout)
 - [Running it locally](#running-it-locally)
@@ -49,6 +50,25 @@ The platform **coordinates only**. It makes no medical eligibility decisions, do
 Administrators can carry a **role** that scopes what they reach: `principal` has full access, `emergency` and `event` are limited to their own area. An administrator with no role recorded keeps full access — the field postdates the first administrators, so treating "unset" as restricted would have locked them out of routes they already used.
 
 **Blood group compatibility** is computed rather than matched on equality, so an O− donor is offered for every recipient group and an AB+ recipient accepts every donor group (`src/utils/bloodCompatibility.js`).
+
+---
+
+## Screens
+
+The entire UI is gated behind a mobile-viewport check, so the app is a phone app — these are Pixel 7 captures of the real screens.
+
+| | | |
+|:--:|:--:|:--:|
+| <img src="docs/screenshots/01-landing.jpg" width="240" alt="Public landing page"> | <img src="docs/screenshots/02-login.jpg" width="240" alt="Login"> | <img src="docs/screenshots/03-signup.jpg" width="240" alt="Signup"> |
+| **Landing** — upcoming event, who we are, gallery | **Login** | **Signup**, with the privacy-policy consent |
+| <img src="docs/screenshots/04-donor-dashboard.jpg" width="240" alt="Donor dashboard"> | <img src="docs/screenshots/05-events.jpg" width="240" alt="Events list"> | <img src="docs/screenshots/06-event-detail.jpg" width="240" alt="Event detail"> |
+| **Donor dashboard** — total donations, days until next eligible, history | **Events** — upcoming campaigns | **Event detail** — date, location, join |
+| <img src="docs/screenshots/07-donate.jpg" width="240" alt="Record a donation"> | <img src="docs/screenshots/08-emergency.jpg" width="240" alt="Urgent blood request"> | <img src="docs/screenshots/11-profile.jpg" width="240" alt="Donor profile"> |
+| **Record a donation** — eligibility enforced server-side | **Urgent request** — blood group, city, details | **Profile** |
+| <img src="docs/screenshots/09-admin-dashboard.jpg" width="240" alt="Admin dashboard"> | <img src="docs/screenshots/10-admin-users.jpg" width="240" alt="Admin user list"> | |
+| **Admin dashboard** — platform overview and next event | **Admin user list** — search and manage donors | |
+
+<sub>Regenerate these with `cd extranet && npx playwright test --config=playwright.shots.config.ts`. The capture reuses the Playwright suite's API mocks (`extranet/e2e/support/mockApi.ts`), so every screen is the real application rendering real components against fixtures shaped like the real controllers' responses — only the network boundary is faked, and no database or backend is needed.</sub>
 
 ---
 
@@ -88,7 +108,9 @@ Administrators can carry a **role** that scopes what they reach: `principal` has
 │   │   ├── i18n/locales/    ar.json, en.json, fr.json
 │   │   └── utils/           apiClient, apiConfig, apiError
 │   ├── e2e/                 Playwright specs
+│   ├── e2e-shots/           regenerates the README screenshots (not a test)
 │   └── public/              static assets, including the policies PDF
+├── docs/screenshots/        the captures embedded above
 ├── .env.example             every environment variable, documented
 ├── DEPLOYMENT.md            how this ships to production
 └── .github/workflows/ci.yml
