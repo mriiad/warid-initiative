@@ -17,6 +17,14 @@ let mongod;
 // timed this hook out in both files, before either assertion ran.
 const BOOT_TIMEOUT_MS = 120_000;
 
+// The mongoose version is capped in package.json on account of the connect
+// below. mongodb 7.6.0 made resolveRuntimeAdapters() async; appendMetadata()
+// still swallows the rejection and falls back to empty client metadata, so
+// mongod refuses the handshake -- "Missing required sub-document 'driver' in
+// the client metadata document" -- and every test here fails in this hook.
+// It reproduces under Jest specifically. Upstream: mongodb-memory-server#1026,
+// mongoose#16499.
+
 beforeAll(async () => {
   mongod = await MongoMemoryServer.create();
   const uri = mongod.getUri();
