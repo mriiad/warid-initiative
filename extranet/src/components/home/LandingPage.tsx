@@ -53,19 +53,34 @@ const LandingPage = () => {
 	// undefined, and the stat pill rendered the same em dash for all three --
 	// so a failure was indistinguishable from "we have no events". Same flaw
 	// issue #418 fixed on EventDetail. See issue #452.
+	// Filtered server-side, not client-side. Asking for page 1 unfiltered
+	// returns the five *oldest* events -- getEvents sorts date ascending --
+	// and narrowing that page here meant five past events were enough to
+	// empty the card for good while upcoming ones sat on later pages. The
+	// admin dashboard already asked correctly; this screen was missed. Same
+	// bug issue #417 fixed for the donor list. See issue #453.
+	//
+	// It also makes totalItems count upcoming events, so the number in the
+	// stat pill and the card beneath it describe the same set rather than
+	// two different ones.
 	const {
 		data: eventsResponse,
 		isLoading: isLoadingEvents,
 		isError: isEventsError,
 		refetch: refetchEvents,
-	} = useEvents(1);
+	} = useEvents(1, { upcoming: true, includeGeneric: false });
 
+	// The server now returns upcoming, non-generic events already, so this is
+	// defence in depth rather than the filter the screen depends on: a stale
+	// cache entry or a response that ignored the params must not advertise an
+	// event that has been and gone. startOfToday is computed once instead of
+	// through setHours on a shared Date, which mutated it inside the filter.
 	const nextEvent: Event | undefined = useMemo(() => {
 		const events: Event[] = eventsResponse?.data?.events || [];
-		const now = new Date();
+		const startOfToday = new Date().setHours(0, 0, 0, 0);
 		const upcoming = events
 			.filter((event) => !event.isGeneric)
-			.filter((event) => new Date(event.date).getTime() >= now.setHours(0, 0, 0, 0))
+			.filter((event) => new Date(event.date).getTime() >= startOfToday)
 			.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 		return upcoming[0];
 	}, [eventsResponse]);
