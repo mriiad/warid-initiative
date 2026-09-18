@@ -47,6 +47,11 @@ const ERROR_CODES = {
 	// are defined but unused), so both arrive as an E11000 from the unique
 	// index and are translated here. params: { field }
 	DUPLICATE_VALUE: 'DUPLICATE_VALUE',
+	// The server is willing but not configured to send mail: the contact form
+	// has nowhere to deliver to. Distinct from SERVER_ERROR because it is a
+	// deployment gap a visitor can do nothing about, and distinct from mail
+	// being deliberately disabled, which is not an error at all.
+	MAIL_NOT_CONFIGURED: 'MAIL_NOT_CONFIGURED',
 	VALIDATION_FAILED: 'VALIDATION_FAILED',
 	SERVER_ERROR: 'SERVER_ERROR',
 };
