@@ -40,18 +40,20 @@ exports.getEvents = async (req, res, next) => {
 
 		const totalItems = await Event.countDocuments(filter);
 		const events = await Event.find(filter)
+			// image is a Buffer on the schema, and this endpoint used to
+			// base64-encode every one of them into the response -- inflating a
+			// list request by roughly a third of the stored bytes per event.
+			// Nothing reads it: no component in the frontend references
+			// event.image, and the landing page asks for this list purely to
+			// show a count and one card. The single-event endpoint still
+			// returns it. See issue #452, and #461 for removing the field.
+			.select('-image')
 			// Soonest first, matching the order the events list wants to show
 			// and giving the pages a stable, meaningful order to walk.
 			.sort({ date: 1 })
 			.skip((currentPage - 1) * perPage)
 			.limit(perPage)
 			.lean();
-
-		events.forEach((event) => {
-			if (event.image) {
-				event.image = event.image.toString('base64');
-			}
-		});
 
 		res.status(STATUS_CODE.OK).json({
 			events,

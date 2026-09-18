@@ -1,7 +1,7 @@
 import InstagramIcon from '@mui/icons-material/Instagram';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import WaterDropIcon from '@mui/icons-material/WaterDrop';
-import { IconButton, Typography } from '@mui/material';
+import { Button, CircularProgress, IconButton, Typography } from '@mui/material';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -48,7 +48,17 @@ const LandingPage = () => {
 		socialButton,
 	} = landingRedesignStyles();
 
-	const { data: eventsResponse } = useEvents(1);
+	// isError and isLoading are read, not just data: without them a request in
+	// flight, one that failed, and an empty database all left totalItems
+	// undefined, and the stat pill rendered the same em dash for all three --
+	// so a failure was indistinguishable from "we have no events". Same flaw
+	// issue #418 fixed on EventDetail. See issue #452.
+	const {
+		data: eventsResponse,
+		isLoading: isLoadingEvents,
+		isError: isEventsError,
+		refetch: refetchEvents,
+	} = useEvents(1);
 
 	const nextEvent: Event | undefined = useMemo(() => {
 		const events: Event[] = eventsResponse?.data?.events || [];
@@ -91,28 +101,60 @@ const LandingPage = () => {
 					needs a public counts endpoint -- /api/admin/stats is
 					admin-gated -- rather than another constant. See issue #385.
 				*/}
-				<div className={statStrip}>
-					<div className={statPill}>
-						<Typography className={statNumber}>{totalEvents ?? '—'}</Typography>
-						<Typography className={statLabel}>{t('landing.eventsLabel')}</Typography>
-					</div>
-				</div>
-
-				<Typography className={sectionTitle}>{t('admin.nextEvent')}</Typography>
-				{!nextEvent ? (
+				{/*
+					The count and the next-event card are both drawn from this
+					one request, so its failure is reported once for both.
+					Showing "couldn't load" above "no upcoming events" would
+					contradict itself.
+				*/}
+				{isEventsError ? (
 					<div className={card}>
-						<Typography className={aboutBody}>{t('landing.noUpcomingEvents')}</Typography>
+						<Typography className={aboutBody}>
+							{t('landing.eventsLoadError')}
+						</Typography>
+						<Button type='button' onClick={() => refetchEvents()}>
+							{t('common.retry')}
+						</Button>
 					</div>
 				) : (
-					<EventOverviewCard
-						title={nextEvent.title}
-						date={nextEvent.date}
-						createdAt={nextEvent.createdAt}
-						mapLink={nextEvent.mapLink}
-						primaryActionLabel={t('landing.exploreEvents')}
-						onPrimaryAction={() => navigate('/events')}
-						onViewDetails={() => navigate(`/events/${nextEvent.reference}`)}
-					/>
+					<>
+						<div className={statStrip}>
+							<div className={statPill}>
+								<Typography className={statNumber}>
+									{isLoadingEvents ? (
+										<CircularProgress size={20} aria-label={t('common.loading')} />
+									) : (
+										// Unreachable now that both other states are
+										// handled above, kept so a future fourth state
+										// cannot silently render as a number.
+										(totalEvents ?? '—')
+									)}
+								</Typography>
+								<Typography className={statLabel}>{t('landing.eventsLabel')}</Typography>
+							</div>
+						</div>
+
+						<Typography className={sectionTitle}>{t('admin.nextEvent')}</Typography>
+						{isLoadingEvents ? (
+							<div className={card}>
+								<Typography className={aboutBody}>{t('common.loading')}</Typography>
+							</div>
+						) : !nextEvent ? (
+							<div className={card}>
+								<Typography className={aboutBody}>{t('landing.noUpcomingEvents')}</Typography>
+							</div>
+						) : (
+							<EventOverviewCard
+								title={nextEvent.title}
+								date={nextEvent.date}
+								createdAt={nextEvent.createdAt}
+								mapLink={nextEvent.mapLink}
+								primaryActionLabel={t('landing.exploreEvents')}
+								onPrimaryAction={() => navigate('/events')}
+								onViewDetails={() => navigate(`/events/${nextEvent.reference}`)}
+							/>
+						)}
+					</>
 				)}
 
 				<div className={card}>
