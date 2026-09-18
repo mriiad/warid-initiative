@@ -30,6 +30,13 @@ export const landingRedesignStyles = makeStyles({
 		alignItems: 'center',
 		justifyContent: 'center',
 	},
+	// Holds the language switcher and the account button together, so the
+	// water-drop mark keeps the opposite end of the row to itself.
+	heroActions: {
+		display: 'flex',
+		alignItems: 'center',
+		gap: '8px',
+	},
 	heroAccountButton: {
 		'&.MuiIconButton-root': {
 			width: '40px',

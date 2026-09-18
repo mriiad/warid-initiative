@@ -58,3 +58,61 @@ test.describe('Language switcher', () => {
 		expect(await page.evaluate(() => document.documentElement.dir)).toBe('rtl');
 	});
 });
+
+test.describe('Language switcher on the landing page (issue #455)', () => {
+	// #421 mounted the switcher in AuthHeader and on /profile, reasoning that
+	// "the language a first-time visitor reads is settled before they have an
+	// account to open a profile screen with". The landing page is the first
+	// screen that visitor actually sees, and it was the one place the control
+	// was never added -- so changing language meant navigating to /login first.
+	test('a logged-out visitor is offered the switcher on /home', async ({ page }) => {
+		await mockJson(page, '**/api/events*', { events: [], totalItems: 0 });
+		await page.goto('/home');
+
+		await expect(page.getByRole('button', { name: 'تغيير اللغة' })).toBeVisible({
+			timeout: 15000,
+		});
+	});
+
+	test('choosing French translates the landing page itself', async ({ page }) => {
+		await mockJson(page, '**/api/events*', { events: [], totalItems: 0 });
+		await page.goto('/home');
+
+		await page.getByRole('button', { name: 'تغيير اللغة' }).click();
+		await page.getByRole('menuitem', { name: 'Français' }).click();
+
+		// The hero subtitle is landing.heroSubtitle, so this proves the page
+		// re-rendered in the chosen language rather than only the menu.
+		await expect(
+			page.getByText('Chaque goutte fait la différence', { exact: false })
+		).toBeVisible({ timeout: 15000 });
+	});
+
+	test('the choice survives a reload, so it is settled before signing up', async ({ page }) => {
+		await mockJson(page, '**/api/events*', { events: [], totalItems: 0 });
+		await page.goto('/home');
+
+		await page.getByRole('button', { name: 'تغيير اللغة' }).click();
+		await page.getByRole('menuitem', { name: 'Français' }).click();
+		await expect(
+			page.getByText('Chaque goutte fait la différence', { exact: false })
+		).toBeVisible({ timeout: 15000 });
+
+		await page.reload();
+
+		// Persisted under warid_language, and the document direction follows.
+		await expect(
+			page.getByText('Chaque goutte fait la différence', { exact: false })
+		).toBeVisible({ timeout: 15000 });
+		await expect(page.locator('html')).toHaveAttribute('dir', 'ltr');
+	});
+
+	test('the account button is still reachable beside it', async ({ page }) => {
+		// Guards against the switcher displacing the only route to signing in.
+		await mockJson(page, '**/api/events*', { events: [], totalItems: 0 });
+		await page.goto('/home');
+
+		await page.getByRole('button', { name: 'حسابي' }).click();
+		await expect(page).toHaveURL(/\/login$/);
+	});
+});
