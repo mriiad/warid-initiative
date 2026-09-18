@@ -31,6 +31,7 @@
     "DONATION_TOO_YOUNG": "Vous devez avoir au moins {{minAge}} ans pour donner.",
     "DUPLICATE_VALUE": "Cette valeur ({{field}}) est déjà utilisée.",
     "EVENT_NOT_FOUND": "Cet événement est introuvable.",
+    "MAIL_NOT_CONFIGURED": "Votre message n'a pas été envoyé : le service e-mail du serveur n'est pas configuré.",
     "NO_GENERIC_EVENT": "Les dons libres ne peuvent pas être enregistrés pour le moment. Contactez l'association.",
     "PARTICIPATION_NOT_ELIGIBLE": "Vous ne pouvez pas encore donner. Vous pourrez participer à nouveau à partir du {{nextDonationDate}}.",
     "REFRESH_TOKEN_INVALID": "Votre session a expiré. Veuillez vous reconnecter.",

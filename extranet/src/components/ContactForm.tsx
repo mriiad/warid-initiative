@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { contactService, usersService } from '../services';
 import type { UserProfileResponse } from '../types';
+import { resolveApiErrorMessage } from '../utils/apiError';
 import { authRedesignStyles } from '../styles/authRedesign';
 import { eventsListRedesignStyles } from '../styles/eventsListRedesign';
 import PhoneNumberField from './shared/PhoneNumberField';
@@ -104,8 +105,14 @@ const ContactForm = () => {
 			// error.message is Axios's own generic text ("Request failed with
 			// status code 500"), not the backend's reason -- that lives at
 			// error.response.data.message. See issue #344.
+			//
+			// Resolved through the shared ladder so a code the client knows is
+			// rendered in the reader's own language, and anything it does not
+			// recognise still falls through to the backend's prose exactly as
+			// #344 intended. MAIL_NOT_CONFIGURED (issue #454) is the first code
+			// this endpoint sends.
 			setErrorMessage(
-				error.response?.data?.message || error.message || t('contact.genericError')
+				resolveApiErrorMessage(error, t, t('contact.genericError'))
 			);
 		}
 	};
