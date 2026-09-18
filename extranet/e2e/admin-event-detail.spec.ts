@@ -62,6 +62,56 @@ test.describe('Admin event detail (redesigned)', () => {
 		await expect(page.getByRole('button', { name: 'حذف' })).toHaveCount(0);
 	});
 
+	// Issue #460: an Emergency Admin has no permission over events, but both
+	// hero actions were rendered for any isAdmin caller -- delete answered
+	// 403 and did nothing visible, and edit navigated to a route its own
+	// guard then turned into a "page not found".
+	test('an Emergency Admin gets no edit or delete actions on an event (issue #460)', async ({ page }) => {
+		await seedAuth(page, { isAdmin: true, adminRole: 'emergency' });
+		await mockJson(page, '**/api/events/WEVENTAGADIR', eventDetailResponse({
+			reference: 'WEVENTAGADIR',
+			title: 'Agadir Event',
+			location: 'Agadir Sous',
+			isGeneric: false,
+		}));
+		await mockJson(page, '**/api/event/WEVENTAGADIR/participants/details', {
+			isGeneric: false,
+			allDonaters: 4,
+			realDonaters: 2,
+			registeredParticipants: 4,
+		});
+
+		await page.goto('/events/WEVENTAGADIR');
+
+		// They can still read the event -- this hides the two actions, it does
+		// not take the page away.
+		await expect(page.getByText('Agadir Event').first()).toBeVisible({ timeout: 5000 });
+		await expect(page.getByText('Agadir Sous')).toBeVisible();
+		await expect(page.getByRole('button', { name: 'تعديل' })).toHaveCount(0);
+		await expect(page.getByRole('button', { name: 'حذف' })).toHaveCount(0);
+	});
+
+	test('an Event Admin keeps both actions (issue #460)', async ({ page }) => {
+		await seedAuth(page, { isAdmin: true, adminRole: 'event' });
+		await mockJson(page, '**/api/events/WEVENTAGADIR', eventDetailResponse({
+			reference: 'WEVENTAGADIR',
+			title: 'Agadir Event',
+			isGeneric: false,
+		}));
+		await mockJson(page, '**/api/event/WEVENTAGADIR/participants/details', {
+			isGeneric: false,
+			allDonaters: 4,
+			realDonaters: 2,
+			registeredParticipants: 4,
+		});
+
+		await page.goto('/events/WEVENTAGADIR');
+
+		await expect(page.getByRole('button', { name: 'حذف' })).toBeVisible({ timeout: 5000 });
+		await page.getByRole('button', { name: 'تعديل' }).click();
+		await expect(page).toHaveURL(/\/events\/update\/WEVENTAGADIR/);
+	});
+
 	// The dialog used to be built from hardcoded English literals in
 	// EventDetail.tsx ("Delete Event" / "Are you sure you want to delete the
 	// event ...?" / DELETE / CANCEL), under an otherwise fully Arabic RTL

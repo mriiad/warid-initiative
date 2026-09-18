@@ -8,12 +8,18 @@ import { emergencyService } from '../services';
 import type { EmergencyData } from '../types';
 import { queryKeys } from './queryKeys';
 
-export const useUnconfirmedEmergencies = (page = 1) => {
+// GET /api/unconfirmedEmergencies is Emergency-Admin-or-Principal only
+// (routes/emergency.js), and this polls on a 30s interval -- so a caller who
+// does not show the result must be able to switch it off, or an Event Admin's
+// dashboard re-requests a 403 twice a minute for as long as it is open.
+// See issue #460.
+export const useUnconfirmedEmergencies = (page = 1, enabled = true) => {
 	return useQuery({
 		queryKey: queryKeys.emergencies.unconfirmed.list(page),
 		queryFn: () => emergencyService.getUnconfirmedEmergencies(page),
 		staleTime: 2 * 60 * 1000,
 		refetchInterval: 30 * 1000,
+		enabled,
 	});
 };
 

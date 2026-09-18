@@ -136,6 +136,79 @@ test.describe('Admin dashboard', () => {
 		await expect(page).toHaveURL(/\/events\/create/);
 	});
 
+	// Issue #460: both sections rendered for every admin, so each restricted
+	// role was shown a section for an area they do not manage -- and the
+	// emergencies query polls every 30s against a route that answers 403 for
+	// anyone but an Emergency or Principal Admin.
+	test('an Event Admin sees the events section and not the emergency one (issue #460)', async ({ page }) => {
+		await seedAuth(page, { isAdmin: true, userId: 'admin-1', adminRole: 'event' });
+		await mockJson(page, '**/api/admin/stats', { totalUsers: 0, totalEvents: 0, totalDonations: 0, totalEmergencies: 0 });
+		await mockJson(page, '**/api/user/profile', { firstname: 'Karim', gender: 'male' });
+		await mockJson(page, '**/api/events*', { events: [], totalItems: 0 });
+		let emergenciesCalled = false;
+		await page.route('**/api/unconfirmedEmergencies*', async (route) => {
+			emergenciesCalled = true;
+			await route.fulfill({ status: 403, contentType: 'application/json', body: JSON.stringify({ message: 'Forbidden' }) });
+		});
+
+		await page.goto('/home');
+
+		await expect(page.getByText('الفعالية القادمة')).toBeVisible({ timeout: 5000 });
+		await expect(page.getByText('حالة طارئة')).toHaveCount(0);
+		await expect(page.getByText('لا توجد حالات طارئة حاليًا')).toHaveCount(0);
+		// Hiding the section has to stop the request too: this one polls on a
+		// 30s interval against a route this role is refused.
+		expect(emergenciesCalled).toBe(false);
+	});
+
+	test('an Emergency Admin sees the emergency section and not the events one (issue #460)', async ({ page }) => {
+		await seedAuth(page, { isAdmin: true, userId: 'admin-1', adminRole: 'emergency' });
+		await mockJson(page, '**/api/admin/stats', { totalUsers: 0, totalEvents: 0, totalDonations: 0, totalEmergencies: 0 });
+		await mockJson(page, '**/api/user/profile', { firstname: 'Salma', gender: 'female' });
+		await mockJson(page, '**/api/unconfirmedEmergencies*', { emergencies: [], totalItems: 0 });
+		let eventsCalled = false;
+		await page.route('**/api/events*', async (route) => {
+			eventsCalled = true;
+			await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ events: [], totalItems: 0 }) });
+		});
+
+		await page.goto('/home');
+
+		await expect(page.getByText('حالة طارئة')).toBeVisible({ timeout: 5000 });
+		await expect(page.getByText('الفعالية القادمة')).toHaveCount(0);
+		await expect(page.getByText('لا توجد فعاليات قادمة')).toHaveCount(0);
+		expect(eventsCalled).toBe(false);
+	});
+
+	test('a Principal Admin still sees both sections (issue #460)', async ({ page }) => {
+		await seedAuth(page, { isAdmin: true, userId: 'admin-1', adminRole: 'principal' });
+		await mockJson(page, '**/api/admin/stats', { totalUsers: 0, totalEvents: 0, totalDonations: 0, totalEmergencies: 0 });
+		await mockJson(page, '**/api/user/profile', { firstname: 'Yassine', gender: 'male' });
+		await mockJson(page, '**/api/events*', { events: [], totalItems: 0 });
+		await mockJson(page, '**/api/unconfirmedEmergencies*', { emergencies: [], totalItems: 0 });
+
+		await page.goto('/home');
+
+		await expect(page.getByText('حالة طارئة')).toBeVisible({ timeout: 5000 });
+		await expect(page.getByText('الفعالية القادمة')).toBeVisible();
+	});
+
+	test('an admin with no role recorded keeps both sections (issue #460)', async ({ page }) => {
+		// Every admin from before roles existed. adminAccess.ts treats that as
+		// principal everywhere else; narrowing it here would take away on
+		// deploy what they could already do.
+		await seedAuth(page, { isAdmin: true, userId: 'admin-1' });
+		await mockJson(page, '**/api/admin/stats', { totalUsers: 0, totalEvents: 0, totalDonations: 0, totalEmergencies: 0 });
+		await mockJson(page, '**/api/user/profile', { firstname: 'Legacy', gender: 'male' });
+		await mockJson(page, '**/api/events*', { events: [], totalItems: 0 });
+		await mockJson(page, '**/api/unconfirmedEmergencies*', { emergencies: [], totalItems: 0 });
+
+		await page.goto('/home');
+
+		await expect(page.getByText('حالة طارئة')).toBeVisible({ timeout: 5000 });
+		await expect(page.getByText('الفعالية القادمة')).toBeVisible();
+	});
+
 	// The strip used to render `t('admin.weekday.X').charAt(0)`, which
 	// collapsed different days onto the same glyph: أر (Wed) and أح (Sun)
 	// both showed as أ. The Arabic abbreviations are two letters precisely

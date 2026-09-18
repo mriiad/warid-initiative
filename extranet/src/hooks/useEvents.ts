@@ -18,11 +18,19 @@ import { queryKeys, type EventListFilters } from './queryKeys';
 // `totalItems` describe the same set. Callers that want every event (the
 // admin list, the donation form's event picker) simply omit them and get
 // the previous behaviour. See issue #417.
-export const useEvents = (page = 1, filters: EventListFilters = {}) => {
+// `enabled` matches useEvent's, for a caller that hides the list it would
+// otherwise render: a section that isn't shown shouldn't be fetched either.
+// See issue #460.
+export const useEvents = (
+	page = 1,
+	filters: EventListFilters = {},
+	enabled = true
+) => {
 	return useQuery({
 		queryKey: queryKeys.events.list(page, filters),
 		queryFn: () => eventsService.getAll(page, filters),
 		gcTime: 10 * 60 * 1000, // 10 minutes
+		enabled,
 	});
 };
 
