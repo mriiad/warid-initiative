@@ -101,6 +101,12 @@ const verifyIndexes = async (connection) => {
 					keys: signature,
 					declared,
 					actual,
+					// The raw specs, so repairDriftedIndexes can rebuild the
+					// index from the schema and put the old one back if that
+					// fails. Not part of what gets logged.
+					schemaKeys: keys,
+					schemaOptions: options,
+					existingIndex: found,
 				});
 			}
 		}
@@ -201,4 +207,108 @@ const retireIndexes = async (connection) => {
 	return dropped;
 };
 
-module.exports = { verifyIndexes, retireIndexes, RETIRED_INDEXES };
+/**
+ * Brings a drifted index back in line with the schema that declares it.
+ *
+ * verifyIndexes only *reports* a disagreement, which was enough to find
+ * User.refreshToken (#437) but not enough to fix it: the repair still
+ * depended on somebody running a command, and production stayed broken until
+ * somebody did. retireIndexes closed that gap for indexes no schema declares
+ * any more. This closes it for indexes a schema *does* declare but whose
+ * options in the database are wrong -- the case that leaves
+ * `unique: true, sparse: true` in a model while the collection enforces a
+ * plain unique index, and every document missing the field collides on null.
+ *
+ * Scope, deliberately narrow:
+ *   - only indexes some schema declares, matched by their key signature, so
+ *     an index added by hand for performance is never touched;
+ *   - never `_id_`;
+ *   - only when a SIGNIFICANT_OPTIONS value actually differs.
+ *
+ * If the schema's version cannot be built -- a unique index over a column
+ * that now holds duplicates is the realistic case -- the old index is put
+ * back, so a failed repair leaves the collection exactly as guarded as it
+ * was rather than unguarded. That failure is logged at error with the
+ * remedy, because it is the one case a human has to resolve.
+ *
+ * Never throws. A wrong index is worth fixing; it is not worth refusing to
+ * start over, and this runs on the startup path.
+ */
+const repairDriftedIndexes = async (connection) => {
+	const repaired = [];
+	const problems = await verifyIndexes(connection);
+
+	for (const problem of problems) {
+		const model = connection.model(problem.model);
+		const { existingIndex, schemaKeys, schemaOptions } = problem;
+
+		// Rebuild the old index exactly, minus the server-managed fields, so
+		// it can be restored if the schema's version will not build.
+		const {
+			key,
+			name: _name,
+			v: _v,
+			ns: _ns,
+			background: _background,
+			...oldOptions
+		} = existingIndex;
+
+		try {
+			await model.collection.dropIndex(existingIndex.name);
+		} catch (err) {
+			logger.warn(
+				{ err, model: problem.model, index: existingIndex.name },
+				'Could not drop a drifted index; leaving it in place'
+			);
+			continue;
+		}
+
+		try {
+			await model.collection.createIndex(schemaKeys, schemaOptions);
+			repaired.push({
+				model: problem.model,
+				index: existingIndex.name,
+				was: problem.actual,
+				now: problem.declared,
+			});
+			logger.warn(
+				{
+					model: problem.model,
+					index: existingIndex.name,
+					was: describe(problem.actual),
+					now: describe(problem.declared),
+				},
+				`Rebuilt index ${problem.model}.${existingIndex.name} to match its schema.`
+			);
+		} catch (err) {
+			// Put it back. A collection with the old, wrong index is still
+			// better than one with no index at all.
+			let restored = false;
+			try {
+				await model.collection.createIndex(key, oldOptions);
+				restored = true;
+			} catch (restoreErr) {
+				logger.error(
+					{ err: restoreErr, model: problem.model, index: existingIndex.name },
+					`Could not restore ${problem.model}.${existingIndex.name} after a failed rebuild. ` +
+						'The collection is now missing that index.'
+				);
+			}
+			logger.error(
+				{ err, model: problem.model, index: existingIndex.name, restored },
+				`Could not rebuild ${problem.model}.${existingIndex.name} from its schema` +
+					`${restored ? ' (the previous index was restored)' : ''}. ` +
+					'A unique index cannot build over existing duplicates -- resolve those, then restart.'
+			);
+		}
+	}
+
+	return repaired;
+};
+
+module.exports = {
+	verifyIndexes,
+	retireIndexes,
+	repairDriftedIndexes,
+	RETIRED_INDEXES,
+};
