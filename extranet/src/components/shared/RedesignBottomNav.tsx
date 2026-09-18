@@ -102,13 +102,20 @@ const EVENT_ADMIN_ITEMS: NavItem[] = [
 ];
 
 // "The emergency admin sees only the dashboard and a list icon to manage
-// the emergencies" (issue #183) -- '/emergencies' (plural, the admin
-// unconfirmed-emergencies list), not '/emergency' (singular, the public
-// create form in PUBLIC_ITEMS above, which this role does not get either
-// per the literal "only").
+// the emergencies" (issue #183). That "only" was taken literally, and it
+// took away two things that are not somebody else's area: their own profile,
+// and the emergency form -- which is public, so this role was the one group
+// of signed-in users who could not open it from the nav. Issue #459 asks for
+// both back.
+//
+// Both emergency destinations are here and they are different screens:
+// '/emergencies' (plural) is the admin unconfirmed-emergencies list, and
+// '/emergency' (singular) is the create form every visitor gets.
 const EMERGENCY_ADMIN_ITEMS: NavItem[] = [
 	{ path: '/home', icon: HomeIcon, labelKey: 'nav.home' },
+	{ path: '/emergency', icon: HealthAndSafetyIcon, labelKey: 'nav.emergency' },
 	{ path: '/emergencies?page=1', icon: NotificationImportantIcon, labelKey: 'nav.emergencies', matchPath: '/emergencies' },
+	PROFILE_ITEM,
 ];
 
 const RedesignBottomNav = () => {
