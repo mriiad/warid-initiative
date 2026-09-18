@@ -26,10 +26,18 @@ export const useUserProfile = () => {
 	});
 };
 
+// Returns the user, not the Axios response. Caching the envelope meant the
+// value under queryKeys.user.detail(userId) depended on which screen happened
+// to populate it first: this hook stored `{ data, status, headers, ... }`
+// while UpdateUser's own inline query on the same key stored the unwrapped
+// user. With the app-wide five minute staleTime, whichever ran first was
+// served to the other without a refetch -- so opening Edit from the user
+// detail screen read `firstname` off transport metadata and got undefined,
+// and the form rendered blank. See issue #457.
 export const useAdminUserDetail = (userId: string) => {
 	return useQuery({
 		queryKey: queryKeys.user.detail(userId),
-		queryFn: () => usersService.getUserById(userId),
+		queryFn: async () => (await usersService.getUserById(userId)).data,
 		enabled: !!userId,
 	});
 };

@@ -65,7 +65,8 @@ const UserDetailView = () => {
 		return <NotFoundPage />;
 	}
 
-	const user = userInfo?.data;
+	// useAdminUserDetail unwraps the response now (issue #457).
+	const user = userInfo;
 	const fullName = user ? [user.firstname, user.lastname].filter(Boolean).join(' ') : '';
 	// A plain admin with no role recorded (from before roles existed) is
 	// treated as principal everywhere else (adminAccess.ts) -- shown and
