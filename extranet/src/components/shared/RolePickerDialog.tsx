@@ -7,8 +7,8 @@ import {
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { useTranslation } from 'react-i18next';
-import { ADMIN_ROLE_ICONS } from '../../auth/adminAccess';
-import { AdminRole } from '../../data/constants';
+import { ASSIGNABLE_ROLE_ICONS } from '../../auth/adminAccess';
+import type { AssignableRole } from '../../data/constants';
 import colors from '../../styles/colors';
 import { authStyles } from '../../styles/mainStyles';
 
@@ -51,8 +51,9 @@ interface RolePickerDialogProps {
 	open: boolean;
 	// Excludes the role the user already holds -- issue #183: "a user
 	// already holding a role should not be offered that same role again".
-	availableRoles: AdminRole[];
-	onSelect: (role: AdminRole) => void;
+	// Includes "Normal User", which revokes admin access (issue #458).
+	availableRoles: AssignableRole[];
+	onSelect: (role: AssignableRole) => void;
 	onCancel: () => void;
 }
 
@@ -84,7 +85,7 @@ const RolePickerDialog: React.FC<RolePickerDialogProps> = ({
 			</DialogTitle>
 			<DialogContent>
 				{availableRoles.map((role) => {
-					const Icon = ADMIN_ROLE_ICONS[role];
+					const Icon = ASSIGNABLE_ROLE_ICONS[role];
 					return (
 						<button
 							key={role}

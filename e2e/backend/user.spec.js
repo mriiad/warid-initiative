@@ -319,6 +319,88 @@ describe('PATCH /api/users/:userId/admin (role assignment, issue #183)', () => {
 	});
 });
 
+describe('PATCH /api/users/:userId/admin (demotion to a normal user, issue #458)', () => {
+	it('revokes admin access and clears the role', async () => {
+		// The three roles are the only values this route accepted, and each
+		// one sets isAdmin = true -- so an admin could be moved between roles
+		// but never back out of being an admin at all.
+		const save = jest.fn().mockResolvedValue(true);
+		const target = { _id: 'target', isAdmin: true, role: 'event', save };
+		User.findById.mockImplementation((id) =>
+			id === ADMIN_ID
+				? resolveTo({ _id: ADMIN_ID, isAdmin: true, role: 'principal' })
+				: resolveTo(target)
+		);
+
+		const res = await request(app)
+			.patch('/api/users/target/admin')
+			.set('Authorization', authHeader(ADMIN_ID))
+			.send({ role: 'user' });
+
+		expect(res.status).toBe(200);
+		expect(save).toHaveBeenCalled();
+		expect(target.isAdmin).toBe(false);
+		// Left set, the stale role would still read as that admin's role
+		// anywhere isAdmin is not also checked.
+		expect(target.role).toBeUndefined();
+		expect(res.body.isAdmin).toBe(false);
+		expect(res.body.role).toBeNull();
+	});
+
+	it('is a no-op-shaped success on someone who is already a normal user', async () => {
+		const save = jest.fn().mockResolvedValue(true);
+		const target = { _id: 'target', isAdmin: false, save };
+		User.findById.mockImplementation((id) =>
+			id === ADMIN_ID
+				? resolveTo({ _id: ADMIN_ID, isAdmin: true, role: 'principal' })
+				: resolveTo(target)
+		);
+
+		const res = await request(app)
+			.patch('/api/users/target/admin')
+			.set('Authorization', authHeader(ADMIN_ID))
+			.send({ role: 'user' });
+
+		expect(res.status).toBe(200);
+		expect(target.isAdmin).toBe(false);
+	});
+
+	it('refuses to let a principal demote themselves', async () => {
+		// They would lose the access this very route requires, and if they are
+		// the only principal nobody is left who can grant it back.
+		const save = jest.fn().mockResolvedValue(true);
+		const self = { _id: ADMIN_ID, isAdmin: true, role: 'principal', save };
+		User.findById.mockReturnValue(resolveTo(self));
+
+		const res = await request(app)
+			.patch(`/api/users/${ADMIN_ID}/admin`)
+			.set('Authorization', authHeader(ADMIN_ID))
+			.send({ role: 'user' });
+
+		expect(res.status).toBe(403);
+		expect(save).not.toHaveBeenCalled();
+		expect(self.isAdmin).toBe(true);
+	});
+
+	it('still rejects a role that is neither an admin role nor "user"', async () => {
+		User.findById.mockReturnValue(resolveTo({ _id: ADMIN_ID, isAdmin: true, role: 'principal' }));
+		const res = await request(app)
+			.patch('/api/users/target/admin')
+			.set('Authorization', authHeader(ADMIN_ID))
+			.send({ role: 'normal' });
+		expect(res.status).toBe(400);
+	});
+
+	it('still rejects a non-principal admin trying to demote someone', async () => {
+		User.findById.mockReturnValue(resolveTo({ _id: ADMIN_ID, isAdmin: true, role: 'event' }));
+		const res = await request(app)
+			.patch('/api/users/target/admin')
+			.set('Authorization', authHeader(ADMIN_ID))
+			.send({ role: 'user' });
+		expect(res.status).toBe(403);
+	});
+});
+
 describe('DELETE /api/deleteUser/:username (admin only)', () => {
 	it('rejects non-admin callers', async () => {
 		User.findById.mockReturnValue(resolveTo({ _id: USER_ID, isAdmin: false }));

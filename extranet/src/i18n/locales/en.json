@@ -574,7 +574,7 @@
       "deleteConfirm": "Are you sure you want to delete the user \"{{username}}\"? This action cannot be undone.",
       "deleteSuccess": "User deleted successfully",
       "deleteError": "Error deleting user: {{message}}",
-      "assignRoleTitle": "Choose admin role",
+      "assignRoleTitle": "Choose role",
       "assignRoleSuccess": "{{username}} is now {{role}}",
       "assignRoleError": "Error assigning admin role: {{message}}",
       "noUsersTitle": "No Users Found",
@@ -593,7 +593,8 @@
     "role": {
       "principal": "Principal Admin",
       "emergency": "Emergency Admin",
-      "event": "Event Admin"
+      "event": "Event Admin",
+      "user": "Normal User"
     },
     "filter": {
       "title": "Filter Users",

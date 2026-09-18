@@ -574,7 +574,7 @@
       "deleteConfirm": "؟هل أنت متأكد من رغبتك في حذف المستخدم \"{{username}}\". لا يمكن التراجع عن هذا الإجراء",
       "deleteSuccess": "تم حذف المستخدم بنجاح",
       "deleteError": "خطأ في حذف المستخدم: {{message}}",
-      "assignRoleTitle": "اختر دور المشرف",
+      "assignRoleTitle": "اختر الدور",
       "assignRoleSuccess": "أصبح \"{{username}}\" الآن {{role}}",
       "assignRoleError": "خطأ في تعيين دور المشرف: {{message}}",
       "noUsersTitle": "لم يتم العثور على مستخدمين",
@@ -593,7 +593,8 @@
     "role": {
       "principal": "مشرف رئيسي",
       "emergency": "مشرف الطوارئ",
-      "event": "مشرف الفعاليات"
+      "event": "مشرف الفعاليات",
+      "user": "مستخدم عادي"
     },
     "filter": {
       "title": "تصفية المستخدمين",

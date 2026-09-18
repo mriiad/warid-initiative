@@ -12,7 +12,8 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ADMIN_ROLE_ICONS, hasAdminRole } from '../auth/adminAccess';
 import { useAuth } from '../auth/AuthContext';
-import { AdminRole } from '../data/constants';
+import { AdminRole, NORMAL_USER_ROLE } from '../data/constants';
+import type { AssignableRole } from '../data/constants';
 import { useAdminUserDetail, useAssignAdminRole, useDeleteUser } from '../hooks';
 import { eventDetailRedesignStyles } from '../styles/eventDetailRedesign';
 import { eventOverviewCardStyles } from '../styles/eventOverviewCard';
@@ -24,13 +25,20 @@ import RolePickerDialog from './shared/RolePickerDialog';
 import SnackbarComponent from './shared/SnackbarComponent';
 import Ltr from './shared/Ltr';
 
-const ALL_ADMIN_ROLES = [AdminRole.Principal, AdminRole.Emergency, AdminRole.Event];
+// "Normal User" last, after the three admin roles: it is the one option that
+// takes access away rather than granting it (issue #458).
+const ASSIGNABLE_ROLES: AssignableRole[] = [
+	AdminRole.Principal,
+	AdminRole.Emergency,
+	AdminRole.Event,
+	NORMAL_USER_ROLE,
+];
 
 const UserDetailView = () => {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const { userId } = useParams<{ userId: string }>();
-	const { isAdmin, adminRole } = useAuth();
+	const { isAdmin, adminRole, userId: ownUserId } = useAuth();
 	// Principal-Admin-only (issue #183), same as the Route-level gate in
 	// App.tsx -- this is the belt-and-suspenders self-guard that was already
 	// here for plain isAdmin.
@@ -73,7 +81,16 @@ const UserDetailView = () => {
 	// offered roles the same way here, rather than as roleless.
 	const currentRole =
 		user?.isAdmin ? user.role || AdminRole.Principal : null;
-	const availableRoles = ALL_ADMIN_ROLES.filter((role) => role !== currentRole);
+	const availableRoles = ASSIGNABLE_ROLES.filter((role) => {
+		// Whatever they hold now is not worth re-offering (issue #183), and a
+		// user who is not an admin already holds "Normal User".
+		if (role === (currentRole ?? NORMAL_USER_ROLE)) return false;
+		// The backend refuses a principal revoking their own admin access --
+		// they would lose the access this screen needs, and could not grant it
+		// back. Don't offer what would only come back as an error.
+		if (role === NORMAL_USER_ROLE && userId === ownUserId) return false;
+		return true;
+	});
 
 	const handleDelete = () => {
 		if (!user?.username) return;
@@ -93,7 +110,7 @@ const UserDetailView = () => {
 		setConfirmDelete(false);
 	};
 
-	const handleAssignRole = (role: AdminRole) => {
+	const handleAssignRole = (role: AssignableRole) => {
 		if (!userId) return;
 		assignAdminRole.mutate(
 			{ userId, role },

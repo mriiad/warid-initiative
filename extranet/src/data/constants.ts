@@ -40,6 +40,14 @@ export enum AdminRole {
 	Event = 'event',
 }
 
+// Deliberately not a member of AdminRole -- a normal user holds no admin
+// role at all. It is the fourth option the role picker offers, and the value
+// PATCH /api/users/:userId/admin takes to mean "revoke admin access" rather
+// than "assign a role". See issue #458 and makeUserAdmin in
+// src/controllers/user.js.
+export const NORMAL_USER_ROLE = 'user';
+export type AssignableRole = AdminRole | typeof NORMAL_USER_ROLE;
+
 // Mirrors VALIDATION.PASSWORD_MIN_LENGTH in the backend's
 // src/utils/constants.js. The signup form used to hardcode 6 while the
 // server accepted 5, and the reset/change-password screens applied no

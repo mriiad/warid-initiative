@@ -169,7 +169,10 @@ export interface UserListItem {
 
 /** PATCH /api/users/:userId/admin -- role assignment (issue #183). */
 export interface AdminRoleAssignmentResponse extends MessageResponse {
-	role: AdminRole;
+	/** False after a demotion to a normal user -- see issue #458. */
+	isAdmin: boolean;
+	/** Null when admin access was revoked rather than a role assigned. */
+	role: AdminRole | null;
 }
 
 /** GET /api/checkUserProfile */
