@@ -50,4 +50,68 @@ test.describe('Home routing by auth state (issue #292)', () => {
 		await expect(page).toHaveURL(/\/home$/);
 		await expect(page.getByText('لم تقم بأي تبرع بعد')).toBeVisible({ timeout: 10000 });
 	});
+
+	// Issue #464. The active item was matched by pathname equality against
+	// '/home' alone, so a donor sitting on '/dashboard' -- which is where
+	// login sends them, and which renders the very same screen -- saw no tab
+	// highlighted at all.
+	test('the home icon is marked active on /home', async ({ page }) => {
+		await seedAuth(page, { isAdmin: false, userId: 'user-1' });
+		await mockJson(page, '**/api/users/user-1/dashboard', { donations: [] });
+
+		await page.goto('/home');
+
+		await expect(page.getByRole('link', { name: 'الصفحة الرئيسية' })).toHaveAttribute(
+			'aria-current',
+			'page'
+		);
+	});
+
+	test('the home icon is marked active on /dashboard too (issue #464)', async ({ page }) => {
+		await seedAuth(page, { isAdmin: false, userId: 'user-1' });
+		await mockJson(page, '**/api/users/user-1/dashboard', { donations: [] });
+
+		await page.goto('/dashboard');
+
+		await expect(page.getByRole('link', { name: 'الصفحة الرئيسية' })).toHaveAttribute(
+			'aria-current',
+			'page'
+		);
+	});
+
+	test('landing on /dashboard straight from login shows the home icon active (issue #464)', async ({ page }) => {
+		// The reported path: log in as a donor with a complete profile, get
+		// redirected to /dashboard, and find no tab lit.
+		await mockJson(page, '**/api/auth/login', {
+			token: 'fake-jwt-token',
+			refreshToken: 'fake-refresh-token',
+			userId: 'user-1',
+			isAdmin: false,
+		}, { method: 'POST' });
+		await mockJson(page, '**/api/user/check-profile', { isProfileComplete: true });
+		await mockJson(page, '**/api/users/user-1/dashboard', { donations: [] });
+
+		await page.goto('/login');
+		await page.getByLabel('اسم المستخدم').fill('CIN123456');
+		await page.getByRole('textbox', { name: 'كلمة المرور' }).fill('password123');
+		await page.locator('button[type=submit]').click();
+
+		await expect(page).toHaveURL(/\/dashboard/, { timeout: 10000 });
+		await expect(page.getByRole('link', { name: 'الصفحة الرئيسية' })).toHaveAttribute(
+			'aria-current',
+			'page'
+		);
+	});
+
+	test('a different tab does not also claim to be current', async ({ page }) => {
+		await seedAuth(page, { isAdmin: false, userId: 'user-1' });
+		await mockJson(page, '**/api/users/user-1/dashboard', { donations: [] });
+
+		await page.goto('/dashboard');
+
+		await expect(page.getByRole('link', { name: 'التقويم' })).not.toHaveAttribute(
+			'aria-current',
+			'page'
+		);
+	});
 });
