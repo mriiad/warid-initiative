@@ -9,6 +9,7 @@ import { useAuth } from '../../auth/AuthContext';
 import { Event } from '@/types';
 import { useEvents } from '../../hooks';
 import { landingRedesignStyles } from '../../styles/landingRedesign';
+import LanguageSwitcher from '../shared/LanguageSwitcher';
 import RedesignBottomNav from '../shared/RedesignBottomNav';
 import EventOverviewCard from '../shared/EventOverviewCard';
 import BloodDropsAnimation from './BloodDropsAnimation';
@@ -25,6 +26,7 @@ const LandingPage = () => {
 		heroTopRow,
 		heroIcon,
 		heroAccountButton,
+		heroActions,
 		heroTitle,
 		heroSubtitle,
 		content,
@@ -95,13 +97,27 @@ const LandingPage = () => {
 					<div className={heroIcon}>
 						<WaterDropIcon />
 					</div>
-					<IconButton
-						className={heroAccountButton}
-						aria-label={t('landing.myAccount')}
-						onClick={() => navigate(token ? '/profile' : '/login')}
-					>
-						<PersonOutlineIcon />
-					</IconButton>
+					{/*
+						The language control belongs here most of all. #421 put it
+						in AuthHeader and on /profile reasoning that "the language
+						a first-time visitor reads is settled before they have an
+						account to open a profile screen with" -- and then skipped
+						the one screen that visitor actually lands on, so changing
+						language meant navigating to /login first. See issue #455.
+
+						Grouped with the account button rather than replacing it:
+						that button is the landing page's only route to signing in.
+					*/}
+					<div className={heroActions}>
+						<LanguageSwitcher className={heroAccountButton} />
+						<IconButton
+							className={heroAccountButton}
+							aria-label={t('landing.myAccount')}
+							onClick={() => navigate(token ? '/profile' : '/login')}
+						>
+							<PersonOutlineIcon />
+						</IconButton>
+					</div>
 				</div>
 				<Typography className={heroTitle}>{t('landing.heroTitle')}</Typography>
 				<Typography className={heroSubtitle}>{t('landing.heroSubtitle')}</Typography>
