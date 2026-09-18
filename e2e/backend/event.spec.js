@@ -385,6 +385,105 @@ describe('PUT /api/event/:reference (admin only, BUG regression for issue #205/#
 		expect(res.status).toBe(200);
 		expect(res.body.event.title).toBe('New title');
 	});
+
+	// Issue #462. The update form renders the date disabled -- the date is
+	// fixed at creation because the reference encodes it -- and so never
+	// sends the field. `new Date(undefined)` is an Invalid Date, so every
+	// update that changed only the title was rejected with
+	// "Invalid date format provided. Received: "undefined"".
+	it('keeps the stored date when the request does not send one', async () => {
+		mockAdmin();
+		Event.findOne.mockReturnValue(
+			resolveTo({ reference: 'WEVENT20990101', date: new Date('2099-01-01'), image: null })
+		);
+		let updatePayload = null;
+		Event.findOneAndUpdate.mockImplementation((_query, update) => {
+			updatePayload = update;
+			return resolveTo({
+				reference: 'WEVENT20990101',
+				_id: 'evt-1',
+				title: 'New title',
+				location: 'Rabat',
+				date: new Date('2099-01-01'),
+				isGeneric: false,
+			});
+		});
+
+		const res = await request(app)
+			.put('/api/event/WEVENT20990101')
+			.set('Authorization', authHeader(ADMIN_ID))
+			.field('title', 'New title')
+			.field('location', 'Rabat');
+
+		expect(res.status).toBe(200);
+		expect(res.body.event.title).toBe('New title');
+		// Not merely "didn't 400": the stored date has to survive the write.
+		expect(updatePayload.date.toISOString()).toBe(
+			new Date('2099-01-01').toISOString()
+		);
+	});
+
+	it('edits an event whose date has already passed, when no date is sent', async () => {
+		// The past-date guard only makes sense for a date the caller is
+		// actually trying to set. Applied to the stored date it would refuse
+		// every edit of a finished event -- fixing a typo in the title of last
+		// month's drive.
+		mockAdmin();
+		Event.findOne.mockReturnValue(
+			resolveTo({ reference: 'WEVENT20200101', date: new Date('2020-01-01'), image: null })
+		);
+		Event.findOneAndUpdate.mockReturnValue(
+			resolveTo({
+				reference: 'WEVENT20200101',
+				_id: 'evt-2',
+				title: 'Corrected title',
+				date: new Date('2020-01-01'),
+				isGeneric: false,
+			})
+		);
+
+		const res = await request(app)
+			.put('/api/event/WEVENT20200101')
+			.set('Authorization', authHeader(ADMIN_ID))
+			.field('title', 'Corrected title')
+			.field('location', 'Rabat');
+
+		expect(res.status).toBe(200);
+	});
+
+	it('still rejects a date that cannot be parsed, when one is sent', async () => {
+		// 422 from the route's own validator chain
+		// (`body('date').optional().isISO8601()`), which runs before the
+		// controller -- so a supplied date is already guaranteed parseable by
+		// the time updateEvent sees it, and the only value that ever reached
+		// its isNaN check was the absent one.
+		mockAdmin();
+		Event.findOne.mockReturnValue(
+			resolveTo({ reference: 'WEVENT20990101', date: new Date('2099-01-01'), image: null })
+		);
+		const res = await request(app)
+			.put('/api/event/WEVENT20990101')
+			.set('Authorization', authHeader(ADMIN_ID))
+			.field('title', 'New title')
+			.field('location', 'Rabat')
+			.field('date', 'not-a-date');
+		expect(res.status).toBe(422);
+	});
+
+	it('still refuses to move an event into the past, when a date is sent', async () => {
+		mockAdmin();
+		Event.findOne.mockReturnValue(
+			resolveTo({ reference: 'WEVENT20990101', date: new Date('2099-01-01'), image: null })
+		);
+		const res = await request(app)
+			.put('/api/event/WEVENT20990101')
+			.set('Authorization', authHeader(ADMIN_ID))
+			.field('title', 'New title')
+			.field('location', 'Rabat')
+			.field('date', '2020-01-01');
+		expect(res.status).toBe(400);
+		expect(res.body.message).toMatch(/past date/);
+	});
 });
 
 describe('DELETE /api/event (admin only)', () => {
