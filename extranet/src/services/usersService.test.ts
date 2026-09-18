@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { AdminRole, BloodGroup } from '../data/constants';
+import { AdminRole, BloodGroup, NORMAL_USER_ROLE } from '../data/constants';
 import { apiClient } from '../utils/apiClient';
 import { usersService } from './usersService';
 
@@ -42,6 +42,16 @@ describe('usersService.assignAdminRole (issue #183)', () => {
 
 		expect(apiClient.patch).toHaveBeenCalledWith('/api/users/user-1/admin', {
 			role: AdminRole.Emergency,
+		});
+	});
+
+	it('sends NORMAL_USER_ROLE on the same route to revoke admin access (issue #458)', () => {
+		// Demotion is the same decision as promotion -- which role does this
+		// person hold -- so it is the same request, not a second endpoint.
+		usersService.assignAdminRole('user-1', NORMAL_USER_ROLE);
+
+		expect(apiClient.patch).toHaveBeenCalledWith('/api/users/user-1/admin', {
+			role: 'user',
 		});
 	});
 });

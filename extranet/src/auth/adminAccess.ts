@@ -1,7 +1,9 @@
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import NotificationImportantIcon from '@mui/icons-material/NotificationImportant';
-import { AdminRole } from '../data/constants';
+import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
+import { AdminRole, NORMAL_USER_ROLE } from '../data/constants';
+import type { AssignableRole } from '../data/constants';
 
 /**
  * One icon per role, shared by the role-assignment picker and the badge
@@ -14,6 +16,20 @@ export const ADMIN_ROLE_ICONS: Record<AdminRole, typeof AdminPanelSettingsIcon> 
 	[AdminRole.Principal]: AdminPanelSettingsIcon,
 	[AdminRole.Emergency]: NotificationImportantIcon,
 	[AdminRole.Event]: CalendarMonthIcon,
+};
+
+/**
+ * What the role picker offers, which is the three admin roles plus "Normal
+ * User" -- the option that revokes admin access (issue #458). Separate from
+ * ADMIN_ROLE_ICONS because the badge on a user's row and detail page marks
+ * an admin's role, and a normal user has none to show.
+ */
+export const ASSIGNABLE_ROLE_ICONS: Record<
+	AssignableRole,
+	typeof AdminPanelSettingsIcon
+> = {
+	...ADMIN_ROLE_ICONS,
+	[NORMAL_USER_ROLE]: PersonOutlineIcon,
 };
 
 /**

@@ -13,7 +13,7 @@ import type {
 	UserProfileResponse,
 	UsersListResponse,
 } from '../types';
-import type { AdminRole } from '../data/constants';
+import type { AssignableRole } from '../data/constants';
 import type { AdminStats, DashboardData } from '../types/users';
 import { apiClient } from '../utils/apiClient';
 
@@ -76,11 +76,12 @@ export const usersService = {
 	},
 
 	// Grants admin access if the target isn't already an admin, and either
-	// way sets which of the three roles they hold -- so this also covers a
-	// principal reassigning an existing admin from one role to another, not
-	// just a first-time promotion. See issue #183 and the matching backend
+	// way sets which role they hold -- so this also covers a principal
+	// reassigning an existing admin from one role to another, not just a
+	// first-time promotion. NORMAL_USER_ROLE goes the other way and revokes
+	// admin access (issue #458). See issue #183 and the matching backend
 	// change in controllers/user.js's makeUserAdmin.
-	assignAdminRole: (userId: string, role: AdminRole) => {
+	assignAdminRole: (userId: string, role: AssignableRole) => {
 		return apiClient.patch<AdminRoleAssignmentResponse>(
 			`/api/users/${userId}/admin`,
 			{ role }

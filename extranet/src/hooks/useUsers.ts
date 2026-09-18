@@ -7,7 +7,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useErrorToast } from '../components/shared/ErrorToastProvider';
 import type { UserFormData } from '@/types';
 import { usersService } from '../services';
-import type { AdminRole } from '../data/constants';
+import type { AssignableRole } from '../data/constants';
 import type { UpdateUserData } from '../types';
 import type { AdminStats, DashboardData } from '../types/users';
 import { queryKeys } from './queryKeys';
@@ -144,7 +144,7 @@ export const useAssignAdminRole = () => {
 	const queryClient = useQueryClient();
 
 	return useMutation({
-		mutationFn: ({ userId, role }: { userId: string; role: AdminRole }) =>
+		mutationFn: ({ userId, role }: { userId: string; role: AssignableRole }) =>
 			usersService.assignAdminRole(userId, role),
 		onSuccess: (response, { userId }) => {
 			// Invalidate users list and specific user

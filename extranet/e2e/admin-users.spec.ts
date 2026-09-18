@@ -224,7 +224,7 @@ test.describe('Admin users list', () => {
 		// Not yet an admin: no role badge, and the action opens a picker
 		// listing all three roles rather than promoting outright.
 		await page.getByRole('button', { name: 'تعيين مشرف' }).click();
-		await expect(page.getByText('اختر دور المشرف')).toBeVisible({ timeout: 5000 });
+		await expect(page.getByText('اختر الدور')).toBeVisible({ timeout: 5000 });
 		await page.getByRole('button', { name: 'مشرف الطوارئ' }).click();
 		await page.waitForTimeout(500);
 		expect(requestBody).toEqual({ role: 'emergency' });
@@ -255,10 +255,104 @@ test.describe('Admin users list', () => {
 		// must be visible"), and re-offering it in the picker is redundant.
 		await expect(page.getByText('مشرف الفعاليات')).toBeVisible({ timeout: 5000 });
 		await page.getByRole('button', { name: 'تغيير الدور' }).click();
-		await expect(page.getByText('اختر دور المشرف')).toBeVisible({ timeout: 5000 });
+		await expect(page.getByText('اختر الدور')).toBeVisible({ timeout: 5000 });
 		await expect(page.getByRole('button', { name: 'مشرف رئيسي' })).toBeVisible();
 		await expect(page.getByRole('button', { name: 'مشرف الطوارئ' })).toBeVisible();
 		await expect(page.getByRole('button', { name: 'مشرف الفعاليات' })).toHaveCount(0);
+	});
+
+	test('the principal admin can demote an admin back to a normal user (issue #458)', async ({
+		page,
+	}) => {
+		// The picker offered the three admin roles and nothing else, so an
+		// admin could be moved between roles but never have their admin
+		// access revoked.
+		await seedAuth(page, { isAdmin: true });
+		await mockJson(page, '**/api/users/profile/target-1', {
+			_id: 'target-1',
+			username: 'CIN000111',
+			email: 'admin@example.com',
+			phoneNumber: '+212612345680',
+			isAdmin: true,
+			role: 'event',
+			gender: 'male',
+			firstname: 'Amine',
+			lastname: 'Bennani',
+			canDonate: true,
+		});
+		let requestBody: any = null;
+		await page.route('**/api/users/target-1/admin', async (route) => {
+			requestBody = route.request().postDataJSON();
+			await route.fulfill({
+				status: 200,
+				contentType: 'application/json',
+				body: JSON.stringify({
+					message: 'Role updated successfully',
+					isAdmin: false,
+					role: null,
+				}),
+			});
+		});
+
+		await page.goto('/users/target-1');
+		await page.getByRole('button', { name: 'تغيير الدور' }).click();
+		await expect(page.getByText('اختر الدور')).toBeVisible({ timeout: 5000 });
+		await page.getByRole('button', { name: 'مستخدم عادي' }).click();
+		await page.waitForTimeout(500);
+
+		expect(requestBody).toEqual({ role: 'user' });
+	});
+
+	test('the picker does not offer "normal user" to someone who already is one (issue #458)', async ({
+		page,
+	}) => {
+		// Same rule as #183's: a role already held is not worth re-offering.
+		await seedAuth(page, { isAdmin: true });
+		await mockJson(page, '**/api/users/profile/target-1', {
+			_id: 'target-1',
+			username: 'CIN000111',
+			email: 'donor@example.com',
+			phoneNumber: '+212612345680',
+			isAdmin: false,
+			gender: 'male',
+			firstname: 'Amine',
+			lastname: 'Bennani',
+			canDonate: true,
+		});
+
+		await page.goto('/users/target-1');
+		await page.getByRole('button', { name: 'تعيين مشرف' }).click();
+		await expect(page.getByText('اختر الدور')).toBeVisible({ timeout: 5000 });
+		await expect(page.getByRole('button', { name: 'مشرف رئيسي' })).toBeVisible();
+		await expect(page.getByRole('button', { name: 'مستخدم عادي' })).toHaveCount(0);
+	});
+
+	test('the picker does not offer a principal the option to demote themselves (issue #458)', async ({
+		page,
+	}) => {
+		// The backend refuses it -- they would lose the access this screen
+		// needs and could not grant it back -- so the option must not be
+		// there to click in the first place.
+		await seedAuth(page, { userId: 'self-1', isAdmin: true, adminRole: 'principal' });
+		await mockJson(page, '**/api/users/profile/self-1', {
+			_id: 'self-1',
+			username: 'CIN000001',
+			email: 'principal@example.com',
+			phoneNumber: '+212612345678',
+			isAdmin: true,
+			role: 'principal',
+			gender: 'male',
+			firstname: 'Yassine',
+			lastname: 'Alaoui',
+			canDonate: true,
+		});
+
+		await page.goto('/users/self-1');
+		await page.getByRole('button', { name: 'تغيير الدور' }).click();
+		await expect(page.getByText('اختر الدور')).toBeVisible({ timeout: 5000 });
+		// Reassigning themselves to another admin role is still allowed.
+		await expect(page.getByRole('button', { name: 'مشرف الطوارئ' })).toBeVisible();
+		await expect(page.getByRole('button', { name: 'مستخدم عادي' })).toHaveCount(0);
 	});
 
 	test('the users list shows a distinct icon per admin role (issue #183)', async ({ page }) => {

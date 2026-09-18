@@ -574,7 +574,7 @@
       "deleteConfirm": "Êtes-vous sûr de vouloir supprimer l'utilisateur \"{{username}}\" ? Cette action est irréversible.",
       "deleteSuccess": "Utilisateur supprimé avec succès",
       "deleteError": "Erreur lors de la suppression de l'utilisateur : {{message}}",
-      "assignRoleTitle": "Choisir le rôle d'administrateur",
+      "assignRoleTitle": "Choisir le rôle",
       "assignRoleSuccess": "{{username}} est désormais {{role}}",
       "assignRoleError": "Erreur lors de l'attribution du rôle d'administrateur : {{message}}",
       "noUsersTitle": "Aucun utilisateur trouvé",
@@ -593,7 +593,8 @@
     "role": {
       "principal": "Administrateur principal",
       "emergency": "Administrateur des urgences",
-      "event": "Administrateur des événements"
+      "event": "Administrateur des événements",
+      "user": "Utilisateur normal"
     },
     "filter": {
       "title": "Filtrer les utilisateurs",

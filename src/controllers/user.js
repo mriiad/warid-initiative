@@ -594,10 +594,17 @@ exports.updateUserById = async (req, res, next) => {
 };
 
 // Role assignment (see issue #183): grants admin access if the target isn't
-// already an admin, and either way sets which of the three roles they hold
-// -- so this also covers a principal reassigning an existing admin from one
-// role to another, not just a first-time promotion.
+// already an admin, and either way sets which role they hold -- so this also
+// covers a principal reassigning an existing admin from one role to another,
+// not just a first-time promotion, and revoking admin access entirely.
 const ADMIN_ROLES = ['principal', 'emergency', 'event'];
+
+// Not an admin role: the value that revokes admin access instead of setting
+// one. Every value this route accepted set isAdmin = true, so an admin could
+// be moved between roles but never back out of being an admin at all, and the
+// picker had nothing to offer for it. See issue #458.
+const NORMAL_USER_ROLE = 'user';
+const ASSIGNABLE_ROLES = [...ADMIN_ROLES, NORMAL_USER_ROLE];
 
 exports.makeUserAdmin = async (req, res, next) => {
 	try {
@@ -614,9 +621,19 @@ exports.makeUserAdmin = async (req, res, next) => {
 				.status(STATUS_CODE.BAD_REQUEST)
 				.json({ message: 'User ID is required' });
 		}
-		if (!ADMIN_ROLES.includes(role)) {
+		if (!ASSIGNABLE_ROLES.includes(role)) {
 			return res.status(STATUS_CODE.BAD_REQUEST).json({
-				message: `A valid role is required (one of: ${ADMIN_ROLES.join(', ')}).`,
+				message: `A valid role is required (one of: ${ASSIGNABLE_ROLES.join(', ')}).`,
+			});
+		}
+
+		// A principal demoting themselves loses the access this very route
+		// requires, and if they are the only principal there is nobody left
+		// who can grant it back. Refuse rather than let one click lock the
+		// association out of its own role management.
+		if (role === NORMAL_USER_ROLE && String(userId) === String(req.userId)) {
+			return res.status(STATUS_CODE.FORBIDDEN).json({
+				message: 'You cannot revoke your own admin access.',
 			});
 		}
 
@@ -627,13 +644,22 @@ exports.makeUserAdmin = async (req, res, next) => {
 				.json({ message: 'User not found' });
 		}
 
-		user.isAdmin = true;
-		user.role = role;
+		if (role === NORMAL_USER_ROLE) {
+			user.isAdmin = false;
+			// Cleared, not left behind: a stale role still reads as that
+			// admin's role anywhere isAdmin is not also checked.
+			user.role = undefined;
+		} else {
+			user.isAdmin = true;
+			user.role = role;
+		}
 		await user.save();
 
-		res
-			.status(STATUS_CODE.OK)
-			.json({ message: 'Admin role updated successfully', role: user.role });
+		res.status(STATUS_CODE.OK).json({
+			message: 'Role updated successfully',
+			isAdmin: user.isAdmin,
+			role: user.role ?? null,
+		});
 	} catch (err) {
 		next(err);
 	}
