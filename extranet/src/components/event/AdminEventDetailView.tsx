@@ -11,6 +11,9 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Event } from '@/types';
+import { hasAdminRole } from '../../auth/adminAccess';
+import { useAuth as useAuthContext } from '../../auth/AuthContext';
+import { AdminRole } from '../../data/constants';
 import { authRedesignStyles } from '../../styles/authRedesign';
 import { statCardColors } from '../../styles/dashboardRedesign';
 import { eventDetailRedesignStyles } from '../../styles/eventDetailRedesign';
@@ -29,6 +32,15 @@ interface AdminEventDetailViewProps {
 const AdminEventDetailView = ({ event, participantStats, onDelete }: AdminEventDetailViewProps) => {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
+	const { isAdmin, adminRole } = useAuthContext();
+	// An Emergency Admin has no permission over events. Both actions were
+	// rendered for any isAdmin caller anyway: delete answered 403 and looked
+	// like nothing had happened, and edit navigated to a route whose own
+	// guard turned it into "page not found". They can still read the page --
+	// this hides the two actions, it does not take the event away. See
+	// issue #460, and requireAdminRole(['event']) in routes/event.js for the
+	// server-side rule this mirrors.
+	const canManageEvents = hasAdminRole(isAdmin, adminRole, [AdminRole.Event]);
 	const [showQrModal, setShowQrModal] = useState(false);
 	const { primaryButton } = authRedesignStyles();
 	const {
@@ -105,22 +117,24 @@ const AdminEventDetailView = ({ event, participantStats, onDelete }: AdminEventD
 					<div className={heroIcon}>
 						<EventIcon />
 					</div>
-					<div className={heroActions}>
-						<IconButton
-							className={heroEditButton}
-							aria-label={t('common.edit')}
-							onClick={() => navigate(`/events/update/${event.reference}`)}
-						>
-							<EditIcon />
-						</IconButton>
-						<IconButton
-							className={heroDeleteButton}
-							aria-label={t('events.card.delete')}
-							onClick={onDelete}
-						>
-							<DeleteIcon />
-						</IconButton>
-					</div>
+					{canManageEvents && (
+						<div className={heroActions}>
+							<IconButton
+								className={heroEditButton}
+								aria-label={t('common.edit')}
+								onClick={() => navigate(`/events/update/${event.reference}`)}
+							>
+								<EditIcon />
+							</IconButton>
+							<IconButton
+								className={heroDeleteButton}
+								aria-label={t('events.card.delete')}
+								onClick={onDelete}
+							>
+								<DeleteIcon />
+							</IconButton>
+						</div>
+					)}
 					<Typography className={heroTitle}>{event.title}</Typography>
 					<Typography className={heroSubtitle}>{heroDate}</Typography>
 				</div>
