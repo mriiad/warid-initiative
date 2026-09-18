@@ -44,15 +44,38 @@ const createDriftedIndex = () =>
 		{ unique: true, name: 'confirmationCode_1' }
 	);
 
-describe('E2E: repairing a drifted index', () => {
-	afterEach(async () => {
-		const existing = await usersCollection().indexes();
-		for (const index of existing) {
-			if (index.name !== '_id_') {
-				await usersCollection().dropIndex(index.name);
-			}
+const dropEveryIndexButId = async () => {
+	let existing;
+	try {
+		existing = await usersCollection().indexes();
+	} catch (err) {
+		// No collection yet is nothing to clean up, not a failure.
+		if (err.codeName === 'NamespaceNotFound' || err.code === 26) return;
+		throw err;
+	}
+	for (const index of existing) {
+		if (index.name !== '_id_') {
+			await usersCollection().dropIndex(index.name);
 		}
+	}
+};
+
+describe('E2E: repairing a drifted index', () => {
+	beforeAll(async () => {
+		// Registering the model queues Mongoose's own autoIndex build of
+		// User's declared indexes, and it resolves whenever it resolves. It
+		// landed *after* one afterEach had already listed and dropped the
+		// indexes, which put a correct (sparse) confirmationCode_1 back before
+		// the next test -- so that test's createDriftedIndex() got an
+		// IndexOptionsConflict instead of installing the drift it needs. Wait
+		// the build out once, here, so from now on these tests are the only
+		// thing touching indexes.
+		await mongoose.connection.model('User').init();
 	});
+
+	// Both ends: afterEach alone left whatever a failing test had created.
+	beforeEach(dropEveryIndexButId);
+	afterEach(dropEveryIndexButId);
 
 	it('reproduces the outage: a second activated account collides on the cleared code', async () => {
 		await createDriftedIndex();
