@@ -32,6 +32,12 @@ describe('GET /api/events', () => {
 	// controller asked the database for rather than only what came back.
 	const spyQuery = (rows) => {
 		const query = {
+			// Mirrors the chain the controller actually builds. A missing link
+			// does not fail where it is missing: the call throws, the
+			// controller's catch hands it to next(), and the assertion that
+			// notices is whichever one comes after -- so this stays in step
+			// with getEvents deliberately.
+			select: jest.fn(() => query),
 			sort: jest.fn(() => query),
 			skip: jest.fn(() => query),
 			limit: jest.fn(() => query),
@@ -65,6 +71,36 @@ describe('GET /api/events', () => {
 		await request(app).get('/api/events');
 
 		expect(query.sort).toHaveBeenCalledWith({ date: 1 });
+	});
+
+	it('does not ship the image buffers, which no client reads (issue #452)', async () => {
+		// image is a Buffer on the schema and this endpoint used to
+		// base64-encode every one into the response, inflating a list request
+		// by roughly a third of the stored bytes per event. Nothing in the
+		// frontend references event.image, and the landing page asks for this
+		// list only to render a count and one card.
+		const query = spyQuery([{ reference: 'WEVENT1' }]);
+		Event.countDocuments.mockReturnValue(resolveTo(1));
+		Event.find.mockReturnValue(query);
+
+		const res = await request(app).get('/api/events');
+
+		expect(res.status).toBe(200);
+		expect(query.select).toHaveBeenCalledWith('-image');
+	});
+
+	it('still returns an event that has no image at all', async () => {
+		// The old code guarded with `if (event.image)`; excluding the field
+		// must not depend on it being present.
+		Event.countDocuments.mockReturnValue(resolveTo(1));
+		Event.find.mockReturnValue(spyQuery([{ reference: 'WEVENT1', title: 'Drive' }]));
+
+		const res = await request(app).get('/api/events');
+
+		expect(res.status).toBe(200);
+		expect(res.body.events).toHaveLength(1);
+		expect(res.body.events[0]).not.toHaveProperty('image');
+		expect(res.body.totalItems).toBe(1);
 	});
 
 	it('returns every event when no filters are given', async () => {
