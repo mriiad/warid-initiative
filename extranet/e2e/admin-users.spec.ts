@@ -321,3 +321,77 @@ test.describe('Admin users list', () => {
 		expect(deleteCalled).toBe(true);
 	});
 });
+
+test.describe('Editing a user pre-fills the form (issue #457)', () => {
+	// UserDetailView reads its user through useAdminUserDetail, whose queryFn
+	// returns the whole Axios response, and reads it back as `userInfo?.data`.
+	// UpdateUser had its own inline useQuery on the *same* query key whose
+	// queryFn returned `response.data` instead. With the app-wide 5 minute
+	// staleTime, arriving at the edit screen from the detail screen served the
+	// cached Axios response without refetching, so every `userData.firstname`
+	// in UpdateUser resolved against transport metadata and came back
+	// undefined -- and the form reset to empty strings.
+	//
+	// That is why it looked intermittent: opening /users/update/:id directly
+	// populates the cache with the unwrapped shape and fills correctly. Only
+	// the detail-then-edit path, which is how an admin actually gets there,
+	// was broken.
+	const adminUser = {
+		_id: 'user-9',
+		username: 'AB123456',
+		email: 'amine@example.com',
+		phoneNumber: '+212661234567',
+		isAdmin: false,
+		gender: 'male',
+		canDonate: true,
+		firstname: 'Amine',
+		lastname: 'Bennani',
+		birthdate: '1995-05-20T00:00:00.000Z',
+		bloodGroup: 'A+',
+		city: 'الرباط',
+	};
+
+	const mockDetail = async (page: import('@playwright/test').Page) => {
+		await seedAuth(page, { isAdmin: true, adminRole: 'principal' });
+		await mockJson(page, '**/api/users/profile/user-9', adminUser);
+	};
+
+	test('arriving from the user detail screen, the fields carry the current values', async ({ page }) => {
+		await mockDetail(page);
+
+		// The path an admin actually takes: detail first, then the Edit button.
+		// It must be a client-side navigation -- page.goto() is a full reload,
+		// which tears down the QueryClient and takes the poisoned cache entry
+		// with it, so the bug cannot reproduce that way.
+		await page.goto('/users/user-9');
+		await expect(page.getByText('Amine Bennani')).toBeVisible({ timeout: 15000 });
+
+		await page.getByRole('button', { name: 'تعديل' }).click();
+		await expect(page).toHaveURL(/\/users\/update\/user-9$/);
+
+		await expect(page.getByLabel('الاسم الشخصي')).toHaveValue('Amine', { timeout: 15000 });
+		await expect(page.getByLabel('الاسم العائلي')).toHaveValue('Bennani');
+		await expect(page.getByLabel('البريد الإلكتروني')).toHaveValue('amine@example.com');
+		await expect(page.getByLabel('رقم الهاتف')).toHaveValue('+212661234567');
+	});
+
+	test('opening the edit screen directly also pre-fills', async ({ page }) => {
+		// This path already worked; pinned so a fix for the one above cannot
+		// break it by moving the unwrapping to the wrong side.
+		await mockDetail(page);
+		await page.goto('/users/update/user-9');
+
+		await expect(page.getByLabel('الاسم الشخصي')).toHaveValue('Amine', { timeout: 15000 });
+		await expect(page.getByLabel('البريد الإلكتروني')).toHaveValue('amine@example.com');
+	});
+
+	test('the detail screen itself still renders its user', async ({ page }) => {
+		// Guards the other side of the shared cache entry: unwrapping in the
+		// hook must not leave UserDetailView reading a field that moved.
+		await mockDetail(page);
+		await page.goto('/users/user-9');
+
+		await expect(page.getByText('Amine Bennani')).toBeVisible({ timeout: 15000 });
+		await expect(page.getByText('amine@example.com')).toBeVisible();
+	});
+});

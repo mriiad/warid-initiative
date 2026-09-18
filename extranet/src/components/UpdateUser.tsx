@@ -11,13 +11,12 @@ import {
 	TextField,
 	Typography,
 } from '@mui/material';
-import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { BLOOD_GROUP_OPTIONS } from '../data/constants';
-import { queryKeys } from '../hooks/queryKeys';
+import { useAdminUserDetail } from '../hooks';
 import { usersService } from '../services';
 import { authRedesignStyles } from '../styles/authRedesign';
 import { eventDetailRedesignStyles } from '../styles/eventDetailRedesign';
@@ -64,15 +63,10 @@ const UpdateUser = () => {
 		},
 	});
 
-	// Fetch user data
-	const { data: userData, isLoading } = useQuery({
-		queryKey: queryKeys.user.detail(userId ?? ''),
-		queryFn: async () => {
-			const response = await usersService.getUserById(userId);
-			return response.data;
-		},
-		enabled: !!userId,
-	});
+	// The shared hook rather than a second query on the same key: two
+	// queryFns writing different shapes to one cache entry is what left this
+	// form blank when it was opened from the user detail screen. See #457.
+	const { data: userData, isLoading } = useAdminUserDetail(userId ?? '');
 
 	// Reset form when userData is loaded
 	useEffect(() => {
