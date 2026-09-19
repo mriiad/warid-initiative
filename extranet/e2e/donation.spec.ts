@@ -167,4 +167,67 @@ test.describe('Donation form', () => {
 		await expect(page.locator('form')).toBeVisible();
 		await expect(page.getByLabel(/تاريخ التبرع/)).toHaveAttribute('aria-invalid', 'true');
 	});
+
+	// Issue #465. A successful donation showed the success animation and then
+	// nothing: no redirect, and a back arrow that goes to whatever happened to
+	// be in history -- a QR-code scan lands here with no history at all.
+	test('a successful donation lands the donor on their dashboard (issue #465)', async ({ page }) => {
+		await seedAuth(page, { isAdmin: false, userId: 'user-1' });
+		await mockJson(page, '**/api/user/profile', fullProfileResponse());
+		await mockJson(page, '**/api/donation/canDonate', { canDonate: true });
+		await mockJson(page, '**/api/donation', { message: 'Donation registered.' }, { method: 'POST' });
+		await mockJson(page, '**/api/users/user-1/dashboard', {
+			donations: [{ id: 'd1', event: 'Collecte de sang', date: '2026-01-01', type: 'Regular Donation' }],
+		});
+
+		await page.goto('/donate');
+		await page.getByRole('combobox').nth(1).click();
+		await page.getByRole('option', { name: 'الدم' }).click();
+		await page.locator('button[type=submit]').click();
+
+		// The confirmation is still shown first -- the redirect follows it, it
+		// does not replace it.
+		await expect(page.getByText('تم تسجيل طلب التبرع بنجاح', { exact: false })).toBeVisible({ timeout: 5000 });
+
+		await expect(page).toHaveURL(/\/dashboard/, { timeout: 15000 });
+		await expect(page.getByText('Regular Donation')).toBeVisible({ timeout: 10000 });
+	});
+
+	test('the donation the donor just made is on the dashboard without a reload (issue #465)', async ({ page }) => {
+		// The dashboard query was never invalidated, so arriving there inside
+		// the 5-minute staleTime served the cached list -- without the donation
+		// that was just recorded.
+		await seedAuth(page, { isAdmin: false, userId: 'user-1' });
+		await mockJson(page, '**/api/user/profile', fullProfileResponse());
+		await mockJson(page, '**/api/donation/canDonate', { canDonate: true });
+		await mockJson(page, '**/api/donation', { message: 'Donation registered.' }, { method: 'POST' });
+
+		let dashboardCalls = 0;
+		await page.route('**/api/users/user-1/dashboard', async (route) => {
+			dashboardCalls += 1;
+			await route.fulfill({
+				status: 200,
+				contentType: 'application/json',
+				body: JSON.stringify({
+					donations:
+						dashboardCalls === 1
+							? []
+							: [{ id: 'd1', event: 'Collecte de sang', date: '2026-01-01', type: 'Regular Donation' }],
+				}),
+			});
+		});
+
+		// Warm the cache the way the donor's own session would: dashboard
+		// first, then the donation form.
+		await page.goto('/dashboard');
+		await expect(page.getByText('لم تقم بأي تبرع بعد')).toBeVisible({ timeout: 5000 });
+
+		await page.goto('/donate');
+		await page.getByRole('combobox').nth(1).click();
+		await page.getByRole('option', { name: 'الدم' }).click();
+		await page.locator('button[type=submit]').click();
+
+		await expect(page).toHaveURL(/\/dashboard/, { timeout: 15000 });
+		await expect(page.getByText('Regular Donation')).toBeVisible({ timeout: 10000 });
+	});
 });
