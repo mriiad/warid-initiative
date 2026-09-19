@@ -230,28 +230,6 @@ exports.updateEvent = async (req) => {
 	const { title, subtitle, location, date, mapLink, description, isGeneric } =
 		req.body;
 
-	let updateEventDate = date instanceof Date ? date : new Date(date);
-
-	if (isNaN(updateEventDate.getTime())) {
-		throw new ApiError(
-			`Invalid date format provided. Received: "${date}", Parsed: ${updateEventDate}`,
-			STATUS_CODE.BAD_REQUEST,
-			['date']
-		);
-	}
-
-	// Validate date is not in the past
-	const today = new Date();
-	today.setHours(0, 0, 0, 0);
-
-	if (updateEventDate < today) {
-		throw new ApiError(
-			'Cannot update event to a past date. Please select a future date.',
-			STATUS_CODE.BAD_REQUEST,
-			['date']
-		);
-	}
-
 	// Check if event exists
 	const existingEvent = await Event.findOne({ reference });
 	if (!existingEvent) {
@@ -261,16 +239,56 @@ exports.updateEvent = async (req) => {
 		);
 	}
 
-	// Prevent date changes to maintain reference consistency
-	const existingDateStr = existingEvent.date.toISOString().split('T')[0];
-	const newDateStr = updateEventDate.toISOString().split('T')[0];
+	// The date is fixed at creation -- the reference encodes it, which is what
+	// the immutability check below protects -- so the update form renders the
+	// field disabled and does not send it at all. This used to parse it
+	// regardless: `new Date(undefined)` is an Invalid Date, so every update
+	// that changed only the title was rejected with
+	// `Invalid date format provided. Received: "undefined"`. See issue #462.
+	//
+	// The route's own validators already guarantee that a date which *is* sent
+	// parses (`body('date').optional().isISO8601().toDate()`), so the checks
+	// below only concern a caller deliberately supplying one.
+	const dateProvided = date !== undefined && date !== null && date !== '';
+	let updateEventDate = existingEvent.date;
 
-	if (newDateStr !== existingDateStr) {
-		throw new ApiError(
-			'Cannot change event date as it would create inconsistency with the event reference. The date is fixed when the event is created.',
-			STATUS_CODE.BAD_REQUEST,
-			['date']
-		);
+	if (dateProvided) {
+		updateEventDate = date instanceof Date ? date : new Date(date);
+
+		if (isNaN(updateEventDate.getTime())) {
+			throw new ApiError(
+				`Invalid date format provided. Received: "${date}", Parsed: ${updateEventDate}`,
+				STATUS_CODE.BAD_REQUEST,
+				['date']
+			);
+		}
+
+		// Not in the past. Deliberately inside this branch: it asks about a
+		// date the caller is trying to set. Applied to the stored date it
+		// would refuse every edit of an event that has already happened --
+		// correcting a typo in last month's drive.
+		const today = new Date();
+		today.setHours(0, 0, 0, 0);
+
+		if (updateEventDate < today) {
+			throw new ApiError(
+				'Cannot update event to a past date. Please select a future date.',
+				STATUS_CODE.BAD_REQUEST,
+				['date']
+			);
+		}
+
+		// Prevent date changes to maintain reference consistency
+		const existingDateStr = existingEvent.date.toISOString().split('T')[0];
+		const newDateStr = updateEventDate.toISOString().split('T')[0];
+
+		if (newDateStr !== existingDateStr) {
+			throw new ApiError(
+				'Cannot change event date as it would create inconsistency with the event reference. The date is fixed when the event is created.',
+				STATUS_CODE.BAD_REQUEST,
+				['date']
+			);
+		}
 	}
 
 	let eventImage = existingEvent.image;
