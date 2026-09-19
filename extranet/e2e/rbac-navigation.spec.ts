@@ -11,7 +11,10 @@ import { mockJson, seedAuth } from './support/mockApi';
 // the wrong role; these tests are about what's shown to tap in the first
 // place.
 test.describe('Role-aware bottom navigation (issue #183)', () => {
-	test('an Event Admin sees only home and events in the bottom nav', async ({ page }) => {
+	// Same shape as #459: the profile was left out of this role's items, and
+	// /profile has no route guard, so the screen was reachable only by typing
+	// the URL. Issue #463.
+	test('an Event Admin sees home, events and their profile in the bottom nav (issue #463)', async ({ page }) => {
 		await seedAuth(page, { isAdmin: true, adminRole: 'event' });
 		await mockJson(page, '**/api/admin/stats', { totalUsers: 0, totalEvents: 0, totalDonations: 0, totalEmergencies: 0 });
 		await mockJson(page, '**/api/events*', { events: [], totalItems: 0 });
@@ -19,10 +22,32 @@ test.describe('Role-aware bottom navigation (issue #183)', () => {
 
 		const nav = page.locator('nav, [class*="wrapper"]:has(a[aria-label])').first();
 		await expect(nav.getByLabel('التقويم')).toBeVisible({ timeout: 5000 });
-		await expect(nav.getByLabel('الملف الشخصي')).toHaveCount(0);
+		await expect(nav.getByLabel('الملف الشخصي')).toBeVisible();
+		// Still restricted: no emergency area, no admin menu, no users list.
 		await expect(nav.getByLabel('طوارئ', { exact: false })).toHaveCount(0);
 		await expect(nav.getByLabel('الإدارة')).toHaveCount(0);
 		await expect(nav.getByLabel('لائحة المستخدمين')).toHaveCount(0);
+	});
+
+	test('an Event Admin reaches the profile screen from the nav (issue #463)', async ({ page }) => {
+		await seedAuth(page, { isAdmin: true, adminRole: 'event' });
+		await mockJson(page, '**/api/admin/stats', { totalUsers: 0, totalEvents: 0, totalDonations: 0, totalEmergencies: 0 });
+		await mockJson(page, '**/api/events*', { events: [], totalItems: 0 });
+		await mockJson(page, '**/api/user/profile', {
+			firstname: 'Karim',
+			lastname: 'Idrissi',
+			email: 'karim@example.com',
+			phoneNumber: '+212612345678',
+			gender: 'male',
+			bloodGroup: 'O+',
+			city: 'Casablanca',
+		});
+		await page.goto('/home');
+
+		const nav = page.locator('nav, [class*="wrapper"]:has(a[aria-label])').first();
+		await expect(nav.getByLabel('الملف الشخصي')).toBeVisible({ timeout: 5000 });
+		await nav.getByLabel('الملف الشخصي').click();
+		await expect(page).toHaveURL(/\/profile$/);
 	});
 
 	// #183 was read literally as "only the dashboard and a list icon", which

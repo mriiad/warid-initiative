@@ -112,13 +112,19 @@ const PRINCIPAL_ONLY_ITEMS: NavItem[] = [
 ];
 
 // "The event admin sees only the dashboard and the event icon in the
-// navbar" (issue #183) -- literally only these two, not the full set above
-// with items removed. Reuses the same '/events' destination everyone else
-// gets: EventsComponent already renders the admin add/edit/delete view
-// for any isAdmin caller, Event Admin included.
+// navbar" (issue #183) -- not the full set above with items removed.
+// Reuses the same '/events' destination everyone else gets:
+// EventsComponent already renders the admin add/edit/delete view for any
+// isAdmin caller, Event Admin included.
+//
+// Their own profile is not somebody else's area, and /profile has no role
+// guard, so leaving it out of the nav made the screen reachable only by
+// typing the URL -- the same thing issue #459 reported for Emergency Admin.
+// Issue #463.
 const EVENT_ADMIN_ITEMS: NavItem[] = [
 	HOME_ITEM,
 	{ path: '/events?page=1', icon: CalendarMonthIcon, labelKey: 'nav.calendar', matchPath: '/events' },
+	PROFILE_ITEM,
 ];
 
 // "The emergency admin sees only the dashboard and a list icon to manage
