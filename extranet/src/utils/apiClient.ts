@@ -106,7 +106,23 @@ apiClient.interceptors.response.use(
 	async (error) => {
 		const originalRequest = error.config;
 
-		if (error.response?.status === 401) {
+		// A 401 carrying an application error code is the server rejecting
+		// something the user just supplied -- it is not a statement about
+		// their session. Refreshing and retrying cannot change the answer, and
+		// clearing the session logs somebody out over a typo: a mistyped
+		// current password (CURRENT_PASSWORD_INCORRECT) showed the error and
+		// signed the user out with it. See issue #467.
+		//
+		// Session-expiry 401s are the ones this interceptor exists for, and
+		// they carry no code: isAuth (middleware/token-check.js) throws a
+		// plain Error, and the refresh endpoint's own rejections
+		// (REFRESH_TOKEN_INVALID / REFRESH_TOKEN_NOT_VALID) are ApiErrors
+		// constructed without one -- ApiError omits the field entirely when it
+		// is absent. So those still refresh, and still log out when the
+		// refresh token is genuinely dead.
+		const isRejectedInput = Boolean(error.response?.data?.code);
+
+		if (error.response?.status === 401 && !isRejectedInput) {
 			const canRetry =
 				originalRequest &&
 				!originalRequest._retry &&
