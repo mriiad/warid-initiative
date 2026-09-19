@@ -1,0 +1,25 @@
+------WebKitFormBoundaryyZkXlljc1HWVScs9
+Content-Disposition: form-data; name="title"
+
+Agadir Drive (renamed)
+------WebKitFormBoundaryyZkXlljc1HWVScs9
+Content-Disposition: form-data; name="subtitle"
+
+Sous-titre
+------WebKitFormBoundaryyZkXlljc1HWVScs9
+Content-Disposition: form-data; name="location"
+
+Casablanca
+------WebKitFormBoundaryyZkXlljc1HWVScs9
+Content-Disposition: form-data; name="mapLink"
+
+https://maps.example.com
+------WebKitFormBoundaryyZkXlljc1HWVScs9
+Content-Disposition: form-data; name="description"
+
+Description de l’événement
+------WebKitFormBoundaryyZkXlljc1HWVScs9
+Content-Disposition: form-data; name="isGeneric"
+
+false
+------WebKitFormBoundaryyZkXlljc1HWVScs9--
