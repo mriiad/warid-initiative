@@ -301,24 +301,36 @@ describe('POST /api/event (admin only)', () => {
 		expect(res.body.event.reference).toBe('WEVENT20990101');
 	});
 
-	// Both of these used to bypass createEventHandler entirely: multer's own
-	// error handling runs before the route handler, so a raw error reached
-	// the shared error handler unconverted and produced a generic
-	// "Something went wrong" instead of a message about the file. See #370.
-	it('rejects a non-image upload with a friendly message, not a generic 500', async () => {
+	// Issue #461 removed the image entirely. multer stays only to parse the
+	// multipart text fields the form still posts -- the cases that used to be
+	// about file size and mimetype (#370) are gone with the file.
+	it('stores no image when creating an event', async () => {
 		mockAdmin();
+		Event.exists.mockReturnValue(resolveTo(null));
+		let saved = null;
+		Event.mockImplementation(function (doc) {
+			saved = doc;
+			this.save = jest.fn().mockResolvedValue({ ...doc, _id: 'evt-1' });
+		});
+
 		const res = await request(app)
 			.post('/api/event')
 			.set('Authorization', authHeader(ADMIN_ID))
 			.field('title', 'Drive')
 			.field('location', 'Casablanca')
-			.field('date', '2099-01-01')
-			.attach('image', Buffer.from('not an image'), { filename: 'notes.txt', contentType: 'text/plain' });
-		expect(res.status).toBe(400);
-		expect(res.body.message).toMatch(/only image uploads are allowed/i);
+			.field('date', '2099-01-01');
+
+		expect(res.status).toBe(201);
+		expect(saved).not.toBeNull();
+		expect(saved).not.toHaveProperty('image');
+		// The rest of the multipart body still has to arrive: multer is what
+		// parses it, so removing it outright would leave every field undefined.
+		expect(saved.title).toBe('Drive');
+		expect(saved.location).toBe('Casablanca');
 	});
 
-	it('rejects a file over 5MB with a friendly message, not a generic 500', async () => {
+	it('tells a client still attaching an image to reload, rather than 500ing', async () => {
+		// A browser tab left open across the deploy that removed the field.
 		mockAdmin();
 		const res = await request(app)
 			.post('/api/event')
@@ -326,9 +338,9 @@ describe('POST /api/event (admin only)', () => {
 			.field('title', 'Drive')
 			.field('location', 'Casablanca')
 			.field('date', '2099-01-01')
-			.attach('image', Buffer.alloc(6 * 1024 * 1024), { filename: 'big.png', contentType: 'image/png' });
-		expect(res.status).toBe(412);
-		expect(res.body.message).toMatch(/smaller than 5MB/i);
+			.attach('image', Buffer.from('an image'), { filename: 'photo.png', contentType: 'image/png' });
+		expect(res.status).toBe(400);
+		expect(res.body.message).toMatch(/no longer accept an image/i);
 	});
 });
 

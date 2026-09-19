@@ -754,7 +754,6 @@ module.exports = {
 					reference: { type: 'string', example: 'WEVENT20261205' },
 					title: { type: 'string' },
 					subtitle: { type: 'string' },
-					image: { type: 'string', format: 'byte' },
 					location: { type: 'string' },
 					date: { type: 'string', format: 'date-time' },
 					mapLink: { type: 'string', format: 'uri' },
@@ -769,7 +768,6 @@ module.exports = {
 				properties: {
 					title: { type: 'string' },
 					subtitle: { type: 'string' },
-					image: { type: 'string', format: 'binary', description: 'Image file, maximum 5 MB.' },
 					location: { type: 'string' },
 					date: { type: 'string', format: 'date' },
 					mapLink: { type: 'string' },

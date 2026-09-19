@@ -1,14 +1,11 @@
 const Event = require('../models/event');
 const { STATUS_CODE } = require('../utils/errors/httpStatusCode');
 const { validationResult } = require('express-validator');
-const fs = require('fs');
-const path = require('path');
 const ApiError = require('../utils/errors/ApiError');
 const { ERROR_CODES } = require('../utils/errors/errorCodes');
 const QRCode = require('qrcode');
 const Donation = require('../models/donation');
 const Participant = require('../models/participant');
-const { logger } = require('../utils/logger');
 const { startOfDay } = require('../utils/utils');
 
 exports.getEvents = async (req, res, next) => {
@@ -40,13 +37,12 @@ exports.getEvents = async (req, res, next) => {
 
 		const totalItems = await Event.countDocuments(filter);
 		const events = await Event.find(filter)
-			// image is a Buffer on the schema, and this endpoint used to
-			// base64-encode every one of them into the response -- inflating a
-			// list request by roughly a third of the stored bytes per event.
-			// Nothing reads it: no component in the frontend references
-			// event.image, and the landing page asks for this list purely to
-			// show a count and one card. The single-event endpoint still
-			// returns it. See issue #452, and #461 for removing the field.
+			// The field is gone from the schema (issue #461), but documents
+			// written before that still carry the Buffer, and .lean() returns
+			// the raw document -- Mongoose is not hydrating it, so nothing
+			// strips an attribute the schema no longer declares. Without this
+			// projection those legacy rows would start shipping their image
+			// bytes again, which is the very thing issue #452 removed.
 			.select('-image')
 			// Soonest first, matching the order the events list wants to show
 			// and giving the pages a stable, meaningful order to walk.
@@ -67,13 +63,18 @@ exports.getEvents = async (req, res, next) => {
 exports.getEvent = async (req, res, next) => {
 	const eventReference = req.params.reference;
 	try {
-		const event = await Event.findOne({ reference: eventReference }).lean();
+		// Same projection as the list, for the same reason: the field is gone
+		// from the schema (issue #461), but .lean() hands back the stored
+		// document, so an event written before that would still ship its image
+		// bytes -- to a public, unauthenticated endpoint.
+		const event = await Event.findOne({ reference: eventReference })
+			.select('-image')
+			.lean();
 		if (!event) {
 			const error = new Error('Event not found.');
 			error.statusCode = STATUS_CODE.NOT_FOUND;
 			throw error;
 		}
-		if (event.image) event.image = event.image.toString('base64');
 
 		// Check if user is an Event Admin or Principal Admin to include the QR
 		// code. This endpoint is public, so it can't sit behind requireAdminRole
@@ -129,11 +130,6 @@ exports.createEvent = async (req) => {
 	}
 	const { title, subtitle, location, date, mapLink, description, isGeneric } =
 		req.body;
-	let eventImage = null;
-	if (req.file && req.file.path) {
-		eventImage = fs.readFileSync(req.file.path);
-	}
-
 	// Parse and validate date
 	let eventDate = date instanceof Date ? date : new Date(date);
 
@@ -183,7 +179,6 @@ exports.createEvent = async (req) => {
 		reference,
 		title,
 		subtitle,
-		image: eventImage,
 		location,
 		date: eventDate,
 		mapLink,
@@ -193,13 +188,6 @@ exports.createEvent = async (req) => {
 	});
 
 	const result = await newEvent.save();
-
-	if (req.file && req.file.path) {
-		const filePath = path.join(__dirname, '../..', req.file.path);
-		fs.unlink(filePath, (err) => {
-			if (err) logger.error({ err }, 'Failed to delete uploaded file');
-		});
-	}
 
 	return result;
 };
@@ -291,11 +279,6 @@ exports.updateEvent = async (req) => {
 		}
 	}
 
-	let eventImage = existingEvent.image;
-	if (req.file && req.file.path) {
-		eventImage = fs.readFileSync(req.file.path);
-	}
-
 	const generic = isGeneric === 'true' || isGeneric === true;
 	const eventUrl = generic
 		? `${
@@ -315,7 +298,6 @@ exports.updateEvent = async (req) => {
 		{
 			title,
 			subtitle,
-			image: eventImage,
 			location,
 			date: updateEventDate,
 			mapLink,
@@ -327,13 +309,6 @@ exports.updateEvent = async (req) => {
 	);
 
 	// Clean up uploaded file if it was processed
-	if (req.file && req.file.path) {
-		const filePath = path.join(__dirname, '../..', req.file.path);
-		fs.unlink(filePath, (err) => {
-			if (err) logger.error({ err }, 'Failed to delete uploaded file');
-		});
-	}
-
 	return updatedEvent;
 };
 
