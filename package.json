@@ -11,6 +11,7 @@
     "backfill:activate-users": "node ./src/scripts/backfill-activate-users.js",
     "migrate:drop-refresh-token-index": "node ./src/scripts/drop-refresh-token-index.js",
     "migrate:rebuild-donation-index": "node ./src/scripts/rebuild-donation-index.js",
+    "migrate:drop-event-images": "node ./src/scripts/drop-event-images.js",
     "lint": "eslint .",
     "test:e2e": "jest --config=jest.config.js",
     "test:e2e:backend": "jest --config=jest.backend.config.js"
@@ -36,7 +37,7 @@
     "helmet": "^8.3.0",
     "jsonwebtoken": "^9.0.2",
     "moment-timezone": "^0.6.0",
-    "mongoose": "^9.7.4",
+    "mongoose": "~9.9.1",
     "multer": "^2.2.0",
     "nodemailer": "^10.0.0",
     "pino": "^10.3.1",
@@ -53,6 +54,9 @@
     "mongodb-memory-server": "^11.2.0",
     "nodemon": "^3.0.2",
     "supertest": "^7.1.4"
+  },
+  "overrides": {
+    "mongodb": "7.5.0"
   },
   "engines": {
     "node": "24.6.0"

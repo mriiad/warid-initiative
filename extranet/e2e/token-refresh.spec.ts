@@ -137,6 +137,18 @@ test.describe('Silent token refresh on an expired access token', () => {
 		// The dashboard renders normally -- none of the six concurrent 401s
 		// bounced the user to /login.
 		await expect(page).toHaveURL(/\/home/, { timeout: 5000 });
+
+		// Wait for the refresh to actually happen, rather than sleeping a
+		// fixed 500ms and asserting whatever has arrived by then. That sleep
+		// was the only synchronisation here, and on a loaded machine the
+		// dashboard's query burst does not finish inside it -- the assertion
+		// then read `Received: 0`, which is a slow run, not a broken refresh.
+		await expect.poll(() => refreshCallCount, { timeout: 5000 }).toBe(1);
+
+		// Only *now* is a wait meaningful: the bug this guards is a second
+		// refresh, and a second one can only show up after the first. Every
+		// endpoint above has already answered 401 once by this point, so any
+		// duplicate attempt has been issued.
 		await page.waitForTimeout(500);
 		await expect(page).toHaveURL(/\/home/);
 		expect(refreshCallCount).toBe(1);

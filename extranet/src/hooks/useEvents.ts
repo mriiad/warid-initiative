@@ -18,11 +18,19 @@ import { queryKeys, type EventListFilters } from './queryKeys';
 // `totalItems` describe the same set. Callers that want every event (the
 // admin list, the donation form's event picker) simply omit them and get
 // the previous behaviour. See issue #417.
-export const useEvents = (page = 1, filters: EventListFilters = {}) => {
+// `enabled` matches useEvent's, for a caller that hides the list it would
+// otherwise render: a section that isn't shown shouldn't be fetched either.
+// See issue #460.
+export const useEvents = (
+	page = 1,
+	filters: EventListFilters = {},
+	enabled = true
+) => {
 	return useQuery({
 		queryKey: queryKeys.events.list(page, filters),
 		queryFn: () => eventsService.getAll(page, filters),
 		gcTime: 10 * 60 * 1000, // 10 minutes
+		enabled,
 	});
 };
 
@@ -120,6 +128,13 @@ export const useDonate = () => {
 			// Invalidate donation history and user profile
 			queryClient.invalidateQueries({ queryKey: queryKeys.donations() });
 			queryClient.invalidateQueries({ queryKey: queryKeys.user.all });
+			// And the donor's dashboard, which is where they are sent next and
+			// is the one screen that shows the donation they just made. It was
+			// left alone, so arriving inside the app-wide 5-minute staleTime
+			// served the cached list -- without that donation. Matched by
+			// prefix because the key is ['dashboard', userId] and this hook
+			// does not know whose. See issue #465.
+			queryClient.invalidateQueries({ queryKey: ['dashboard'] });
 		},
 		onError: (error) => {
 			console.error('Donation failed:', error);

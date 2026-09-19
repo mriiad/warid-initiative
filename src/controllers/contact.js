@@ -2,9 +2,21 @@ const nodemailer = require('nodemailer');
 const config = require('../utils/config');
 const User = require('../models/user');
 const { logger } = require('../utils/logger');
+const ApiError = require('../utils/errors/ApiError');
+const { ERROR_CODES } = require('../utils/errors/errorCodes');
+const { STATUS_CODE } = require('../utils/errors/httpStatusCode');
 
 const createTransporter = () => {
 	if (!config.email.enabled) {
+		return null;
+	}
+
+	// Mirrors auth.js. Without this the transporter was built with an empty
+	// user and pass, the SMTP server rejected the authentication, and the
+	// rejection reached a visitor of a public form as a bare HTTP 500 --
+	// issue #454. .env.example ships both empty and render.yaml marks them
+	// `sync: false`, so a deployment that never set them lands here.
+	if (!config.email.smtp.auth.user || !config.email.smtp.auth.pass) {
 		return null;
 	}
 
@@ -41,6 +53,25 @@ exports.sendContactUs = async (req, res, next) => {
 	const { message } = req.body;
 	let { firstname, lastname, email, phoneNumber, subject } = req.body;
 	const userId = req.userId;
+
+	// Mail is on but unusable. Answering 200 here would be the tempting
+	// mirror of EMAIL_ENABLED=false, and it would be a lie: the visitor typed
+	// a message to the association, nothing was sent, and nothing is stored,
+	// so they would never learn it went nowhere. Deliberately disabled mail
+	// still answers 200 below, because that is an opt-out rather than a fault.
+	if (config.email.enabled && !transporter) {
+		logger.error(
+			'Contact form received a message but no SMTP credentials are configured'
+		);
+		return next(
+			new ApiError(
+				'The contact channel is not configured on the server.',
+				STATUS_CODE.SERVICE_UNAVAILABLE,
+				[],
+				ERROR_CODES.MAIL_NOT_CONFIGURED
+			)
+		);
+	}
 
 	try {
 		if (userId) {

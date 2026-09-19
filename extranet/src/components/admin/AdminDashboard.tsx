@@ -10,7 +10,9 @@ import { Button, IconButton, Typography } from '@mui/material';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { hasAdminRole } from '../../auth/adminAccess';
 import { useAuth as useAuthContext } from '../../auth/AuthContext';
+import { AdminRole } from '../../data/constants';
 import { Emergency } from '@/types';
 import { Event } from '@/types';
 import {
@@ -43,16 +45,36 @@ const greetingKeyForHour = (hour: number) => {
 const AdminDashboard = () => {
 	const { t } = useTranslation();
 	const navigate = useNavigate();
-	const { isAdmin, setToken, setUserId, setIsAdmin } = useAuthContext();
+	const { isAdmin, adminRole, setToken, setUserId, setIsAdmin } = useAuthContext();
 	const { logout } = useAuth();
 	const { data: profileResponse } = useUserProfile();
 	const { data: stats } = useAdminStats();
+
+	// Each restricted role sees only the section it manages; Principal -- and
+	// a legacy admin with no role recorded -- keeps both, which is what
+	// hasAdminRole already encodes. Issue #460.
+	//
+	// These also gate the queries, not just the markup. The emergencies one
+	// polls every 30s against a route that answers 403 for an Event Admin, so
+	// rendering nothing while still asking would leave that running all day.
+	const canManageEvents = hasAdminRole(isAdmin, adminRole, [AdminRole.Event]);
+	const canManageEmergencies = hasAdminRole(isAdmin, adminRole, [
+		AdminRole.Emergency,
+	]);
+
 	// Asks the server for upcoming events specifically. Page 1 is now ordered
 	// by date (issue #417), so without this filter it would hold the five
 	// *oldest* events -- most likely all in the past, leaving "next event"
 	// empty on a site with any history.
-	const { data: eventsResponse } = useEvents(1, { upcoming: true });
-	const { data: emergenciesResponse } = useUnconfirmedEmergencies(1);
+	const { data: eventsResponse } = useEvents(
+		1,
+		{ upcoming: true },
+		canManageEvents
+	);
+	const { data: emergenciesResponse } = useUnconfirmedEmergencies(
+		1,
+		canManageEmergencies
+	);
 	const confirmEmergency = useConfirmEmergency();
 
 	const [carouselIndex, setCarouselIndex] = useState(0);
@@ -217,6 +239,8 @@ const AdminDashboard = () => {
 					})}
 				</div>
 
+				{canManageEmergencies && (
+					<>
 				<div className={sectionHeaderRow}>
 					<Typography className={sectionTitle} style={{ marginBottom: 0 }}>
 						{t('admin.emergencySectionTitle')}
@@ -266,21 +290,27 @@ const AdminDashboard = () => {
 						)}
 					</>
 				)}
+					</>
+				)}
 
-				<Typography className={sectionTitle}>{t('admin.nextEvent')}</Typography>
-				{!nextEvent ? (
-					<div className={emptyState}>{t('admin.noUpcomingEvents')}</div>
-				) : (
-					<EventOverviewCard
-						title={nextEvent.title}
-						date={nextEvent.date}
-						createdAt={nextEvent.createdAt}
-						mapLink={nextEvent.mapLink}
-						primaryActionLabel={t('common.edit')}
-						primaryActionIcon={<EditIcon fontSize='small' />}
-						onPrimaryAction={() => navigate(`/events/update/${nextEvent.reference}`)}
-						onViewDetails={() => navigate(`/events/${nextEvent.reference}`)}
-					/>
+				{canManageEvents && (
+					<>
+						<Typography className={sectionTitle}>{t('admin.nextEvent')}</Typography>
+						{!nextEvent ? (
+							<div className={emptyState}>{t('admin.noUpcomingEvents')}</div>
+						) : (
+							<EventOverviewCard
+								title={nextEvent.title}
+								date={nextEvent.date}
+								createdAt={nextEvent.createdAt}
+								mapLink={nextEvent.mapLink}
+								primaryActionLabel={t('common.edit')}
+								primaryActionIcon={<EditIcon fontSize='small' />}
+								onPrimaryAction={() => navigate(`/events/update/${nextEvent.reference}`)}
+								onViewDetails={() => navigate(`/events/${nextEvent.reference}`)}
+							/>
+						)}
+					</>
 				)}
 			</div>
 

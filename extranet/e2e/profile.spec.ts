@@ -113,6 +113,105 @@ test.describe('Profile page', () => {
 		expect(leftovers).toEqual([]);
 	});
 
+	// Issue #467. The backend answers a wrong current password with 401 and
+	// an application error code. apiClient could not tell that apart from an
+	// expired access token, so it refreshed, retried, got 401 again, and then
+	// cleared the session -- the user was shown the error and logged out by
+	// it. A rejected password attempt is not a rejected session.
+	const wrongCurrentPassword = {
+		message: 'Current password is incorrect.',
+		statusCode: 401,
+		code: 'CURRENT_PASSWORD_INCORRECT',
+	};
+
+	const submitPasswordChange = async (page: import('@playwright/test').Page) => {
+		await page.goto('/profile');
+		await expect(page.getByText('المعلومات الشخصية')).toBeVisible();
+		await page.getByRole('button', { name: 'تغيير كلمة المرور' }).first().click();
+		await page.getByLabel('كلمة المرور الحالية').fill('wrongpassword');
+		await page.getByLabel('كلمة المرور الجديدة', { exact: true }).fill('newpassword123');
+		await page.getByLabel('تأكيد كلمة المرور الجديدة').fill('newpassword123');
+		await page.getByRole('button', { name: 'تحديث كلمة المرور' }).click();
+	};
+
+	test('a wrong current password shows the error and keeps the user signed in (issue #467)', async ({ page }) => {
+		// Seeded via page.evaluate rather than seedAuth's addInitScript: that
+		// fixture re-runs on every navigation, including the hard redirect
+		// this test exists to prove no longer happens -- so it would re-plant
+		// the very token being asserted as kept. Same reasoning as the
+		// invalid-refresh-token test in token-refresh.spec.ts.
+		await page.goto('/login');
+		await page.evaluate(() => {
+			localStorage.setItem('token', 'fake-jwt-token');
+			localStorage.setItem('refreshToken', 'fake-refresh-token');
+			localStorage.setItem('userId', 'user-1');
+			localStorage.setItem('isAdmin', 'false');
+		});
+		await mockJson(page, '**/api/user/profile', fullProfileResponse(), { method: 'GET' });
+		await mockJson(page, '**/api/auth/update-password', wrongCurrentPassword, {
+			status: 401,
+			method: 'PATCH',
+		});
+
+		await submitPasswordChange(page);
+
+		await expect(page.getByText('Current password is incorrect.')).toBeVisible({ timeout: 5000 });
+		// Still on the profile, still signed in.
+		await expect(page).toHaveURL(/\/profile/);
+		expect(await page.evaluate(() => localStorage.getItem('token'))).toBe('fake-jwt-token');
+	});
+
+	test('a wrong current password does not burn the refresh token (issue #467)', async ({ page }) => {
+		// The retry was not just cosmetic: the backend rotates refresh tokens
+		// single-use, so spending one on a mistyped password is a real cost.
+		await seedAuth(page, { isAdmin: false });
+		await mockJson(page, '**/api/user/profile', fullProfileResponse(), { method: 'GET' });
+
+		let passwordAttempts = 0;
+		await page.route('**/api/auth/update-password', async (route: Route) => {
+			passwordAttempts += 1;
+			await route.fulfill({
+				status: 401,
+				contentType: 'application/json',
+				body: JSON.stringify(wrongCurrentPassword),
+			});
+		});
+		let refreshCalled = false;
+		await page.route('**/api/auth/refresh-token', async (route: Route) => {
+			refreshCalled = true;
+			await route.fulfill({
+				status: 200,
+				contentType: 'application/json',
+				body: JSON.stringify({ accessToken: 'fresh-jwt-token', refreshToken: 'fresh-refresh-token' }),
+			});
+		});
+
+		await submitPasswordChange(page);
+
+		await expect(page.getByText('Current password is incorrect.')).toBeVisible({ timeout: 5000 });
+		expect(refreshCalled).toBe(false);
+		expect(passwordAttempts).toBe(1);
+	});
+
+	test('a genuinely expired session still logs the user out (issue #467)', async ({ page }) => {
+		// The guard must not swallow the case the interceptor exists for: a
+		// 401 from the auth middleware carries no application code.
+		await page.goto('/login');
+		await page.evaluate(() => {
+			localStorage.setItem('token', 'fake-jwt-token');
+			localStorage.setItem('refreshToken', 'fake-refresh-token');
+			localStorage.setItem('userId', 'user-1');
+			localStorage.setItem('isAdmin', 'false');
+		});
+		await mockJson(page, '**/api/user/profile', { message: 'Not authenticated.', statusCode: 401 }, { status: 401 });
+		await mockJson(page, '**/api/auth/refresh-token', { message: 'Invalid refresh token.' }, { status: 401 });
+
+		await page.goto('/profile');
+
+		await expect(page).toHaveURL(/\/login/, { timeout: 5000 });
+		expect(await page.evaluate(() => localStorage.getItem('token'))).toBeNull();
+	});
+
 	test('regression (issue #328): the Help & Support links reach the FAQ and Contact us pages', async ({ page }) => {
 		// /FAQ and /contact still existed and were redesigned onto the same
 		// styling system, but nothing in the redesigned navigation linked to
@@ -133,5 +232,73 @@ test.describe('Profile page', () => {
 		await expect(page.getByText('المساعدة والدعم')).toBeVisible();
 		await page.getByRole('button', { name: 'تواصل معنا' }).click();
 		await expect(page).toHaveURL(/\/contact/);
+	});
+
+	// Issue #466. A number stored without its country code was handed to the
+	// phone field verbatim, so it rendered as bare national digits -- the
+	// missing leading zero the tester saw. Saving then failed, because the
+	// form's own validator requires E.164 (`/^\+[1-9]\d{6,14}$/`), leaving no
+	// way forward except typing the country code by hand on every edit.
+	const openProfileEditor = async (page: import('@playwright/test').Page, stored: string) => {
+		await seedAuth(page, { isAdmin: false, userId: 'user-1' });
+		await mockJson(page, '**/api/user/profile', { ...fullProfileResponse(), phoneNumber: stored }, { method: 'GET' });
+		await page.goto('/profile');
+		await expect(page.getByText('المعلومات الشخصية')).toBeVisible();
+		await page.getByRole('button', { name: 'تعديل' }).click();
+		return page.locator('input[type=tel]');
+	};
+
+	test('a number stored without its country code is shown in full (issue #466)', async ({ page }) => {
+		const phone = await openProfileEditor(page, '612345678');
+		await expect(phone).toHaveValue('+212 6 12 34 56 78');
+	});
+
+	test('a number stored in Moroccan local format is shown in full too (issue #466)', async ({ page }) => {
+		// The legacy shape documented in routes/user.js: '0612345678'. The
+		// leading 0 is the national trunk prefix, which E.164 drops.
+		const phone = await openProfileEditor(page, '0612345678');
+		await expect(phone).toHaveValue('+212 6 12 34 56 78');
+	});
+
+	test('a number already in E.164 is left exactly as it is (issue #466)', async ({ page }) => {
+		const phone = await openProfileEditor(page, '+212612345678');
+		await expect(phone).toHaveValue('+212 6 12 34 56 78');
+	});
+
+	test('a non-Moroccan number is not rewritten to +212 (issue #466)', async ({ page }) => {
+		const phone = await openProfileEditor(page, '+33612345678');
+		await expect(phone).toHaveValue('+33 6 12 34 56 78');
+	});
+
+	test('saving a profile whose number was stored without a country code succeeds (issue #466)', async ({ page }) => {
+		// The reported failure end to end: open the form, change nothing about
+		// the phone, press save. It used to be refused by the E.164 validator.
+		await seedAuth(page, { isAdmin: false, userId: 'user-1' });
+		let patchedPhone: string | null = null;
+		await page.route('**/api/user/profile', async (route: Route) => {
+			if (route.request().method() === 'PATCH') {
+				patchedPhone = route.request().postDataJSON()?.phoneNumber ?? null;
+				await route.fulfill({
+					status: 200,
+					contentType: 'application/json',
+					body: JSON.stringify({ message: 'Profile updated successfully!' }),
+				});
+				return;
+			}
+			await route.fulfill({
+				status: 200,
+				contentType: 'application/json',
+				body: JSON.stringify({ ...fullProfileResponse(), phoneNumber: '612345678' }),
+			});
+		});
+
+		await page.goto('/profile');
+		await expect(page.getByText('المعلومات الشخصية')).toBeVisible();
+		await page.getByRole('button', { name: 'تعديل' }).click();
+		await page.getByRole('button', { name: 'حفظ التغييرات' }).click();
+
+		await expect(page.getByText('تم تحديث الملف الشخصي بنجاح')).toBeVisible({ timeout: 5000 });
+		// And it is sent back in the canonical shape, not as bare digits.
+		expect(patchedPhone).toBe('+212612345678');
 	});
 });

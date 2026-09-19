@@ -156,3 +156,78 @@ describe('POST /api/contact-us', () => {
 		}
 	});
 });
+
+describe('POST /api/contact-us with email enabled but SMTP credentials missing (issue #454)', () => {
+	// auth.js's createTransporter returns null when the credentials are
+	// absent, so signup and password reset degrade quietly. contact.js only
+	// ever checked config.email.enabled, so it built a transporter with an
+	// empty user/pass, and the SMTP server rejected the authentication --
+	// which surfaced to the visitor as a bare HTTP 500 on a public form.
+	//
+	// .env.example ships SMTP_USER and SMTP_PASS empty, and render.yaml marks
+	// them `sync: false`, so a deployment that never set them lands in exactly
+	// this state.
+	const withEmptyCredentials = async (assertions) => {
+		jest.resetModules();
+		const previousUser = process.env.SMTP_USER;
+		const previousPass = process.env.SMTP_PASS;
+		const previousEnabled = process.env.EMAIL_ENABLED;
+		process.env.SMTP_USER = '';
+		process.env.SMTP_PASS = '';
+		process.env.EMAIL_ENABLED = 'true';
+		try {
+			const freshNodemailer = require('nodemailer');
+			const { buildApp: freshBuildApp } = require('./support/testApp');
+			await assertions(freshBuildApp(), freshNodemailer);
+		} finally {
+			process.env.SMTP_USER = previousUser;
+			process.env.SMTP_PASS = previousPass;
+			if (previousEnabled === undefined) {
+				delete process.env.EMAIL_ENABLED;
+			} else {
+				process.env.EMAIL_ENABLED = previousEnabled;
+			}
+			jest.resetModules();
+		}
+	};
+
+	const submission = {
+		firstname: 'Jane',
+		lastname: 'Doe',
+		email: 'jane@example.com',
+		phoneNumber: '0600000000',
+		subject: 'Question',
+		message: 'Hello there',
+	};
+
+	it('does not answer 500, and does not try to send with empty credentials', async () => {
+		await withEmptyCredentials(async (freshApp, freshNodemailer) => {
+			const res = await request(freshApp).post('/api/contact-us').send(submission);
+
+			expect(res.status).not.toBe(500);
+			expect(freshNodemailer.__sendMail).not.toHaveBeenCalled();
+		});
+	});
+
+	it('says the contact channel is unconfigured, with a code the client can translate', async () => {
+		await withEmptyCredentials(async (freshApp) => {
+			const res = await request(freshApp).post('/api/contact-us').send(submission);
+
+			expect(res.status).toBe(503);
+			expect(res.body.code).toBe('MAIL_NOT_CONFIGURED');
+		});
+	});
+
+	it('does not claim the message was sent when it was not', async () => {
+		// The tempting fix is to mirror EMAIL_ENABLED=false and answer 200.
+		// That is right for a deliberate opt-out and wrong here: the visitor
+		// typed a message to the association and would be told it had been
+		// delivered when nothing was sent and nothing was stored.
+		await withEmptyCredentials(async (freshApp) => {
+			const res = await request(freshApp).post('/api/contact-us').send(submission);
+
+			expect(res.status).not.toBe(200);
+			expect(JSON.stringify(res.body)).not.toMatch(/sent successfully/i);
+		});
+	});
+});

@@ -1,4 +1,9 @@
-const { verifyIndexes } = require('../../src/utils/verifyIndexes');
+const {
+	verifyIndexes,
+	retireIndexes,
+	repairDriftedIndexes,
+	RETIRED_INDEXES,
+} = require('../../src/utils/verifyIndexes');
 
 // Mongoose creates missing indexes at startup but never alters one that
 // already exists: MongoDB answers createIndex with an IndexOptionsConflict
@@ -123,5 +128,210 @@ describe('verifyIndexes', () => {
 		model.collection.indexes.mockRejectedValue(new Error('not authorized'));
 
 		await expect(verifyIndexes(makeConnection({ User: model }))).resolves.toEqual([]);
+	});
+});
+
+// Mongoose never drops an index a schema stopped declaring, so #437's fix
+// could not take effect until someone ran a migration by hand -- and
+// production stayed broken because that step is the one that gets
+// forgotten. See issue #447. (The behaviour against a real mongod is in
+// e2e/refreshTokenIndex.e2e.spec.js.)
+describe('retireIndexes', () => {
+	const makeConn = (models) => ({
+		modelNames: () => Object.keys(models),
+		model: (name) => {
+			if (!models[name]) throw new Error('MissingSchemaError');
+			return models[name];
+		},
+	});
+
+	const userModel = (indexes) => ({
+		schema: { indexes: () => [] },
+		collection: {
+			indexes: jest.fn().mockResolvedValue(indexes),
+			dropIndex: jest.fn().mockResolvedValue(undefined),
+		},
+	});
+
+	it('drops a retired index that is still present', async () => {
+		const User = userModel([
+			{ name: '_id_', key: { _id: 1 } },
+			{ name: 'refreshToken_1', key: { refreshToken: 1 }, unique: true },
+		]);
+
+		const dropped = await retireIndexes(makeConn({ User }));
+
+		expect(User.collection.dropIndex).toHaveBeenCalledWith('refreshToken_1');
+		expect(dropped).toEqual([{ model: 'User', index: 'refreshToken_1', issue: 437 }]);
+	});
+
+	it('does nothing when the database is already correct', async () => {
+		const User = userModel([{ name: '_id_', key: { _id: 1 } }]);
+
+		expect(await retireIndexes(makeConn({ User }))).toEqual([]);
+		expect(User.collection.dropIndex).not.toHaveBeenCalled();
+	});
+
+	it('leaves every index it was not told to retire alone', async () => {
+		const User = userModel([
+			{ name: '_id_', key: { _id: 1 } },
+			{ name: 'username_1', key: { username: 1 }, unique: true },
+			{ name: 'email_1', key: { email: 1 }, unique: true },
+			{ name: 'refreshToken_1', key: { refreshToken: 1 }, unique: true },
+		]);
+
+		await retireIndexes(makeConn({ User }));
+
+		expect(User.collection.dropIndex).toHaveBeenCalledTimes(1);
+		expect(User.collection.dropIndex).toHaveBeenCalledWith('refreshToken_1');
+	});
+
+	// A fresh database has no collections yet.
+	it('survives a collection that does not exist', async () => {
+		const User = userModel([]);
+		const err = new Error('ns does not exist');
+		err.codeName = 'NamespaceNotFound';
+		User.collection.indexes.mockRejectedValue(err);
+
+		await expect(retireIndexes(makeConn({ User }))).resolves.toEqual([]);
+	});
+
+	// This runs on the startup path and must never be the reason a deploy
+	// fails to come up.
+	it('survives a drop it is not allowed to perform', async () => {
+		const User = userModel([{ name: 'refreshToken_1', key: { refreshToken: 1 } }]);
+		User.collection.dropIndex.mockRejectedValue(new Error('not authorized'));
+
+		await expect(retireIndexes(makeConn({ User }))).resolves.toEqual([]);
+	});
+
+	it('survives a model that is not registered on the connection', async () => {
+		await expect(retireIndexes(makeConn({}))).resolves.toEqual([]);
+	});
+
+	// #439's index is replaced, not retired: its migration refuses to run
+	// while duplicates exist, and dropping it here would throw that away.
+	it('does not retire the donation index, which is replaced rather than removed', () => {
+		expect(RETIRED_INDEXES.map((r) => r.name)).not.toContain('userId_1_donationDate_1');
+		expect(RETIRED_INDEXES.every((r) => r.issue && r.model && r.name)).toBe(true);
+	});
+});
+
+describe('repairDriftedIndexes', () => {
+	// A model whose drop/create can be asserted on, not just its reads.
+	const makeRepairableModel = (declaredIndexes, actualIndexes, overrides = {}) => ({
+		schema: { indexes: () => declaredIndexes },
+		collection: {
+			indexes: jest.fn().mockResolvedValue(actualIndexes),
+			dropIndex: overrides.dropIndex || jest.fn().mockResolvedValue(undefined),
+			createIndex: overrides.createIndex || jest.fn().mockResolvedValue(undefined),
+		},
+	});
+
+	const driftedUser = (overrides) =>
+		makeRepairableModel(
+			[[{ confirmationCode: 1 }, { unique: true, sparse: true }]],
+			[
+				{ name: '_id_', key: { _id: 1 } },
+				{ name: 'confirmationCode_1', key: { confirmationCode: 1 }, unique: true, v: 2 },
+			],
+			overrides
+		);
+
+	it('drops the drifted index and recreates it from the schema', async () => {
+		const model = driftedUser();
+
+		const repaired = await repairDriftedIndexes(makeConnection({ User: model }));
+
+		expect(model.collection.dropIndex).toHaveBeenCalledWith('confirmationCode_1');
+		expect(model.collection.createIndex).toHaveBeenCalledWith(
+			{ confirmationCode: 1 },
+			{ unique: true, sparse: true }
+		);
+		expect(repaired).toEqual([
+			expect.objectContaining({ model: 'User', index: 'confirmationCode_1' }),
+		]);
+	});
+
+	it('touches nothing when the database already matches', async () => {
+		const model = makeRepairableModel(
+			[[{ confirmationCode: 1 }, { unique: true, sparse: true }]],
+			[
+				{ name: '_id_', key: { _id: 1 } },
+				{
+					name: 'confirmationCode_1',
+					key: { confirmationCode: 1 },
+					unique: true,
+					sparse: true,
+				},
+			]
+		);
+
+		const repaired = await repairDriftedIndexes(makeConnection({ User: model }));
+
+		expect(model.collection.dropIndex).not.toHaveBeenCalled();
+		expect(model.collection.createIndex).not.toHaveBeenCalled();
+		expect(repaired).toEqual([]);
+	});
+
+	it('leaves an index no schema declares alone', async () => {
+		// The line syncIndexes() crosses and this must not: an index added by
+		// hand for a slow query is not drift.
+		const model = makeRepairableModel(
+			[],
+			[
+				{ name: '_id_', key: { _id: 1 } },
+				{ name: 'gender_1', key: { gender: 1 } },
+			]
+		);
+
+		await repairDriftedIndexes(makeConnection({ User: model }));
+
+		expect(model.collection.dropIndex).not.toHaveBeenCalled();
+	});
+
+	it('restores the previous index when the schema version will not build', async () => {
+		// A unique index cannot build over existing duplicates. A failed
+		// rebuild must leave the collection as guarded as it was.
+		const createIndex = jest
+			.fn()
+			.mockRejectedValueOnce(Object.assign(new Error('E11000 duplicate key'), { code: 11000 }))
+			.mockResolvedValueOnce(undefined);
+		const model = driftedUser({ createIndex });
+
+		const repaired = await repairDriftedIndexes(makeConnection({ User: model }));
+
+		expect(createIndex).toHaveBeenNthCalledWith(
+			1,
+			{ confirmationCode: 1 },
+			{ unique: true, sparse: true }
+		);
+		// The second call puts the old index back, options and all.
+		expect(createIndex).toHaveBeenNthCalledWith(
+			2,
+			{ confirmationCode: 1 },
+			expect.objectContaining({ unique: true })
+		);
+		expect(repaired).toEqual([]);
+	});
+
+	it('leaves the index in place when it cannot even be dropped', async () => {
+		const dropIndex = jest.fn().mockRejectedValue(new Error('not authorized'));
+		const model = driftedUser({ dropIndex });
+
+		const repaired = await repairDriftedIndexes(makeConnection({ User: model }));
+
+		expect(model.collection.createIndex).not.toHaveBeenCalled();
+		expect(repaired).toEqual([]);
+	});
+
+	it('never throws, so it can never be why the app fails to start', async () => {
+		const model = driftedUser({
+			dropIndex: jest.fn().mockRejectedValue(new Error('boom')),
+		});
+
+		await expect(
+			repairDriftedIndexes(makeConnection({ User: model }))
+		).resolves.toEqual([]);
 	});
 });

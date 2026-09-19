@@ -1,7 +1,7 @@
 import InstagramIcon from '@mui/icons-material/Instagram';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import WaterDropIcon from '@mui/icons-material/WaterDrop';
-import { IconButton, Typography } from '@mui/material';
+import { Button, CircularProgress, IconButton, Typography } from '@mui/material';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -9,6 +9,7 @@ import { useAuth } from '../../auth/AuthContext';
 import { Event } from '@/types';
 import { useEvents } from '../../hooks';
 import { landingRedesignStyles } from '../../styles/landingRedesign';
+import LanguageSwitcher from '../shared/LanguageSwitcher';
 import RedesignBottomNav from '../shared/RedesignBottomNav';
 import EventOverviewCard from '../shared/EventOverviewCard';
 import BloodDropsAnimation from './BloodDropsAnimation';
@@ -25,6 +26,7 @@ const LandingPage = () => {
 		heroTopRow,
 		heroIcon,
 		heroAccountButton,
+		heroActions,
 		heroTitle,
 		heroSubtitle,
 		content,
@@ -48,14 +50,39 @@ const LandingPage = () => {
 		socialButton,
 	} = landingRedesignStyles();
 
-	const { data: eventsResponse } = useEvents(1);
+	// isError and isLoading are read, not just data: without them a request in
+	// flight, one that failed, and an empty database all left totalItems
+	// undefined, and the stat pill rendered the same em dash for all three --
+	// so a failure was indistinguishable from "we have no events". Same flaw
+	// issue #418 fixed on EventDetail. See issue #452.
+	// Filtered server-side, not client-side. Asking for page 1 unfiltered
+	// returns the five *oldest* events -- getEvents sorts date ascending --
+	// and narrowing that page here meant five past events were enough to
+	// empty the card for good while upcoming ones sat on later pages. The
+	// admin dashboard already asked correctly; this screen was missed. Same
+	// bug issue #417 fixed for the donor list. See issue #453.
+	//
+	// It also makes totalItems count upcoming events, so the number in the
+	// stat pill and the card beneath it describe the same set rather than
+	// two different ones.
+	const {
+		data: eventsResponse,
+		isLoading: isLoadingEvents,
+		isError: isEventsError,
+		refetch: refetchEvents,
+	} = useEvents(1, { upcoming: true, includeGeneric: false });
 
+	// The server now returns upcoming, non-generic events already, so this is
+	// defence in depth rather than the filter the screen depends on: a stale
+	// cache entry or a response that ignored the params must not advertise an
+	// event that has been and gone. startOfToday is computed once instead of
+	// through setHours on a shared Date, which mutated it inside the filter.
 	const nextEvent: Event | undefined = useMemo(() => {
 		const events: Event[] = eventsResponse?.data?.events || [];
-		const now = new Date();
+		const startOfToday = new Date().setHours(0, 0, 0, 0);
 		const upcoming = events
 			.filter((event) => !event.isGeneric)
-			.filter((event) => new Date(event.date).getTime() >= now.setHours(0, 0, 0, 0))
+			.filter((event) => new Date(event.date).getTime() >= startOfToday)
 			.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 		return upcoming[0];
 	}, [eventsResponse]);
@@ -70,13 +97,27 @@ const LandingPage = () => {
 					<div className={heroIcon}>
 						<WaterDropIcon />
 					</div>
-					<IconButton
-						className={heroAccountButton}
-						aria-label={t('landing.myAccount')}
-						onClick={() => navigate(token ? '/profile' : '/login')}
-					>
-						<PersonOutlineIcon />
-					</IconButton>
+					{/*
+						The language control belongs here most of all. #421 put it
+						in AuthHeader and on /profile reasoning that "the language
+						a first-time visitor reads is settled before they have an
+						account to open a profile screen with" -- and then skipped
+						the one screen that visitor actually lands on, so changing
+						language meant navigating to /login first. See issue #455.
+
+						Grouped with the account button rather than replacing it:
+						that button is the landing page's only route to signing in.
+					*/}
+					<div className={heroActions}>
+						<LanguageSwitcher className={heroAccountButton} />
+						<IconButton
+							className={heroAccountButton}
+							aria-label={t('landing.myAccount')}
+							onClick={() => navigate(token ? '/profile' : '/login')}
+						>
+							<PersonOutlineIcon />
+						</IconButton>
+					</div>
 				</div>
 				<Typography className={heroTitle}>{t('landing.heroTitle')}</Typography>
 				<Typography className={heroSubtitle}>{t('landing.heroSubtitle')}</Typography>
@@ -91,28 +132,60 @@ const LandingPage = () => {
 					needs a public counts endpoint -- /api/admin/stats is
 					admin-gated -- rather than another constant. See issue #385.
 				*/}
-				<div className={statStrip}>
-					<div className={statPill}>
-						<Typography className={statNumber}>{totalEvents ?? '—'}</Typography>
-						<Typography className={statLabel}>{t('landing.eventsLabel')}</Typography>
-					</div>
-				</div>
-
-				<Typography className={sectionTitle}>{t('admin.nextEvent')}</Typography>
-				{!nextEvent ? (
+				{/*
+					The count and the next-event card are both drawn from this
+					one request, so its failure is reported once for both.
+					Showing "couldn't load" above "no upcoming events" would
+					contradict itself.
+				*/}
+				{isEventsError ? (
 					<div className={card}>
-						<Typography className={aboutBody}>{t('landing.noUpcomingEvents')}</Typography>
+						<Typography className={aboutBody}>
+							{t('landing.eventsLoadError')}
+						</Typography>
+						<Button type='button' onClick={() => refetchEvents()}>
+							{t('common.retry')}
+						</Button>
 					</div>
 				) : (
-					<EventOverviewCard
-						title={nextEvent.title}
-						date={nextEvent.date}
-						createdAt={nextEvent.createdAt}
-						mapLink={nextEvent.mapLink}
-						primaryActionLabel={t('landing.exploreEvents')}
-						onPrimaryAction={() => navigate('/events')}
-						onViewDetails={() => navigate(`/events/${nextEvent.reference}`)}
-					/>
+					<>
+						<div className={statStrip}>
+							<div className={statPill}>
+								<Typography className={statNumber}>
+									{isLoadingEvents ? (
+										<CircularProgress size={20} aria-label={t('common.loading')} />
+									) : (
+										// Unreachable now that both other states are
+										// handled above, kept so a future fourth state
+										// cannot silently render as a number.
+										(totalEvents ?? '—')
+									)}
+								</Typography>
+								<Typography className={statLabel}>{t('landing.eventsLabel')}</Typography>
+							</div>
+						</div>
+
+						<Typography className={sectionTitle}>{t('admin.nextEvent')}</Typography>
+						{isLoadingEvents ? (
+							<div className={card}>
+								<Typography className={aboutBody}>{t('common.loading')}</Typography>
+							</div>
+						) : !nextEvent ? (
+							<div className={card}>
+								<Typography className={aboutBody}>{t('landing.noUpcomingEvents')}</Typography>
+							</div>
+						) : (
+							<EventOverviewCard
+								title={nextEvent.title}
+								date={nextEvent.date}
+								createdAt={nextEvent.createdAt}
+								mapLink={nextEvent.mapLink}
+								primaryActionLabel={t('landing.exploreEvents')}
+								onPrimaryAction={() => navigate('/events')}
+								onViewDetails={() => navigate(`/events/${nextEvent.reference}`)}
+							/>
+						)}
+					</>
 				)}
 
 				<div className={card}>

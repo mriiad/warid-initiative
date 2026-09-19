@@ -7,7 +7,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useErrorToast } from '../components/shared/ErrorToastProvider';
 import type { UserFormData } from '@/types';
 import { usersService } from '../services';
-import type { AdminRole } from '../data/constants';
+import type { AssignableRole } from '../data/constants';
 import type { UpdateUserData } from '../types';
 import type { AdminStats, DashboardData } from '../types/users';
 import { queryKeys } from './queryKeys';
@@ -26,10 +26,18 @@ export const useUserProfile = () => {
 	});
 };
 
+// Returns the user, not the Axios response. Caching the envelope meant the
+// value under queryKeys.user.detail(userId) depended on which screen happened
+// to populate it first: this hook stored `{ data, status, headers, ... }`
+// while UpdateUser's own inline query on the same key stored the unwrapped
+// user. With the app-wide five minute staleTime, whichever ran first was
+// served to the other without a refetch -- so opening Edit from the user
+// detail screen read `firstname` off transport metadata and got undefined,
+// and the form rendered blank. See issue #457.
 export const useAdminUserDetail = (userId: string) => {
 	return useQuery({
 		queryKey: queryKeys.user.detail(userId),
-		queryFn: () => usersService.getUserById(userId),
+		queryFn: async () => (await usersService.getUserById(userId)).data,
 		enabled: !!userId,
 	});
 };
@@ -136,7 +144,7 @@ export const useAssignAdminRole = () => {
 	const queryClient = useQueryClient();
 
 	return useMutation({
-		mutationFn: ({ userId, role }: { userId: string; role: AdminRole }) =>
+		mutationFn: ({ userId, role }: { userId: string; role: AssignableRole }) =>
 			usersService.assignAdminRole(userId, role),
 		onSuccess: (response, { userId }) => {
 			// Invalidate users list and specific user

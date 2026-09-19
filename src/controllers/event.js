@@ -1,14 +1,11 @@
 const Event = require('../models/event');
 const { STATUS_CODE } = require('../utils/errors/httpStatusCode');
 const { validationResult } = require('express-validator');
-const fs = require('fs');
-const path = require('path');
 const ApiError = require('../utils/errors/ApiError');
 const { ERROR_CODES } = require('../utils/errors/errorCodes');
 const QRCode = require('qrcode');
 const Donation = require('../models/donation');
 const Participant = require('../models/participant');
-const { logger } = require('../utils/logger');
 const { startOfDay } = require('../utils/utils');
 
 exports.getEvents = async (req, res, next) => {
@@ -40,18 +37,19 @@ exports.getEvents = async (req, res, next) => {
 
 		const totalItems = await Event.countDocuments(filter);
 		const events = await Event.find(filter)
+			// The field is gone from the schema (issue #461), but documents
+			// written before that still carry the Buffer, and .lean() returns
+			// the raw document -- Mongoose is not hydrating it, so nothing
+			// strips an attribute the schema no longer declares. Without this
+			// projection those legacy rows would start shipping their image
+			// bytes again, which is the very thing issue #452 removed.
+			.select('-image')
 			// Soonest first, matching the order the events list wants to show
 			// and giving the pages a stable, meaningful order to walk.
 			.sort({ date: 1 })
 			.skip((currentPage - 1) * perPage)
 			.limit(perPage)
 			.lean();
-
-		events.forEach((event) => {
-			if (event.image) {
-				event.image = event.image.toString('base64');
-			}
-		});
 
 		res.status(STATUS_CODE.OK).json({
 			events,
@@ -65,13 +63,18 @@ exports.getEvents = async (req, res, next) => {
 exports.getEvent = async (req, res, next) => {
 	const eventReference = req.params.reference;
 	try {
-		const event = await Event.findOne({ reference: eventReference }).lean();
+		// Same projection as the list, for the same reason: the field is gone
+		// from the schema (issue #461), but .lean() hands back the stored
+		// document, so an event written before that would still ship its image
+		// bytes -- to a public, unauthenticated endpoint.
+		const event = await Event.findOne({ reference: eventReference })
+			.select('-image')
+			.lean();
 		if (!event) {
 			const error = new Error('Event not found.');
 			error.statusCode = STATUS_CODE.NOT_FOUND;
 			throw error;
 		}
-		if (event.image) event.image = event.image.toString('base64');
 
 		// Check if user is an Event Admin or Principal Admin to include the QR
 		// code. This endpoint is public, so it can't sit behind requireAdminRole
@@ -127,11 +130,6 @@ exports.createEvent = async (req) => {
 	}
 	const { title, subtitle, location, date, mapLink, description, isGeneric } =
 		req.body;
-	let eventImage = null;
-	if (req.file && req.file.path) {
-		eventImage = fs.readFileSync(req.file.path);
-	}
-
 	// Parse and validate date
 	let eventDate = date instanceof Date ? date : new Date(date);
 
@@ -181,7 +179,6 @@ exports.createEvent = async (req) => {
 		reference,
 		title,
 		subtitle,
-		image: eventImage,
 		location,
 		date: eventDate,
 		mapLink,
@@ -191,13 +188,6 @@ exports.createEvent = async (req) => {
 	});
 
 	const result = await newEvent.save();
-
-	if (req.file && req.file.path) {
-		const filePath = path.join(__dirname, '../..', req.file.path);
-		fs.unlink(filePath, (err) => {
-			if (err) logger.error({ err }, 'Failed to delete uploaded file');
-		});
-	}
 
 	return result;
 };
@@ -228,28 +218,6 @@ exports.updateEvent = async (req) => {
 	const { title, subtitle, location, date, mapLink, description, isGeneric } =
 		req.body;
 
-	let updateEventDate = date instanceof Date ? date : new Date(date);
-
-	if (isNaN(updateEventDate.getTime())) {
-		throw new ApiError(
-			`Invalid date format provided. Received: "${date}", Parsed: ${updateEventDate}`,
-			STATUS_CODE.BAD_REQUEST,
-			['date']
-		);
-	}
-
-	// Validate date is not in the past
-	const today = new Date();
-	today.setHours(0, 0, 0, 0);
-
-	if (updateEventDate < today) {
-		throw new ApiError(
-			'Cannot update event to a past date. Please select a future date.',
-			STATUS_CODE.BAD_REQUEST,
-			['date']
-		);
-	}
-
 	// Check if event exists
 	const existingEvent = await Event.findOne({ reference });
 	if (!existingEvent) {
@@ -259,21 +227,56 @@ exports.updateEvent = async (req) => {
 		);
 	}
 
-	// Prevent date changes to maintain reference consistency
-	const existingDateStr = existingEvent.date.toISOString().split('T')[0];
-	const newDateStr = updateEventDate.toISOString().split('T')[0];
+	// The date is fixed at creation -- the reference encodes it, which is what
+	// the immutability check below protects -- so the update form renders the
+	// field disabled and does not send it at all. This used to parse it
+	// regardless: `new Date(undefined)` is an Invalid Date, so every update
+	// that changed only the title was rejected with
+	// `Invalid date format provided. Received: "undefined"`. See issue #462.
+	//
+	// The route's own validators already guarantee that a date which *is* sent
+	// parses (`body('date').optional().isISO8601().toDate()`), so the checks
+	// below only concern a caller deliberately supplying one.
+	const dateProvided = date !== undefined && date !== null && date !== '';
+	let updateEventDate = existingEvent.date;
 
-	if (newDateStr !== existingDateStr) {
-		throw new ApiError(
-			'Cannot change event date as it would create inconsistency with the event reference. The date is fixed when the event is created.',
-			STATUS_CODE.BAD_REQUEST,
-			['date']
-		);
-	}
+	if (dateProvided) {
+		updateEventDate = date instanceof Date ? date : new Date(date);
 
-	let eventImage = existingEvent.image;
-	if (req.file && req.file.path) {
-		eventImage = fs.readFileSync(req.file.path);
+		if (isNaN(updateEventDate.getTime())) {
+			throw new ApiError(
+				`Invalid date format provided. Received: "${date}", Parsed: ${updateEventDate}`,
+				STATUS_CODE.BAD_REQUEST,
+				['date']
+			);
+		}
+
+		// Not in the past. Deliberately inside this branch: it asks about a
+		// date the caller is trying to set. Applied to the stored date it
+		// would refuse every edit of an event that has already happened --
+		// correcting a typo in last month's drive.
+		const today = new Date();
+		today.setHours(0, 0, 0, 0);
+
+		if (updateEventDate < today) {
+			throw new ApiError(
+				'Cannot update event to a past date. Please select a future date.',
+				STATUS_CODE.BAD_REQUEST,
+				['date']
+			);
+		}
+
+		// Prevent date changes to maintain reference consistency
+		const existingDateStr = existingEvent.date.toISOString().split('T')[0];
+		const newDateStr = updateEventDate.toISOString().split('T')[0];
+
+		if (newDateStr !== existingDateStr) {
+			throw new ApiError(
+				'Cannot change event date as it would create inconsistency with the event reference. The date is fixed when the event is created.',
+				STATUS_CODE.BAD_REQUEST,
+				['date']
+			);
+		}
 	}
 
 	const generic = isGeneric === 'true' || isGeneric === true;
@@ -295,7 +298,6 @@ exports.updateEvent = async (req) => {
 		{
 			title,
 			subtitle,
-			image: eventImage,
 			location,
 			date: updateEventDate,
 			mapLink,
@@ -307,13 +309,6 @@ exports.updateEvent = async (req) => {
 	);
 
 	// Clean up uploaded file if it was processed
-	if (req.file && req.file.path) {
-		const filePath = path.join(__dirname, '../..', req.file.path);
-		fs.unlink(filePath, (err) => {
-			if (err) logger.error({ err }, 'Failed to delete uploaded file');
-		});
-	}
-
 	return updatedEvent;
 };
 

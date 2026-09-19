@@ -13,7 +13,11 @@ const { noCacheApi } = require('./middleware/no-cache-api');
 const { requestLogger } = require('./middleware/request-logger');
 const { securityHeaders } = require('./middleware/security-headers');
 const config = require('./utils/config');
-const { verifyIndexes } = require('./utils/verifyIndexes');
+const {
+	verifyIndexes,
+	retireIndexes,
+	repairDriftedIndexes,
+} = require('./utils/verifyIndexes');
 const { logger } = require('./utils/logger');
 const authRouter = require('./routes/auth');
 const userRouter = require('./routes/user');
@@ -122,6 +126,23 @@ mongoose
 		// before the first request, caught so a failure here can never be
 		// what takes the app down. See issue #437.
 		try {
+			// Retire first, then report: an index this drops should not also be
+			// listed as drift. Retirement is the narrow, self-healing half --
+			// indexes no schema declares any more, named in a reviewed list --
+			// so a deploy is enough to repair a database, rather than a
+			// migration somebody has to remember. See issue #447.
+			await retireIndexes(mongoose.connection);
+			// Then rebuild any index whose options in the database disagree
+			// with the schema that declares it. Mongoose cannot alter an
+			// existing index -- MongoDB answers IndexOptionsConflict and the
+			// rejection is swallowed -- so without this a schema saying
+			// `unique: true, sparse: true` sits over a plain unique index
+			// indefinitely, and every document missing the field collides on
+			// null. That is what broke refreshToken (#437); confirmationCode
+			// carries the same declaration and would break account activation
+			// the same way.
+			await repairDriftedIndexes(mongoose.connection);
+			// Report whatever is still out of line after both passes.
 			await verifyIndexes(mongoose.connection);
 		} catch (err) {
 			logger.warn({ err }, 'Index verification failed to run');

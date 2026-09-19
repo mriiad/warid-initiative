@@ -125,3 +125,73 @@ test.describe('Contact form', () => {
 		expect(requestBody).toMatchObject({ subject: 'Question', message: 'Hello, I have a question.' });
 	});
 });
+
+test.describe('Contact form when the server cannot send mail (issue #454)', () => {
+	const fill = async (page: import('@playwright/test').Page) => {
+		await page.goto('/contact');
+		await page.getByLabel('الاسم الشخصي').fill('Yassine');
+		await page.getByLabel('الاسم العائلي').fill('Alaoui');
+		await page.getByLabel('البريد الإلكتروني').fill('yassine@example.com');
+		await page.getByLabel('رقم الهاتف').fill('0600000000');
+		await page.getByLabel('الموضوع').fill('Question');
+		await page.getByLabel('الرسالة').fill('Hello, I have a question.');
+		await page.locator('button[type=submit]').click();
+	};
+
+	test('a MAIL_NOT_CONFIGURED reply is shown in the reader language, not backend English', async ({ page }) => {
+		// The backend answers 503 with a stable code once it finds it has no
+		// SMTP credentials, instead of attempting the send and surfacing an
+		// authentication failure as a bare 500.
+		await page.route('**/api/contact-us', (route) =>
+			route.fulfill({
+				status: 503,
+				contentType: 'application/json',
+				body: JSON.stringify({
+					message: 'The contact channel is not configured on the server.',
+					statusCode: 503,
+					errorKeys: [],
+					code: 'MAIL_NOT_CONFIGURED',
+				}),
+			})
+		);
+
+		await fill(page);
+
+		await expect(
+			page.getByText('لم يتم إرسال رسالتك لأن خدمة البريد غير مُهيأة على الخادم')
+		).toBeVisible({ timeout: 15000 });
+		// The English prose the API sent must not reach an Arabic screen now
+		// that the code is recognised.
+		await expect(page.getByText('not configured on the server')).toHaveCount(0);
+	});
+
+	test('the visitor is never told a message was sent when it was not', async ({ page }) => {
+		await page.route('**/api/contact-us', (route) =>
+			route.fulfill({
+				status: 503,
+				contentType: 'application/json',
+				body: JSON.stringify({ message: 'x', statusCode: 503, code: 'MAIL_NOT_CONFIGURED' }),
+			})
+		);
+
+		await fill(page);
+		await page.waitForTimeout(1000);
+
+		await expect(page.getByText('تم إرسال رسالتك بنجاح')).toHaveCount(0);
+	});
+
+	test('an unrecognised code still falls through to the backend prose (issue #344 preserved)', async ({ page }) => {
+		const backendMessage = 'Some other reason entirely.';
+		await page.route('**/api/contact-us', (route) =>
+			route.fulfill({
+				status: 500,
+				contentType: 'application/json',
+				body: JSON.stringify({ message: backendMessage, statusCode: 500, code: 'SOMETHING_NEW' }),
+			})
+		);
+
+		await fill(page);
+
+		await expect(page.getByText(backendMessage)).toBeVisible({ timeout: 15000 });
+	});
+});

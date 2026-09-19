@@ -32,6 +32,12 @@ describe('GET /api/events', () => {
 	// controller asked the database for rather than only what came back.
 	const spyQuery = (rows) => {
 		const query = {
+			// Mirrors the chain the controller actually builds. A missing link
+			// does not fail where it is missing: the call throws, the
+			// controller's catch hands it to next(), and the assertion that
+			// notices is whichever one comes after -- so this stays in step
+			// with getEvents deliberately.
+			select: jest.fn(() => query),
 			sort: jest.fn(() => query),
 			skip: jest.fn(() => query),
 			limit: jest.fn(() => query),
@@ -65,6 +71,36 @@ describe('GET /api/events', () => {
 		await request(app).get('/api/events');
 
 		expect(query.sort).toHaveBeenCalledWith({ date: 1 });
+	});
+
+	it('does not ship the image buffers, which no client reads (issue #452)', async () => {
+		// image is a Buffer on the schema and this endpoint used to
+		// base64-encode every one into the response, inflating a list request
+		// by roughly a third of the stored bytes per event. Nothing in the
+		// frontend references event.image, and the landing page asks for this
+		// list only to render a count and one card.
+		const query = spyQuery([{ reference: 'WEVENT1' }]);
+		Event.countDocuments.mockReturnValue(resolveTo(1));
+		Event.find.mockReturnValue(query);
+
+		const res = await request(app).get('/api/events');
+
+		expect(res.status).toBe(200);
+		expect(query.select).toHaveBeenCalledWith('-image');
+	});
+
+	it('still returns an event that has no image at all', async () => {
+		// The old code guarded with `if (event.image)`; excluding the field
+		// must not depend on it being present.
+		Event.countDocuments.mockReturnValue(resolveTo(1));
+		Event.find.mockReturnValue(spyQuery([{ reference: 'WEVENT1', title: 'Drive' }]));
+
+		const res = await request(app).get('/api/events');
+
+		expect(res.status).toBe(200);
+		expect(res.body.events).toHaveLength(1);
+		expect(res.body.events[0]).not.toHaveProperty('image');
+		expect(res.body.totalItems).toBe(1);
 	});
 
 	it('returns every event when no filters are given', async () => {
@@ -265,24 +301,36 @@ describe('POST /api/event (admin only)', () => {
 		expect(res.body.event.reference).toBe('WEVENT20990101');
 	});
 
-	// Both of these used to bypass createEventHandler entirely: multer's own
-	// error handling runs before the route handler, so a raw error reached
-	// the shared error handler unconverted and produced a generic
-	// "Something went wrong" instead of a message about the file. See #370.
-	it('rejects a non-image upload with a friendly message, not a generic 500', async () => {
+	// Issue #461 removed the image entirely. multer stays only to parse the
+	// multipart text fields the form still posts -- the cases that used to be
+	// about file size and mimetype (#370) are gone with the file.
+	it('stores no image when creating an event', async () => {
 		mockAdmin();
+		Event.exists.mockReturnValue(resolveTo(null));
+		let saved = null;
+		Event.mockImplementation(function (doc) {
+			saved = doc;
+			this.save = jest.fn().mockResolvedValue({ ...doc, _id: 'evt-1' });
+		});
+
 		const res = await request(app)
 			.post('/api/event')
 			.set('Authorization', authHeader(ADMIN_ID))
 			.field('title', 'Drive')
 			.field('location', 'Casablanca')
-			.field('date', '2099-01-01')
-			.attach('image', Buffer.from('not an image'), { filename: 'notes.txt', contentType: 'text/plain' });
-		expect(res.status).toBe(400);
-		expect(res.body.message).toMatch(/only image uploads are allowed/i);
+			.field('date', '2099-01-01');
+
+		expect(res.status).toBe(201);
+		expect(saved).not.toBeNull();
+		expect(saved).not.toHaveProperty('image');
+		// The rest of the multipart body still has to arrive: multer is what
+		// parses it, so removing it outright would leave every field undefined.
+		expect(saved.title).toBe('Drive');
+		expect(saved.location).toBe('Casablanca');
 	});
 
-	it('rejects a file over 5MB with a friendly message, not a generic 500', async () => {
+	it('tells a client still attaching an image to reload, rather than 500ing', async () => {
+		// A browser tab left open across the deploy that removed the field.
 		mockAdmin();
 		const res = await request(app)
 			.post('/api/event')
@@ -290,9 +338,9 @@ describe('POST /api/event (admin only)', () => {
 			.field('title', 'Drive')
 			.field('location', 'Casablanca')
 			.field('date', '2099-01-01')
-			.attach('image', Buffer.alloc(6 * 1024 * 1024), { filename: 'big.png', contentType: 'image/png' });
-		expect(res.status).toBe(412);
-		expect(res.body.message).toMatch(/smaller than 5MB/i);
+			.attach('image', Buffer.from('an image'), { filename: 'photo.png', contentType: 'image/png' });
+		expect(res.status).toBe(400);
+		expect(res.body.message).toMatch(/no longer accept an image/i);
 	});
 });
 
@@ -348,6 +396,105 @@ describe('PUT /api/event/:reference (admin only, BUG regression for issue #205/#
 			.field('date', '2099-01-01');
 		expect(res.status).toBe(200);
 		expect(res.body.event.title).toBe('New title');
+	});
+
+	// Issue #462. The update form renders the date disabled -- the date is
+	// fixed at creation because the reference encodes it -- and so never
+	// sends the field. `new Date(undefined)` is an Invalid Date, so every
+	// update that changed only the title was rejected with
+	// "Invalid date format provided. Received: "undefined"".
+	it('keeps the stored date when the request does not send one', async () => {
+		mockAdmin();
+		Event.findOne.mockReturnValue(
+			resolveTo({ reference: 'WEVENT20990101', date: new Date('2099-01-01'), image: null })
+		);
+		let updatePayload = null;
+		Event.findOneAndUpdate.mockImplementation((_query, update) => {
+			updatePayload = update;
+			return resolveTo({
+				reference: 'WEVENT20990101',
+				_id: 'evt-1',
+				title: 'New title',
+				location: 'Rabat',
+				date: new Date('2099-01-01'),
+				isGeneric: false,
+			});
+		});
+
+		const res = await request(app)
+			.put('/api/event/WEVENT20990101')
+			.set('Authorization', authHeader(ADMIN_ID))
+			.field('title', 'New title')
+			.field('location', 'Rabat');
+
+		expect(res.status).toBe(200);
+		expect(res.body.event.title).toBe('New title');
+		// Not merely "didn't 400": the stored date has to survive the write.
+		expect(updatePayload.date.toISOString()).toBe(
+			new Date('2099-01-01').toISOString()
+		);
+	});
+
+	it('edits an event whose date has already passed, when no date is sent', async () => {
+		// The past-date guard only makes sense for a date the caller is
+		// actually trying to set. Applied to the stored date it would refuse
+		// every edit of a finished event -- fixing a typo in the title of last
+		// month's drive.
+		mockAdmin();
+		Event.findOne.mockReturnValue(
+			resolveTo({ reference: 'WEVENT20200101', date: new Date('2020-01-01'), image: null })
+		);
+		Event.findOneAndUpdate.mockReturnValue(
+			resolveTo({
+				reference: 'WEVENT20200101',
+				_id: 'evt-2',
+				title: 'Corrected title',
+				date: new Date('2020-01-01'),
+				isGeneric: false,
+			})
+		);
+
+		const res = await request(app)
+			.put('/api/event/WEVENT20200101')
+			.set('Authorization', authHeader(ADMIN_ID))
+			.field('title', 'Corrected title')
+			.field('location', 'Rabat');
+
+		expect(res.status).toBe(200);
+	});
+
+	it('still rejects a date that cannot be parsed, when one is sent', async () => {
+		// 422 from the route's own validator chain
+		// (`body('date').optional().isISO8601()`), which runs before the
+		// controller -- so a supplied date is already guaranteed parseable by
+		// the time updateEvent sees it, and the only value that ever reached
+		// its isNaN check was the absent one.
+		mockAdmin();
+		Event.findOne.mockReturnValue(
+			resolveTo({ reference: 'WEVENT20990101', date: new Date('2099-01-01'), image: null })
+		);
+		const res = await request(app)
+			.put('/api/event/WEVENT20990101')
+			.set('Authorization', authHeader(ADMIN_ID))
+			.field('title', 'New title')
+			.field('location', 'Rabat')
+			.field('date', 'not-a-date');
+		expect(res.status).toBe(422);
+	});
+
+	it('still refuses to move an event into the past, when a date is sent', async () => {
+		mockAdmin();
+		Event.findOne.mockReturnValue(
+			resolveTo({ reference: 'WEVENT20990101', date: new Date('2099-01-01'), image: null })
+		);
+		const res = await request(app)
+			.put('/api/event/WEVENT20990101')
+			.set('Authorization', authHeader(ADMIN_ID))
+			.field('title', 'New title')
+			.field('location', 'Rabat')
+			.field('date', '2020-01-01');
+		expect(res.status).toBe(400);
+		expect(res.body.message).toMatch(/past date/);
 	});
 });
 

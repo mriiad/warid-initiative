@@ -11,7 +11,6 @@ export interface Event {
 	_id: string;
 	reference: string;
 	title: string;
-	image: string;
 	subtitle: string;
 	location: string;
 	date: string;
@@ -30,7 +29,6 @@ export interface EventFormData {
 	location: string;
 	mapLink?: string;
 	isGeneric: boolean;
-	image?: File;
 }
 
 export interface DonationData {

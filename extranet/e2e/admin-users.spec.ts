@@ -224,7 +224,7 @@ test.describe('Admin users list', () => {
 		// Not yet an admin: no role badge, and the action opens a picker
 		// listing all three roles rather than promoting outright.
 		await page.getByRole('button', { name: 'تعيين مشرف' }).click();
-		await expect(page.getByText('اختر دور المشرف')).toBeVisible({ timeout: 5000 });
+		await expect(page.getByText('اختر الدور')).toBeVisible({ timeout: 5000 });
 		await page.getByRole('button', { name: 'مشرف الطوارئ' }).click();
 		await page.waitForTimeout(500);
 		expect(requestBody).toEqual({ role: 'emergency' });
@@ -255,10 +255,104 @@ test.describe('Admin users list', () => {
 		// must be visible"), and re-offering it in the picker is redundant.
 		await expect(page.getByText('مشرف الفعاليات')).toBeVisible({ timeout: 5000 });
 		await page.getByRole('button', { name: 'تغيير الدور' }).click();
-		await expect(page.getByText('اختر دور المشرف')).toBeVisible({ timeout: 5000 });
+		await expect(page.getByText('اختر الدور')).toBeVisible({ timeout: 5000 });
 		await expect(page.getByRole('button', { name: 'مشرف رئيسي' })).toBeVisible();
 		await expect(page.getByRole('button', { name: 'مشرف الطوارئ' })).toBeVisible();
 		await expect(page.getByRole('button', { name: 'مشرف الفعاليات' })).toHaveCount(0);
+	});
+
+	test('the principal admin can demote an admin back to a normal user (issue #458)', async ({
+		page,
+	}) => {
+		// The picker offered the three admin roles and nothing else, so an
+		// admin could be moved between roles but never have their admin
+		// access revoked.
+		await seedAuth(page, { isAdmin: true });
+		await mockJson(page, '**/api/users/profile/target-1', {
+			_id: 'target-1',
+			username: 'CIN000111',
+			email: 'admin@example.com',
+			phoneNumber: '+212612345680',
+			isAdmin: true,
+			role: 'event',
+			gender: 'male',
+			firstname: 'Amine',
+			lastname: 'Bennani',
+			canDonate: true,
+		});
+		let requestBody: any = null;
+		await page.route('**/api/users/target-1/admin', async (route) => {
+			requestBody = route.request().postDataJSON();
+			await route.fulfill({
+				status: 200,
+				contentType: 'application/json',
+				body: JSON.stringify({
+					message: 'Role updated successfully',
+					isAdmin: false,
+					role: null,
+				}),
+			});
+		});
+
+		await page.goto('/users/target-1');
+		await page.getByRole('button', { name: 'تغيير الدور' }).click();
+		await expect(page.getByText('اختر الدور')).toBeVisible({ timeout: 5000 });
+		await page.getByRole('button', { name: 'مستخدم عادي' }).click();
+		await page.waitForTimeout(500);
+
+		expect(requestBody).toEqual({ role: 'user' });
+	});
+
+	test('the picker does not offer "normal user" to someone who already is one (issue #458)', async ({
+		page,
+	}) => {
+		// Same rule as #183's: a role already held is not worth re-offering.
+		await seedAuth(page, { isAdmin: true });
+		await mockJson(page, '**/api/users/profile/target-1', {
+			_id: 'target-1',
+			username: 'CIN000111',
+			email: 'donor@example.com',
+			phoneNumber: '+212612345680',
+			isAdmin: false,
+			gender: 'male',
+			firstname: 'Amine',
+			lastname: 'Bennani',
+			canDonate: true,
+		});
+
+		await page.goto('/users/target-1');
+		await page.getByRole('button', { name: 'تعيين مشرف' }).click();
+		await expect(page.getByText('اختر الدور')).toBeVisible({ timeout: 5000 });
+		await expect(page.getByRole('button', { name: 'مشرف رئيسي' })).toBeVisible();
+		await expect(page.getByRole('button', { name: 'مستخدم عادي' })).toHaveCount(0);
+	});
+
+	test('the picker does not offer a principal the option to demote themselves (issue #458)', async ({
+		page,
+	}) => {
+		// The backend refuses it -- they would lose the access this screen
+		// needs and could not grant it back -- so the option must not be
+		// there to click in the first place.
+		await seedAuth(page, { userId: 'self-1', isAdmin: true, adminRole: 'principal' });
+		await mockJson(page, '**/api/users/profile/self-1', {
+			_id: 'self-1',
+			username: 'CIN000001',
+			email: 'principal@example.com',
+			phoneNumber: '+212612345678',
+			isAdmin: true,
+			role: 'principal',
+			gender: 'male',
+			firstname: 'Yassine',
+			lastname: 'Alaoui',
+			canDonate: true,
+		});
+
+		await page.goto('/users/self-1');
+		await page.getByRole('button', { name: 'تغيير الدور' }).click();
+		await expect(page.getByText('اختر الدور')).toBeVisible({ timeout: 5000 });
+		// Reassigning themselves to another admin role is still allowed.
+		await expect(page.getByRole('button', { name: 'مشرف الطوارئ' })).toBeVisible();
+		await expect(page.getByRole('button', { name: 'مستخدم عادي' })).toHaveCount(0);
 	});
 
 	test('the users list shows a distinct icon per admin role (issue #183)', async ({ page }) => {
@@ -319,5 +413,79 @@ test.describe('Admin users list', () => {
 		await page.getByRole('button', { name: /delete|confirm|حذف/i }).last().click({ timeout: 3000 }).catch(() => {});
 		await page.waitForTimeout(500);
 		expect(deleteCalled).toBe(true);
+	});
+});
+
+test.describe('Editing a user pre-fills the form (issue #457)', () => {
+	// UserDetailView reads its user through useAdminUserDetail, whose queryFn
+	// returns the whole Axios response, and reads it back as `userInfo?.data`.
+	// UpdateUser had its own inline useQuery on the *same* query key whose
+	// queryFn returned `response.data` instead. With the app-wide 5 minute
+	// staleTime, arriving at the edit screen from the detail screen served the
+	// cached Axios response without refetching, so every `userData.firstname`
+	// in UpdateUser resolved against transport metadata and came back
+	// undefined -- and the form reset to empty strings.
+	//
+	// That is why it looked intermittent: opening /users/update/:id directly
+	// populates the cache with the unwrapped shape and fills correctly. Only
+	// the detail-then-edit path, which is how an admin actually gets there,
+	// was broken.
+	const adminUser = {
+		_id: 'user-9',
+		username: 'AB123456',
+		email: 'amine@example.com',
+		phoneNumber: '+212661234567',
+		isAdmin: false,
+		gender: 'male',
+		canDonate: true,
+		firstname: 'Amine',
+		lastname: 'Bennani',
+		birthdate: '1995-05-20T00:00:00.000Z',
+		bloodGroup: 'A+',
+		city: 'الرباط',
+	};
+
+	const mockDetail = async (page: import('@playwright/test').Page) => {
+		await seedAuth(page, { isAdmin: true, adminRole: 'principal' });
+		await mockJson(page, '**/api/users/profile/user-9', adminUser);
+	};
+
+	test('arriving from the user detail screen, the fields carry the current values', async ({ page }) => {
+		await mockDetail(page);
+
+		// The path an admin actually takes: detail first, then the Edit button.
+		// It must be a client-side navigation -- page.goto() is a full reload,
+		// which tears down the QueryClient and takes the poisoned cache entry
+		// with it, so the bug cannot reproduce that way.
+		await page.goto('/users/user-9');
+		await expect(page.getByText('Amine Bennani')).toBeVisible({ timeout: 15000 });
+
+		await page.getByRole('button', { name: 'تعديل' }).click();
+		await expect(page).toHaveURL(/\/users\/update\/user-9$/);
+
+		await expect(page.getByLabel('الاسم الشخصي')).toHaveValue('Amine', { timeout: 15000 });
+		await expect(page.getByLabel('الاسم العائلي')).toHaveValue('Bennani');
+		await expect(page.getByLabel('البريد الإلكتروني')).toHaveValue('amine@example.com');
+		await expect(page.getByLabel('رقم الهاتف')).toHaveValue('+212661234567');
+	});
+
+	test('opening the edit screen directly also pre-fills', async ({ page }) => {
+		// This path already worked; pinned so a fix for the one above cannot
+		// break it by moving the unwrapping to the wrong side.
+		await mockDetail(page);
+		await page.goto('/users/update/user-9');
+
+		await expect(page.getByLabel('الاسم الشخصي')).toHaveValue('Amine', { timeout: 15000 });
+		await expect(page.getByLabel('البريد الإلكتروني')).toHaveValue('amine@example.com');
+	});
+
+	test('the detail screen itself still renders its user', async ({ page }) => {
+		// Guards the other side of the shared cache entry: unwrapping in the
+		// hook must not leave UserDetailView reading a field that moved.
+		await mockDetail(page);
+		await page.goto('/users/user-9');
+
+		await expect(page.getByText('Amine Bennani')).toBeVisible({ timeout: 15000 });
+		await expect(page.getByText('amine@example.com')).toBeVisible();
 	});
 });

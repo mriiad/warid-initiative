@@ -15,3 +15,13 @@ updates:
     assignees:
       - "mriiad"
     open-pull-requests-limit: 10
+    ignore:
+      # mongoose 9.10.0 moved its driver dependency to mongodb ~7.6, and
+      # mongodb 7.6.0 cannot complete a handshake under Jest: it made
+      # resolveRuntimeAdapters() async, and appendMetadata() swallows the
+      # rejection and falls back to empty client metadata, so the server
+      # rejects the connection for a missing `driver` sub-document.
+      # See e2e/setup.js, typegoose/mongodb-memory-server#1026 and
+      # Automattic/mongoose#16499. Lift this once the driver is fixed.
+      - dependency-name: "mongoose"
+        versions: [">=9.10.0"]

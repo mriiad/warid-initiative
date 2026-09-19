@@ -15,6 +15,12 @@ module.exports = {
   // built-in JWT secret (issue #394).
   setupFiles: ['<rootDir>/e2e/support/authEnv.js'],
   setupFilesAfterEnv: ['<rootDir>/e2e/setup.js'],
+  // Every test here talks to a freshly booted mongod over a socket, and the
+  // first in each file also pays for whatever indexes Mongoose builds lazily
+  // on the models it touches. Jest's 5s default is sized for a unit test.
+  // e2e/setup.js gives the hooks that boot and stop the server their own,
+  // much longer budget.
+  testTimeout: 20000,
   verbose: true,
   forceExit: true,
   detectOpenHandles: true,
