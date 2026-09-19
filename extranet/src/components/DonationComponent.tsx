@@ -35,6 +35,11 @@ import ResponseAnimation from './shared/ResponseAnimation';
 import SnackbarComponent from './shared/SnackbarComponent';
 import Ltr from './shared/Ltr';
 
+// How long the donation confirmation stays up before the donor is taken to
+// their dashboard. Issue #465 asked for 5-8 seconds; the shortest of that
+// range, since the panel says everything it has to say immediately.
+const DONATION_SUCCESS_REDIRECT_MS = 5000;
+
 const DonationComponent = () => {
 	const { t } = useTranslation();
 	const { token } = useAuth();
@@ -157,6 +162,24 @@ const DonationComponent = () => {
 	const [errorMessage, setErrorMessage] = useState<string | null>(null);
 	const [isSuccessResponse, setIsSuccessAnimationVisible] = useState<boolean>(false);
 	const [isErrorResponse, setIsErrorAnimationVisible] = useState<boolean>(false);
+
+	// A successful donation used to end here: the confirmation panel, and no
+	// way onward except a back arrow that returns to whatever happened to be
+	// in history -- which for a donor who arrived by scanning an event's QR
+	// code is nothing at all. Send them to their dashboard, where the donation
+	// they just made is now listed (useDonate invalidates that query).
+	//
+	// Long enough to read the confirmation, which stays on screen until the
+	// navigation happens; cleared on unmount so leaving early doesn't pull the
+	// donor off whatever page they went to instead.
+	useEffect(() => {
+		if (!isSuccessResponse) return;
+		const timer = setTimeout(
+			() => navigate('/dashboard'),
+			DONATION_SUCCESS_REDIRECT_MS
+		);
+		return () => clearTimeout(timer);
+	}, [isSuccessResponse, navigate]);
 
 	const onSubmit = (formData: any) => {
 		if (!token) {

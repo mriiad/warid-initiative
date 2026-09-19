@@ -128,6 +128,13 @@ export const useDonate = () => {
 			// Invalidate donation history and user profile
 			queryClient.invalidateQueries({ queryKey: queryKeys.donations() });
 			queryClient.invalidateQueries({ queryKey: queryKeys.user.all });
+			// And the donor's dashboard, which is where they are sent next and
+			// is the one screen that shows the donation they just made. It was
+			// left alone, so arriving inside the app-wide 5-minute staleTime
+			// served the cached list -- without that donation. Matched by
+			// prefix because the key is ['dashboard', userId] and this hook
+			// does not know whose. See issue #465.
+			queryClient.invalidateQueries({ queryKey: ['dashboard'] });
 		},
 		onError: (error) => {
 			console.error('Donation failed:', error);
