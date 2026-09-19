@@ -54,6 +54,26 @@ type NavItem = {
 	icon: typeof HomeIcon;
 	labelKey: string;
 	matchPath?: string;
+	// Other routes that are this same destination. '/dashboard' renders the
+	// exact screen '/home' gives a signed-in donor, and it is where login
+	// sends them -- so a donor sat on their dashboard saw no tab highlighted
+	// at all. See issue #464.
+	alsoActiveOn?: string[];
+};
+
+// A nav item is the current one when the path matches, or when the route is
+// one of the aliases that render the same screen.
+const isActive = (navItem: NavItem, pathname: string) =>
+	pathname === (navItem.matchPath || navItem.path) ||
+	(navItem.alsoActiveOn?.includes(pathname) ?? false);
+
+// Kept on the one item that has an alias, rather than spread across every
+// list that holds a Home entry.
+const HOME_ITEM: NavItem = {
+	path: '/home',
+	icon: HomeIcon,
+	labelKey: 'nav.home',
+	alsoActiveOn: ['/dashboard'],
 };
 
 // Reachable with no session at all. '/home' renders LandingPage for a
@@ -64,7 +84,7 @@ type NavItem = {
 // icon was once missing entirely, which left the request form unreachable
 // from navigation for everyone.
 const PUBLIC_ITEMS: NavItem[] = [
-	{ path: '/home', icon: HomeIcon, labelKey: 'nav.home' },
+	HOME_ITEM,
 	{ path: '/events?page=1', icon: CalendarMonthIcon, labelKey: 'nav.calendar', matchPath: '/events' },
 	{ path: '/emergency', icon: HealthAndSafetyIcon, labelKey: 'nav.emergency' },
 ];
@@ -97,7 +117,7 @@ const PRINCIPAL_ONLY_ITEMS: NavItem[] = [
 // gets: EventsComponent already renders the admin add/edit/delete view
 // for any isAdmin caller, Event Admin included.
 const EVENT_ADMIN_ITEMS: NavItem[] = [
-	{ path: '/home', icon: HomeIcon, labelKey: 'nav.home' },
+	HOME_ITEM,
 	{ path: '/events?page=1', icon: CalendarMonthIcon, labelKey: 'nav.calendar', matchPath: '/events' },
 ];
 
@@ -112,7 +132,7 @@ const EVENT_ADMIN_ITEMS: NavItem[] = [
 // '/emergencies' (plural) is the admin unconfirmed-emergencies list, and
 // '/emergency' (singular) is the create form every visitor gets.
 const EMERGENCY_ADMIN_ITEMS: NavItem[] = [
-	{ path: '/home', icon: HomeIcon, labelKey: 'nav.home' },
+	HOME_ITEM,
 	{ path: '/emergency', icon: HealthAndSafetyIcon, labelKey: 'nav.emergency' },
 	{ path: '/emergencies?page=1', icon: NotificationImportantIcon, labelKey: 'nav.emergencies', matchPath: '/emergencies' },
 	PROFILE_ITEM,
@@ -143,13 +163,17 @@ const RedesignBottomNav = () => {
 
 	const renderItem = (navItem: NavItem) => {
 		const Icon = navItem.icon;
-		const active = location.pathname === (navItem.matchPath || navItem.path);
+		const active = isActive(navItem, location.pathname);
 		return (
 			<Link
 				key={navItem.path}
 				to={navItem.path}
 				className={active ? `${item} ${itemActive}` : item}
 				aria-label={t(navItem.labelKey)}
+				// The highlight was carried only by a generated class name, so
+				// nothing announced the current tab to a screen reader and
+				// nothing could assert on it. See issue #464.
+				aria-current={active ? 'page' : undefined}
 			>
 				<Icon />
 			</Link>
