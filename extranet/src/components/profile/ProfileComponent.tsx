@@ -18,6 +18,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { BloodGroup } from '@/data/constants';
 import { useAuth as useAuthContext } from '../../auth/AuthContext';
+import { toE164 } from '../../utils/phone';
 import { UserFormData } from '@/types';
 import { useAuth, useUpdateMyProfile, useUpdatePassword, useUserProfile } from '../../hooks';
 import { authRedesignStyles } from '../../styles/authRedesign';
@@ -99,7 +100,7 @@ const ProfileComponent = () => {
 				birthdate: data.birthdate ? new Date(data.birthdate).toISOString().split('T')[0] : '',
 				bloodGroup: data.bloodGroup || BloodGroup.None,
 				city: data.city || '',
-				phoneNumber: String(data.phoneNumber || ''),
+				phoneNumber: toE164(data.phoneNumber),
 				email: data.email || '',
 			});
 		}
@@ -173,7 +174,7 @@ const ProfileComponent = () => {
 				birthdate: data.birthdate ? new Date(data.birthdate).toISOString().split('T')[0] : '',
 				bloodGroup: data.bloodGroup || BloodGroup.None,
 				city: data.city || '',
-				phoneNumber: String(data.phoneNumber || ''),
+				phoneNumber: toE164(data.phoneNumber),
 				email: data.email || '',
 			});
 		}

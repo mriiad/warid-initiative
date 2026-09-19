@@ -134,4 +134,72 @@ test.describe('Profile page', () => {
 		await page.getByRole('button', { name: 'تواصل معنا' }).click();
 		await expect(page).toHaveURL(/\/contact/);
 	});
+
+	// Issue #466. A number stored without its country code was handed to the
+	// phone field verbatim, so it rendered as bare national digits -- the
+	// missing leading zero the tester saw. Saving then failed, because the
+	// form's own validator requires E.164 (`/^\+[1-9]\d{6,14}$/`), leaving no
+	// way forward except typing the country code by hand on every edit.
+	const openProfileEditor = async (page: import('@playwright/test').Page, stored: string) => {
+		await seedAuth(page, { isAdmin: false, userId: 'user-1' });
+		await mockJson(page, '**/api/user/profile', { ...fullProfileResponse(), phoneNumber: stored }, { method: 'GET' });
+		await page.goto('/profile');
+		await expect(page.getByText('المعلومات الشخصية')).toBeVisible();
+		await page.getByRole('button', { name: 'تعديل' }).click();
+		return page.locator('input[type=tel]');
+	};
+
+	test('a number stored without its country code is shown in full (issue #466)', async ({ page }) => {
+		const phone = await openProfileEditor(page, '612345678');
+		await expect(phone).toHaveValue('+212 6 12 34 56 78');
+	});
+
+	test('a number stored in Moroccan local format is shown in full too (issue #466)', async ({ page }) => {
+		// The legacy shape documented in routes/user.js: '0612345678'. The
+		// leading 0 is the national trunk prefix, which E.164 drops.
+		const phone = await openProfileEditor(page, '0612345678');
+		await expect(phone).toHaveValue('+212 6 12 34 56 78');
+	});
+
+	test('a number already in E.164 is left exactly as it is (issue #466)', async ({ page }) => {
+		const phone = await openProfileEditor(page, '+212612345678');
+		await expect(phone).toHaveValue('+212 6 12 34 56 78');
+	});
+
+	test('a non-Moroccan number is not rewritten to +212 (issue #466)', async ({ page }) => {
+		const phone = await openProfileEditor(page, '+33612345678');
+		await expect(phone).toHaveValue('+33 6 12 34 56 78');
+	});
+
+	test('saving a profile whose number was stored without a country code succeeds (issue #466)', async ({ page }) => {
+		// The reported failure end to end: open the form, change nothing about
+		// the phone, press save. It used to be refused by the E.164 validator.
+		await seedAuth(page, { isAdmin: false, userId: 'user-1' });
+		let patchedPhone: string | null = null;
+		await page.route('**/api/user/profile', async (route: Route) => {
+			if (route.request().method() === 'PATCH') {
+				patchedPhone = route.request().postDataJSON()?.phoneNumber ?? null;
+				await route.fulfill({
+					status: 200,
+					contentType: 'application/json',
+					body: JSON.stringify({ message: 'Profile updated successfully!' }),
+				});
+				return;
+			}
+			await route.fulfill({
+				status: 200,
+				contentType: 'application/json',
+				body: JSON.stringify({ ...fullProfileResponse(), phoneNumber: '612345678' }),
+			});
+		});
+
+		await page.goto('/profile');
+		await expect(page.getByText('المعلومات الشخصية')).toBeVisible();
+		await page.getByRole('button', { name: 'تعديل' }).click();
+		await page.getByRole('button', { name: 'حفظ التغييرات' }).click();
+
+		await expect(page.getByText('تم تحديث الملف الشخصي بنجاح')).toBeVisible({ timeout: 5000 });
+		// And it is sent back in the canonical shape, not as bare digits.
+		expect(patchedPhone).toBe('+212612345678');
+	});
 });
