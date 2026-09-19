@@ -113,6 +113,105 @@ test.describe('Profile page', () => {
 		expect(leftovers).toEqual([]);
 	});
 
+	// Issue #467. The backend answers a wrong current password with 401 and
+	// an application error code. apiClient could not tell that apart from an
+	// expired access token, so it refreshed, retried, got 401 again, and then
+	// cleared the session -- the user was shown the error and logged out by
+	// it. A rejected password attempt is not a rejected session.
+	const wrongCurrentPassword = {
+		message: 'Current password is incorrect.',
+		statusCode: 401,
+		code: 'CURRENT_PASSWORD_INCORRECT',
+	};
+
+	const submitPasswordChange = async (page: import('@playwright/test').Page) => {
+		await page.goto('/profile');
+		await expect(page.getByText('المعلومات الشخصية')).toBeVisible();
+		await page.getByRole('button', { name: 'تغيير كلمة المرور' }).first().click();
+		await page.getByLabel('كلمة المرور الحالية').fill('wrongpassword');
+		await page.getByLabel('كلمة المرور الجديدة', { exact: true }).fill('newpassword123');
+		await page.getByLabel('تأكيد كلمة المرور الجديدة').fill('newpassword123');
+		await page.getByRole('button', { name: 'تحديث كلمة المرور' }).click();
+	};
+
+	test('a wrong current password shows the error and keeps the user signed in (issue #467)', async ({ page }) => {
+		// Seeded via page.evaluate rather than seedAuth's addInitScript: that
+		// fixture re-runs on every navigation, including the hard redirect
+		// this test exists to prove no longer happens -- so it would re-plant
+		// the very token being asserted as kept. Same reasoning as the
+		// invalid-refresh-token test in token-refresh.spec.ts.
+		await page.goto('/login');
+		await page.evaluate(() => {
+			localStorage.setItem('token', 'fake-jwt-token');
+			localStorage.setItem('refreshToken', 'fake-refresh-token');
+			localStorage.setItem('userId', 'user-1');
+			localStorage.setItem('isAdmin', 'false');
+		});
+		await mockJson(page, '**/api/user/profile', fullProfileResponse(), { method: 'GET' });
+		await mockJson(page, '**/api/auth/update-password', wrongCurrentPassword, {
+			status: 401,
+			method: 'PATCH',
+		});
+
+		await submitPasswordChange(page);
+
+		await expect(page.getByText('Current password is incorrect.')).toBeVisible({ timeout: 5000 });
+		// Still on the profile, still signed in.
+		await expect(page).toHaveURL(/\/profile/);
+		expect(await page.evaluate(() => localStorage.getItem('token'))).toBe('fake-jwt-token');
+	});
+
+	test('a wrong current password does not burn the refresh token (issue #467)', async ({ page }) => {
+		// The retry was not just cosmetic: the backend rotates refresh tokens
+		// single-use, so spending one on a mistyped password is a real cost.
+		await seedAuth(page, { isAdmin: false });
+		await mockJson(page, '**/api/user/profile', fullProfileResponse(), { method: 'GET' });
+
+		let passwordAttempts = 0;
+		await page.route('**/api/auth/update-password', async (route: Route) => {
+			passwordAttempts += 1;
+			await route.fulfill({
+				status: 401,
+				contentType: 'application/json',
+				body: JSON.stringify(wrongCurrentPassword),
+			});
+		});
+		let refreshCalled = false;
+		await page.route('**/api/auth/refresh-token', async (route: Route) => {
+			refreshCalled = true;
+			await route.fulfill({
+				status: 200,
+				contentType: 'application/json',
+				body: JSON.stringify({ accessToken: 'fresh-jwt-token', refreshToken: 'fresh-refresh-token' }),
+			});
+		});
+
+		await submitPasswordChange(page);
+
+		await expect(page.getByText('Current password is incorrect.')).toBeVisible({ timeout: 5000 });
+		expect(refreshCalled).toBe(false);
+		expect(passwordAttempts).toBe(1);
+	});
+
+	test('a genuinely expired session still logs the user out (issue #467)', async ({ page }) => {
+		// The guard must not swallow the case the interceptor exists for: a
+		// 401 from the auth middleware carries no application code.
+		await page.goto('/login');
+		await page.evaluate(() => {
+			localStorage.setItem('token', 'fake-jwt-token');
+			localStorage.setItem('refreshToken', 'fake-refresh-token');
+			localStorage.setItem('userId', 'user-1');
+			localStorage.setItem('isAdmin', 'false');
+		});
+		await mockJson(page, '**/api/user/profile', { message: 'Not authenticated.', statusCode: 401 }, { status: 401 });
+		await mockJson(page, '**/api/auth/refresh-token', { message: 'Invalid refresh token.' }, { status: 401 });
+
+		await page.goto('/profile');
+
+		await expect(page).toHaveURL(/\/login/, { timeout: 5000 });
+		expect(await page.evaluate(() => localStorage.getItem('token'))).toBeNull();
+	});
+
 	test('regression (issue #328): the Help & Support links reach the FAQ and Contact us pages', async ({ page }) => {
 		// /FAQ and /contact still existed and were redesigned onto the same
 		// styling system, but nothing in the redesigned navigation linked to
