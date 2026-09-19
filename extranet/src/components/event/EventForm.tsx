@@ -30,7 +30,6 @@ interface IFormInput {
 	date: string;
 	mapLink: string;
 	description: string;
-	image: FileList;
 	isGeneric: boolean;
 }
 
@@ -56,7 +55,6 @@ const EventForm: React.FC = () => {
 		},
 	});
 
-	const [image, setImage] = useState<File | null>(null);
 	const [isFormSubmitted, setIsFormSubmitted] = useState<boolean>(false);
 	const [isSuccessResponse, setIsSuccessResponse] = useState<boolean>(false);
 	const [isErrorResponse, setIsErrorResponse] = useState<boolean>(false);
@@ -79,7 +77,6 @@ const EventForm: React.FC = () => {
 				mapLink: data.mapLink,
 				description: data.description,
 				isGeneric: data.isGeneric,
-				image: image,
 			};
 
 			await createEventMutation.mutateAsync(eventData);
@@ -105,12 +102,6 @@ const EventForm: React.FC = () => {
 	const handleCreateAnotherEvent = () => {
 		setIsFormSubmitted(false);
 		if (isSuccessResponse) reset();
-	};
-
-	const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		if (e.target.files && e.target.files.length > 0) {
-			setImage(e.target.files[0]);
-		}
 	};
 
 	const todayLabel = shortDate(new Date());
@@ -270,29 +261,6 @@ const EventForm: React.FC = () => {
 									/>
 								)}
 							/>
-
-							<div>
-								<label htmlFor='upload-file'>
-									<input
-										type='file'
-										id='upload-file'
-										onChange={handleImageChange}
-										style={{ display: 'none' }}
-									/>
-									<Button component='span' className={primaryButton}>
-										{t('events.form.selectPhoto')}
-									</Button>
-								</label>
-								<div style={{ marginTop: '8px', fontSize: '13px' }}>
-									{image ? (
-										<span>
-											{t('events.form.photoSelected')} {image.name}
-										</span>
-									) : (
-										<span>{t('events.form.noPhotoSelected')}</span>
-									)}
-								</div>
-							</div>
 
 							<Button type='submit' fullWidth className={primaryButton}>
 								{t('events.form.createButton')}

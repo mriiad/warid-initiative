@@ -1,8 +1,6 @@
 const express = require('express');
 const { body } = require('express-validator');
 const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
 
 const {
 	getEvents,
@@ -23,49 +21,31 @@ const eventRouter = express.Router();
 // Event Admin or Principal Admin (see issue #183).
 const requireEventAdmin = requireAdminRole(['event']);
 
-// diskStorage never creates its destination folder -- on a fresh checkout
-// (nothing else in the repo/Dockerfile creates 'uploads/' either) any image
-// upload fails with a raw ENOENT before multer's own limit/fileFilter
-// errors even get a chance to fire, which is how the oversized-file path
-// below went untested. See #370.
-fs.mkdirSync('uploads', { recursive: true });
+// Events no longer carry an image (issue #461), so nothing is written to
+// disk any more -- no storage engine, no 'uploads/' directory, and no
+// fileFilter.
+//
+// multer stays because the create and update forms still post
+// `multipart/form-data`, and express's JSON body parser cannot read that:
+// without something to parse the body, every text field would arrive
+// undefined and the validators would reject the whole request. `.none()` is
+// exactly that -- it parses the text fields and accepts no files.
+const parseFormFields = multer().none();
 
-const storage = multer.diskStorage({
-	destination: (req, file, cb) => cb(null, 'uploads/'),
-	filename: (req, file, cb) => {
-		const unique = Date.now() + '-' + Math.round(Math.random() * 1e9);
-		cb(null, unique + path.extname(file.originalname || ''));
-	},
-});
-const upload = multer({
-	storage,
-	limits: { fileSize: 5 * 1024 * 1024 },
-	fileFilter: (req, file, cb) => {
-		if (!file || !file.mimetype) return cb(null, true);
-		if (/^image\//.test(file.mimetype)) return cb(null, true);
-		cb(new Error('Only image uploads are allowed'));
-	},
-});
-
-// multer's own error handling runs before createEventHandler/updateEventHandler
-// ever see the request -- an oversized file (LIMIT_FILE_SIZE) or a rejected
-// mimetype (the fileFilter's plain Error above) both reach the shared error
-// handler as a raw, non-ApiError error, producing a generic "Something went
-// wrong" instead of a message describing what was actually wrong with the
-// file. Translate both cases here, right after the upload runs. See #370.
-const handleImageUpload = (req, res, next) => {
-	upload.single('image')(req, res, (err) => {
+// multer's own errors run before createEventHandler/updateEventHandler ever
+// see the request, so a raw error would reach the shared error handler
+// unconverted and produce a generic "Something went wrong". Translate it
+// here instead. The case that reaches this now is a client still attaching
+// a file -- a browser tab left open across the deploy that removed the
+// field -- which multer rejects as LIMIT_UNEXPECTED_FILE. See #370, #461.
+const handleFormFields = (req, res, next) => {
+	parseFormFields(req, res, (err) => {
 		if (!err) return next();
-		if (err instanceof multer.MulterError && err.code === 'LIMIT_FILE_SIZE') {
-			return next(
-				new ApiError(
-					'File too large. Please upload a file smaller than 5MB.',
-					STATUS_CODE.PAYLOAD_TOO_LARGE
-				)
-			);
-		}
 		return next(
-			new ApiError('Only image uploads are allowed.', STATUS_CODE.BAD_REQUEST)
+			new ApiError(
+				'Events no longer accept an image. Please reload the page and try again.',
+				STATUS_CODE.BAD_REQUEST
+			)
 		);
 	});
 };
@@ -96,7 +76,7 @@ eventRouter.post(
 	'/api/event',
 	isAuth,
 	requireEventAdmin,
-	handleImageUpload,
+	handleFormFields,
 	createEventValidators,
 	async (req, res, next) => {
 		try {
@@ -110,7 +90,7 @@ eventRouter.put(
 	'/api/event/:reference',
 	isAuth,
 	requireEventAdmin,
-	handleImageUpload,
+	handleFormFields,
 	updateEventValidators,
 	async (req, res, next) => {
 		try {

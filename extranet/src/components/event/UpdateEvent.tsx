@@ -33,7 +33,6 @@ interface IFormInput {
 	date: string;
 	mapLink: string;
 	description: string;
-	image: FileList;
 	isGeneric: boolean;
 }
 
@@ -59,7 +58,6 @@ const UpdateEvent: React.FC = () => {
 		},
 	});
 
-	const [image, setImage] = useState<File | null>(null);
 	const [isFormSubmitted, setIsFormSubmitted] = useState<boolean>(false);
 	const [isSuccessResponse, setIsSuccessResponse] = useState<boolean>(false);
 	const [isErrorResponse, setIsErrorResponse] = useState<boolean>(false);
@@ -95,10 +93,6 @@ const UpdateEvent: React.FC = () => {
 			formData.append('mapLink', data.mapLink ?? '');
 			formData.append('description', data.description);
 			formData.append('isGeneric', data.isGeneric.toString());
-			if (image) {
-				formData.append('image', image);
-			}
-
 			// Singular /api/event/:reference, matching the backend's only
 			// registered update route (src/routes/event.js). apiClient already
 			// carries the base URL, so this is relative like every other call.
@@ -121,12 +115,6 @@ const UpdateEvent: React.FC = () => {
 			setErrorMessage(
 				error.response?.data?.message || error.message || t('events.form.updateError')
 			);
-		}
-	};
-
-	const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		if (e.target.files && e.target.files.length > 0) {
-			setImage(e.target.files[0]);
 		}
 	};
 
@@ -271,30 +259,6 @@ const UpdateEvent: React.FC = () => {
 									/>
 								)}
 							/>
-
-							<div>
-								<label htmlFor='upload-file'>
-									<input
-										type='file'
-										id='upload-file'
-										onChange={handleImageChange}
-										style={{ display: 'none' }}
-										accept='image/*'
-									/>
-									<Button component='span' className={primaryButton}>
-										{t('events.form.changePhoto')}
-									</Button>
-								</label>
-								<div style={{ marginTop: '8px', fontSize: '13px' }}>
-									{image ? (
-										<span>
-											{t('events.form.photoSelected')} {image.name}
-										</span>
-									) : (
-										<span>{t('events.form.keepCurrentPhoto')}</span>
-									)}
-								</div>
-							</div>
 
 							<Button type='submit' fullWidth className={primaryButton}>
 								{t('events.form.updateButton')}
